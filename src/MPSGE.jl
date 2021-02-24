@@ -122,23 +122,60 @@ function build(m::Model)
     end
 
     # Add market clearance constraints
-    # FOR NOW THIS IS TOO HARD
-    # for s in m._sectors
-    #     level_name = s.name 
-    #     JuMP.@NLconstraint(jm, s.output_quantity * jm[level_name] == 
 
-    #     )
-    # end
+    for s in m._sectors
+        level_name = s.name
 
-    # Add income balance constraints
+        # Find all the sectors where our current sector is an input
+        input_into_sectors = [s2.name for s2 in m._sectors if s2.input1_name==s.name || s2.input2_name==s.name]
+        input_into_consumers = [c.name for c in m._consumers if c.demand_name==s.name]
+
+        JuMP.add_NL_constraint(jm, 
+            :($(s.output_quantity) * $(jm[level_name]) == 
+                $(length(input_into_sectors)==0 ? 0. : 
+                    :(+($((:($(jm[Symbol("$(s.name)$i")]) * $(jm[Symbol(i)])) for i in input_into_sectors)...)))
+                ) +
+                $(length(input_into_consumers)==0 ? 0. : 
+                    :(+($((:($(jm[Symbol(i)]) / $(jm[Symbol("P$(s.name)")])) for i in input_into_consumers)...)))
+                )
+            )
+        )
+    end
+
+    # Loop over all endowments
+    endows = Dict{Symbol, Float64}()
 
     for c in m._consumers
-        # TODO Make this work with arbitrary number of endowments
-        level_name = c.name
-        price1_name = Symbol("P$(c.endowments[1].name)")
-        price2_name = Symbol("P$(c.endowments[2].name)")
+        for en in c.endowments
+            if !haskey(endows, en.name)
+                endows[en.name] = 0.
+            end
+            endows[en.name] += en.quantity
+        end
+    end
 
-        JuMP.@NLconstraint(jm, jm[level_name] == c.endowments[1].quantity * jm[price1_name] + c.endowments[2].quantity * jm[price2_name])
+    for (level_name, endowment_level) in endows
+        # Find all the sectors where our current sector is an input
+        input_into_sectors = [s.name for s in m._sectors if s.input1_name==level_name || s.input2_name==level_name]
+        input_into_consumers = [c.name for c in m._consumers if c.demand_name==level_name]
+
+        JuMP.add_NL_constraint(jm, 
+            :($(endowment_level) == 
+                $(length(input_into_sectors)==0 ? 0. : 
+                    :(+($((:($(jm[Symbol("$(level_name)$i")]) * $(jm[Symbol(i)])) for i in input_into_sectors)...)))
+                ) +
+                $(length(input_into_consumers)==0 ? 0. : 
+                    :(+($((:($(jm[Symbol(i)]) / $(jm[Symbol("P$(level_name)")])) for i in input_into_consumers)...)))
+                )
+            )
+        )
+    end
+
+    # Add income balance constraints
+    for c in m._consumers
+        level_name = c.name
+
+        JuMP.add_NL_constraint(jm, :($(jm[level_name]) == +($((:($(en.quantity) * $(jm[Symbol("P$(en.name)")])) for en in c.endowments)...))))
     end
 
     return jm
