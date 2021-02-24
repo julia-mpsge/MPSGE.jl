@@ -47,10 +47,12 @@ end
 
 function add!(m::Model, s::Sector)
     push!(m._sectors, s)
+    return m
 end
 
 function add!(m::Model, c::Consumer)
     push!(m._consumers, c)
+    return m
 end
 
 function add_variable!(jm::JuMP.Model, name::Symbol, lower_bound::Float64)
