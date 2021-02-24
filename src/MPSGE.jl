@@ -68,26 +68,26 @@ function build(m::Model)
 
     for s in m._sectors
         level_name = s.name        
-        add_variable!(jm, level_name, 0.)
+        add_variable!(jm, level_name, 0.001)
 
         price_name = "P$(s.name)"
-        add_variable!(jm, price_name, 0.)
+        add_variable!(jm, price_name, 0.001)
 
         compensated_input1_demand_name = "$(s.input1_name)$(s.name)"
-        add_variable!(jm, compensated_input1_demand_name, 0.)
+        add_variable!(jm, compensated_input1_demand_name, 0.001)
 
         compensated_input2_demand_name = "$(s.input2_name)$(s.name)"
-        add_variable!(jm, compensated_input2_demand_name, 0.)
+        add_variable!(jm, compensated_input2_demand_name, 0.001)
     end
 
     for c in m._consumers
         for en in c.endowments
             price_name = "P$(en.name)"
-            add_variable!(jm, price_name, 0.)
+            add_variable!(jm, price_name, 0.001)
         end
 
         level_name = c.name
-        add_variable!(jm, level_name, 0.)
+        add_variable!(jm, level_name, 0.001)
     end
 
     # Add compensated demand equations
