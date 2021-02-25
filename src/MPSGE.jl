@@ -263,9 +263,9 @@ function build(m::Model)
     return jm
 end
 
-function solve!(m::Model)
+function solve!(m::Model; solver::Symbol=:PATH, kwargs...)
     m._jump_model = build(m)
-    m._status = Complementarity.solveMCP(m._jump_model, output="yes", convergence_tolerance=1e-8)
+    m._status = Complementarity.solveMCP(m._jump_model; solver=solver, kwargs...)
 
     return m
 end
