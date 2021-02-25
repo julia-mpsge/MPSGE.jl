@@ -55,11 +55,15 @@ function add!(m::Model, c::Consumer)
     return m
 end
 
-function add_variable!(jm::JuMP.Model, name::Symbol, lower_bound::Float64)
+function add_variable!(jm::JuMP.Model, name::Symbol, lower_bound::Union{Float64,Nothing}=nothing)
+    if lower_bound===nothing
+        jm[name] = JuMP.@variable(jm, base_name=string(name))
+    else    
     jm[name] = JuMP.@variable(jm, base_name=string(name), lower_bound=lower_bound)
 end
+end
 
-function add_variable!(jm::JuMP.Model, name::String, lower_bound::Float64)
+function add_variable!(jm::JuMP.Model, name::String, lower_bound::Union{Float64,Nothing}=nothing)
     add_variable!(jm, Symbol(name), lower_bound)
 end
 
@@ -70,16 +74,16 @@ function build(m::Model)
 
     for s in m._sectors
         level_name = s.name        
-        add_variable!(jm, level_name, 0.001)
+        add_variable!(jm, level_name)
 
         price_name = "P$(s.name)"
         add_variable!(jm, price_name, 0.001)
 
         compensated_input1_demand_name = "$(s.input1_name)$(s.name)"
-        add_variable!(jm, compensated_input1_demand_name, 0.001)
+        add_variable!(jm, compensated_input1_demand_name)
 
         compensated_input2_demand_name = "$(s.input2_name)$(s.name)"
-        add_variable!(jm, compensated_input2_demand_name, 0.001)
+        add_variable!(jm, compensated_input2_demand_name)
     end
 
     for c in m._consumers
@@ -89,7 +93,7 @@ function build(m::Model)
         end
 
         level_name = c.name
-        add_variable!(jm, level_name, 0.001)
+        add_variable!(jm, level_name)
     end
 
     # Add compensated demand equations
