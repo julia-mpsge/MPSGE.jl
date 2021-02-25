@@ -12,4 +12,8 @@ add!(m, Consumer(
     endowments=[Endowment(:L, 70), Endowment(:K, 80)])
 )
 
-solve(m)
+solve!(m)
+
+for n in MPSGE.JuMP.all_variables(m._jump_model)
+    println("$n:\t$(MPSGE.Complementarity.result_value(n))")
+end
