@@ -6,4 +6,4 @@
 
 ## Overview
 
-This package provides a MPSGE implementation on Julia. At the moment it is very much work in progress and likely to change significantly quickly, but there are some working examples in the examples and test folder.
+This package provides a [MPSGE](https://www.gams.com/solvers/mpsge/index.htm) implementation on Julia. At the moment it is very much work in progress and likely to change significantly quickly, but there are some working examples in the examples and test folder.
