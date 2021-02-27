@@ -2,18 +2,22 @@ using MPSGE
 
 m = Model()
 
-add!(m, Sector(:X, 1, 100, :L, 50, :K, 50))
-add!(m, Sector(:Y, 1, 50, :L, 20, :K, 30))
-add!(m, Sector(:U, 1, 150, :X, 100, :Y, 50))
+add!(m, Sector(:X))
+add!(m, Sector(:Y))
+add!(m, Sector(:U))
 
-add!(m, Consumer(
-    name=:RA,
-    demand_name=:U,
-    endowments=[Endowment(:L, 70), Endowment(:K, 80)])
-)
+add!(m, Commodity(:PX))
+add!(m, Commodity(:PY))
+add!(m, Commodity(:PU))
+add!(m, Commodity(:PL))
+add!(m, Commodity(:PK))
 
-solve!(m)
+add!(m, Consumer(:RA, benchmark=150.))
 
-for n in MPSGE.JuMP.all_variables(m._jump_model)
-    println("$n:\t$(MPSGE.Complementarity.result_value(n))")
-end
+add!(m, Production(:X, 1, :PX, 100, [Input(:PL, 50), Input(:PK, 50)]))
+add!(m, Production(:Y, 1, :PY, 50, [Input(:PL, 20), Input(:PK, 30)]))
+add!(m, Production(:U, 1, :PU, 150, [Input(:PX, 100), Input(:PY, 50)]))
+
+add!(m, Demand(:RA, :PU, [Endowment(:PL, 70), Endowment(:PK, 80)]))
+
+solve!(m, cumulative_iteration_limit=0)
