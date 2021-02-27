@@ -148,10 +148,6 @@ function add_variable!(jm::JuMP.Model, name::Symbol, lower_bound::Union{Float64,
     end
 end
 
-function add_variable!(jm::JuMP.Model, name::String, lower_bound::Union{Float64,Nothing}=nothing)
-    add_variable!(jm, Symbol(name), lower_bound)
-end
-
 function JuMP.value(m::Model, name::Symbol)
     Complementarity.result_value(m._jump_model[name])
 end
