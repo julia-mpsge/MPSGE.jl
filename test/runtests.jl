@@ -24,6 +24,9 @@ using Test
 
         add!(m, Demand(:RA, :PU, [Endowment(:PL, 70), Endowment(:PK, 80)]))
 
+        avm = algebraic_version(m)
+        @test typeof(avm) == MPSGE.AlgebraicWrapper
+
         solve!(m)
 
         @test value(m, :X) ≈ 1.
@@ -44,15 +47,14 @@ using Test
         @test MPSGE.Complementarity.result_value(m._jump_model[:PXPU]) ≈ 100.
         @test MPSGE.Complementarity.result_value(m._jump_model[:PYPU]) ≈ 50.
 
-        avm = algebraic_version(m)
-
-        @test typeof(avm) == MPSGE.AlgebraicWrapper
+        avm2 = algebraic_version(m)
+        @test typeof(avm2) == MPSGE.AlgebraicWrapper
 
         # For now just run these functions, we might add tests for the results
         # at a later point
         repr(MIME("text/plain"), m)
-        repr(MIME("text/plain"), avm)
-        repr(MIME("text/latex"), avm)
+        repr(MIME("text/plain"), avm2)
+        repr(MIME("text/latex"), avm2)
     end
     
 end
