@@ -5,19 +5,27 @@ using Test
 
     m = Model()
 
-    add!(m, Sector(:X, 1, 100, :L, 50, :K, 50))
-    add!(m, Sector(:Y, 1, 50, :L, 20, :K, 30))
-    add!(m, Sector(:U, 1, 150, :X, 100, :Y, 50))
-    
-    add!(m, Consumer(
-        name=:RA,
-        demand_name=:U,
-        endowments=[Endowment(:L, 70), Endowment(:K, 80)])
-    )
+    add!(m, Sector(:X))
+    add!(m, Sector(:Y))
+    add!(m, Sector(:U))
+
+    add!(m, Commodity(:PX))
+    add!(m, Commodity(:PY))
+    add!(m, Commodity(:PU))
+    add!(m, Commodity(:PL))
+    add!(m, Commodity(:PK))
+
+    add!(m, Consumer(:RA, benchmark=150.))
+
+    add!(m, Production(:X, 1, :PX, 100, [Input(:PL, 50), Input(:PK, 50)]))
+    add!(m, Production(:Y, 1, :PY, 50, [Input(:PL, 20), Input(:PK, 30)]))
+    add!(m, Production(:U, 1, :PU, 150, [Input(:PX, 100), Input(:PY, 50)]))
+
+    add!(m, Demand(:RA, :PU, [Endowment(:PL, 70), Endowment(:PK, 80)]))
     
     solve!(m)
 
-    @test MPSGE.Complementarity.result_value(m._jump_model[:X]) ≈ 1.
+    @test value(m, :X) ≈ 1.
     @test MPSGE.Complementarity.result_value(m._jump_model[:Y]) ≈ 1.
     @test MPSGE.Complementarity.result_value(m._jump_model[:U]) ≈ 1.
     @test MPSGE.Complementarity.result_value(m._jump_model[:RA]) ≈ 150.
@@ -28,11 +36,11 @@ using Test
     @test MPSGE.Complementarity.result_value(m._jump_model[:PL]) ≈ 1.
     @test MPSGE.Complementarity.result_value(m._jump_model[:PK]) ≈ 1.
 
-    @test MPSGE.Complementarity.result_value(m._jump_model[:LX]) ≈ 50.
-    @test MPSGE.Complementarity.result_value(m._jump_model[:LY]) ≈ 20.
-    @test MPSGE.Complementarity.result_value(m._jump_model[:KX]) ≈ 50.
-    @test MPSGE.Complementarity.result_value(m._jump_model[:KY]) ≈ 30.
-    @test MPSGE.Complementarity.result_value(m._jump_model[:XU]) ≈ 100.
-    @test MPSGE.Complementarity.result_value(m._jump_model[:YU]) ≈ 50.
+    @test MPSGE.Complementarity.result_value(m._jump_model[:PLPX]) ≈ 50.
+    @test MPSGE.Complementarity.result_value(m._jump_model[:PLPY]) ≈ 20.
+    @test MPSGE.Complementarity.result_value(m._jump_model[:PKPX]) ≈ 50.
+    @test MPSGE.Complementarity.result_value(m._jump_model[:PKPY]) ≈ 30.
+    @test MPSGE.Complementarity.result_value(m._jump_model[:PXPU]) ≈ 100.
+    @test MPSGE.Complementarity.result_value(m._jump_model[:PYPU]) ≈ 50.
     
 end
