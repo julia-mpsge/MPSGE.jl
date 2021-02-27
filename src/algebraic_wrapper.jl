@@ -31,7 +31,7 @@ function Base.show(io::IO, m::AlgebraicWrapper)
 end
 
 function Base.show(io::IO, ::MIME"text/latex", m::AlgebraicWrapper)
-    println(io, raw"\begin{alignat*}{3}\\")
+    println(io, raw"$$ \begin{alignat*}{3}\\")
     for c in m._source.ext[:MCP]
 
         print(io, "& ")
@@ -45,4 +45,5 @@ function Base.show(io::IO, ::MIME"text/latex", m::AlgebraicWrapper)
         print(io, "\\\\")
     end
     println(io, raw"\end{alignat*}")
+    println(io, raw" $$")
 end
