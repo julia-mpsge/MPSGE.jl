@@ -38,7 +38,7 @@ function Base.show(io::IO, ::MIME"text/latex", m::AlgebraicWrapper)
 
         println(io, JuMP.nl_expr_string(m._source, JuMP.IJuliaMode, m._source.nlp_data.nlexpr[c.F.index]))
 
-        print(io, raw"\quad && ┴ \quad && ")
+        print(io, raw"\quad && \perp \quad && ")
 
         print(io, isinf(c.lb) ? "" : "$(c.lb) <", c.var_name, isinf(c.ub) ? "" : "$(c.ub) < ")
 
