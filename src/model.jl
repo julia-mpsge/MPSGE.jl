@@ -35,14 +35,14 @@ end
 
 struct Input
     commodity::Symbol
-    quantity::Float64
+    quantity::Float64 # TODO Make Union{Float64,Expr}
 end
 
 struct Production
     sector::Symbol    
-    elasticity::Float64
+    elasticity::Float64 # TODO Make Union{Float64,Expr}
     output::Symbol
-    output_quantity::Float64
+    output_quantity::Float64 # TODO Make Union{Float64,Expr}
     inputs::Vector{Input}
 end
 
