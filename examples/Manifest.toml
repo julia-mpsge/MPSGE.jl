@@ -188,7 +188,7 @@ uuid = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 uuid = "56ddb016-857b-54e1-b83d-db4d58db5568"
 
 [[MPSGE]]
-deps = ["Complementarity", "JuMP"]
+deps = ["Complementarity", "JuMP", "MacroTools"]
 path = ".."
 uuid = "d5dc2f44-7ae2-49e9-bc77-b47b6bca565d"
 version = "0.1.0-DEV"
