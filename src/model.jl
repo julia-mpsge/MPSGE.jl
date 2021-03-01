@@ -1,3 +1,8 @@
+mutable struct Parameter
+    name::Symbol
+    value::Float64
+end
+
 struct Sector
     name::Symbol
     benchmark::Float64
@@ -43,7 +48,7 @@ end
 
 struct Endowment
     commodity::Symbol
-    quantity::Float64
+    quantity::Union{Float64,Expr}
 end
 
 struct Demand
@@ -53,6 +58,7 @@ struct Demand
 end
 
 mutable struct Model
+    _parameters::Vector{Parameter}
     _sectors::Vector{Sector}
     _commodities::Vector{Commodity}
     _consumsers::Vector{Consumer}
@@ -61,19 +67,27 @@ mutable struct Model
     _demands::Vector{Demand}
 
     _jump_model::Union{Nothing,JuMP.Model}
+    _jump_nlparameters::Dict{Symbol,JuMP.NonlinearParameter}
     _status
 
     function Model()
         return new(
+            Parameter[],
             Sector[],
             Commodity[],
             Consumer[],
             Production[],
             Demand[],
             nothing,
+            Dict{Symbol,JuMP.NonlinearParameter}(),
             nothing
         )
     end
+end
+
+struct ParameterRef
+    model::Model
+    index::Int
 end
 
 function Base.show(io::IO, m::Model)
@@ -140,6 +154,12 @@ function add!(m::Model, c::Demand)
     return m
 end
 
+function add!(m::Model, p::Parameter)
+    m._jump_model = nothing
+    push!(m._parameters, p)
+    return ParameterRef(m, length(m._parameters))
+end
+
 function add_variable!(jm::JuMP.Model, name::Symbol, lower_bound::Union{Float64,Nothing}=nothing)
     if lower_bound===nothing
         jm[name] = JuMP.@variable(jm, base_name=string(name))
@@ -153,9 +173,18 @@ function JuMP.value(m::Model, name::Symbol)
 end
 
 function solve!(m::Model; solver::Symbol=:PATH, kwargs...)
-    m._jump_model = build(m)
+    if m._jump_model===nothing
+        m._jump_model = build(m)
+    end
+
+    set_all_start_values(m)
+    set_all_parameters(m)
 
     m._status = Complementarity.solveMCP(m._jump_model; solver=solver, kwargs...)
 
     return m
+end
+
+function JuMP.set_value(p::ParameterRef, new_value::Float64)
+    p.model._parameters[p.index].value = new_value
 end

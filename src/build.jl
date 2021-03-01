@@ -1,33 +1,78 @@
-function build(m::Model)
-    jm = Complementarity.MCPModel()
+"""
+    swap_our_param_with_jump_param(expr)
 
-    # Add all required variables
+This function takes an expression tree and replaces all instances of
+`ParameterRef` with the corresponding `JuMP.NLParameter`.
+"""
+function swap_our_param_with_jump_param(expr)
+    return MacroTools.postwalk(expr) do x
+        if x isa ParameterRef
+            return x.model._jump_nlparameters[x.model._parameters[x.index].name]
+        else
+            return x
+        end
+    end
+end
 
+function set_all_start_values(m)
+    jm = m._jump_model
     for s in m._sectors
-        add_variable!(jm, s.name, 0.)
-
         Complementarity.set_start_value(jm[s.name], s.benchmark)
     end
 
     for c in m._commodities
-        add_variable!(jm, c.name, 0.001)
-
         Complementarity.set_start_value(jm[c.name], c.benchmark)
     end
 
     for s in m._productions
         for i in s.inputs
             compensated_input1_demand_name = Symbol("$(i.commodity)$(s.output)")
-            add_variable!(jm, compensated_input1_demand_name)
-
             Complementarity.set_start_value(jm[compensated_input1_demand_name], i.quantity)
         end
     end
 
     for c in m._consumsers
-        add_variable!(jm, c.name)
-
         Complementarity.set_start_value(jm[c.name], c.benchmark)
+    end
+end
+
+function set_all_parameters(m)
+    jm = m._jump_model
+
+    for p in m._parameters
+        JuMP.set_value(m._jump_nlparameters[p.name], p.value)
+    end
+end
+
+function build(m::Model)
+    jm = Complementarity.MCPModel()
+
+    # Add all parameters
+
+    for p in m._parameters
+        jmp_p = @eval(JuMP.@NLparameter($jm, $(p.name) == $(p.value)))
+        m._jump_nlparameters[p.name] = jmp_p
+    end
+
+    # Add all required variables
+
+    for s in m._sectors
+        add_variable!(jm, s.name, 0.)
+    end
+
+    for c in m._commodities
+        add_variable!(jm, c.name, 0.001)
+    end
+
+    for s in m._productions
+        for i in s.inputs
+            compensated_input1_demand_name = Symbol("$(i.commodity)$(s.output)")
+            add_variable!(jm, compensated_input1_demand_name)
+        end
+    end
+
+    for c in m._consumsers
+        add_variable!(jm, c.name)
     end
 
     # Add compensated demand equations
@@ -96,18 +141,22 @@ function build(m::Model)
     end
 
     # Loop over all endowments
-    endows = Dict{Symbol, Float64}()
+    endows = Dict{Symbol, Vector{Expr}}()
 
     for c in m._demands
         for en in c.endowments
             if !haskey(endows, en.commodity)
-                endows[en.commodity] = 0.
+                endows[en.commodity] = Expr[]
             end
-            endows[en.commodity] += en.quantity
+            push!(endows[en.commodity], :(0. + $(en.quantity)))
         end
     end
 
-    for (level_name, endowment_level) in endows
+    for (level_name, endowment_levels) in endows
+        endowment_level = :(+($(endowment_levels...)))
+
+        endowment_level = swap_our_param_with_jump_param(endowment_level)
+
         price_name = level_name
         # Find all the sectors where our current sector is an input
         input_into_sectors = [(s.output, s.sector) for s in m._productions if s.inputs[1].commodity==level_name || s.inputs[2].commodity==level_name]
@@ -135,7 +184,7 @@ function build(m::Model)
         ex6 = @eval(
             JuMP.@NLexpression(
                 $jm,
-                +($((:($(en.quantity) * $(jm[Symbol("$(en.commodity)")])) for en in c.endowments)...)) - $(jm[level_name])
+                +($((:($(swap_our_param_with_jump_param(en.quantity)) * $(jm[Symbol("$(en.commodity)")])) for en in c.endowments)...)) - $(jm[level_name])
             )
         )
         Complementarity.add_complementarity(jm, jm[level_name], ex6, string("F_", level_name))
