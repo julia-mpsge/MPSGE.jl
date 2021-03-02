@@ -51,6 +51,10 @@ struct Endowment
     quantity::Union{Float64,Expr}
 end
 
+function Endowment(commodity::Symbol, quantity::Number)
+    return Endowment(commodity, convert(Float64, quantity))
+end
+
 struct Demand
     consumer::Symbol
     commodity::Symbol
