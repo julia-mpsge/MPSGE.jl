@@ -13,13 +13,14 @@ struct Sector
     end
 end
 
-struct Commodity
+mutable struct Commodity
     name::Symbol
     benchmark::Float64
     description::String
+    fixed::Bool
 
-    function Commodity(name::Symbol; description::AbstractString="", benchmark::Float64=1.)
-        return new(name, benchmark, description)
+    function Commodity(name::Symbol; description::AbstractString="", benchmark::Float64=1., fixed=false)
+        return new(name, benchmark, description, fixed)
     end
 end
 
@@ -179,6 +180,7 @@ function solve!(m::Model; solver::Symbol=:PATH, kwargs...)
 
     set_all_start_values(m)
     set_all_parameters(m)
+    set_all_bounds(m)
 
     m._status = Complementarity.solveMCP(m._jump_model; solver=solver, kwargs...)
 
@@ -187,4 +189,10 @@ end
 
 function JuMP.set_value(p::ParameterRef, new_value::Float64)
     p.model._parameters[p.index].value = new_value
+end
+
+function set_fixed!(m::Model, commodity::Symbol, new_value::Bool)
+    c = m._commodities[findfirst(i->i.name==commodity, m._commodities)]
+    c.fixed = new_value
+    return nothing
 end
