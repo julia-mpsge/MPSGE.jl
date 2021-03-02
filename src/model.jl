@@ -65,7 +65,7 @@ mutable struct Model
     _parameters::Vector{Parameter}
     _sectors::Vector{Sector}
     _commodities::Vector{Commodity}
-    _consumsers::Vector{Consumer}
+    _consumers::Vector{Consumer}
 
     _productions::Vector{Production}
     _demands::Vector{Demand}
@@ -95,7 +95,7 @@ struct ParameterRef
 end
 
 function Base.show(io::IO, m::Model)
-    println(io, "MPSGE model with $(length(m._sectors)) sectors, $(length(m._commodities)) commodities and $(length(m._consumsers)) consumers.")
+    println(io, "MPSGE model with $(length(m._sectors)) sectors, $(length(m._commodities)) commodities and $(length(m._consumers)) consumers.")
 
     if length(m._sectors) > 0
         print(io, "  Sectors: ")
@@ -109,9 +109,9 @@ function Base.show(io::IO, m::Model)
         println(io)
     end
 
-    if length(m._consumsers) > 0
+    if length(m._consumers) > 0
         print(io, "  Consumers: ")
-        print(io, join(["$(c.name) (bm=$(c.benchmark))" for c in m._consumsers], ", "))
+        print(io, join(["$(c.name) (bm=$(c.benchmark))" for c in m._consumers], ", "))
         println(io)
     end
 
@@ -142,7 +142,7 @@ end
 
 function add!(m::Model, c::Consumer)
     m._jump_model = nothing
-    push!(m._consumsers, c)
+    push!(m._consumers, c)
     return m
 end
 
