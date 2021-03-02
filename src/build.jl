@@ -31,7 +31,7 @@ function set_all_start_values(m)
         end
     end
 
-    for c in m._consumsers
+    for c in m._consumers
         Complementarity.set_start_value(jm[c.name], c.benchmark)
     end
 end
@@ -71,7 +71,7 @@ function build(m::Model)
         end
     end
 
-    for c in m._consumsers
+    for c in m._consumers
         add_variable!(jm, c.name)
     end
 
