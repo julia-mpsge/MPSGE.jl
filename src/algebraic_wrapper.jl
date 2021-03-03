@@ -24,7 +24,11 @@ function Base.show(io::IO, m::AlgebraicWrapper)
 
         print(io, "  ┴  ")
 
-        print(io, isinf(c.lb) ? "" : "$(c.lb) < ", c.var_name, isinf(c.ub) ? "" : "$(c.ub) < ")
+        if !isinf(c.lb) && c.lb==c.ub
+            print(io, c.var_name, " = $(c.ub)")
+        else
+            print(io, isinf(c.lb) ? "" : "$(c.lb) < ", c.var_name, isinf(c.ub) ? "" : " < $(c.ub)")
+        end
 
         println(io)
     end
@@ -40,7 +44,11 @@ function Base.show(io::IO, ::MIME"text/latex", m::AlgebraicWrapper)
 
         print(io, raw"\quad && \perp \quad && ")
 
-        print(io, isinf(c.lb) ? "" : "$(c.lb) <", c.var_name, isinf(c.ub) ? "" : "$(c.ub) < ")
+        if !isinf(c.lb) && c.lb==c.ub
+            print(io, c.var_name, " = $(c.ub)")
+        else
+            print(io, isinf(c.lb) ? "" : "$(c.lb) <", c.var_name, isinf(c.ub) ? "" : " < $(c.ub)")
+        end
 
         print(io, "\\\\")
     end
