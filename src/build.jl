@@ -36,6 +36,23 @@ function set_all_start_values(m)
     end
 end
 
+function set_all_bounds(m)
+    jm = m._jump_model
+
+    for c in m._commodities
+        jump_var = jm[c.name]
+        if c.fixed
+            JuMP.fix(jump_var, c.benchmark, force=true)
+        else
+            if JuMP.is_fixed(jump_var)
+                JuMP.unfix(jump_var)
+            end
+
+            JuMP.set_lower_bound(jump_var, 0.001)
+        end
+    end
+end
+
 function set_all_parameters(m)
     jm = m._jump_model
 
