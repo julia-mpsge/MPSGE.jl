@@ -14,6 +14,16 @@ function swap_our_param_with_jump_param(expr)
     end
 end
 
+function swap_our_param_with_val(expr)
+    return MacroTools.postwalk(expr) do x
+        if x isa ParameterRef
+            return x.model._parameters[x.index].value
+        else
+            return x
+        end
+    end
+end
+
 function set_all_start_values(m)
     jm = m._jump_model
     for s in m._sectors
@@ -27,7 +37,7 @@ function set_all_start_values(m)
     for s in m._productions
         for i in s.inputs
             compensated_input1_demand_name = Symbol("$(i.commodity)$(s.output)")
-            Complementarity.set_start_value(jm[compensated_input1_demand_name], i.quantity)
+            Complementarity.set_start_value(jm[compensated_input1_demand_name], eval(swap_our_param_with_val(i.quantity)))
         end
     end
 
@@ -82,22 +92,22 @@ function build(m::Model)
         price_input1_name = s.inputs[1].commodity
         price_input2_name = s.inputs[2].commodity
 
-        exp_1 = s.inputs[1].quantity/s.output_quantity
-        exp_2 = s.inputs[2].quantity/s.output_quantity
+        exp_1 = :($(swap_our_param_with_jump_param(s.inputs[1].quantity))/$(s.output_quantity))
+        exp_2 = :($(swap_our_param_with_jump_param(s.inputs[2].quantity))/$(s.output_quantity))
 
-        ex1 = JuMP.@NLexpression(jm,
-            s.inputs[1].quantity * ( 
-                jm[price_input1_name]^exp_1 * jm[price_input2_name]^exp_2
-            ) / jm[price_input1_name] - jm[compensated_input1_demand_name]
-        )
+        ex1 = @eval(JuMP.@NLexpression($(jm),
+            $(swap_our_param_with_jump_param(s.inputs[1].quantity)) * ( 
+                $(jm[price_input1_name])^$exp_1 * $(jm[price_input2_name])^$exp_2
+            ) / $(jm[price_input1_name]) - $(jm[compensated_input1_demand_name])
+        ))
 
         Complementarity.add_complementarity(jm, jm[compensated_input1_demand_name], ex1, string("F_", compensated_input1_demand_name))
 
-        ex2 = JuMP.@NLexpression(jm,
-            s.inputs[2].quantity * ( 
-                jm[price_input1_name]^exp_1 * jm[price_input2_name]^exp_2
-            ) / jm[price_input2_name] - jm[compensated_input2_demand_name]
-        )
+        ex2 = @eval(JuMP.@NLexpression($jm,
+        $(swap_our_param_with_jump_param(s.inputs[2].quantity)) * ( 
+                $(jm[price_input1_name])^$exp_1 * $(jm[price_input2_name])^$exp_2
+            ) / $(jm[price_input2_name]) - $(jm[compensated_input2_demand_name])
+        ))
 
         Complementarity.add_complementarity(jm, jm[compensated_input2_demand_name], ex2, string("F_", compensated_input2_demand_name))
     end

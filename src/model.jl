@@ -35,7 +35,7 @@ end
 
 struct Input
     commodity::Symbol
-    quantity::Float64 # TODO Make Union{Float64,Expr}
+    quantity::Union{Float64,Expr} # TODO Make Union{Float64,Expr}
 end
 
 struct Production
