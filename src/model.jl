@@ -35,7 +35,11 @@ end
 
 struct Input
     commodity::Symbol
-    quantity::Union{Float64,Expr} # TODO Make Union{Float64,Expr}
+    quantity::Union{Float64,Expr}
+end
+
+function Input(commodity::Symbol, quantity::Number)
+    return Input(commodity, convert(Float64, quantity))
 end
 
 struct Production

@@ -92,8 +92,8 @@ function build(m::Model)
         price_input1_name = s.inputs[1].commodity
         price_input2_name = s.inputs[2].commodity
 
-        exp_1 = :($(swap_our_param_with_jump_param(s.inputs[1].quantity))/$(s.output_quantity))
-        exp_2 = :($(swap_our_param_with_jump_param(s.inputs[2].quantity))/$(s.output_quantity))
+        exp_1 = swap_our_param_with_jump_param(:($(s.inputs[1].quantity)/$(s.output_quantity)))
+        exp_2 = swap_our_param_with_jump_param(:($(s.inputs[2].quantity)/$(s.output_quantity)))
 
         ex1 = @eval(JuMP.@NLexpression($(jm),
             $(swap_our_param_with_jump_param(s.inputs[1].quantity)) * ( 
