@@ -5,7 +5,10 @@ using Test
 
     @testset "TWOBYTWO" begin
         m = Model()
-
+       
+        inputcoeff = add!(m, Parameter(:inputcoeff, 2.))
+        endow = add!(m, Parameter(:endow, 2.))
+        
         add!(m, Sector(:X))
         add!(m, Sector(:Y))
         add!(m, Sector(:U))
@@ -18,11 +21,11 @@ using Test
 
         add!(m, Consumer(:RA, benchmark=150.))
 
-        add!(m, Production(:X, 1, :PX, 100, [Input(:PL, 50), Input(:PK, 50)]))
+        add!(m, Production(:X, 1, :PX, 100, [Input(:PL, :(25 * $inputcoeff)), Input(:PK, 50)]))
         add!(m, Production(:Y, 1, :PY, 50, [Input(:PL, 20), Input(:PK, 30)]))
         add!(m, Production(:U, 1, :PU, 150, [Input(:PX, 100), Input(:PY, 50)]))
 
-        add!(m, Demand(:RA, :PU, [Endowment(:PL, 70), Endowment(:PK, 80)]))
+        add!(m, Demand(:RA, :PU, [Endowment(:PL, :(35 * $endow)), Endowment(:PK, 80)]))
 
         avm = algebraic_version(m)
         @test typeof(avm) == MPSGE.AlgebraicWrapper
