@@ -45,10 +45,14 @@ end
 
 struct Production
     sector::Symbol    
-    elasticity::Float64 # TODO Make Union{Float64,Expr}
+    elasticity::Union{Float64,Expr}
     output::Symbol
-    output_quantity::Float64 # TODO Make Union{Float64,Expr}
+    output_quantity::Union{Float64,Expr}
     inputs::Vector{Input}
+end
+
+function Production(sector::Symbol, elasticity::Number, output::Symbol, output_quantity::Number, inputs::Vector{Number})
+    return (sector, convert(Float64, elasticity), output, convert(Float64, output_quantity), inputs)
 end
 
 struct Endowment
