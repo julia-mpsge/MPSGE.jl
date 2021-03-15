@@ -14,6 +14,10 @@ function swap_our_param_with_jump_param(expr)
     end
 end
 
+"""This function takes an expression tree and replaces all instances of
+`JuMP.NLParameter` with the corresponding `ParameterRef`.
+"""
+
 function swap_our_param_with_val(expr)
     return MacroTools.postwalk(expr) do x
         if x isa ParameterRef
@@ -113,7 +117,8 @@ function build(m::Model)
             JuMP.@NLexpression(
                 $(jm),
                 $(s.inputs[1].quantity) * ( 
-                    $(jm[price_input1_name])^($(s.inputs[1].quantity)/$(s.output_quantity)) * $(jm[price_input2_name])^($(s.inputs[2].quantity)/$(s.output_quantity))
+                    $(jm[price_input1_name])^($(s.inputs[1].quantity)/$(s.output_quantity)) *
+                     $(jm[price_input2_name])^($(s.inputs[2].quantity)/$(s.output_quantity))
                 ) / $(jm[price_input1_name]) - $(jm[compensated_input1_demand_name])
             )
         )
@@ -144,9 +149,17 @@ function build(m::Model)
         compensated_input1_demand_name = Symbol("$(s.inputs[1].commodity)$(s.output)")
         compensated_input2_demand_name = Symbol("$(s.inputs[2].commodity)$(s.output)")
 
-        ex3 = JuMP.@NLexpression(jm, jm[input1_price_name]*jm[compensated_input1_demand_name] + jm[input2_price_name]*jm[compensated_input2_demand_name] - s.output_quantity * jm[price_name])
+        ex3a = :(
+            JuMP.@NLexpression(
+                $jm,
+                $(jm[input1_price_name])*$(jm[compensated_input1_demand_name]) + $(jm[input2_price_name])*
+        $(jm[compensated_input2_demand_name]) - $(s.output_quantity) * $(jm[price_name])
+            )
+        )
 
-        Complementarity.add_complementarity(jm, jm[s.sector], ex3, string("F_", s.sector))
+        ex3b = eval(swap_our_param_with_jump_param(ex3a))
+
+        Complementarity.add_complementarity(jm, jm[s.sector], ex3b, string("F_", s.sector))
     end
 
     # Add market clearance constraints
@@ -159,7 +172,7 @@ function build(m::Model)
         input_into_sectors = [(s2.output, s2.sector) for s2 in m._productions if s2.inputs[1].commodity==s.output || s2.inputs[2].commodity==s.output]
         input_into_consumers = [c.consumer for c in m._demands if c.commodity==s.output]
 
-        ex4 = @eval(
+        ex4a = :(
             JuMP.@NLexpression(
                 $jm,
                 $(length(input_into_sectors)==0 ? 0. : 
@@ -171,7 +184,10 @@ function build(m::Model)
                 $(s.output_quantity) * $(jm[level_name])
             )
         )
-        Complementarity.add_complementarity(jm, jm[price_name], ex4, string("F_", price_name))
+        ex4b = eval(swap_our_param_with_jump_param(ex4a))
+
+        Complementarity.add_complementarity(jm, jm[price_name], ex4b, string("F_", price_name))
+
     end
 
     # Loop over all endowments
@@ -196,7 +212,7 @@ function build(m::Model)
         input_into_sectors = [(s.output, s.sector) for s in m._productions if s.inputs[1].commodity==level_name || s.inputs[2].commodity==level_name]
         input_into_consumers = [c.name for c in m._demands if c.commodity==level_name]
 
-        ex5 = @eval(
+        ex5a = :(
             JuMP.@NLexpression(
                 $jm,
                 $(length(input_into_sectors)==0 ? 0. : 
@@ -208,20 +224,25 @@ function build(m::Model)
                 $(endowment_level)
             )
         )
-        Complementarity.add_complementarity(jm, jm[price_name], ex5, string("F_", price_name))
+
+        ex5b = eval(swap_our_param_with_jump_param(ex5a))
+        Complementarity.add_complementarity(jm, jm[price_name], ex5b, string("F_", price_name))
     end
 
     # Add income balance constraints
     for c in m._demands
         level_name = c.consumer
 
-        ex6 = @eval(
+        ex6a = :(
             JuMP.@NLexpression(
                 $jm,
-                +($((:($(swap_our_param_with_jump_param(en.quantity)) * $(jm[Symbol("$(en.commodity)")])) for en in c.endowments)...)) - $(jm[level_name])
+                +($((:($(swap_our_param_with_jump_param(en.quantity)) * 
+                $(jm[Symbol("$(en.commodity)")])) for en in c.endowments)...)) - $(jm[level_name])
             )
         )
-        Complementarity.add_complementarity(jm, jm[level_name], ex6, string("F_", level_name))
+
+        ex6b = eval(swap_our_param_with_jump_param(ex6a))
+        Complementarity.add_complementarity(jm, jm[level_name], ex6b, string("F_", level_name))
     end
 
     return jm
