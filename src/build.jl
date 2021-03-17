@@ -14,10 +14,12 @@ function swap_our_param_with_jump_param(expr)
     end
 end
 
-"""This function takes an expression tree and replaces all instances of
-`JuMP.NLParameter` with the corresponding `ParameterRef`.
 """
+swap_our_param_with_val(expr)
 
+This function takes an expression tree and replaces all instances of
+`ParameterRef` with its value.
+"""
 function swap_our_param_with_val(expr)
     return MacroTools.postwalk(expr) do x
         if x isa ParameterRef

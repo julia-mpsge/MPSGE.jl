@@ -8,6 +8,9 @@ using Test
        
         inputcoeff = add!(m, Parameter(:inputcoeff, 2.))
         endow = add!(m, Parameter(:endow, 2.))
+        elascoeff = add!(m, Parameter(:elascoeff, 2.))
+        outputmult = add!(m, Parameter(:outputmult, 2.))
+
         
         add!(m, Sector(:X))
         add!(m, Sector(:Y))
@@ -22,8 +25,8 @@ using Test
         add!(m, Consumer(:RA, benchmark=150.))
 
         add!(m, Production(:X, 1, :PX, 100, [Input(:PL, :(25 * $inputcoeff)), Input(:PK, 50)]))
-        add!(m, Production(:Y, 1, :PY, 50, [Input(:PL, 20), Input(:PK, 30)]))
-        add!(m, Production(:U, 1, :PU, 150, [Input(:PX, 100), Input(:PY, 50)]))
+        add!(m, Production(:Y, :(0.5 * $elascoeff), :PY, 50, [Input(:PL, 20), Input(:PK, 30)]))
+        add!(m, Production(:U, 1, :PU, :(75 * $outputmult), [Input(:PX, 100), Input(:PY, 50)]))
 
         add!(m, Demand(:RA, :PU, [Endowment(:PL, :(35 * $endow)), Endowment(:PK, 80)]))
 
