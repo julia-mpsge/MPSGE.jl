@@ -37,3 +37,11 @@ macro consumer(model, name, kwargs...)
 
     return :($(esc(name)) = add!($(esc(model)), $constr_call))
 end
+
+macro production(model, args...)
+    return :(add!($(esc(model)), Production($(esc.(args)...))))
+end
+
+macro demand(model, args...)
+    return :(add!($(esc(model)), Demand($(esc.(args)...))))
+end
