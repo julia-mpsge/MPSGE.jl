@@ -1,3 +1,26 @@
+# These are weirdly named types exist so that we can forward
+# type declare things here.
+
+struct _ParameterRef{T}
+    model::T
+    index::Int
+end
+
+struct _SectorRef{T}
+    model::T
+    index::Int
+end
+
+struct _CommodityRef{T}
+    model::T
+    index::Int
+end
+
+struct _ConsumerRef{T}
+    model::T
+    index::Int
+end
+
 mutable struct Parameter
     name::Symbol
     value::Float64
@@ -39,9 +62,6 @@ struct Input
     quantity::Union{Float64,Expr}
 end
 
-function Input(commodity::Symbol, quantity::Number)
-    return Input(commodity, convert(Float64, quantity))
-end
 
 struct Production
     sector::Symbol    
@@ -51,27 +71,13 @@ struct Production
     inputs::Vector{Input}
 end
 
-function Production(sector::Symbol, elasticity::Union{Number,Expr}, output::Symbol, output_quantity::Union{Number,Expr}, inputs::Vector{Input})
 
-    if isa(elasticity,Number)
-        elasticity = convert(Float64, elasticity)
-    end
-
-    if isa(output_quantity,Number)
-        output_quantity = convert(Float64, output_quantity)
-    end
-
-    return Production(sector, elasticity, output, output_quantity, inputs)
-end
 
 struct Endowment
     commodity::Symbol
     quantity::Union{Float64,Expr}
 end
 
-function Endowment(commodity::Symbol, quantity::Number)
-    return Endowment(commodity, convert(Float64, quantity))
-end
 
 struct Demand
     consumer::Symbol
@@ -105,11 +111,6 @@ mutable struct Model
             nothing
         )
     end
-end
-
-struct ParameterRef
-    model::Model
-    index::Int
 end
 
 function Base.show(io::IO, m::Model)
@@ -146,22 +147,79 @@ function Base.show(io::IO, m::Model)
     end
 end
 
+# This is the second part of the forward type declaration
+const ParameterRef = _ParameterRef{Model}
+const SectorRef = _SectorRef{Model}
+const CommodityRef = _CommodityRef{Model}
+const ConsumerRef = _ConsumerRef{Model}
+
+function get_name(sector::SectorRef)
+    return sector.model._sectors[sector.index].name
+end
+
+function get_name(commodity::CommodityRef)
+    return commodity.model._commodities[commodity.index].name
+end
+
+function get_name(consumer::ConsumerRef)
+    return consumer.model._consumers[consumer.index].name
+end
+
+# Outer constructors
+
+function Demand(consumer::ConsumerRef, commodity::CommodityRef, endowments::Vector{Endowment})
+    return Demand(get_name(consumer), get_name(commodity), endowments)
+end
+
+function Production(sector::SectorRef, elasticity::Union{Number,Expr}, output::CommodityRef, output_quantity::Union{Number,Expr}, inputs::Vector{Input})
+    return Production(get_name(sector), elasticity, get_name(output), output_quantity, inputs)
+end
+
+function Input(commodity::CommodityRef, quantity)
+    return Input(get_name(commodity), quantity)
+end
+
+function Endowment(commodity::CommodityRef, quantity)
+    return Endowment(get_name(commodity), quantity)
+end
+
+function Input(commodity::Symbol, quantity::Number)
+    return Input(commodity, convert(Float64, quantity))
+end
+
+function Production(sector::Symbol, elasticity::Union{Number,Expr}, output::Symbol, output_quantity::Union{Number,Expr}, inputs::Vector{Input})
+
+    if isa(elasticity,Number)
+        elasticity = convert(Float64, elasticity)
+    end
+
+    if isa(output_quantity,Number)
+        output_quantity = convert(Float64, output_quantity)
+    end
+
+    return Production(sector, elasticity, output, output_quantity, inputs)
+end
+
+function Endowment(commodity::Symbol, quantity::Number)
+    return Endowment(commodity, convert(Float64, quantity))
+end
+
 function add!(m::Model, s::Sector)
     m._jump_model = nothing
     push!(m._sectors, s)
-    return m
+    return SectorRef(m, length(m._sectors))
 end
 
 function add!(m::Model, c::Commodity)
     m._jump_model = nothing
     push!(m._commodities, c)
-    return m
+    return CommodityRef(m, length(m._commodities))
 end
 
 function add!(m::Model, c::Consumer)
     m._jump_model = nothing
     push!(m._consumers, c)
-    return m
+    return ConsumerRef(m, length(m._consumers))
 end
 
 function add!(m::Model, p::Production)
