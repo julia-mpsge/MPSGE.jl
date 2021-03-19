@@ -6,29 +6,29 @@ using Test
     @testset "TWOBYTWO" begin
         m = Model()
        
-        inputcoeff = add!(m, Parameter(:inputcoeff, 2.))
-        endow = add!(m, Parameter(:endow, 2.))
-        elascoeff = add!(m, Parameter(:elascoeff, 2.))
-        outputmult = add!(m, Parameter(:outputmult, 2.))
+        inputcoeff = @parameter(m, inputcoeff, 2.)
+        endow = @parameter(m, endow, 2.)
+        elascoeff = @parameter(m, elascoeff, 2.)
+        outputmult = @parameter(m, outputmult, 2.)
 
         
-        add!(m, Sector(:X))
-        add!(m, Sector(:Y))
-        add!(m, Sector(:U))
+        @sector(m, X)
+        @sector(m, Y)
+        @sector(m, U)
 
-        add!(m, Commodity(:PX))
-        add!(m, Commodity(:PY))
-        add!(m, Commodity(:PU))
-        add!(m, Commodity(:PL))
-        add!(m, Commodity(:PK))
+        @commodity(m, PX)
+        @commodity(m, PY)
+        @commodity(m, PU)
+        @commodity(m, PL)
+        @commodity(m, PK)
 
-        add!(m, Consumer(:RA, benchmark=150.))
+        @consumer(m, RA, benchmark=150.)
 
-        add!(m, Production(:X, 1, :PX, 100, [Input(:PL, :(25 * $inputcoeff)), Input(:PK, 50)]))
-        add!(m, Production(:Y, :(0.5 * $elascoeff), :PY, 50, [Input(:PL, 20), Input(:PK, 30)]))
-        add!(m, Production(:U, 1, :PU, :(75 * $outputmult), [Input(:PX, 100), Input(:PY, 50)]))
+        @production(m, X, 1, PX, 100, [Input(PL, :(25 * $inputcoeff)), Input(PK, 50)])
+        @production(m, Y, :(0.5 * $elascoeff), PY, 50, [Input(PL, 20), Input(PK, 30)])
+        @production(m, U, 1, PU, :(75 * $outputmult), [Input(PX, 100), Input(PY, 50)])
 
-        add!(m, Demand(:RA, :PU, [Endowment(:PL, :(35 * $endow)), Endowment(:PK, 80)]))
+        @demand(m, RA, PU, [Endowment(PL, :(35 * $endow)), Endowment(PK, 80)])
 
         avm = algebraic_version(m)
         @test typeof(avm) == MPSGE.AlgebraicWrapper
