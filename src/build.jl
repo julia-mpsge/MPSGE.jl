@@ -84,6 +84,7 @@ function build(m::Model)
 
     for p in m._parameters
         jmp_p = @eval(JuMP.@NLparameter($jm, $(p.name) == $(p.value)))
+        jm[p.name] = jmp_p
         m._jump_nlparameters[p.name] = jmp_p
     end
 
