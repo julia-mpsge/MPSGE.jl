@@ -1,26 +1,3 @@
-# These are weirdly named types exist so that we can forward
-# type declare things here.
-
-struct _ParameterRef{T}
-    model::T
-    index::Int
-end
-
-struct _SectorRef{T}
-    model::T
-    index::Int
-end
-
-struct _CommodityRef{T}
-    model::T
-    index::Int
-end
-
-struct _ConsumerRef{T}
-    model::T
-    index::Int
-end
-
 mutable struct Parameter
     name::Symbol
     value::Float64
@@ -113,6 +90,26 @@ mutable struct Model
     end
 end
 
+struct ParameterRef
+    model::Model
+    index::Int
+end
+
+struct SectorRef
+    model::Model
+    index::Int
+end
+
+struct CommodityRef
+    model::Model
+    index::Int
+end
+
+struct ConsumerRef
+    model::Model
+    index::Int
+end
+
 function Base.show(io::IO, m::Model)
     println(io, "MPSGE model with $(length(m._sectors)) sectors, $(length(m._commodities)) commodities and $(length(m._consumers)) consumers.")
 
@@ -146,12 +143,6 @@ function Base.show(io::IO, m::Model)
         end
     end
 end
-
-# This is the second part of the forward type declaration
-const ParameterRef = _ParameterRef{Model}
-const SectorRef = _SectorRef{Model}
-const CommodityRef = _CommodityRef{Model}
-const ConsumerRef = _ConsumerRef{Model}
 
 function get_name(sector::SectorRef)
     return sector.model._sectors[sector.index].name
