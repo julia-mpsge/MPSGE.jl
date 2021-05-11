@@ -85,6 +85,14 @@ function add_variable!(jm::JuMP.Model, name::Symbol, lower_bound::Union{Float64,
     end
 end
 
+function add_sector_to_jump!(jm, sector)
+    if sector.indices===nothing
+        add_variable!(jm, sector.name, 0.)
+    else
+        jm[sector.name] = @eval(JuMP.@variable($jm, [$( ( :($(gensym())=$i) for i in sector.indices)... )], base_name=string($(QuoteNode(sector.name))), lower_bound=0.))
+    end
+end
+
 function build(m::Model)
     jm = Complementarity.MCPModel()
 
@@ -99,7 +107,7 @@ function build(m::Model)
     # Add all required variables
 
     for s in m._sectors
-        add_variable!(jm, s.name, 0.)
+        add_sector_to_jump!(jm, s)        
     end
 
     for c in m._commodities

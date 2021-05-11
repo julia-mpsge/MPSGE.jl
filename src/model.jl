@@ -5,11 +5,12 @@ end
 
 struct Sector
     name::Symbol
+    indices::Any
     benchmark::Float64
     description::String
 
-    function Sector(name::Symbol; description::AbstractString="", benchmark::Float64=1.)
-        return new(name, benchmark, description)
+    function Sector(name::Symbol; description::AbstractString="", benchmark::Float64=1., indices=nothing)
+        return new(name, indices, benchmark, description)
     end
 end
 
@@ -98,6 +99,7 @@ end
 struct SectorRef
     model::Model
     index::Int
+    subindex::Any
 end
 
 struct CommodityRef
@@ -198,7 +200,16 @@ end
 function add!(m::Model, s::Sector)
     m._jump_model = nothing
     push!(m._sectors, s)
-    return SectorRef(m, length(m._sectors))
+    if s.indices===nothing
+        return SectorRef(m, length(m._sectors), nothing)
+    else
+        temp_array = Array{SectorRef}(undef, length.(s.indices)...)
+
+        for i in CartesianIndices(temp_array)
+            temp_array[i] = SectorRef(m, length(m._sectors), i)
+        end
+        return JuMP.Containers.DenseAxisArray(temp_array, s.indices...)
+    end
 end
 
 function add!(m::Model, c::Commodity)
