@@ -231,14 +231,6 @@ function add!(m::Model, p::Parameter)
     return ParameterRef(m, length(m._parameters))
 end
 
-function add_variable!(jm::JuMP.Model, name::Symbol, lower_bound::Union{Float64,Nothing}=nothing)
-    if lower_bound===nothing
-        jm[name] = JuMP.@variable(jm, base_name=string(name))
-    else    
-        jm[name] = JuMP.@variable(jm, base_name=string(name), lower_bound=lower_bound)
-    end
-end
-
 function JuMP.value(m::Model, name::Symbol)
     Complementarity.result_value(m._jump_model[name])
 end

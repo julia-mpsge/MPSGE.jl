@@ -77,6 +77,14 @@ function set_all_parameters(m)
     end
 end
 
+function add_variable!(jm::JuMP.Model, name::Symbol, lower_bound::Union{Float64,Nothing}=nothing)    
+    if lower_bound===nothing
+        jm[name] = JuMP.@variable(jm, base_name=string(name))
+    else    
+        jm[name] = JuMP.@variable(jm, base_name=string(name), lower_bound=lower_bound)
+    end
+end
+
 function build(m::Model)
     jm = Complementarity.MCPModel()
 
