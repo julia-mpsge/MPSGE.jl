@@ -33,7 +33,13 @@ end
 function set_all_start_values(m)
     jm = m._jump_model
     for s in m._sectors
-        Complementarity.set_start_value(jm[s.name], s.benchmark)
+        if s.indices===nothing
+            Complementarity.set_start_value(jm[s.name], s.benchmark)
+        else
+            for i in Iterators.product(s.indices...)
+                Complementarity.set_start_value(jm[s.name][i...], s.benchmark)
+            end
+        end
     end
 
     for c in m._commodities
@@ -42,7 +48,7 @@ function set_all_start_values(m)
 
     for s in m._productions
         for i in s.inputs
-            compensated_input1_demand_name = Symbol("$(i.commodity)$(s.output)")
+            compensated_input1_demand_name = Symbol("$(get_name(i.commodity))$(get_name(s.output))")
             Complementarity.set_start_value(jm[compensated_input1_demand_name], eval(swap_our_param_with_val(i.quantity)))
         end
     end
@@ -85,6 +91,22 @@ function add_variable!(jm::JuMP.Model, name::Symbol, lower_bound::Union{Float64,
     end
 end
 
+function add_sector_to_jump!(jm, sector)
+    if sector.indices===nothing
+        add_variable!(jm, sector.name, 0.)
+    else
+        jm[sector.name] = @eval(JuMP.@variable($jm, [$( ( :($(gensym())=$i) for i in sector.indices)... )], base_name=string($(QuoteNode(sector.name))), lower_bound=0.))
+    end
+end
+
+function get_jump_variable_for_sector(jm, sector)
+    if sector.subindex===nothing
+        return jm[get_name(sector)]
+    else
+        return jm[get_name(sector)][sector.subindex]
+    end
+end
+
 function build(m::Model)
     jm = Complementarity.MCPModel()
 
@@ -99,7 +121,7 @@ function build(m::Model)
     # Add all required variables
 
     for s in m._sectors
-        add_variable!(jm, s.name, 0.)
+        add_sector_to_jump!(jm, s)        
     end
 
     for c in m._commodities
@@ -108,7 +130,7 @@ function build(m::Model)
 
     for s in m._productions
         for i in s.inputs
-            compensated_input1_demand_name = Symbol("$(i.commodity)$(s.output)")
+            compensated_input1_demand_name = Symbol("$(get_name(i.commodity))$(get_name(s.output))")
             add_variable!(jm, compensated_input1_demand_name)
         end
     end
@@ -119,10 +141,10 @@ function build(m::Model)
 
     # Add compensated demand equations
     for s in m._productions
-        compensated_input1_demand_name = Symbol("$(s.inputs[1].commodity)$(s.output)")
-        compensated_input2_demand_name = Symbol("$(s.inputs[2].commodity)$(s.output)")
-        price_input1_name = s.inputs[1].commodity
-        price_input2_name = s.inputs[2].commodity
+        compensated_input1_demand_name = Symbol("$(get_name(s.inputs[1].commodity))$(get_name(s.output))")
+        compensated_input2_demand_name = Symbol("$(get_name(s.inputs[2].commodity))$(get_name(s.output))")
+        price_input1_name = get_name(s.inputs[1].commodity)
+        price_input2_name = get_name(s.inputs[2].commodity)
 
         ex1a = :(
             JuMP.@NLexpression(
@@ -154,11 +176,11 @@ function build(m::Model)
 
     # Add zero profit constraints
     for s in m._productions
-        price_name = s.output
-        input1_price_name = s.inputs[1].commodity
-        input2_price_name = s.inputs[2].commodity
-        compensated_input1_demand_name = Symbol("$(s.inputs[1].commodity)$(s.output)")
-        compensated_input2_demand_name = Symbol("$(s.inputs[2].commodity)$(s.output)")
+        price_name = get_name(s.output)
+        input1_price_name = get_name(s.inputs[1].commodity)
+        input2_price_name = get_name(s.inputs[2].commodity)
+        compensated_input1_demand_name = Symbol("$(get_name(s.inputs[1].commodity))$(get_name(s.output))")
+        compensated_input2_demand_name = Symbol("$(get_name(s.inputs[2].commodity))$(get_name(s.output))")
 
         ex3a = :(
             JuMP.@NLexpression(
@@ -170,29 +192,28 @@ function build(m::Model)
 
         ex3b = eval(swap_our_param_with_jump_param(ex3a))
 
-        Complementarity.add_complementarity(jm, jm[s.sector], ex3b, string("F_", s.sector))
+        Complementarity.add_complementarity(jm, get_jump_variable_for_sector(jm, s.sector), ex3b, string("F_", get_name(s.sector), s.sector.subindex!==nothing ? s.sector.subindex : ""))
     end
 
     # Add market clearance constraints
 
     for s in m._productions
-        level_name = s.sector
-        price_name = s.output
+        price_name = get_name(s.output)
 
         # Find all the sectors where our current sector is an input
-        input_into_sectors = [(s2.output, s2.sector) for s2 in m._productions if s2.inputs[1].commodity==s.output || s2.inputs[2].commodity==s.output]
-        input_into_consumers = [c.consumer for c in m._demands if c.commodity==s.output]
+        input_into_sectors = [(get_name(s2.output), s2.sector) for s2 in m._productions if s2.inputs[1].commodity==s.output || s2.inputs[2].commodity==s.output]
+        input_into_consumers = [get_name(c.consumer) for c in m._demands if c.commodity==s.output]
 
         ex4a = :(
             JuMP.@NLexpression(
                 $jm,
                 $(length(input_into_sectors)==0 ? 0. : 
-                    :(+($((:($(jm[Symbol("$(s.output)$i")]) * $(jm[Symbol(ii)])) for (i,ii) in input_into_sectors)...)))
+                    :(+($((:($(jm[Symbol("$(get_name(s.output))$i")]) * $(get_jump_variable_for_sector(jm, ii))) for (i,ii) in input_into_sectors)...)))
                 ) +
                 $(length(input_into_consumers)==0 ? 0. : 
-                    :(+($((:($(jm[Symbol(i)]) / $(jm[Symbol("$(s.output)")])) for i in input_into_consumers)...)))
+                    :(+($((:($(jm[Symbol(i)]) / $(jm[Symbol("$(get_name(s.output))")])) for i in input_into_consumers)...)))
                 ) -
-                $(s.output_quantity) * $(jm[level_name])
+                $(s.output_quantity) * $(get_jump_variable_for_sector(jm, s.sector))
             )
         )
         ex4b = eval(swap_our_param_with_jump_param(ex4a))
@@ -206,10 +227,10 @@ function build(m::Model)
 
     for c in m._demands
         for en in c.endowments
-            if !haskey(endows, en.commodity)
-                endows[en.commodity] = Expr[]
+            if !haskey(endows, get_name(en.commodity))
+                endows[get_name(en.commodity)] = Expr[]
             end
-            push!(endows[en.commodity], :(0. + $(en.quantity)))
+            push!(endows[get_name(en.commodity)], :(0. + $(en.quantity)))
         end
     end
 
@@ -220,14 +241,14 @@ function build(m::Model)
 
         price_name = level_name
         # Find all the sectors where our current sector is an input
-        input_into_sectors = [(s.output, s.sector) for s in m._productions if s.inputs[1].commodity==level_name || s.inputs[2].commodity==level_name]
-        input_into_consumers = [c.name for c in m._demands if c.commodity==level_name]
+        input_into_sectors = [(get_name(s.output), s.sector) for s in m._productions if get_name(s.inputs[1].commodity)==level_name || get_name(s.inputs[2].commodity)==level_name]
+        input_into_consumers = [c.name for c in m._demands if get_name(c.commodity)==level_name]
 
         ex5a = :(
             JuMP.@NLexpression(
                 $jm,
                 $(length(input_into_sectors)==0 ? 0. : 
-                    :(+($((:($(jm[Symbol("$(level_name)$i")]) * $(jm[Symbol(ii)])) for (i,ii) in input_into_sectors)...)))
+                    :(+($((:($(jm[Symbol("$(level_name)$i")]) * $(get_jump_variable_for_sector(jm, ii))) for (i,ii) in input_into_sectors)...)))
                 ) +
                 $(length(input_into_consumers)==0 ? 0. : 
                     :(+($((:($(jm[Symbol(i)]) / $(jm[Symbol("$(level_name)")])) for i in input_into_consumers)...)))
@@ -242,13 +263,13 @@ function build(m::Model)
 
     # Add income balance constraints
     for c in m._demands
-        level_name = c.consumer
+        level_name = get_name(c.consumer)
 
         ex6a = :(
             JuMP.@NLexpression(
                 $jm,
                 +($((:($(swap_our_param_with_jump_param(en.quantity)) * 
-                $(jm[Symbol("$(en.commodity)")])) for en in c.endowments)...)) - $(jm[level_name])
+                $(jm[Symbol("$(get_name(en.commodity))")])) for en in c.endowments)...)) - $(jm[level_name])
             )
         )
 

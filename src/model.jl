@@ -1,3 +1,24 @@
+struct ParameterRef
+    model
+    index::Int
+end
+
+struct SectorRef
+    model
+    index::Int
+    subindex::Any
+end
+
+struct CommodityRef
+    model
+    index::Int
+end
+
+struct ConsumerRef
+    model
+    index::Int
+end
+
 mutable struct Parameter
     name::Symbol
     value::Float64
@@ -5,11 +26,12 @@ end
 
 struct Sector
     name::Symbol
+    indices::Any
     benchmark::Float64
     description::String
 
-    function Sector(name::Symbol; description::AbstractString="", benchmark::Float64=1.)
-        return new(name, benchmark, description)
+    function Sector(name::Symbol; description::AbstractString="", benchmark::Float64=1., indices=nothing)
+        return new(name, indices, benchmark, description)
     end
 end
 
@@ -35,15 +57,15 @@ struct Consumer
 end
 
 struct Input
-    commodity::Symbol
+    commodity::CommodityRef
     quantity::Union{Float64,Expr}
 end
 
 
 struct Production
-    sector::Symbol    
+    sector::SectorRef
     elasticity::Union{Float64,Expr}
-    output::Symbol
+    output::CommodityRef
     output_quantity::Union{Float64,Expr}
     inputs::Vector{Input}
 end
@@ -51,14 +73,14 @@ end
 
 
 struct Endowment
-    commodity::Symbol
+    commodity::CommodityRef
     quantity::Union{Float64,Expr}
 end
 
 
 struct Demand
-    consumer::Symbol
-    commodity::Symbol
+    consumer::ConsumerRef
+    commodity::CommodityRef
     endowments::Vector{Endowment}
 end
 
@@ -90,25 +112,6 @@ mutable struct Model
     end
 end
 
-struct ParameterRef
-    model::Model
-    index::Int
-end
-
-struct SectorRef
-    model::Model
-    index::Int
-end
-
-struct CommodityRef
-    model::Model
-    index::Int
-end
-
-struct ConsumerRef
-    model::Model
-    index::Int
-end
 
 function Base.show(io::IO, m::Model)
     println(io, "MPSGE model with $(length(m._sectors)) sectors, $(length(m._commodities)) commodities and $(length(m._consumers)) consumers.")
@@ -158,27 +161,11 @@ end
 
 # Outer constructors
 
-function Demand(consumer::ConsumerRef, commodity::CommodityRef, endowments::Vector{Endowment})
-    return Demand(get_name(consumer), get_name(commodity), endowments)
-end
-
-function Production(sector::SectorRef, elasticity::Union{Number,Expr}, output::CommodityRef, output_quantity::Union{Number,Expr}, inputs::Vector{Input})
-    return Production(get_name(sector), elasticity, get_name(output), output_quantity, inputs)
-end
-
-function Input(commodity::CommodityRef, quantity)
-    return Input(get_name(commodity), quantity)
-end
-
-function Endowment(commodity::CommodityRef, quantity)
-    return Endowment(get_name(commodity), quantity)
-end
-
-function Input(commodity::Symbol, quantity::Number)
+function Input(commodity::CommodityRef, quantity::Number)
     return Input(commodity, convert(Float64, quantity))
 end
 
-function Production(sector::Symbol, elasticity::Union{Number,Expr}, output::Symbol, output_quantity::Union{Number,Expr}, inputs::Vector{Input})
+function Production(sector::SectorRef, elasticity::Union{Number,Expr}, output::CommodityRef, output_quantity::Union{Number,Expr}, inputs::Vector{Input})
 
     if isa(elasticity,Number)
         elasticity = convert(Float64, elasticity)
@@ -191,14 +178,23 @@ function Production(sector::Symbol, elasticity::Union{Number,Expr}, output::Symb
     return Production(sector, elasticity, output, output_quantity, inputs)
 end
 
-function Endowment(commodity::Symbol, quantity::Number)
+function Endowment(commodity::CommodityRef, quantity::Number)
     return Endowment(commodity, convert(Float64, quantity))
 end
 
 function add!(m::Model, s::Sector)
     m._jump_model = nothing
     push!(m._sectors, s)
-    return SectorRef(m, length(m._sectors))
+    if s.indices===nothing
+        return SectorRef(m, length(m._sectors), nothing)
+    else
+        temp_array = Array{SectorRef}(undef, length.(s.indices)...)
+
+        for i in CartesianIndices(temp_array)
+            temp_array[i] = SectorRef(m, length(m._sectors), i)
+        end
+        return JuMP.Containers.DenseAxisArray(temp_array, s.indices...)
+    end
 end
 
 function add!(m::Model, c::Commodity)
