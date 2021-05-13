@@ -57,7 +57,7 @@ struct Consumer
 end
 
 struct Input
-    commodity::Symbol
+    commodity::CommodityRef
     quantity::Union{Float64,Expr}
 end
 
@@ -65,7 +65,7 @@ end
 struct Production
     sector::SectorRef
     elasticity::Union{Float64,Expr}
-    output::Symbol
+    output::CommodityRef
     output_quantity::Union{Float64,Expr}
     inputs::Vector{Input}
 end
@@ -73,14 +73,14 @@ end
 
 
 struct Endowment
-    commodity::Symbol
+    commodity::CommodityRef
     quantity::Union{Float64,Expr}
 end
 
 
 struct Demand
-    consumer::Symbol
-    commodity::Symbol
+    consumer::ConsumerRef
+    commodity::CommodityRef
     endowments::Vector{Endowment}
 end
 
@@ -161,27 +161,11 @@ end
 
 # Outer constructors
 
-function Demand(consumer::ConsumerRef, commodity::CommodityRef, endowments::Vector{Endowment})
-    return Demand(get_name(consumer), get_name(commodity), endowments)
-end
-
-function Production(sector::SectorRef, elasticity::Union{Number,Expr}, output::CommodityRef, output_quantity::Union{Number,Expr}, inputs::Vector{Input})
-    return Production(sector, elasticity, get_name(output), output_quantity, inputs)
-end
-
-function Input(commodity::CommodityRef, quantity)
-    return Input(get_name(commodity), quantity)
-end
-
-function Endowment(commodity::CommodityRef, quantity)
-    return Endowment(get_name(commodity), quantity)
-end
-
-function Input(commodity::Symbol, quantity::Number)
+function Input(commodity::CommodityRef, quantity::Number)
     return Input(commodity, convert(Float64, quantity))
 end
 
-function Production(sector::Symbol, elasticity::Union{Number,Expr}, output::Symbol, output_quantity::Union{Number,Expr}, inputs::Vector{Input})
+function Production(sector::SectorRef, elasticity::Union{Number,Expr}, output::CommodityRef, output_quantity::Union{Number,Expr}, inputs::Vector{Input})
 
     if isa(elasticity,Number)
         elasticity = convert(Float64, elasticity)
@@ -194,7 +178,7 @@ function Production(sector::Symbol, elasticity::Union{Number,Expr}, output::Symb
     return Production(sector, elasticity, output, output_quantity, inputs)
 end
 
-function Endowment(commodity::Symbol, quantity::Number)
+function Endowment(commodity::CommodityRef, quantity::Number)
     return Endowment(commodity, convert(Float64, quantity))
 end
 
