@@ -1,23 +1,31 @@
 using MPSGE
+using MPSGE.JuMP.Containers
 
 m = Model()
 
-i = [:x, :y]
-f = [:l, :k]
+goods = [:x, :y]
+factors = [:l, :k]
+
+factor = DenseAxisArray(Float64[50 50; 20 30], goods, factors)
+supply = DenseAxisArray(Float64[100, 50], goods)
 
 @parameter(m, endow, 1.0)
 
-Y = add!(m, Sector(:Y, indices=(i,)))
+Y = add!(m, Sector(:Y, indices=(goods,)))
 U = add!(m, Sector(:U))
 
-PC = add!(m, Commodity(:PC, indices=(i,)))
+PC = add!(m, Commodity(:PC, indices=(goods,)))
 PU = add!(m, Commodity(:PU))
-PF = add!(m, Commodity(:PF, indices=(f,)))
+PF = add!(m, Commodity(:PF, indices=(factors,)))
 
 RA = add!(m, Consumer(:RA, benchmark=150.))
 
-@production(m, Y[:x], 1, PC[:x], 100, [Input(PF[:l], 50), Input(PF[:k], 50)])
-@production(m, Y[:y], 1, PC[:y], 50, [Input(PF[:l], 20), Input(PF[:k], 30)])
+for i in goods
+    @production(m, Y[i], 1, PC[i], supply[i], [Input(PF[:l], factor[i,:l]), Input(PF[:k], factor[i,:k])])
+end
+
+# @production(m, [i in goods], Y[i], 1, PC[i], supply[i],  [Input(PF[f], factor[i,f]) for f in factors])
+
 @production(m, U, 1, PU, 150, [Input(PC[:x], 100), Input(PC[:y], 50)])
 
 @demand(m, RA, PU, [Endowment(PF[:l], :(70 * $endow)), Endowment(PF[:k], 80.)])
