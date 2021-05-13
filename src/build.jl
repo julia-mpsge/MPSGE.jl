@@ -33,7 +33,13 @@ end
 function set_all_start_values(m)
     jm = m._jump_model
     for s in m._sectors
-        Complementarity.set_start_value(jm[s.name], s.benchmark)
+        if s.indices===nothing
+            Complementarity.set_start_value(jm[s.name], s.benchmark)
+        else
+            for i in Iterators.product(s.indices...)
+                Complementarity.set_start_value(jm[s.name][i...], s.benchmark)
+            end
+        end
     end
 
     for c in m._commodities
@@ -90,6 +96,14 @@ function add_sector_to_jump!(jm, sector)
         add_variable!(jm, sector.name, 0.)
     else
         jm[sector.name] = @eval(JuMP.@variable($jm, [$( ( :($(gensym())=$i) for i in sector.indices)... )], base_name=string($(QuoteNode(sector.name))), lower_bound=0.))
+    end
+end
+
+function get_jump_variable_for_sector(jm, sector)
+    if sector.subindex===nothing
+        return jm[get_name(sector)]
+    else
+        return jm[get_name(sector)][sector.subindex]
     end
 end
 
@@ -178,13 +192,12 @@ function build(m::Model)
 
         ex3b = eval(swap_our_param_with_jump_param(ex3a))
 
-        Complementarity.add_complementarity(jm, jm[s.sector], ex3b, string("F_", s.sector))
+        Complementarity.add_complementarity(jm, get_jump_variable_for_sector(jm, s.sector), ex3b, string("F_", get_name(s.sector), s.sector.subindex!==nothing ? s.sector.subindex : ""))
     end
 
     # Add market clearance constraints
 
     for s in m._productions
-        level_name = s.sector
         price_name = s.output
 
         # Find all the sectors where our current sector is an input
@@ -195,12 +208,12 @@ function build(m::Model)
             JuMP.@NLexpression(
                 $jm,
                 $(length(input_into_sectors)==0 ? 0. : 
-                    :(+($((:($(jm[Symbol("$(s.output)$i")]) * $(jm[Symbol(ii)])) for (i,ii) in input_into_sectors)...)))
+                    :(+($((:($(jm[Symbol("$(s.output)$i")]) * $(get_jump_variable_for_sector(jm, ii))) for (i,ii) in input_into_sectors)...)))
                 ) +
                 $(length(input_into_consumers)==0 ? 0. : 
                     :(+($((:($(jm[Symbol(i)]) / $(jm[Symbol("$(s.output)")])) for i in input_into_consumers)...)))
                 ) -
-                $(s.output_quantity) * $(jm[level_name])
+                $(s.output_quantity) * $(get_jump_variable_for_sector(jm, s.sector))
             )
         )
         ex4b = eval(swap_our_param_with_jump_param(ex4a))
@@ -235,7 +248,7 @@ function build(m::Model)
             JuMP.@NLexpression(
                 $jm,
                 $(length(input_into_sectors)==0 ? 0. : 
-                    :(+($((:($(jm[Symbol("$(level_name)$i")]) * $(jm[Symbol(ii)])) for (i,ii) in input_into_sectors)...)))
+                    :(+($((:($(jm[Symbol("$(level_name)$i")]) * $(get_jump_variable_for_sector(jm, ii))) for (i,ii) in input_into_sectors)...)))
                 ) +
                 $(length(input_into_consumers)==0 ? 0. : 
                     :(+($((:($(jm[Symbol(i)]) / $(jm[Symbol("$(level_name)")])) for i in input_into_consumers)...)))

@@ -1,3 +1,24 @@
+struct ParameterRef
+    model
+    index::Int
+end
+
+struct SectorRef
+    model
+    index::Int
+    subindex::Any
+end
+
+struct CommodityRef
+    model
+    index::Int
+end
+
+struct ConsumerRef
+    model
+    index::Int
+end
+
 mutable struct Parameter
     name::Symbol
     value::Float64
@@ -42,7 +63,7 @@ end
 
 
 struct Production
-    sector::Symbol    
+    sector::SectorRef
     elasticity::Union{Float64,Expr}
     output::Symbol
     output_quantity::Union{Float64,Expr}
@@ -91,26 +112,6 @@ mutable struct Model
     end
 end
 
-struct ParameterRef
-    model::Model
-    index::Int
-end
-
-struct SectorRef
-    model::Model
-    index::Int
-    subindex::Any
-end
-
-struct CommodityRef
-    model::Model
-    index::Int
-end
-
-struct ConsumerRef
-    model::Model
-    index::Int
-end
 
 function Base.show(io::IO, m::Model)
     println(io, "MPSGE model with $(length(m._sectors)) sectors, $(length(m._commodities)) commodities and $(length(m._consumers)) consumers.")
@@ -165,7 +166,7 @@ function Demand(consumer::ConsumerRef, commodity::CommodityRef, endowments::Vect
 end
 
 function Production(sector::SectorRef, elasticity::Union{Number,Expr}, output::CommodityRef, output_quantity::Union{Number,Expr}, inputs::Vector{Input})
-    return Production(get_name(sector), elasticity, get_name(output), output_quantity, inputs)
+    return Production(sector, elasticity, get_name(output), output_quantity, inputs)
 end
 
 function Input(commodity::CommodityRef, quantity)
