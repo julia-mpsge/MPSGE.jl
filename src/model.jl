@@ -12,6 +12,7 @@ end
 struct CommodityRef
     model
     index::Int
+    subindex::Any
 end
 
 struct ConsumerRef
@@ -37,12 +38,13 @@ end
 
 mutable struct Commodity
     name::Symbol
+    indices::Any
     benchmark::Float64
     description::String
     fixed::Bool
 
-    function Commodity(name::Symbol; description::AbstractString="", benchmark::Float64=1., fixed=false)
-        return new(name, benchmark, description, fixed)
+    function Commodity(name::Symbol; description::AbstractString="", benchmark::Float64=1., indices=nothing, fixed=false)
+        return new(name, indices, benchmark, description, fixed)
     end
 end
 
@@ -200,7 +202,16 @@ end
 function add!(m::Model, c::Commodity)
     m._jump_model = nothing
     push!(m._commodities, c)
-    return CommodityRef(m, length(m._commodities))
+    if c.indices===nothing
+        return CommodityRef(m, length(m._commodities), nothing)
+    else
+        temp_array = Array{CommodityRef}(undef, length.(c.indices)...)
+
+        for i in CartesianIndices(temp_array)
+            temp_array[i] = CommodityRef(m, length(m._commodities), i)
+        end
+        return JuMP.Containers.DenseAxisArray(temp_array, c.indices...)
+    end
 end
 
 function add!(m::Model, c::Consumer)

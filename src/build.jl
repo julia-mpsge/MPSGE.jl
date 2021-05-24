@@ -43,7 +43,13 @@ function set_all_start_values(m)
     end
 
     for c in m._commodities
-        Complementarity.set_start_value(jm[c.name], c.benchmark)
+        if c.indices===nothing
+            Complementarity.set_start_value(jm[c.name], c.benchmark)
+        else
+            for i in Iterators.product(c.idicies...)
+                Complementarity.set_start_value(jm[c.name][i...], c.benchmark)
+            end
+        end
     end
 
     for s in m._productions
@@ -107,6 +113,22 @@ function get_jump_variable_for_sector(jm, sector)
     end
 end
 
+function add_commodity_to_jump!(jm, commodity)
+    if commodity.indices===nothing
+        add_variable!(jm, commodity.name, 0.)
+    else
+        jm[commodity.name] = @eval(JuMP.@variable($jm, [$( ( :($(gensym())=$i) for i in commodity.indices)... )], base_name=string($(QuoteNode(commodity.name))), lower_bound=0.))
+    end
+end
+
+function get_jump_variable_for_sector(jm, commodity)
+    if commodity.subindex===nothing
+        return jm[get_name(commodity)]
+    else
+        return jm[get_name(commodity)][commodity.subindex]
+    end
+end
+
 function build(m::Model)
     jm = Complementarity.MCPModel()
 
@@ -125,7 +147,7 @@ function build(m::Model)
     end
 
     for c in m._commodities
-        add_variable!(jm, c.name, 0.001)
+        add_commodity_to_jump!(jm, c)
     end
 
     for s in m._productions

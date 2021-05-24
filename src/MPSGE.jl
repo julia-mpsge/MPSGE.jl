@@ -1,7 +1,7 @@
 module MPSGE
 
 import JuMP, Complementarity, MacroTools
-import JuMP: value, set_value
+import JuMP: value, set_value, Containers
 
 export add!, Model, solve!, algebraic_version
 export Sector, Commodity, Consumer, Production, Demand, Endowment, Input, Parameter
