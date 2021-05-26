@@ -16,19 +16,22 @@ U = add!(m, Sector(:U))
 
 PC = add!(m, Commodity(:PC, indices=(goods,)))
 PU = add!(m, Commodity(:PU))
-PF = add!(m, Commodity(:PF, indices=(factors,)))
+# PF = add!(m, Commodity(:PF, indices=(factors,)))
+PL = add!(m,Commodity(:PL))
+PK = add!(m,Commodity(:PK))
+
 
 RA = add!(m, Consumer(:RA, benchmark=150.))
 
 for i in goods
-    @production(m, Y[i], 1, PC[i], supply[i], [Input(PF[:l], factor[i,:l]), Input(PF[:k], factor[i,:k])])
+    @production(m, Y[i], 1, PC[i], supply[i], [Input(PL, factor[i,:l]), Input(PK, factor[i,:k])])
 end
 
 # @production(m, [i in goods], Y[i], 1, PC[i], supply[i],  [Input(PF[f], factor[i,f]) for f in factors])
 
 @production(m, U, 1, PU, 150, [Input(PC[:x], 100), Input(PC[:y], 50)])
 
-@demand(m, RA, PU, [Endowment(PF[:l], :(70 * $endow)), Endowment(PF[:k], 80.)])
+@demand(m, RA, PU, [Endowment(PL, :(70 * $endow)), Endowment(PK, 80.)])
 
 solve!(m, cumulative_iteration_limit=0)
 
