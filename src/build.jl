@@ -161,17 +161,8 @@ function build(m::Model)
         add_variable!(jm, c.name)
     end
 
-    # Add compensated demand equations
-    # m._productions is a vector of the set of all Production, each has:
-    # sector::SectorRef, elasticity::Union{Float64,Expr}, output::CommodityRef,
-    # output_quantity::Union{Float64,Expr}, inputs::Vector{Input}
+    
     for s in m._productions
-
-        # for i in s.inputs
-        #     compensated_input1_demand_name = Symbol("$(i.commodity)$(s.output)")
-        #     Complementarity.set_start_value(jm[compensated_input1_demand_name], eval(swap_our_param_with_val(i.quantity)))
-        # end
-        
         compensated_input1_demand_name = Symbol("$(get_name(s.inputs[1].commodity))$(get_name(s.output))")
         compensated_input2_demand_name = Symbol("$(get_name(s.inputs[2].commodity))$(get_name(s.output))")
         price_input1_name = get_name(s.inputs[1].commodity)
