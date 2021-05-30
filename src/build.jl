@@ -46,7 +46,7 @@ function set_all_start_values(m)
         if c.indices===nothing
             Complementarity.set_start_value(jm[c.name], c.benchmark)
         else
-            for i in Iterators.product(c.idicies...)
+            for i in Iterators.product(c.indices...)
                 Complementarity.set_start_value(jm[c.name][i...], c.benchmark)
             end
         end
@@ -121,7 +121,7 @@ function add_commodity_to_jump!(jm, commodity)
     end
 end
 
-function get_jump_variable_for_sector(jm, commodity)
+function get_jump_variable_for_commodity(jm, commodity)
     if commodity.subindex===nothing
         return jm[get_name(commodity)]
     else
