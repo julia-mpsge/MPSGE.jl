@@ -152,12 +152,15 @@ function build(m::Model)
 
     for s in m._productions
         for i in s.inputs
-            if s.output.indices===nothing
+            # if s.output.subindex===nothing
                 compensated_input1_demand_name = Symbol("$(get_name(i.commodity))$(get_name(s.output))")
-            else
-                for j in s.output
-                compensated_input1_demand_name = 
-            add_variable!(jm, compensated_input1_demand_name)
+                add_variable!(jm, compensated_input1_demand_name)
+            # else
+                # for j in 1:length(s.output.model._commodities[s.output.subindex[1]].indices[1])
+                    # compensated_input1_demand_name = Symbol("$(get_name(i.commodity))$(get_name(s.output))$("[:")$(s.output.model._commodities[s.output.subindex[1]].indices[1][j])$("]")")
+                    # add_variable!(jm, compensated_input1_demand_name)
+                # end
+            # end
         end
     end
 
