@@ -152,7 +152,11 @@ function build(m::Model)
 
     for s in m._productions
         for i in s.inputs
-            compensated_input1_demand_name = Symbol("$(get_name(i.commodity))$(get_name(s.output))")
+            if s.output.indices===nothing
+                compensated_input1_demand_name = Symbol("$(get_name(i.commodity))$(get_name(s.output))")
+            else
+                for j in s.output
+                compensated_input1_demand_name = 
             add_variable!(jm, compensated_input1_demand_name)
         end
     end
