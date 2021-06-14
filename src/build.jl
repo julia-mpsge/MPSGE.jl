@@ -152,15 +152,15 @@ function build(m::Model)
 
     for s in m._productions
         for i in s.inputs
-            # if s.output.subindex===nothing
+            if s.output.subindex===nothing
                 compensated_input1_demand_name = Symbol("$(get_name(i.commodity))$(get_name(s.output))")
                 add_variable!(jm, compensated_input1_demand_name)
-            # else
-                # for j in 1:length(s.output.model._commodities[s.output.subindex[1]].indices[1])
-                    # compensated_input1_demand_name = Symbol("$(get_name(i.commodity))$(get_name(s.output))$("[:")$(s.output.model._commodities[s.output.subindex[1]].indices[1][j])$("]")")
-                    # add_variable!(jm, compensated_input1_demand_name)
-                # end
-            # end
+            else
+                for j in 1:length(s.output.model._commodities[s.output.index].indices[1])
+                    compensated_input1_demand_name = Symbol("$(get_name(i.commodity))$(get_name(s.output))$("[:")$(s.output.model._commodities[s.output.index].indices[1][j])$("]")")
+                    add_variable!(jm, compensated_input1_demand_name)
+                end
+            end
         end
     end
 
@@ -170,8 +170,17 @@ function build(m::Model)
 
     
     for s in m._productions
-        compensated_input1_demand_name = Symbol("$(get_name(s.inputs[1].commodity))$(get_name(s.output))")
-        compensated_input2_demand_name = Symbol("$(get_name(s.inputs[2].commodity))$(get_name(s.output))")
+        if s.output.subindex===nothing
+            compensated_input1_demand_name = Symbol("$(get_name(s.inputs[1].commodity))$(get_name(s.output))")
+            compensated_input2_demand_name = Symbol("$(get_name(s.inputs[2].commodity))$(get_name(s.output))")
+        else
+            for j in 1:length(s.output.model._commodities[s.output.index].indices[1])
+                compensated_input1_demand_name = Symbol("$(get_name(s.inputs[1].commodity))$(get_name(s.output))$("[:")$(s.output.model._commodities[s.output.index].indices[1][j])$("]")")
+                compensated_input2_demand_name = Symbol("$(get_name(s.inputs[2].commodity))$(get_name(s.output))$("[:")$(s.output.model._commodities[s.output.index].indices[1][j])$("]")")
+            end
+        end
+        # compensated_input1_demand_name = Symbol("$(get_name(s.inputs[1].commodity))$(get_name(s.output))")
+        # compensated_input2_demand_name = Symbol("$(get_name(s.inputs[2].commodity))$(get_name(s.output))")
         price_input1_name = get_name(s.inputs[1].commodity)
         price_input2_name = get_name(s.inputs[2].commodity)
 
