@@ -152,15 +152,8 @@ function build(m::Model)
 
     for s in m._productions
         for i in s.inputs
-            if s.output.subindex===nothing
-                compensated_input1_demand_name = Symbol("$(get_name(i.commodity))$(get_name(s.output))")
-                add_variable!(jm, compensated_input1_demand_name)
-            else
-                for j in 1:length(s.output.model._commodities[s.output.index].indices[1])
-                    compensated_input1_demand_name = Symbol("$(get_name(i.commodity))$(get_name(s.output))$("[:")$(s.output.model._commodities[s.output.index].indices[1][j])$("]")")
-                    add_variable!(jm, compensated_input1_demand_name)
-                end
-            end
+            compensated_input1_demand_name = Symbol("$(get_name(i.commodity, true))$(get_name(s.output, true))")
+            add_variable!(jm, compensated_input1_demand_name)
         end
     end
 
@@ -170,27 +163,16 @@ function build(m::Model)
 
     
     for s in m._productions
-        if s.output.subindex===nothing
-            compensated_input1_demand_name = Symbol("$(get_name(s.inputs[1].commodity))$(get_name(s.output))")
-            compensated_input2_demand_name = Symbol("$(get_name(s.inputs[2].commodity))$(get_name(s.output))")
-        else
-            for j in 1:length(s.output.model._commodities[s.output.index].indices[1])
-                compensated_input1_demand_name = Symbol("$(get_name(s.inputs[1].commodity))$(get_name(s.output))$("[:")$(s.output.model._commodities[s.output.index].indices[1][j])$("]")")
-                compensated_input2_demand_name = Symbol("$(get_name(s.inputs[2].commodity))$(get_name(s.output))$("[:")$(s.output.model._commodities[s.output.index].indices[1][j])$("]")")
-            end
-        end
-        # compensated_input1_demand_name = Symbol("$(get_name(s.inputs[1].commodity))$(get_name(s.output))")
-        # compensated_input2_demand_name = Symbol("$(get_name(s.inputs[2].commodity))$(get_name(s.output))")
-        price_input1_name = get_name(s.inputs[1].commodity)
-        price_input2_name = get_name(s.inputs[2].commodity)
+        compensated_input1_demand_name = Symbol("$(get_name(s.inputs[1].commodity, true))$(get_name(s.output, true))")
+        compensated_input2_demand_name = Symbol("$(get_name(s.inputs[2].commodity, true))$(get_name(s.output, true))")
 
         ex1a = :(
             JuMP.@NLexpression(
                 $(jm),
                 $(s.inputs[1].quantity) * ( 
-                    $(jm[price_input1_name])^($(s.inputs[1].quantity)/$(s.output_quantity)) *
-                     $(jm[price_input2_name])^($(s.inputs[2].quantity)/$(s.output_quantity))
-                ) / $(jm[price_input1_name]) - $(jm[compensated_input1_demand_name])
+                    $(get_jump_variable_for_commodity(jm, s.inputs[1].commodity))^($(s.inputs[1].quantity)/$(s.output_quantity)) *
+                     $(get_jump_variable_for_commodity(jm, s.inputs[2].commodity))^($(s.inputs[2].quantity)/$(s.output_quantity))
+                ) / $(get_jump_variable_for_commodity(jm, s.inputs[1].commodity)) - $(jm[compensated_input1_demand_name])
             )
         )
 
@@ -202,8 +184,8 @@ function build(m::Model)
             JuMP.@NLexpression(
                 $jm,
                 $(s.inputs[2].quantity) * ( 
-                    $(jm[price_input1_name])^($(s.inputs[1].quantity)/$(s.output_quantity)) * $(jm[price_input2_name])^($(s.inputs[2].quantity)/$(s.output_quantity))
-                ) / $(jm[price_input2_name]) - $(jm[compensated_input2_demand_name])
+                    $(get_jump_variable_for_commodity(jm, s.inputs[1].commodity))^($(s.inputs[1].quantity)/$(s.output_quantity)) * $(get_jump_variable_for_commodity(jm, s.inputs[2].commodity))^($(s.inputs[2].quantity)/$(s.output_quantity))
+                ) / $(get_jump_variable_for_commodity(jm, s.inputs[2].commodity)) - $(jm[compensated_input2_demand_name])
             )
         )
 
@@ -214,17 +196,14 @@ function build(m::Model)
 
     # Add zero profit constraints
     for s in m._productions
-        price_name = get_name(s.output)
-        input1_price_name = get_name(s.inputs[1].commodity)
-        input2_price_name = get_name(s.inputs[2].commodity)
-        compensated_input1_demand_name = Symbol("$(get_name(s.inputs[1].commodity))$(get_name(s.output))")
-        compensated_input2_demand_name = Symbol("$(get_name(s.inputs[2].commodity))$(get_name(s.output))")
+        compensated_input1_demand_name = Symbol("$(get_name(s.inputs[1].commodity, true))$(get_name(s.output, true))")
+        compensated_input2_demand_name = Symbol("$(get_name(s.inputs[2].commodity, true))$(get_name(s.output, true))")
 
         ex3a = :(
             JuMP.@NLexpression(
                 $jm,
-                $(jm[input1_price_name])*$(jm[compensated_input1_demand_name]) + $(jm[input2_price_name])*
-        $(jm[compensated_input2_demand_name]) - $(s.output_quantity) * $(jm[price_name])
+                $(get_jump_variable_for_commodity(jm, s.inputs[1].commodity))*$(jm[compensated_input1_demand_name]) + $(get_jump_variable_for_commodity(jm, s.inputs[2].commodity))*
+        $(jm[compensated_input2_demand_name]) - $(s.output_quantity) * $(get_jump_variable_for_commodity(jm, s.output))
             )
         )
 
@@ -265,10 +244,10 @@ function build(m::Model)
 
     for c in m._demands
         for en in c.endowments
-            if !haskey(endows, get_name(en.commodity))
-                endows[get_name(en.commodity)] = Expr[]
+            if !haskey(endows, get_name(en.commodity, true))
+                endows[get_name(en.commodity, true)] = Expr[]
             end
-            push!(endows[get_name(en.commodity)], :(0. + $(en.quantity)))
+            push!(endows[get_name(en.commodity, true)], :(0. + $(en.quantity)))
         end
     end
 
