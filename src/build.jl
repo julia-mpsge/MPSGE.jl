@@ -54,7 +54,7 @@ function set_all_start_values(m)
 
     for s in m._productions
         for i in s.inputs
-            compensated_input1_demand_name = Symbol("$(get_name(i.commodity))$(get_name(s.output))")
+            compensated_input1_demand_name = Symbol("$(get_name(i.commodity, true))$(get_name(s.output, true))")
             Complementarity.set_start_value(jm[compensated_input1_demand_name], eval(swap_our_param_with_val(i.quantity)))
         end
     end
@@ -68,7 +68,14 @@ function set_all_bounds(m)
     jm = m._jump_model
 
     for c in m._commodities
-        jump_var = jm[c.name]
+        if c.indices===nothing
+            jump_var = jm[c.name]
+        else
+            for i in Iterators.product(c.indices...)
+                jump_var = jm[c.name][i...]
+            end
+        end
+        ## Todo? Can fix all indexed or none so far
         if c.fixed
             JuMP.fix(jump_var, c.benchmark, force=true)
         else
@@ -215,27 +222,27 @@ function build(m::Model)
     # Add market clearance constraints
 
     for s in m._productions
-        price_name = get_name(s.output)
+        price_name = get_name(s.output, true)
 
         # Find all the sectors where our current sector is an input
-        input_into_sectors = [(get_name(s2.output), s2.sector) for s2 in m._productions if s2.inputs[1].commodity==s.output || s2.inputs[2].commodity==s.output]
+        input_into_sectors = [(get_name(s2.output, true), s2.sector) for s2 in m._productions if s2.inputs[1].commodity==s.output || s2.inputs[2].commodity==s.output]
         input_into_consumers = [get_name(c.consumer) for c in m._demands if c.commodity==s.output]
 
         ex4a = :(
             JuMP.@NLexpression(
                 $jm,
                 $(length(input_into_sectors)==0 ? 0. : 
-                    :(+($((:($(jm[Symbol("$(get_name(s.output))$i")]) * $(get_jump_variable_for_sector(jm, ii))) for (i,ii) in input_into_sectors)...)))
+                    :(+($((:($(jm[Symbol("$(get_name(s.output, true))$i")]) * $(get_jump_variable_for_sector(jm, ii))) for (i,ii) in input_into_sectors)...)))
                 ) +
                 $(length(input_into_consumers)==0 ? 0. : 
-                    :(+($((:($(jm[Symbol(i)]) / $(jm[Symbol("$(get_name(s.output))")])) for i in input_into_consumers)...)))
+                    :(+($((:($(jm[Symbol(i)]) / $(jm[Symbol("$(get_name(s.output, true))")])) for i in input_into_consumers)...)))
                 ) -
                 $(s.output_quantity) * $(get_jump_variable_for_sector(jm, s.sector))
             )
         )
         ex4b = eval(swap_our_param_with_jump_param(ex4a))
 
-        Complementarity.add_complementarity(jm, jm[price_name], ex4b, string("F_", price_name))
+        Complementarity.add_complementarity(jm, get_jump_variable_for_commodity(jm, s.output), ex4b, string("F_", price_name))
 
     end
 
@@ -258,8 +265,8 @@ function build(m::Model)
 
         price_name = level_name
         # Find all the sectors where our current sector is an input
-        input_into_sectors = [(get_name(s.output), s.sector) for s in m._productions if get_name(s.inputs[1].commodity)==level_name || get_name(s.inputs[2].commodity)==level_name]
-        input_into_consumers = [c.name for c in m._demands if get_name(c.commodity)==level_name]
+        input_into_sectors = [(get_name(s.output, true), s.sector) for s in m._productions if get_name(s.inputs[1].commodity)==level_name || get_name(s.inputs[2].commodity)==level_name]
+        input_into_consumers = [c.name for c in m._demands if get_name(c.commodity, true)==level_name]
 
         ex5a = :(
             JuMP.@NLexpression(
