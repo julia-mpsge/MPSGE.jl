@@ -247,25 +247,24 @@ function build(m::Model)
     end
 
     # Loop over all endowments
-    endows = Dict{Symbol, Vector{Expr}}()
+    endows = Dict{Symbol, Tuple{CommodityRef, Vector{Expr}}}()
 
     for c in m._demands
         for en in c.endowments
             if !haskey(endows, get_name(en.commodity, true))
-                endows[get_name(en.commodity, true)] = Expr[]
+                endows[get_name(en.commodity, true)] = (en.commodity, Expr[])
             end
-            push!(endows[get_name(en.commodity, true)], :(0. + $(en.quantity)))
+            push!(endows[get_name(en.commodity, true)][2], :(0. + $(en.quantity)))
         end
     end
 
-    for (level_name, endowment_levels) in endows
+    for (level_name, (commodity, endowment_levels)) in endows
         endowment_level = :(+($(endowment_levels...)))
 
         endowment_level = swap_our_param_with_jump_param(endowment_level)
 
-        price_name = level_name
         # Find all the sectors where our current sector is an input
-        input_into_sectors = [(get_name(s.output, true), s.sector) for s in m._productions if get_name(s.inputs[1].commodity)==level_name || get_name(s.inputs[2].commodity)==level_name]
+        input_into_sectors = [(get_name(s.output, true), s.sector) for s in m._productions if get_name(s.inputs[1].commodity, true)==level_name || get_name(s.inputs[2].commodity, true)==level_name]
         input_into_consumers = [c.name for c in m._demands if get_name(c.commodity, true)==level_name]
 
         ex5a = :(
@@ -282,7 +281,8 @@ function build(m::Model)
         )
 
         ex5b = eval(swap_our_param_with_jump_param(ex5a))
-        Complementarity.add_complementarity(jm, jm[price_name], ex5b, string("F_", price_name))
+
+        Complementarity.add_complementarity(jm, get_jump_variable_for_commodity(jm, commodity), ex5b, string("F_", level_name))
     end
 
     # Add income balance constraints
@@ -293,7 +293,7 @@ function build(m::Model)
             JuMP.@NLexpression(
                 $jm,
                 +($((:($(swap_our_param_with_jump_param(en.quantity)) * 
-                $(jm[Symbol("$(get_name(en.commodity))")])) for en in c.endowments)...)) - $(jm[level_name])
+                $(get_jump_variable_for_commodity(jm, en.commodity))) for en in c.endowments)...)) - $(jm[level_name])
             )
         )
 
