@@ -214,8 +214,7 @@ function add!(m::Model, c::Commodity)
 
         for i in CartesianIndices(temp_array)
             # TODO Fix the [1] thing here to properly work with n-dimensional data
-            foo =  ":" * string(c.indices[1][i])
-            temp_array[i] = CommodityRef(m, length(m._commodities), i, foo)
+            temp_array[i] = CommodityRef(m, length(m._commodities), i, string(c.indices[1][i]))
         end
         return JuMP.Containers.DenseAxisArray(temp_array, c.indices...)
     end
