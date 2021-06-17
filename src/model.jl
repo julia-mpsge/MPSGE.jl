@@ -12,6 +12,8 @@ end
 struct CommodityRef
     model
     index::Int
+    subindex::Any
+    subindex_names::Any
 end
 
 struct ConsumerRef
@@ -37,12 +39,13 @@ end
 
 mutable struct Commodity
     name::Symbol
+    indices::Any
     benchmark::Float64
     description::String
     fixed::Bool
 
-    function Commodity(name::Symbol; description::AbstractString="", benchmark::Float64=1., fixed=false)
-        return new(name, benchmark, description, fixed)
+    function Commodity(name::Symbol; description::AbstractString="", benchmark::Float64=1., indices=nothing, fixed=false)
+        return new(name, indices, benchmark, description, fixed)
     end
 end
 
@@ -151,8 +154,12 @@ function get_name(sector::SectorRef)
     return sector.model._sectors[sector.index].name
 end
 
-function get_name(commodity::CommodityRef)
-    return commodity.model._commodities[commodity.index].name
+function get_name(commodity::CommodityRef, include_subindex=false)
+    if commodity.subindex===nothing || include_subindex==false
+        return commodity.model._commodities[commodity.index].name
+    else
+        return Symbol("$(commodity.model._commodities[commodity.index].name )[$(commodity.subindex_names)]")
+    end
 end
 
 function get_name(consumer::ConsumerRef)
@@ -200,7 +207,18 @@ end
 function add!(m::Model, c::Commodity)
     m._jump_model = nothing
     push!(m._commodities, c)
-    return CommodityRef(m, length(m._commodities))
+    if c.indices===nothing
+        return CommodityRef(m, length(m._commodities), nothing, nothing)
+    else
+        temp_array = Array{CommodityRef}(undef, length.(c.indices)...)
+
+        for i in CartesianIndices(temp_array)
+            # TODO Fix the [1] thing here to properly work with n-dimensional data
+            foo =  ":" * string(c.indices[1][i])
+            temp_array[i] = CommodityRef(m, length(m._commodities), i, foo)
+        end
+        return JuMP.Containers.DenseAxisArray(temp_array, c.indices...)
+    end
 end
 
 function add!(m::Model, c::Consumer)
