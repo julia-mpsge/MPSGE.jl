@@ -81,10 +81,14 @@ struct Endowment
     quantity::Union{Float64,Expr}
 end
 
-
 struct Demand
-    consumer::ConsumerRef
     commodity::CommodityRef
+    quantity::Union{Float64,Expr}
+end
+
+struct DemandFunction
+    consumer::ConsumerRef
+    demands::Vector{Demand}
     endowments::Vector{Endowment}
 end
 
@@ -95,7 +99,7 @@ mutable struct Model
     _consumers::Vector{Consumer}
 
     _productions::Vector{Production}
-    _demands::Vector{Demand}
+    _demands::Vector{DemandFunction}
 
     _jump_model::Union{Nothing,JuMP.Model}
     _jump_nlparameters::Dict{Symbol,JuMP.NonlinearParameter}
@@ -108,7 +112,7 @@ mutable struct Model
             Commodity[],
             Consumer[],
             Production[],
-            Demand[],
+            DemandFunction[],
             nothing,
             Dict{Symbol,JuMP.NonlinearParameter}(),
             nothing
@@ -190,6 +194,10 @@ function Endowment(commodity::CommodityRef, quantity::Number)
     return Endowment(commodity, convert(Float64, quantity))
 end
 
+function Demand(commodity::CommodityRef, quantity::Number)
+    return Demand(commodity, convert(Float64, quantity))
+end
+
 function add!(m::Model, s::Sector)
     m._jump_model = nothing
     push!(m._sectors, s)
@@ -233,7 +241,7 @@ function add!(m::Model, p::Production)
     return m
 end
 
-function add!(m::Model, c::Demand)
+function add!(m::Model, c::DemandFunction)
     m._jump_model = nothing
     push!(m._demands, c)
     return m

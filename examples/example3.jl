@@ -30,7 +30,7 @@ end
 
 @production(m, U, 1, [Output(PU, 150)], [Input(PC[:x], 100), Input(PC[:y], 50)])
 
-@demand(m, RA, PU, [Endowment(PF[:l], :(70 * $endow)), Endowment(PF[:k], 80.)])
+@demand(m, RA, [Demand(PU, 1)], [Endowment(PF[:l], :(70 * $endow)), Endowment(PF[:k], 80.)])
 
 solve!(m, cumulative_iteration_limit=0)
 

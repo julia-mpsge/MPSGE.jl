@@ -230,7 +230,7 @@ function build(m::Model)
 
         # Find all the sectors where our current sector is an input
         input_into_sectors = [(get_name(s2.outputs[1].commodity, true), s2.sector) for s2 in m._productions if s2.inputs[1].commodity==s.outputs[1].commodity || s2.inputs[2].commodity==s.outputs[1].commodity]
-        input_into_consumers = [get_name(c.consumer) for c in m._demands if c.commodity==s.outputs[1].commodity]
+        input_into_consumers = [get_name(c.consumer) for c in m._demands if c.demands[1].commodity==s.outputs[1].commodity]
 
         ex4a = :(
             JuMP.@NLexpression(
@@ -269,7 +269,7 @@ function build(m::Model)
 
         # Find all the sectors where our current sector is an input
         input_into_sectors = [(get_name(s.outputs[1].commodity, true), s.sector) for s in m._productions if get_name(s.inputs[1].commodity, true)==level_name || get_name(s.inputs[2].commodity, true)==level_name]
-        input_into_consumers = [c.name for c in m._demands if get_name(c.commodity, true)==level_name]
+        input_into_consumers = [c.name for c in m._demands if get_name(c.demands[1].commodity, true)==level_name]
 
         ex5a = :(
             JuMP.@NLexpression(

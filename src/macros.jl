@@ -43,5 +43,5 @@ macro production(model, args...)
 end
 
 macro demand(model, args...)
-    return :(add!($(esc(model)), Demand($(esc.(args)...))))
+    return :(add!($(esc(model)), DemandFunction($(esc.(args)...))))
 end
