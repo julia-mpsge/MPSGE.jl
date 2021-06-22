@@ -64,16 +64,17 @@ struct Input
     quantity::Union{Float64,Expr}
 end
 
+struct Output
+    commodity::CommodityRef
+    quantity::Union{Float64,Expr}
+end
 
 struct Production
     sector::SectorRef
     elasticity::Union{Float64,Expr}
-    output::CommodityRef
-    output_quantity::Union{Float64,Expr}
+    outputs::Vector{Output}
     inputs::Vector{Input}
 end
-
-
 
 struct Endowment
     commodity::CommodityRef
@@ -172,17 +173,17 @@ function Input(commodity::CommodityRef, quantity::Number)
     return Input(commodity, convert(Float64, quantity))
 end
 
-function Production(sector::SectorRef, elasticity::Union{Number,Expr}, output::CommodityRef, output_quantity::Union{Number,Expr}, inputs::Vector{Input})
+function Output(commodity::CommodityRef, quantity::Number)
+    return Output(commodity, convert(Float64, quantity))
+end
+
+function Production(sector::SectorRef, elasticity::Union{Number,Expr}, outputs::Vector{Output}, inputs::Vector{Input})
 
     if isa(elasticity,Number)
         elasticity = convert(Float64, elasticity)
     end
 
-    if isa(output_quantity,Number)
-        output_quantity = convert(Float64, output_quantity)
-    end
-
-    return Production(sector, elasticity, output, output_quantity, inputs)
+    return Production(sector, elasticity, outputs, inputs)
 end
 
 function Endowment(commodity::CommodityRef, quantity::Number)

@@ -24,9 +24,9 @@ using Test
 
         RA = add!(m, Consumer(:RA, benchmark=150.))
 
-        add!(m, Production(X, 1, PX, 100, [Input(PL, :(25 * $inputcoeff)), Input(PK, 50)]))
-        add!(m, Production(Y, :(0.5 * $elascoeff), PY, 50, [Input(PL, 20), Input(PK, 30)]))
-        add!(m, Production(U, 1, PU, :(75 * $outputmult), [Input(PX, 100), Input(PY, 50)]))
+        add!(m, Production(X, 1, [Output(PX, 100)], [Input(PL, :(25 * $inputcoeff)), Input(PK, 50)]))
+        add!(m, Production(Y, :(0.5 * $elascoeff), [Output(PY, 50)], [Input(PL, 20), Input(PK, 30)]))
+        add!(m, Production(U, 1, [Output(PU, :(75 * $outputmult))], [Input(PX, 100), Input(PY, 50)]))
 
         add!(m, Demand(RA, PU, [Endowment(PL, :(35 * $endow)), Endowment(PK, 80)]))
 
@@ -84,9 +84,9 @@ using Test
 
         @consumer(m, RA, benchmark=150.)
 
-        @production(m, X, 1, PX, 100, [Input(PL, :(25 * $inputcoeff)), Input(PK, 50)])
-        @production(m, Y, :(0.5 * $elascoeff), PY, 50, [Input(PL, 20), Input(PK, 30)])
-        @production(m, U, 1, PU, :(75 * $outputmult), [Input(PX, 100), Input(PY, 50)])
+        @production(m, X, 1, [Output(PX, 100)], [Input(PL, :(25 * $inputcoeff)), Input(PK, 50)])
+        @production(m, Y, :(0.5 * $elascoeff), [Output(PY, 50)], [Input(PL, 20), Input(PK, 30)])
+        @production(m, U, 1, [Output(PU, :(75 * $outputmult))], [Input(PX, 100), Input(PY, 50)])
 
         @demand(m, RA, PU, [Endowment(PL, :(35 * $endow)), Endowment(PK, 80)])
 
