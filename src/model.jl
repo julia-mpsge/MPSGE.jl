@@ -7,6 +7,7 @@ struct SectorRef
     model
     index::Int
     subindex::Any
+    subindex_names::Any
 end
 
 struct CommodityRef
@@ -59,14 +60,24 @@ struct Consumer
     end
 end
 
-struct Input
+mutable struct Input
     commodity::CommodityRef
     quantity::Union{Float64,Expr}
+    production_function::Any
+
+    function Input(commodity::CommodityRef, quantity::Union{Float64,Expr})
+        return new(commodity, quantity, nothing)
+    end
 end
 
-struct Output
+mutable struct Output
     commodity::CommodityRef
     quantity::Union{Float64,Expr}
+    production_function::Any
+
+    function Output(commodity::CommodityRef, quantity::Union{Float64,Expr})
+        return new(commodity, quantity, nothing)
+    end
 end
 
 struct Production
@@ -74,6 +85,20 @@ struct Production
     elasticity::Union{Float64,Expr}
     outputs::Vector{Output}
     inputs::Vector{Input}
+
+    function Production(sector::SectorRef, elasticity::Union{Float64,Expr}, outputs::Vector{Output}, inputs::Vector{Input})
+        x = new(sector, elasticity, outputs, inputs)
+
+        for output in outputs
+            output.production_function = x
+        end
+        
+        for input in inputs
+            input.production_function = x
+        end
+
+        return x
+    end
 end
 
 struct Endowment
@@ -81,15 +106,30 @@ struct Endowment
     quantity::Union{Float64,Expr}
 end
 
-struct Demand
+mutable struct Demand
     commodity::CommodityRef
     quantity::Union{Float64,Expr}
+    demand_function::Any
+
+    function Demand(commodity::CommodityRef, quantity::Union{Float64,Expr})
+        return new(commodity, quantity, nothing)
+    end
 end
 
 struct DemandFunction
     consumer::ConsumerRef
     demands::Vector{Demand}
     endowments::Vector{Endowment}
+
+    function DemandFunction(consumer::ConsumerRef, demands::Vector{Demand}, endowments::Vector{Endowment})
+        x = new(consumer, demands, endowments)
+
+        for demand in demands
+            demand.demand_function = x
+        end
+        
+        return x
+    end
 end
 
 mutable struct Model
@@ -155,8 +195,12 @@ function Base.show(io::IO, m::Model)
     end
 end
 
-function get_name(sector::SectorRef)
-    return sector.model._sectors[sector.index].name
+function get_name(sector::SectorRef, include_subindex=false)
+    if sector.subindex===nothing || include_subindex==false
+        return sector.model._sectors[sector.index].name
+    else
+        return Symbol("$(sector.model._sectors[sector.index].name )[$(sector.subindex_names)]")
+    end
 end
 
 function get_name(commodity::CommodityRef, include_subindex=false)
@@ -169,6 +213,14 @@ end
 
 function get_name(consumer::ConsumerRef)
     return consumer.model._consumers[consumer.index].name
+end
+
+function get_full(s::SectorRef)
+    return s.model._sectors[s.index]
+end
+
+function get_full(c::CommodityRef)
+    return c.model._commodities[c.index]
 end
 
 # Outer constructors
@@ -202,12 +254,12 @@ function add!(m::Model, s::Sector)
     m._jump_model = nothing
     push!(m._sectors, s)
     if s.indices===nothing
-        return SectorRef(m, length(m._sectors), nothing)
+        return SectorRef(m, length(m._sectors), nothing, nothing)
     else
         temp_array = Array{SectorRef}(undef, length.(s.indices)...)
 
         for i in CartesianIndices(temp_array)
-            temp_array[i] = SectorRef(m, length(m._sectors), i)
+            temp_array[i] = SectorRef(m, length(m._sectors), i, string(s.indices[1][i]))
         end
         return JuMP.Containers.DenseAxisArray(temp_array, s.indices...)
     end

@@ -46,12 +46,12 @@ using Test
         @test MPSGE.Complementarity.result_value(m._jump_model[:PL]) ≈ 1.
         @test MPSGE.Complementarity.result_value(m._jump_model[:PK]) ≈ 1.
 
-        @test MPSGE.Complementarity.result_value(m._jump_model[:PLPX]) ≈ 50.
-        @test MPSGE.Complementarity.result_value(m._jump_model[:PLPY]) ≈ 20.
-        @test MPSGE.Complementarity.result_value(m._jump_model[:PKPX]) ≈ 50.
-        @test MPSGE.Complementarity.result_value(m._jump_model[:PKPY]) ≈ 30.
-        @test MPSGE.Complementarity.result_value(m._jump_model[:PXPU]) ≈ 100.
-        @test MPSGE.Complementarity.result_value(m._jump_model[:PYPU]) ≈ 50.
+        @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("‡PL†X")]) ≈ 50.
+        @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("‡PL†Y")]) ≈ 20.
+        @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("‡PK†X")]) ≈ 50.
+        @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("‡PK†Y")]) ≈ 30.
+        @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("‡PX†U")]) ≈ 100.
+        @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("‡PY†U")]) ≈ 50.
 
         avm2 = algebraic_version(m)
         @test typeof(avm2) == MPSGE.AlgebraicWrapper
@@ -106,12 +106,12 @@ using Test
         @test MPSGE.Complementarity.result_value(m._jump_model[:PL]) ≈ 1.
         @test MPSGE.Complementarity.result_value(m._jump_model[:PK]) ≈ 1.
 
-        @test MPSGE.Complementarity.result_value(m._jump_model[:PLPX]) ≈ 50.
-        @test MPSGE.Complementarity.result_value(m._jump_model[:PLPY]) ≈ 20.
-        @test MPSGE.Complementarity.result_value(m._jump_model[:PKPX]) ≈ 50.
-        @test MPSGE.Complementarity.result_value(m._jump_model[:PKPY]) ≈ 30.
-        @test MPSGE.Complementarity.result_value(m._jump_model[:PXPU]) ≈ 100.
-        @test MPSGE.Complementarity.result_value(m._jump_model[:PYPU]) ≈ 50.
+        @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("‡PL†X")]) ≈ 50.
+        @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("‡PL†Y")]) ≈ 20.
+        @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("‡PK†X")]) ≈ 50.
+        @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("‡PK†Y")]) ≈ 30.
+        @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("‡PX†U")]) ≈ 100.
+        @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("‡PY†U")]) ≈ 50.
 
         avm2 = algebraic_version(m)
         @test typeof(avm2) == MPSGE.AlgebraicWrapper
