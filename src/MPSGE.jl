@@ -10,7 +10,14 @@ export @parameter, @sector, @commodity, @consumer, @production, @demand
 
 include("model.jl")
 include("macros.jl")
-include("build.jl")
+include("build/build_helpers.jl")
+include("build/build_variables.jl")
+include("build/build_implicitconstraints.jl")
+include("build/build_zeroprofit.jl")
+include("build/build_marketclearance.jl")
+include("build/build_incomebalance.jl")
+include("build/build_startvalues_bounds.jl")
+include("build/build.jl")
 include("algebraic_wrapper.jl")
 
 end
