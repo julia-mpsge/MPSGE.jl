@@ -41,6 +41,14 @@ function build_variables!(m, jm)
         add_commodity_to_jump!(jm, c)
     end
 
+    # Add compensated supply variables
+    for s in m._productions
+        for o in s.outputs
+            add_variable!(jm, get_comp_supply_name(o))
+        end
+    end
+
+    # Add compensated demand variables
     for s in m._productions
         for i in s.inputs
             add_variable!(jm, get_comp_demand_name(i))
@@ -49,5 +57,12 @@ function build_variables!(m, jm)
 
     for c in m._consumers
         add_variable!(jm, c.name)
+    end
+
+    # Add final demand variables
+    for demand_function in m._demands
+        for demand in demand_function.demands
+            add_variable!(jm, get_final_demand_name(demand))
+        end
     end
 end

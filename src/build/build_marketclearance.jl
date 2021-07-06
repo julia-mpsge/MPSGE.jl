@@ -1,6 +1,18 @@
 function build_marketclearance!(m, jm)
     # Add market clearance constraints
 
+    # Loop over all outputs
+    outputs = Dict{CommodityRef, Vector{Expr}}()
+
+    for c in m._demands
+        for en in c.endowments
+            if !haskey(endows, en.commodity)
+                endows[en.commodity] = Expr[]
+            end
+            push!(endows[en.commodity], :(0. + $(en.quantity)))
+        end
+    end
+
     for s in m._productions
         # TODO Remove s.outputs[1] and make general
         price_name = get_name(s.outputs[1].commodity, true)
@@ -41,17 +53,17 @@ function build_marketclearance!(m, jm)
 
     end
 
-# Loop over all endowments
-endows = Dict{CommodityRef, Vector{Expr}}()
+    # Loop over all endowments
+    endows = Dict{CommodityRef, Vector{Expr}}()
 
-for c in m._demands
-    for en in c.endowments
-        if !haskey(endows, en.commodity)
-            endows[en.commodity] = Expr[]
+    for c in m._demands
+        for en in c.endowments
+            if !haskey(endows, en.commodity)
+                endows[en.commodity] = Expr[]
+            end
+            push!(endows[en.commodity], :(0. + $(en.quantity)))
         end
-        push!(endows[en.commodity], :(0. + $(en.quantity)))
     end
-end
 
     for (commodity, endowment_levels) in endows
         endowment_level = :(+($(endowment_levels...)))

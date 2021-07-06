@@ -46,11 +46,29 @@ function get_jump_variable_for_commodity(jm, commodity)
     end
 end
 
+function get_jump_variable_for_consumer(jm, consumer)
+    return jm[get_name(consumer)]
+end
+
 function get_prod_func_name(x::Production)
-    return Symbol("†$(get_name(x.sector, true))")
+    return Symbol("$(get_name(x.sector, true))")
+end
+
+function get_demand_func_name(x::DemandFunction)
+    return Symbol("$(get_name(x.consumer))")
 end
 
 function get_comp_demand_name(i::Input)
     p = i.production_function::Production 
-    return Symbol("‡$(get_name(i.commodity, true))$(get_prod_func_name(p))")
+    return Symbol("$(get_name(i.commodity, true))†$(get_prod_func_name(p))")
+end
+
+function get_comp_supply_name(o::Output)
+    p = o.production_function::Production
+    return Symbol("$(get_name(o.commodity, true))‡$(get_prod_func_name(p))")
+end
+
+function get_final_demand_name(demand::Demand)
+    demand_function = demand.demand_function::DemandFunction
+    return Symbol("$(get_name(demand.commodity, true))ρ$(get_demand_func_name(demand_function))")
 end

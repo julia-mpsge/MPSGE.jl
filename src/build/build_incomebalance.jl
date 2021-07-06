@@ -7,7 +7,8 @@ function build_incomebalance!(m, jm)
             JuMP.@NLexpression(
                 $jm,
                 +($((:($(swap_our_param_with_jump_param(en.quantity)) * 
-                $(get_jump_variable_for_commodity(jm, en.commodity))) for en in c.endowments)...)) - $(jm[level_name])
+                $(get_jump_variable_for_commodity(jm, en.commodity))) for en in c.endowments)...)) -
+                $(jm[level_name])
             )
         )
 
