@@ -30,6 +30,21 @@ function set_all_start_values(m)
     for c in m._consumers
         Complementarity.set_start_value(jm[c.name], c.benchmark)
     end
+
+
+    # Add compensated supply variables
+    for s in m._productions
+        for o in s.outputs
+            Complementarity.set_start_value(jm[get_comp_supply_name(o)], eval(swap_our_param_with_val(o.quantity)))
+        end
+    end
+
+    # Add final demand variables
+    for demand_function in m._demands
+        for demand in demand_function.demands
+            Complementarity.set_start_value(jm[get_final_demand_name(demand)], eval(swap_our_param_with_val(demand.quantity)))
+        end
+    end
 end
 
 function set_all_bounds(m)

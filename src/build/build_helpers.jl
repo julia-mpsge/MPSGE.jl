@@ -38,7 +38,15 @@ function get_jump_variable_for_sector(jm, sector)
     end
 end
 
-function get_jump_variable_for_commodity(jm, commodity)
+function get_jump_variable_for_commodity(jm, commodity::CommodityRef)
+    if commodity.subindex===nothing
+        return jm[get_name(commodity)]
+    else
+        return jm[get_name(commodity)][commodity.subindex]
+    end
+end
+
+function get_jump_variable_for_commodity(jm, commodity::Commodity)
     if commodity.subindex===nothing
         return jm[get_name(commodity)]
     else
@@ -48,6 +56,18 @@ end
 
 function get_jump_variable_for_consumer(jm, consumer)
     return jm[get_name(consumer)]
+end
+
+function get_jump_variable_for_intermediate_supply(jm, output)
+    return jm[get_comp_supply_name(output)]
+end
+
+function get_jump_variable_for_intermediate_demand(jm, input)
+    return jm[get_comp_demand_name(input)]
+end
+
+function get_jump_variable_for_final_demand(jm, demand)
+    return jm[get_final_demand_name(demand)]
 end
 
 function get_prod_func_name(x::Production)

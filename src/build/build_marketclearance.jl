@@ -1,108 +1,68 @@
 function build_marketclearance!(m, jm)
     # Add market clearance constraints
 
-    # Loop over all outputs
-    outputs = Dict{CommodityRef, Vector{Expr}}()
+    commodities = Set{CommodityRef}()
+    for pf in m._productions
+        for input in pf.inputs
+            push!(commodities, input.commodity)
+        end
 
-    for c in m._demands
-        for en in c.endowments
-            if !haskey(endows, en.commodity)
-                endows[en.commodity] = Expr[]
-            end
-            push!(endows[en.commodity], :(0. + $(en.quantity)))
+        for output in pf.outputs
+            push!(commodities, output.commodity)
         end
     end
 
-    for s in m._productions
-        # TODO Remove s.outputs[1] and make general
-        price_name = get_name(s.outputs[1].commodity, true)
-
-        # Find all the sectors where our current sector is an input
-        input_into_sectors = Input[]
-        for s2 in m._productions
-            for input in s2.inputs
-                if input.commodity==s.outputs[1].commodity
-                    push!(input_into_sectors, input)
+    # Loop over commodities
+    for commodity in commodities
+        # Find all endowments for current commodity
+        endows = []
+        for demand_function in m._demands
+            for en in demand_function.endowments
+                if en.commodity==commodity
+                    push!(endows, :($(en.quantity)))
                 end
             end
         end
 
-        # Find all the demand functions where our current sector (or rather output) is a demand item
-        input_into_consumers = Demand[]
+        # Find all intermediate supplies for current commodity
+        comp_supplies = []
+        for production_function in m._productions
+            for output in production_function.outputs
+                if output.commodity==commodity
+                    push!(comp_supplies, :($(get_jump_variable_for_sector(jm, production_function.sector)) * $(get_jump_variable_for_intermediate_supply(jm, output))))
+                end
+            end
+        end
+
+        # Find all final demand for current commodity
+        final_demand = []
         for demand_function in m._demands
-            if demand_function.demands[1].commodity==s.outputs[1].commodity
-                push!(input_into_consumers, demand_function.demands[1])
+            for demand in demand_function.demands
+                if demand.commodity == commodity
+                    push!(final_demand, :($(get_jump_variable_for_final_demand(jm, demand))))
+                end
             end
         end
 
-        ex4a = :(
-            JuMP.@NLexpression(
-                $jm,
-                $(length(input_into_sectors)==0 ? 0. : 
-                    :(+($((:($(jm[get_comp_demand_name(input)]) * $(get_jump_variable_for_sector(jm, input.production_function.sector))) for input in input_into_sectors)...)))
-                ) +
-                $(length(input_into_consumers)==0 ? 0. : 
-                    :(+($((:($(jm[get_name(demand.demand_function.consumer)]) / $(jm[get_name(demand.commodity, true)])) for demand in input_into_consumers)...)))
-                ) -
-                $(s.outputs[1].quantity) * $(get_jump_variable_for_sector(jm, s.sector))
-            )
-        )
-        ex4b = eval(swap_our_param_with_jump_param(ex4a))
-
-        Complementarity.add_complementarity(jm, get_jump_variable_for_commodity(jm, s.outputs[1].commodity), ex4b, string("F_", price_name))
-
-    end
-
-    # Loop over all endowments
-    endows = Dict{CommodityRef, Vector{Expr}}()
-
-    for c in m._demands
-        for en in c.endowments
-            if !haskey(endows, en.commodity)
-                endows[en.commodity] = Expr[]
-            end
-            push!(endows[en.commodity], :(0. + $(en.quantity)))
-        end
-    end
-
-    for (commodity, endowment_levels) in endows
-        endowment_level = :(+($(endowment_levels...)))
-
-        endowment_level = swap_our_param_with_jump_param(endowment_level)
-
-        # Find all the sectors where our current sector is an input
-        input_into_sectors = Input[]
-        for s2 in m._productions
-            for input in s2.inputs
+        # Find all the intermediate demands for current commodity
+        comp_demands = []
+        for production_function in m._productions
+            for input in production_function.inputs
                 if input.commodity==commodity
-                    push!(input_into_sectors, input)
+                    push!(comp_demands, :($(get_jump_variable_for_sector(jm, production_function.sector)) * $(get_jump_variable_for_intermediate_demand(jm, input))))
                 end
             end
         end
 
-        # Find all the demand functions where our current sector (or rather output) is a demand item
-        input_into_consumers = Demand[]
-        for demand_function in m._demands
-            if demand_function.demands[1].commodity==commodity
-                push!(input_into_consumers, demand_function.demands[1])
-            end
-        end
-
-        ex5a = :(
+        exa = :(
             JuMP.@NLexpression(
                 $jm,
-                $(length(input_into_sectors)==0 ? 0. : 
-                    :(+($((:($(jm[get_comp_demand_name(input)]) * $(get_jump_variable_for_sector(jm, input.production_function.sector))) for input in input_into_sectors)...)))
-                ) +
-                $(length(input_into_consumers)==0 ? 0. : 
-                    :(+($((:($(jm[get_name(demand.demand_function.consumer)]) / $(jm[get_name(demand.commodity, true)])) for demand in input_into_consumers)...)))
-                ) -
-                $(endowment_level)
+                +(0., $(endows...), $(comp_supplies...)) - +(0., $(final_demand...), $(comp_demands...))
             )
         )
+        exb = eval(swap_our_param_with_jump_param(exa))
 
-        ex5b = eval(swap_our_param_with_jump_param(ex5a))
+        Complementarity.add_complementarity(jm, get_jump_variable_for_commodity(jm, commodity), exb, string("F_", get_name(commodity, true)))
 
-        Complementarity.add_complementarity(jm, get_jump_variable_for_commodity(jm, commodity), ex5b, string("F_", get_name(commodity, true)))
-    end    
+    end
 end
