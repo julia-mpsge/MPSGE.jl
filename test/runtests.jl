@@ -28,7 +28,7 @@ using Test
         add!(m, Production(Y, :(0.5 * $elascoeff), [Output(PY, 50)], [Input(PL, 20), Input(PK, 30)]))
         add!(m, Production(U, 1, [Output(PU, :(75 * $outputmult))], [Input(PX, 100), Input(PY, 50)]))
 
-        add!(m, DemandFunction(RA, [Demand(PU,1)], [Endowment(PL, :(35 * $endow)), Endowment(PK, 80)]))
+        add!(m, DemandFunction(RA, [Demand(PU,150)], [Endowment(PL, :(35 * $endow)), Endowment(PK, 80)]))
 
         avm = algebraic_version(m)
         @test typeof(avm) == MPSGE.AlgebraicWrapper
@@ -88,7 +88,7 @@ using Test
         @production(m, Y, :(0.5 * $elascoeff), [Output(PY, 50)], [Input(PL, 20), Input(PK, 30)])
         @production(m, U, 1, [Output(PU, :(75 * $outputmult))], [Input(PX, 100), Input(PY, 50)])
 
-        @demand(m, RA, [Demand(PU, 1)], [Endowment(PL, :(35 * $endow)), Endowment(PK, 80)])
+        @demand(m, RA, [Demand(PU, 150)], [Endowment(PL, :(35 * $endow)), Endowment(PK, 80)])
 
         avm = algebraic_version(m)
         @test typeof(avm) == MPSGE.AlgebraicWrapper
