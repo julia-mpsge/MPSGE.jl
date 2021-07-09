@@ -61,6 +61,7 @@ function build_implicitconstraints!(m, jm)
             exb = eval( swap_our_param_with_jump_param(ex) )
 
             Complementarity.add_complementarity(jm, jm[get_comp_demand_name(input)], exb, string("F_", get_comp_demand_name(input)))    
+            push!(m._nlexpressions, exb)
         end
     end
 
@@ -80,6 +81,7 @@ function build_implicitconstraints!(m, jm)
             exb = eval( swap_our_param_with_jump_param(ex) )
 
             Complementarity.add_complementarity(jm, jm[get_comp_supply_name(output)], exb, string("F_", get_comp_supply_name(output)))
+            push!(m._nlexpressions, exb)
         end
     end
 
@@ -107,6 +109,7 @@ function build_implicitconstraints!(m, jm)
             exb = eval( swap_our_param_with_jump_param(ex) )
 
             Complementarity.add_complementarity(jm, jm[get_final_demand_name(demand)], exb, string("F_", get_final_demand_name(demand)))
+            push!(m._nlexpressions, exb)
         end
     end
 end

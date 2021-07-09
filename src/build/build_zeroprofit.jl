@@ -25,5 +25,6 @@ function build_zeroprofit!(m, jm)
         exb = eval(swap_our_param_with_jump_param(exa))
 
         Complementarity.add_complementarity(jm, get_jump_variable_for_sector(jm, s.sector), exb, string("F_", get_name(s.sector), s.sector.subindex!==nothing ? s.sector.subindex : ""))
+        push!(m._nlexpressions, exb)
     end
 end

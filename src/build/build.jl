@@ -1,4 +1,5 @@
 function build(m::Model)
+    m._nlexpressions = []
     jm = Complementarity.MCPModel()
 
     build_variables!(m, jm)

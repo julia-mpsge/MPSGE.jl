@@ -145,6 +145,8 @@ mutable struct Model
     _jump_nlparameters::Dict{Symbol,JuMP.NonlinearParameter}
     _status
 
+    _nlexpressions::Vector{Any}
+
     function Model()
         return new(
             Parameter[],
@@ -155,7 +157,8 @@ mutable struct Model
             DemandFunction[],
             nothing,
             Dict{Symbol,JuMP.NonlinearParameter}(),
-            nothing
+            nothing,
+            []
         )
     end
 end

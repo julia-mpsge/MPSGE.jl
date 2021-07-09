@@ -63,6 +63,6 @@ function build_marketclearance!(m, jm)
         exb = eval(swap_our_param_with_jump_param(exa))
 
         Complementarity.add_complementarity(jm, get_jump_variable_for_commodity(jm, commodity), exb, string("F_", get_name(commodity, true)))
-
+        push!(m._nlexpressions, exb)
     end
 end

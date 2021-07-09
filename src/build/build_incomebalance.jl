@@ -14,5 +14,6 @@ function build_incomebalance!(m, jm)
 
         ex6b = eval(swap_our_param_with_jump_param(ex6a))
         Complementarity.add_complementarity(jm, jm[level_name], ex6b, string("F_", level_name))
+        push!(m._nlexpressions, ex6b)
     end
 end
