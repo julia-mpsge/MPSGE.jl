@@ -1,13 +1,13 @@
 """
-    swap_our_param_with_jump_param(expr)
+    swap_our_param_with_jump_param(jm, expr)
 
 This function takes an expression tree and replaces all instances of
 `ParameterRef` with the corresponding `JuMP.NLParameter`.
 """
-function swap_our_param_with_jump_param(expr)
+function swap_our_param_with_jump_param(jm, expr)
     return MacroTools.postwalk(expr) do x
         if x isa ParameterRef
-            return x.model._jump_nlparameters[x.model._parameters[x.index].name]
+            return jm[x.model._parameters[x.index].name]
         else
             return x
         end

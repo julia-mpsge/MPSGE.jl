@@ -75,6 +75,6 @@ function set_all_parameters(m)
     jm = m._jump_model
 
     for p in m._parameters
-        JuMP.set_value(m._jump_nlparameters[p.name], p.value)
+        JuMP.set_value(jm[p.name], p.value)
     end
 end

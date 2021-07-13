@@ -142,7 +142,6 @@ mutable struct Model
     _demands::Vector{DemandFunction}
 
     _jump_model::Union{Nothing,JuMP.Model}
-    _jump_nlparameters::Dict{Symbol,JuMP.NonlinearParameter}
     _status
 
     _nlexpressions::Vector{Any}
@@ -156,7 +155,6 @@ mutable struct Model
             Production[],
             DemandFunction[],
             nothing,
-            Dict{Symbol,JuMP.NonlinearParameter}(),
             nothing,
             []
         )
