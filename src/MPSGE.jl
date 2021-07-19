@@ -2,6 +2,7 @@ module MPSGE
 
 import JuMP, Complementarity, MacroTools
 import JuMP: value, set_value, Containers
+import JuMP.Containers: DenseAxisArray
 
 export add!, Model, solve!, algebraic_version
 export Sector, Commodity, Consumer, Production, DemandFunction, Endowment, Input, Output, Parameter, Demand

@@ -18,7 +18,6 @@ PC = add!(m, Commodity(:PC, indices=(goods,)))
 PU = add!(m, Commodity(:PU))
 PF = add!(m, Commodity(:PF, indices=(factors,)))
 
-
 RA = add!(m, Consumer(:RA, benchmark=150.))
 
 for i in goods
@@ -30,10 +29,11 @@ end
 
 @production(m, U, 1, [Output(PU, 150)], [Input(PC[:x], 100), Input(PC[:y], 50)])
 
-@demand(m, RA, [Demand(PU, 1)], [Endowment(PF[:l], :(70 * $endow)), Endowment(PF[:k], 80.)])
+@demand(m, RA, [Demand(PU, 150)], [Endowment(PF[:l], :(70 * $endow)), Endowment(PF[:k], 80.)])
 
 solve!(m, cumulative_iteration_limit=0)
 
+set_fixed!(PC[:x], true)
 set_value(endow, 1.1)
 
 solve!(m)

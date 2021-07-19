@@ -24,6 +24,7 @@ m = Model()
 
 solve!(m, cumulative_iteration_limit=0)
 
+set_fixed!(PX, true)
 set_value(endow, 1.1)
 
 solve!(m)

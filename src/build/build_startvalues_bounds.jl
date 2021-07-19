@@ -11,11 +11,11 @@ function set_all_start_values(m)
     end
 
     for c in m._commodities
-        if c.indices===nothing
+        if c isa ScalarCommodity
             Complementarity.set_start_value(jm[c.name], c.benchmark)
         else
             for i in Iterators.product(c.indices...)
-                Complementarity.set_start_value(jm[c.name][i...], c.benchmark)
+                Complementarity.set_start_value(jm[c.name][i...], c.benchmark[i...])
             end
         end
     end
@@ -51,22 +51,32 @@ function set_all_bounds(m)
     jm = m._jump_model
 
     for c in m._commodities
-        if c.indices===nothing
+        if c isa ScalarCommodity
             jump_var = jm[c.name]
+
+            if c.fixed
+                JuMP.fix(jump_var, c.benchmark, force=true)
+            else
+                if JuMP.is_fixed(jump_var)
+                    JuMP.unfix(jump_var)
+                end
+    
+                JuMP.set_lower_bound(jump_var, 0.001)
+            end
         else
             for i in Iterators.product(c.indices...)
                 jump_var = jm[c.name][i...]
-            end
-        end
-        ## Todo? Can fix all indexed or none so far
-        if c.fixed
-            JuMP.fix(jump_var, c.benchmark, force=true)
-        else
-            if JuMP.is_fixed(jump_var)
-                JuMP.unfix(jump_var)
-            end
 
-            JuMP.set_lower_bound(jump_var, 0.001)
+                if c.fixed[i...]
+                    JuMP.fix(jump_var, c.benchmark[i...], force=true)
+                else
+                    if JuMP.is_fixed(jump_var)
+                        JuMP.unfix(jump_var)
+                    end
+        
+                    JuMP.set_lower_bound(jump_var, 0.001)
+                end
+            end
         end
     end
 end

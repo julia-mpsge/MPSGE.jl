@@ -46,12 +46,12 @@ function get_jump_variable_for_commodity(jm, commodity::CommodityRef)
     end
 end
 
-function get_jump_variable_for_commodity(jm, commodity::Commodity)
-    if commodity.subindex===nothing
-        return jm[get_name(commodity)]
-    else
-        return jm[get_name(commodity)][commodity.subindex]
-    end
+function get_jump_variable_for_commodity(jm, commodity::ScalarCommodity)
+    return jm[get_name(commodity)]
+end
+
+function get_jump_variable_for_commodity(jm, commodity::IndexedCommodity)
+    return jm[get_name(commodity)][commodity.subindex]
 end
 
 function get_jump_variable_for_consumer(jm, consumer)

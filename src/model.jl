@@ -38,16 +38,33 @@ struct Sector
     end
 end
 
-mutable struct Commodity
+abstract type Commodity end;
+
+mutable struct ScalarCommodity <: Commodity
     name::Symbol
-    indices::Any
     benchmark::Float64
     description::String
     fixed::Bool
 
-    function Commodity(name::Symbol; description::AbstractString="", benchmark::Float64=1., indices=nothing, fixed=false)
-        return new(name, indices, benchmark, description, fixed)
+    function ScalarCommodity(name::Symbol; description::AbstractString="", benchmark::Float64=1., fixed=false)
+        return new(name, benchmark, description, fixed)
     end
+end
+
+mutable struct IndexedCommodity <: Commodity
+    name::Symbol
+    indices::Any
+    benchmark::DenseAxisArray
+    description::String
+    fixed::DenseAxisArray
+
+    function IndexedCommodity(name::Symbol, indices; description::AbstractString="", benchmark::Float64=1., fixed=false)
+        return new(name, indices, DenseAxisArray(fill(benchmark, length.(indices)...), indices...), description, DenseAxisArray(fill(fixed, length.(indices)...), indices...))
+    end
+end
+
+function Commodity(name; indices=nothing, kwargs...)
+    return indices===nothing ? ScalarCommodity(name; kwargs...) : IndexedCommodity(name, indices; kwargs...)
 end
 
 struct Consumer
@@ -266,20 +283,23 @@ function add!(m::Model, s::Sector)
     end
 end
 
-function add!(m::Model, c::Commodity)
+function add!(m::Model, c::ScalarCommodity)
     m._jump_model = nothing
     push!(m._commodities, c)
-    if c.indices===nothing
-        return CommodityRef(m, length(m._commodities), nothing, nothing)
-    else
-        temp_array = Array{CommodityRef}(undef, length.(c.indices)...)
+    return CommodityRef(m, length(m._commodities), nothing, nothing)
+end
 
-        for i in CartesianIndices(temp_array)
-            # TODO Fix the [1] thing here to properly work with n-dimensional data
-            temp_array[i] = CommodityRef(m, length(m._commodities), i, string(c.indices[1][i]))
-        end
-        return JuMP.Containers.DenseAxisArray(temp_array, c.indices...)
+function add!(m::Model, c::IndexedCommodity)
+    m._jump_model = nothing
+    push!(m._commodities, c)
+
+    temp_array = Array{CommodityRef}(undef, length.(c.indices)...)
+
+    for i in CartesianIndices(temp_array)
+        # TODO Fix the [1] thing here to properly work with n-dimensional data
+        temp_array[i] = CommodityRef(m, length(m._commodities), i, string(c.indices[1][i]))
     end
+    return JuMP.Containers.DenseAxisArray(temp_array, c.indices...)
 end
 
 function add!(m::Model, c::Consumer)
@@ -328,8 +348,12 @@ function JuMP.set_value(p::ParameterRef, new_value::Float64)
     p.model._parameters[p.index].value = new_value
 end
 
-function set_fixed!(m::Model, commodity::Symbol, new_value::Bool)
-    c = m._commodities[findfirst(i->i.name==commodity, m._commodities)]
-    c.fixed = new_value
+function set_fixed!(commodity::CommodityRef, new_value::Bool)    
+    c = commodity.model._commodities[commodity.index]
+    if c isa ScalarCommodity
+        c.fixed = new_value
+    else
+        c.fixed[commodity.subindex] = new_value
+    end
     return nothing
 end

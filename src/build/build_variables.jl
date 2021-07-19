@@ -14,13 +14,14 @@ function add_sector_to_jump!(jm, sector)
     end
 end
 
-function add_commodity_to_jump!(jm, commodity)
-    if commodity.indices===nothing
-        add_variable!(jm, commodity.name, 0.)
-    else
-        jm[commodity.name] = @eval(JuMP.@variable($jm, [$( ( :($(gensym())=$i) for i in commodity.indices)... )], base_name=string($(QuoteNode(commodity.name))), lower_bound=0.))
-    end
+function add_commodity_to_jump!(jm, commodity::ScalarCommodity)
+    add_variable!(jm, commodity.name, 0.)
 end
+
+function add_commodity_to_jump!(jm, commodity::IndexedCommodity)
+    jm[commodity.name] = @eval(JuMP.@variable($jm, [$( ( :($(gensym())=$i) for i in commodity.indices)... )], base_name=string($(QuoteNode(commodity.name))), lower_bound=0.))
+end
+
 
 function build_variables!(m, jm)
     # Add all parameters
