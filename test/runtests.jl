@@ -61,6 +61,26 @@ using Test
         repr(MIME("text/plain"), m)
         repr(MIME("text/plain"), avm2)
         repr(MIME("text/latex"), avm2)
+
+        set_fixed!(PX, true)
+        set_value(endow, 2.2)
+        solve!(m)
+
+        @test value(m, :X) ≈ 1.04880885
+        @test MPSGE.Complementarity.result_value(m._jump_model[:Y]) ≈ 1.03886012
+        @test MPSGE.Complementarity.result_value(m._jump_model[:U]) ≈ 1.04548206
+        @test MPSGE.Complementarity.result_value(m._jump_model[:RA]) ≈ 157.321327225523
+        @test MPSGE.Complementarity.result_value(m._jump_model[:PX]) ≈ 1.0000000000
+        @test MPSGE.Complementarity.result_value(m._jump_model[:PY]) ≈ 1.00957658
+        @test MPSGE.Complementarity.result_value(m._jump_model[:PU]) ≈ 1.00318206
+        @test MPSGE.Complementarity.result_value(m._jump_model[:PL]) ≈ 0.95346259
+        @test MPSGE.Complementarity.result_value(m._jump_model[:PK]) ≈ 1.04880885
+        @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PL†X")]) ≈ 52.4404424085075
+        @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PL†Y")]) ≈ 21.1770570584356
+        @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PK†X")]) ≈ 47.6731294622795
+        @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PK†Y")]) ≈ 28.877805079685
+        @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PX†U")]) ≈ 100.318205802571
+        @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PY†U")]) ≈ 49.6833066029729
     end
 
     @testset "TWOBYTWO (macro version)" begin
@@ -121,6 +141,26 @@ using Test
         repr(MIME("text/plain"), m)
         repr(MIME("text/plain"), avm2)
         repr(MIME("text/latex"), avm2)
+
+        set_fixed!(PX, true)
+        set_value(endow, 2.2)
+        solve!(m)
+
+        @test value(m, :X) ≈ 1.04880885
+        @test MPSGE.Complementarity.result_value(m._jump_model[:Y]) ≈ 1.03886012
+        @test MPSGE.Complementarity.result_value(m._jump_model[:U]) ≈ 1.04548206
+        @test MPSGE.Complementarity.result_value(m._jump_model[:RA]) ≈ 157.321327225523
+        @test MPSGE.Complementarity.result_value(m._jump_model[:PX]) ≈ 1.0000000000
+        @test MPSGE.Complementarity.result_value(m._jump_model[:PY]) ≈ 1.00957658
+        @test MPSGE.Complementarity.result_value(m._jump_model[:PU]) ≈ 1.00318206
+        @test MPSGE.Complementarity.result_value(m._jump_model[:PL]) ≈ 0.95346259
+        @test MPSGE.Complementarity.result_value(m._jump_model[:PK]) ≈ 1.04880885
+        @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PL†X")]) ≈ 52.4404424085075
+        @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PL†Y")]) ≈ 21.1770570584356
+        @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PK†X")]) ≈ 47.6731294622795
+        @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PK†Y")]) ≈ 28.877805079685
+        @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PX†U")]) ≈ 100.318205802571
+        @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PY†U")]) ≈ 49.6833066029729
     end
     
 end
