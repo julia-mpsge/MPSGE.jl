@@ -186,15 +186,15 @@ using MPSGE.JuMP.Containers
 
         solve!(m, cumulative_iteration_limit=0)
         
-        # @test value(m, Y[:x]) ≈ 1.
-        # @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("Y[:y]")]) ≈ 1.
+        @test MPSGE.Complementarity.result_value(m._jump_model[:Y][:x]) ≈ 1.
+        @test MPSGE.Complementarity.result_value(m._jump_model[:Y][:y]) ≈ 1.
         @test MPSGE.Complementarity.result_value(m._jump_model[:U]) ≈ 1.
         @test MPSGE.Complementarity.result_value(m._jump_model[:RA]) ≈ 150.
-        # @test MPSGE.Complementarity.result_value(m._jump_model[PC[:x]]) ≈ 1.
-        # @test MPSGE.Complementarity.result_value(m._jump_model[PC[:y]]) ≈ 1.
+        @test MPSGE.Complementarity.result_value(m._jump_model[:PC][:x]) ≈ 1.
+        @test MPSGE.Complementarity.result_value(m._jump_model[:PC][:y]) ≈ 1.
         @test MPSGE.Complementarity.result_value(m._jump_model[:PU]) ≈ 1.
-        # @test MPSGE.Complementarity.result_value(m._jump_model[PF[:l]]) ≈ 1.
-        # @test MPSGE.Complementarity.result_value(m._jump_model[PF[:k]]) ≈ 1.
+        @test MPSGE.Complementarity.result_value(m._jump_model[:PF][:l]) ≈ 1.
+        @test MPSGE.Complementarity.result_value(m._jump_model[:PF][:k]) ≈ 1.
         @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PF[l]†Y[x]")]) ≈ 50.
         @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PF[l]†Y[y]")]) ≈ 20.
         @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PF[k]†Y[x]")]) ≈ 50.
@@ -206,15 +206,15 @@ using MPSGE.JuMP.Containers
         set_value(endow, 1.1)
 
         solve!(m)
-        # @test value(m, Y[:x]) ≈ 1.04880885
-        # @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("Y[:y]")]) ≈ 1.03886012
+        @test MPSGE.Complementarity.result_value(m._jump_model[:Y][:x]) ≈ 1.04880885
+        @test MPSGE.Complementarity.result_value(m._jump_model[:Y][:y]) ≈ 1.03886012
         @test MPSGE.Complementarity.result_value(m._jump_model[:U]) ≈ 1.04548206
         @test MPSGE.Complementarity.result_value(m._jump_model[:RA]) ≈ 157.321327225523
-        # @test MPSGE.Complementarity.result_value(m._jump_model[:PC[:x]]) ≈ 1.0000000000
-        # @test MPSGE.Complementarity.result_value(m._jump_model[:PC[:y]]) ≈ 1.00957658
+        @test MPSGE.Complementarity.result_value(m._jump_model[:PC][:x]) ≈ 1.0000000000
+        @test MPSGE.Complementarity.result_value(m._jump_model[:PC][:y]) ≈ 1.00957658
         @test MPSGE.Complementarity.result_value(m._jump_model[:PU]) ≈ 1.00318206
-        # @test MPSGE.Complementarity.result_value(m._jump_model[:PF[:l]]) ≈ 0.95346259
-        # @test MPSGE.Complementarity.result_value(m._jump_model[:PF[:k]]) ≈ 1.04880885
+        @test MPSGE.Complementarity.result_value(m._jump_model[:PF][:l]) ≈ 0.95346259
+        @test MPSGE.Complementarity.result_value(m._jump_model[:PF][:k]) ≈ 1.04880885
         @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PF[l]†Y[x]")]) ≈ 52.4404424085075
         @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PF[l]†Y[y]")]) ≈ 21.1770570584356
         @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PF[k]†Y[x]")]) ≈ 47.6731294622795
@@ -223,7 +223,7 @@ using MPSGE.JuMP.Containers
         @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PC[y]†U")]) ≈ 49.6833066029729
         
     end
-    @testset "JPMGE (Joint Production Intermediate Demand" begin
+    @testset "JPMGE (Joint Production Intermediate Demand)" begin
 
         m = Model()
         goods = [:g1, :g2]
@@ -249,12 +249,12 @@ using MPSGE.JuMP.Containers
 
         solve!(m)
 
-        # @test value(m, :X[:s1]) ≈ 1.
-        # @test MPSGE.Complementarity.result_value(m._jump_model[:X[:s2]]) ≈ 1.
-        # @test MPSGE.Complementarity.result_value(m._jump_model[:P[:g1]]) ≈ 1.
-        # @test MPSGE.Complementarity.result_value(m._jump_model[:P[:g2]]) ≈ 1.
-        # @test MPSGE.Complementarity.result_value(m._jump_model[:PF[:l]]) ≈ 1.
-        # @test MPSGE.Complementarity.result_value(m._jump_model[:PF[:k]]) ≈ 1.
+        @test MPSGE.Complementarity.result_value(m._jump_model[:X][:s1]) ≈ 1.
+        @test MPSGE.Complementarity.result_value(m._jump_model[:X][:s2]) ≈ 1.
+        @test MPSGE.Complementarity.result_value(m._jump_model[:P][:g1]) ≈ 1.
+        @test MPSGE.Complementarity.result_value(m._jump_model[:P][:g2]) ≈ 1.
+        @test MPSGE.Complementarity.result_value(m._jump_model[:PF][:l]) ≈ 1.
+        @test MPSGE.Complementarity.result_value(m._jump_model[:PF][:k]) ≈ 1.
         @test MPSGE.Complementarity.result_value(m._jump_model[:Y]) ≈ 6.
         @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("P[g1]‡X[s1]")]) ≈ 6.
         @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("P[g2]‡X[s1]")]) ≈ 2.
@@ -271,19 +271,19 @@ using MPSGE.JuMP.Containers
         @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("P[g1]ρY")]) ≈ 2.
         @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("P[g2]ρY")]) ≈ 4.
 
-        # JuMP.set_value(:Y, 6.4)
-        # set_fixed!(:Y, true)
-        
-
-                # @test value(m, :X[:s1]) ≈ 1.
-        # @test MPSGE.Complementarity.result_value(m._jump_model[:X[:s2]]) ≈ 1.
-        # @test MPSGE.Complementarity.result_value(m._jump_model[:P[:g1]]) ≈ 1.
-        # @test MPSGE.Complementarity.result_value(m._jump_model[:P[:g2]]) ≈ 1.
-        # @test MPSGE.Complementarity.result_value(m._jump_model[:PF[:l]]) ≈ 1.
-        # @test MPSGE.Complementarity.result_value(m._jump_model[:PF[:k]]) ≈ 1.
-        
-        # These should be ready for once we can reset and fix Y to 6.4
-        # @test MPSGE.Complementarity.result_value(m._jump_model[:Y]) ≈ 6.4
+# Todo this needs to populate to PF[:l] and update Y (which is then fixed at 6.4)
+#         
+        set_value(endow, 1.1)
+        set_fixed!(Y, true)
+        solve!(m)        
+# These should be ready for once we can PF[:l] and fix Y to 6.4
+        # @test MPSGE.Complementarity.result_value(m._jump_model[:X][:s1]) ≈ 0.99692562
+        # @test MPSGE.Complementarity.result_value(m._jump_model[:X][:s2]) ≈ 1.09975731
+        # @test MPSGE.Complementarity.result_value(m._jump_model[:P][:g1]) ≈ 1.01306317
+        # @test MPSGE.Complementarity.result_value(m._jump_model[:P][:g2]) ≈ 0.99467892
+        # @test MPSGE.Complementarity.result_value(m._jump_model[:PF][:l]) ≈ 0.97665932
+        # @test MPSGE.Complementarity.result_value(m._jump_model[:PF][:k]) ≈ 1.0513495
+        # @test MPSGE.Complementarity.result_value(m._jump_model[:Y]) ≈ 6.4   
         # @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("P[g1]‡X[s1]")]) ≈ 6.0271570795595
         # @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("P[g2]‡X[s1]")]) ≈ 1.97259368637181
         # @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("P[g1]‡X[s2]")]) ≈ 2.03066186698742
