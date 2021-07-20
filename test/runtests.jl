@@ -1,5 +1,6 @@
 using MPSGE
 using Test
+using MPSGE.JuMP.Containers
 
 @testset "MPSGE" begin
 
@@ -163,4 +164,54 @@ using Test
         @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PY†U")]) ≈ 49.6833066029729
     end
     
+    @testset "TWOBYTWO (indexed version)" begin
+        m = Model()
+        goods = [:x, :y]
+        factors = [:l, :k]
+        factor = DenseAxisArray(Float64[50 50; 20 30], goods, factors)
+        supply = DenseAxisArray(Float64[100, 50], goods)
+        @parameter(m, endow, 1.0)
+        Y = add!(m, Sector(:Y, indices=(goods,)))
+        U = add!(m, Sector(:U))
+        PC = add!(m, Commodity(:PC, indices=(goods,)))
+        PU = add!(m, Commodity(:PU))
+        PF = add!(m, Commodity(:PF, indices=(factors,)))
+        RA = add!(m, Consumer(:RA, benchmark=150.))
+
+        for i in goods
+            @production(m, Y[i], 1, [Output(PC[i], supply[i])], [Input(PF[:l], factor[i,:l]), Input(PF[:k], factor[i,:k])])
+        end
+        @production(m, U, 1, [Output(PU, 150)], [Input(PC[:x], 100), Input(PC[:y], 50)])
+        @demand(m, RA, [Demand(PU, 150)], [Endowment(PF[:l], :(70 * $endow)), Endowment(PF[:k], 80.)])
+
+        solve!(m, cumulative_iteration_limit=0)
+        
+        # @test value(m, Y[:x]) ≈ 1.
+        @test Y[:x].index ≈ 1.
+        @test Y[:y].index ≈ 1.
+        # @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("Y[:y]")]) ≈ 1.
+        @test MPSGE.Complementarity.result_value(m._jump_model[:U]) ≈ 1.
+        @test MPSGE.Complementarity.result_value(m._jump_model[:RA]) ≈ 150.
+        # @test MPSGE.Complementarity.result_value(m._jump_model[PC[:x]]) ≈ 1.
+        @test PC[:x].index ≈ 1.
+        # @test MPSGE.Complementarity.result_value(m._jump_model[PC[:y]]) ≈ 1.
+        @test PC[:y].index ≈ 1.
+        @test MPSGE.Complementarity.result_value(m._jump_model[:PU]) ≈ 1.
+        # @test MPSGE.Complementarity.result_value(m._jump_model[PF[:l]]) ≈ 1.
+        @test PF[:l].index ≈ 1.
+        # @test MPSGE.Complementarity.result_value(m._jump_model[PF[:k]]) ≈ 1.
+        @test PF[:k].index ≈ 1.
+        @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PF[l]†Y[x]")]) ≈ 50.
+        @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PF[l]†Y[y]")]) ≈ 20.
+        @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PF[k]†Y[x]")]) ≈ 50.
+        @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PF[k]†Y[y]")]) ≈ 30.
+        @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PC[x]†U")]) ≈ 100.
+        @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PC[y]†U")]) ≈ 50.
+
+        set_fixed!(PC[:x], true)
+        set_value(endow, 1.1)
+
+        solve!(m)
+    end
+
 end
