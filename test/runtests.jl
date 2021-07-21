@@ -271,33 +271,55 @@ using MPSGE.JuMP.Containers
         @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("P[g1]ρY")]) ≈ 2.
         @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("P[g2]ρY")]) ≈ 4.
 
-# Todo this needs to populate to PF[:l] and update Y (which is then fixed at 6.4)
-#         
-        set_value(endow, 1.1)
+# Todo this needs to update e0[:l] and update Y (which is then fixed at 6.4)
+# And then re-solve for the counter-factual. For now, re-running the model with the different benchmark
+        # Set_value!(Y, sum(e0))        
+        # set_fixed!(Y, true)
+        #solve!(m)        
+
+        m = Model()
+        goods = [:g1, :g2]
+        factors = [:l, :k]
+        sectors = [:s1, :s2]
+        make0 = DenseAxisArray(Float64[6 2; 2 10], goods, sectors)
+        use0 = DenseAxisArray(Float64[4 2; 2 6], goods, sectors)
+        fd0 = DenseAxisArray(Float64[1 3; 1 1], factors, sectors)
+        c0 = DenseAxisArray(Float64[2, 4], goods)
+        e0 = DenseAxisArray(Float64[sum(fd0[f,:]) for f in factors], factors)
+        @parameter(m, endow, 1.0)
+        X = add!(m, Sector(:X, indices=(sectors,)))
+        P = add!(m, Commodity(:P, indices=(goods,)))
+        PF = add!(m, Commodity(:PF, indices=(factors,)))
+        e0[:l] = e0[:l] * 1.1
+        Y = add!(m, Consumer(:Y, benchmark=sum(e0)))
         set_fixed!(Y, true)
-        solve!(m)        
-# These should be ready for once we can PF[:l] and fix Y to 6.4
-        # @test MPSGE.Complementarity.result_value(m._jump_model[:X][:s1]) ≈ 0.99692562
-        # @test MPSGE.Complementarity.result_value(m._jump_model[:X][:s2]) ≈ 1.09975731
-        # @test MPSGE.Complementarity.result_value(m._jump_model[:P][:g1]) ≈ 1.01306317
-        # @test MPSGE.Complementarity.result_value(m._jump_model[:P][:g2]) ≈ 0.99467892
-        # @test MPSGE.Complementarity.result_value(m._jump_model[:PF][:l]) ≈ 0.97665932
-        # @test MPSGE.Complementarity.result_value(m._jump_model[:PF][:k]) ≈ 1.0513495
-        # @test MPSGE.Complementarity.result_value(m._jump_model[:Y]) ≈ 6.4   
-        # @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("P[g1]‡X[s1]")]) ≈ 6.0271570795595
-        # @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("P[g2]‡X[s1]")]) ≈ 1.97259368637181
-        # @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("P[g1]‡X[s2]")]) ≈ 2.03066186698742
-        # @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("P[g2]‡X[s2]")]) ≈ 9.9691
-        # @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("P[g1]†X[s1]")]) ≈ 3.98197684247759
-        # @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("P[g2]†X[s1]")]) ≈ 2.02778707866119
-        # @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PF[l]†X[s1]")]) ≈ 1.03260012599366
-        # @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PF[k]†X[s1]")]) ≈ 0.959241925360056
-        # @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("P[g1]†X[s2]")]) ≈ 1.96980110341978
-        # @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("P[g2]†X[s2]")]) ≈ 6.0186
-        # @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PF[l]†X[s2]")]) ≈ 3.06483480444652
-        # @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PF[k]†X[s2]")]) ≈ 0.94903406
-        # @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("P[g1]ρY")]) ≈ 2.10582454229057
-        # @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("P[g2]ρY")]) ≈ 4.28949135539776
+        for j in sectors
+            @production(m, X[j], 1, [Output(P[i], make0[i,j]) for i in goods], [[Input(P[i], use0[i,j]) for i in goods]; [Input(PF[f], fd0[f,j]) for f in factors]])
+        end
+        @demand(m, Y, [Demand(P[i], c0[i]) for i in goods], [Endowment(PF[:k], e0[:k]), Endowment(PF[:l], e0[:l])])
+        
+        solve!(m)
+        @test MPSGE.Complementarity.result_value(m._jump_model[:X][:s1]) ≈ 0.99692562
+        @test MPSGE.Complementarity.result_value(m._jump_model[:X][:s2]) ≈ 1.09975731
+        @test MPSGE.Complementarity.result_value(m._jump_model[:P][:g1]) ≈ 1.01306317
+        @test MPSGE.Complementarity.result_value(m._jump_model[:P][:g2]) ≈ 0.99467892
+        @test MPSGE.Complementarity.result_value(m._jump_model[:PF][:l]) ≈ 0.97665932
+        @test MPSGE.Complementarity.result_value(m._jump_model[:PF][:k]) ≈ 1.0513495
+        @test MPSGE.Complementarity.result_value(m._jump_model[:Y]) ≈ 6.4   
+        @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("P[g1]‡X[s1]")]) ≈ 6.0271570795595
+        @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("P[g2]‡X[s1]")]) ≈ 1.97259368637181
+        @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("P[g1]‡X[s2]")]) ≈ 2.03066186698742
+        @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("P[g2]‡X[s2]")]) ≈ 9.96905522562002 #note - digits after 9.969 added from MPSGE.jl results bc GAMS not showing
+        @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("P[g1]†X[s1]")]) ≈ 3.98197684247759
+        @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("P[g2]†X[s1]")]) ≈ 2.02778707866119
+        @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PF[l]†X[s1]")]) ≈ 1.03260012599366
+        @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PF[k]†X[s1]")]) ≈ 0.959241925360056
+        @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("P[g1]†X[s2]")]) ≈ 1.96980110341978
+        @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("P[g2]†X[s2]")]) ≈ 6.018624497730061 #note - digits after 6.0186 added from MPSGE.jl results bc GAMS not showing
+        @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PF[l]†X[s2]")]) ≈ 3.06483480444652
+        @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PF[k]†X[s2]")]) ≈ 0.94903406
+        @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("P[g1]ρY")]) ≈ 2.1058245831306
+        @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("P[g2]ρY")]) ≈ 4.28949135539776
 
     end
 end

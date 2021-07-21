@@ -78,6 +78,17 @@ function set_all_bounds(m)
                 end
             end
         end
+    
+    end
+    for cs in m._consumers
+        jump_var = jm[cs.name]
+        if cs.fixed
+            JuMP.fix(jump_var, cs.benchmark, force=true)
+        else
+            if JuMP.is_fixed(jump_var)
+                JuMP.unfix(jump_var)
+            end
+        end
     end
 end
 
