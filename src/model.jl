@@ -349,6 +349,14 @@ function JuMP.set_value(p::ParameterRef, new_value::Float64)
     p.model._parameters[p.index].value = new_value
 end
 
+function JuMP.set_value(c::ConsumerRef, new_value::Float64)
+    c.model._consumers[c.index].benchmark = new_value
+end
+
+function JuMP.set_value(c::CommodityRef, new_value::Float64)
+    c.model._commodities[c.index].benchmark = new_value
+end
+
 function set_fixed!(commodity::CommodityRef, new_value::Bool)    
     c = commodity.model._commodities[commodity.index]
     if c isa ScalarCommodity
