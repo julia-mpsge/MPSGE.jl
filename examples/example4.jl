@@ -19,18 +19,20 @@ X = add!(m, Sector(:X, indices=(sectors,)))
 
 P = add!(m, Commodity(:P, indices=(goods,)))
 PF = add!(m, Commodity(:PF, indices=(factors,)))
-# e0[:l] = e0[:l] * 1.1 # un-comment out and run for counter factual only
 Y = add!(m, Consumer(:Y, benchmark=sum(e0)))
-# set_fixed!(Y, true) # un-comment out and run for counter factual only
 
 for j in sectors
     @production(m, X[j], 1, [Output(P[i], make0[i,j]) for i in goods], [[Input(P[i], use0[i,j]) for i in goods]; [Input(PF[f], fd0[f,j]) for f in factors]])
 end
 
-@demand(m, Y, [Demand(P[i], c0[i]) for i in goods], [Endowment(PF[f], e0[f]) for f in factors])
+@demand(m, Y, [Demand(P[i], c0[i]) for i in goods], [Endowment(PF[:k], e0[:k]), Endowment(PF[:l], :($endow * $(e0[:l])))])
 
 solve!(m, cumulative_iteration_limit=0)
 solve!(m)
-# For now, go up and unomment e0[:l] and re-run to update Y value
+set_value(endow, 1.1)
+set_value(Y, 6.4)
+set_fixed!(Y, true)
+
+solve!(m)
 
 algebraic_version(m)
