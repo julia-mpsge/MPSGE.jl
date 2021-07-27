@@ -67,13 +67,14 @@ function Commodity(name; indices=nothing, kwargs...)
     return indices===nothing ? ScalarCommodity(name; kwargs...) : IndexedCommodity(name, indices; kwargs...)
 end
 
-struct Consumer
+mutable struct Consumer
     name::Symbol
     benchmark::Float64
     description::String
+    fixed::Bool
 
-    function Consumer(name::Symbol; description::AbstractString="", benchmark::Float64=1.)
-        return new(name, benchmark, description)
+    function Consumer(name::Symbol; description::AbstractString="", benchmark::Float64=1., fixed=false)
+        return new(name, benchmark, description, fixed)
     end
 end
 
@@ -348,6 +349,14 @@ function JuMP.set_value(p::ParameterRef, new_value::Float64)
     p.model._parameters[p.index].value = new_value
 end
 
+function JuMP.set_value(c::ConsumerRef, new_value::Float64)
+    c.model._consumers[c.index].benchmark = new_value
+end
+
+function JuMP.set_value(c::CommodityRef, new_value::Float64)
+    c.model._commodities[c.index].benchmark = new_value
+end
+
 function set_fixed!(commodity::CommodityRef, new_value::Bool)    
     c = commodity.model._commodities[commodity.index]
     if c isa ScalarCommodity
@@ -355,5 +364,11 @@ function set_fixed!(commodity::CommodityRef, new_value::Bool)
     else
         c.fixed[commodity.subindex] = new_value
     end
+    return nothing
+end
+
+function set_fixed!(consumer::ConsumerRef, new_value::Bool)    
+    c = consumer.model._consumers[consumer.index]
+    c.fixed = new_value
     return nothing
 end
