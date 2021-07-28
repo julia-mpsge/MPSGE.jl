@@ -20,6 +20,8 @@ end
 struct ConsumerRef
     model
     index::Int
+    subindex::Any
+    subindex_names::Any
 end
 
 mutable struct Parameter
@@ -305,28 +307,13 @@ function Demand(commodity::CommodityRef, quantity::Number)
     return Demand(commodity, convert(Float64, quantity))
 end
 
-function add!(m::Model, s::Sector)
-    m._jump_model = nothing
-    push!(m._sectors, s)
-    if s.indices===nothing
-        return SectorRef(m, length(m._sectors), nothing, nothing)
-    else
-        temp_array = Array{SectorRef}(undef, length.(s.indices)...)
-
-        for i in CartesianIndices(temp_array)
-            temp_array[i] = SectorRef(m, length(m._sectors), i, string(s.indices[1][i]))
-        end
-        return JuMP.Containers.DenseAxisArray(temp_array, s.indices...)
-    end
-end
-
 function add!(m::Model, s::ScalarSector)
     m._jump_model = nothing
     push!(m._sectors, s)
     return SectorRef(m, length(m._sectors), nothing, nothing)
 end
 
-function add!(m::Model, s::IndexedCommodity)
+function add!(m::Model, s::IndexedSector)
     m._jump_model = nothing
     push!(m._sectors, s)
 
@@ -358,10 +345,23 @@ function add!(m::Model, c::IndexedCommodity)
     return JuMP.Containers.DenseAxisArray(temp_array, c.indices...)
 end
 
-function add!(m::Model, c::Consumer)
+function add!(m::Model, cn::ScalarConsumer)
     m._jump_model = nothing
-    push!(m._consumers, c)
-    return ConsumerRef(m, length(m._consumers))
+    push!(m._consumers, cn)
+    return ConsumerRef(m, length(m._consumers), nothing, nothing)
+end
+
+function add!(m::Model, cn::IndexedConsumer)
+    m._jump_model = nothing
+    push!(m._consumers, cn)
+
+    temp_array = Array{ConsumerRef}(undef, length.(cn.indices)...)
+
+    for i in CartesianIndices(temp_array)
+        # TODO Fix the [1] thing here to properly work with n-dimensional data
+        temp_array[i] = ConsumerRef(m, length(m._consumers), i, string(cn.indices[1][i]))
+    end
+    return JuMP.Containers.DenseAxisArray(temp_array, cn.indices...)
 end
 
 function add!(m::Model, p::Production)
