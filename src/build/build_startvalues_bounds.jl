@@ -1,11 +1,11 @@
 function set_all_start_values(m)
     jm = m._jump_model
     for s in m._sectors
-        if s.indices===nothing
+        if s isa ScalarSector
             Complementarity.set_start_value(jm[s.name], s.benchmark)
         else
             for i in Iterators.product(s.indices...)
-                Complementarity.set_start_value(jm[s.name][i...], s.benchmark)
+                Complementarity.set_start_value(jm[s.name][i...], s.benchmark[i...])
             end
         end
     end

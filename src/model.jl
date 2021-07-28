@@ -27,15 +27,33 @@ mutable struct Parameter
     value::Float64
 end
 
-struct Sector
+abstract type Sector end;
+
+mutable struct ScalarSector <: Sector
     name::Symbol
-    indices::Any
     benchmark::Float64
     description::String
+    fixed::Bool
 
-    function Sector(name::Symbol; description::AbstractString="", benchmark::Float64=1., indices=nothing)
-        return new(name, indices, benchmark, description)
+    function ScalarSector(name::Symbol; description::AbstractString="", benchmark::Float64=1., fixed=false)
+        return new(name, benchmark, description, fixed)
     end
+end
+
+mutable struct IndexedSector <: Sector
+    name::Symbol
+    indices::Any
+    benchmark::DenseAxisArray
+    description::String
+    fixed::DenseAxisArray
+
+    function IndexedSector(name::Symbol, indices; description::AbstractString="", benchmark::Float64=1., fixed=false)
+        return new(name, indices, DenseAxisArray(fill(benchmark, length.(indices)...), indices...), description, DenseAxisArray(fill(fixed, length.(indices)...), indices...))
+    end
+end
+
+function Sector(name; indices=nothing, kwargs...)
+    return indices===nothing ? ScalarSector(name; kwargs...) : IndexedSector(name, indices; kwargs...)
 end
 
 abstract type Commodity end;
@@ -300,6 +318,25 @@ function add!(m::Model, s::Sector)
         end
         return JuMP.Containers.DenseAxisArray(temp_array, s.indices...)
     end
+end
+
+function add!(m::Model, s::ScalarSector)
+    m._jump_model = nothing
+    push!(m._sectors, s)
+    return SectorRef(m, length(m._sectors), nothing, nothing)
+end
+
+function add!(m::Model, s::IndexedCommodity)
+    m._jump_model = nothing
+    push!(m._sectors, s)
+
+    temp_array = Array{SectorRef}(undef, length.(s.indices)...)
+
+    for i in CartesianIndices(temp_array)
+        # TODO Fix the [1] thing here to properly work with n-dimensional data
+        temp_array[i] = SectorRef(m, length(m._sectors), i, string(s.indices[1][i]))
+    end
+    return JuMP.Containers.DenseAxisArray(temp_array, s.indices...)
 end
 
 function add!(m::Model, c::ScalarCommodity)
