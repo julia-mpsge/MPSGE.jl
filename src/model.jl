@@ -67,15 +67,33 @@ function Commodity(name; indices=nothing, kwargs...)
     return indices===nothing ? ScalarCommodity(name; kwargs...) : IndexedCommodity(name, indices; kwargs...)
 end
 
-mutable struct Consumer
+abstract type Consumer end;
+
+mutable struct ScalarConsumer <: Consumer
     name::Symbol
     benchmark::Float64
     description::String
     fixed::Bool
-
-    function Consumer(name::Symbol; description::AbstractString="", benchmark::Float64=1., fixed=false)
+    
+    function ScalarConsumer(name::Symbol; description::AbstractString="", benchmark::Float64=1., fixed=false)
         return new(name, benchmark, description, fixed)
     end
+end
+
+mutable struct IndexedConsumer <: Consumer
+    name::Symbol
+    indices::Any
+    benchmark::DenseAxisArray
+    description::String
+    fixed::DenseAxisArray
+
+    function IndexedConsumer(name::Symbol, indices; description::AbstractString="", benchmark::Float64=1., fixed=false)
+        return new(name, indices, DenseAxisArray(fill(benchmark, length.(indices)...), indices...), description, DenseAxisArray(fill(fixed, length.(indices)...), indices...))
+    end
+end
+
+function Consumer(name; indices=nothing, kwargs...)
+    return indices===nothing ? ScalarConsumer(name; kwargs...) : IndexedConsumer(name, indices; kwargs...)
 end
 
 mutable struct Input
@@ -369,6 +387,10 @@ end
 
 function set_fixed!(consumer::ConsumerRef, new_value::Bool)    
     c = consumer.model._consumers[consumer.index]
-    c.fixed = new_value
+    if c isa ScalarConsumer
+        c.fixed = new_value
+    else
+        c.fixed[consumer.subindex] = new_value
+    end
     return nothing
 end
