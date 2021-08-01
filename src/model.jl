@@ -268,8 +268,12 @@ function get_name(commodity::CommodityRef, include_subindex=false)
     end
 end
 
-function get_name(consumer::ConsumerRef)
-    return consumer.model._consumers[consumer.index].name
+function get_name(consumer::ConsumerRef, include_subindex=false)
+    if consumer.subindex===nothing || include_subindex===false
+        return consumer.model._consumers[consumer.index].name
+    else
+        return Symbol("$(consumer.model._consumers[consumer.index].name )[$(consumer.subindex_names)]") 
+    end 
 end
 
 function get_full(s::SectorRef)
