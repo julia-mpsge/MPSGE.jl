@@ -431,3 +431,13 @@ function set_fixed!(consumer::ConsumerRef, new_value::Bool)
     end
     return nothing
 end
+
+function set_fixed!(sector::SectorRef, new_value::Bool)    
+    s = sector.model._sectors[sector.index]
+    if s isa ScalarSector
+        s.fixed = new_value
+    else
+        s.fixed[sector.subindex] = new_value
+    end
+    return nothing
+end
