@@ -20,6 +20,8 @@ end
 struct ConsumerRef
     model
     index::Int
+    subindex::Any
+    subindex_names::Any
 end
 
 mutable struct Parameter
@@ -27,15 +29,33 @@ mutable struct Parameter
     value::Float64
 end
 
-struct Sector
+abstract type Sector end;
+
+mutable struct ScalarSector <: Sector
     name::Symbol
-    indices::Any
     benchmark::Float64
     description::String
+    fixed::Bool
 
-    function Sector(name::Symbol; description::AbstractString="", benchmark::Float64=1., indices=nothing)
-        return new(name, indices, benchmark, description)
+    function ScalarSector(name::Symbol; description::AbstractString="", benchmark::Float64=1., fixed=false)
+        return new(name, benchmark, description, fixed)
     end
+end
+
+mutable struct IndexedSector <: Sector
+    name::Symbol
+    indices::Any
+    benchmark::DenseAxisArray
+    description::String
+    fixed::DenseAxisArray
+
+    function IndexedSector(name::Symbol, indices; description::AbstractString="", benchmark::Float64=1., fixed=false)
+        return new(name, indices, DenseAxisArray(fill(benchmark, length.(indices)...), indices...), description, DenseAxisArray(fill(fixed, length.(indices)...), indices...))
+    end
+end
+
+function Sector(name; indices=nothing, kwargs...)
+    return indices===nothing ? ScalarSector(name; kwargs...) : IndexedSector(name, indices; kwargs...)
 end
 
 abstract type Commodity end;
@@ -67,15 +87,33 @@ function Commodity(name; indices=nothing, kwargs...)
     return indices===nothing ? ScalarCommodity(name; kwargs...) : IndexedCommodity(name, indices; kwargs...)
 end
 
-mutable struct Consumer
+abstract type Consumer end;
+
+mutable struct ScalarConsumer <: Consumer
     name::Symbol
     benchmark::Float64
     description::String
     fixed::Bool
-
-    function Consumer(name::Symbol; description::AbstractString="", benchmark::Float64=1., fixed=false)
+    
+    function ScalarConsumer(name::Symbol; description::AbstractString="", benchmark::Float64=1., fixed=false)
         return new(name, benchmark, description, fixed)
     end
+end
+
+mutable struct IndexedConsumer <: Consumer
+    name::Symbol
+    indices::Any
+    benchmark::DenseAxisArray
+    description::String
+    fixed::DenseAxisArray
+
+    function IndexedConsumer(name::Symbol, indices; description::AbstractString="", benchmark::Float64=1., fixed=false)
+        return new(name, indices, DenseAxisArray(fill(benchmark, length.(indices)...), indices...), description, DenseAxisArray(fill(fixed, length.(indices)...), indices...))
+    end
+end
+
+function Consumer(name; indices=nothing, kwargs...)
+    return indices===nothing ? ScalarConsumer(name; kwargs...) : IndexedConsumer(name, indices; kwargs...)
 end
 
 mutable struct Input
@@ -230,8 +268,12 @@ function get_name(commodity::CommodityRef, include_subindex=false)
     end
 end
 
-function get_name(consumer::ConsumerRef)
-    return consumer.model._consumers[consumer.index].name
+function get_name(consumer::ConsumerRef, include_subindex=false)
+    if consumer.subindex===nothing || include_subindex===false
+        return consumer.model._consumers[consumer.index].name
+    else
+        return Symbol("$(consumer.model._consumers[consumer.index].name )[$(consumer.subindex_names)]") 
+    end 
 end
 
 function get_full(s::SectorRef)
@@ -269,19 +311,23 @@ function Demand(commodity::CommodityRef, quantity::Number)
     return Demand(commodity, convert(Float64, quantity))
 end
 
-function add!(m::Model, s::Sector)
+function add!(m::Model, s::ScalarSector)
     m._jump_model = nothing
     push!(m._sectors, s)
-    if s.indices===nothing
-        return SectorRef(m, length(m._sectors), nothing, nothing)
-    else
-        temp_array = Array{SectorRef}(undef, length.(s.indices)...)
+    return SectorRef(m, length(m._sectors), nothing, nothing)
+end
 
-        for i in CartesianIndices(temp_array)
-            temp_array[i] = SectorRef(m, length(m._sectors), i, string(s.indices[1][i]))
-        end
-        return JuMP.Containers.DenseAxisArray(temp_array, s.indices...)
+function add!(m::Model, s::IndexedSector)
+    m._jump_model = nothing
+    push!(m._sectors, s)
+
+    temp_array = Array{SectorRef}(undef, length.(s.indices)...)
+
+    for i in CartesianIndices(temp_array)
+        # TODO Fix the [1] thing here to properly work with n-dimensional data
+        temp_array[i] = SectorRef(m, length(m._sectors), i, string(s.indices[1][i]))
     end
+    return JuMP.Containers.DenseAxisArray(temp_array, s.indices...)
 end
 
 function add!(m::Model, c::ScalarCommodity)
@@ -303,10 +349,23 @@ function add!(m::Model, c::IndexedCommodity)
     return JuMP.Containers.DenseAxisArray(temp_array, c.indices...)
 end
 
-function add!(m::Model, c::Consumer)
+function add!(m::Model, cn::ScalarConsumer)
     m._jump_model = nothing
-    push!(m._consumers, c)
-    return ConsumerRef(m, length(m._consumers))
+    push!(m._consumers, cn)
+    return ConsumerRef(m, length(m._consumers), nothing, nothing)
+end
+
+function add!(m::Model, cn::IndexedConsumer)
+    m._jump_model = nothing
+    push!(m._consumers, cn)
+
+    temp_array = Array{ConsumerRef}(undef, length.(cn.indices)...)
+
+    for i in CartesianIndices(temp_array)
+        # TODO Fix the [1] thing here to properly work with n-dimensional data
+        temp_array[i] = ConsumerRef(m, length(m._consumers), i, string(cn.indices[1][i]))
+    end
+    return JuMP.Containers.DenseAxisArray(temp_array, cn.indices...)
 end
 
 function add!(m::Model, p::Production)
@@ -369,6 +428,20 @@ end
 
 function set_fixed!(consumer::ConsumerRef, new_value::Bool)    
     c = consumer.model._consumers[consumer.index]
-    c.fixed = new_value
+    if c isa ScalarConsumer
+        c.fixed = new_value
+    else
+        c.fixed[consumer.subindex] = new_value
+    end
+    return nothing
+end
+
+function set_fixed!(sector::SectorRef, new_value::Bool)    
+    s = sector.model._sectors[sector.index]
+    if s isa ScalarSector
+        s.fixed = new_value
+    else
+        s.fixed[sector.subindex] = new_value
+    end
     return nothing
 end

@@ -6,12 +6,12 @@ function add_variable!(jm::JuMP.Model, name::Symbol, lower_bound::Union{Float64,
     end
 end
 
-function add_sector_to_jump!(jm, sector)
-    if sector.indices===nothing
-        add_variable!(jm, sector.name, 0.)
-    else
+function add_sector_to_jump!(jm, sector::ScalarSector)
+    add_variable!(jm, sector.name, 0.)
+end
+
+function add_sector_to_jump!(jm, sector::IndexedSector)        
         jm[sector.name] = @eval(JuMP.@variable($jm, [$( ( :($(gensym())=$i) for i in sector.indices)... )], base_name=string($(QuoteNode(sector.name))), lower_bound=0.))
-    end
 end
 
 function add_commodity_to_jump!(jm, commodity::ScalarCommodity)
@@ -22,6 +22,13 @@ function add_commodity_to_jump!(jm, commodity::IndexedCommodity)
     jm[commodity.name] = @eval(JuMP.@variable($jm, [$( ( :($(gensym())=$i) for i in commodity.indices)... )], base_name=string($(QuoteNode(commodity.name))), lower_bound=0.))
 end
 
+function add_consumer_to_jump!(jm, consumer::ScalarConsumer)
+    add_variable!(jm, consumer.name, 0.)
+end
+
+function add_consumer_to_jump!(jm, consumer::IndexedConsumer)
+    jm[consumer.name] = @eval(JuMP.@variable($jm, [$( ( :($(gensym())=$i) for i in consumer.indices)... )], base_name=string($(QuoteNode(consumer.name))), lower_bound=0.))
+end
 
 function build_variables!(m, jm)
     # Add all parameters
@@ -56,7 +63,7 @@ function build_variables!(m, jm)
     end
 
     for c in m._consumers
-        add_variable!(jm, c.name)
+        add_consumer_to_jump!(jm, c)
     end
 
     # Add final demand variables
