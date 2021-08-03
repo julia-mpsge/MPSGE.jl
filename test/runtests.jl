@@ -7,10 +7,10 @@ using MPSGE.JuMP.Containers
     @testset "TWOBYTWO (functional version)" begin
         m = Model()
        
-        inputcoeff = add!(m, Parameter(:inputcoeff, 2.))
-        endow = add!(m, Parameter(:endow, 2.))
-        elascoeff = add!(m, Parameter(:elascoeff, 2.))
-        outputmult = add!(m, Parameter(:outputmult, 2.))
+        inputcoeff = add!(m, Parameter(:inputcoeff, value=2.))
+        endow = add!(m, Parameter(:endow, value=2.))
+        elascoeff = add!(m, Parameter(:elascoeff, value=2.))
+        outputmult = add!(m, Parameter(:outputmult, value=2.))
 
         
         X = add!(m, Sector(:X))

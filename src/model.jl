@@ -1,6 +1,8 @@
 struct ParameterRef
     model
     index::Int
+    subindex::Any
+    subindex_names::Any
 end
 
 struct SectorRef
@@ -24,9 +26,31 @@ struct ConsumerRef
     subindex_names::Any
 end
 
-mutable struct Parameter
+abstract type Parameter end;
+
+mutable struct ScalarParameter <: Parameter
     name::Symbol
     value::Float64
+    description::String
+
+    function ScalarParameter(name::Symbol; value::Float64=1., description::AbstractString="")
+        return new(name, value, description)
+    end
+end
+
+mutable struct IndexedParameter <: Parameter
+    name::Symbol
+    indices::Any
+    value::DenseAxisArray
+    description::String
+
+    function IndexedParameter(name::Symbol, indices; value::Float64=1., description::AbstractString="")
+        return new(name, indices, DenseAxisArray(fill(value, length.(indices)...), indices...), description)
+    end
+end
+
+function Parameter(name; indices=nothing, kwargs...)
+    return indices===nothing ? ScalarParameter(name; kwargs...) : IndexedParameter(name, indices; kwargs...)
 end
 
 abstract type Sector end;
@@ -380,10 +404,23 @@ function add!(m::Model, c::DemandFunction)
     return m
 end
 
-function add!(m::Model, p::Parameter)
+function add!(m::Model, p::ScalarParameter)
     m._jump_model = nothing
     push!(m._parameters, p)
-    return ParameterRef(m, length(m._parameters))
+    return ParameterRef(m, length(m._parameters), nothing, nothing)
+end
+
+function add!(m::Model, p::IndexedParameter)
+    m._jump_model = nothing
+    push!(m._parameters, p)
+
+    temp_array = Array{ParameterRef}(undef, length.(p.indices)...)
+
+    for i in CartesianIndices(temp_array)
+        # TODO Fix the [1] thing here to properly work with n-dimensional data
+        temp_array[i] = ParameterRef(m, length(m._parameters), i, string(p.indices[1][i]))
+    end
+    return JuMP.Containers.DenseAxisArray(temp_array, p.indices...)
 end
 
 function JuMP.value(m::Model, name::Symbol)
