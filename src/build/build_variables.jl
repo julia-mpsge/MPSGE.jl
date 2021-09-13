@@ -6,6 +6,15 @@ function add_variable!(jm::JuMP.Model, name::Symbol, lower_bound::Union{Float64,
     end
 end
 
+function add_parameter_to_jump!(jm, parameter::ScalarParameter)
+    jmp_p = @eval(JuMP.@NLparameter($jm, $(parameter.name) == $(parameter.value)))
+    jm[parameter.name] = jmp_p
+end
+
+function add_parameter_to_jump!(jn, parameter::IndexedParameter)
+    jm[parameter.name] = @eval(JuMP.@NLparameter($jm, [$( ( :($(gensym())=$i) for i in parameter.indices)... )], base_name=string($(QuoteNode(parameter.name)))))
+end
+
 function add_sector_to_jump!(jm, sector::ScalarSector)
     add_variable!(jm, sector.name, 0.)
 end
@@ -34,8 +43,9 @@ function build_variables!(m, jm)
     # Add all parameters
 
     for p in m._parameters
-        jmp_p = @eval(JuMP.@NLparameter($jm, $(p.name) == $(p.value)))
-        jm[p.name] = jmp_p
+        add_parameter_to_jump!(jm, p)
+        # jmp_p = @eval(JuMP.@NLparameter($jm, $(p.name) == $(p.value)))
+        # jm[p.name] = jmp_p
     end
 
     # Add all required variables

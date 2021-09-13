@@ -7,7 +7,7 @@ function _add_kw_args(call, kw_args)
 end
 
 macro parameter(model, name, value, kwargs...)
-    constr_call = :(Parameter($(QuoteNode(name)), $(esc(value))))
+    constr_call = :(Parameter($(QuoteNode(name)), value=($(esc(value)))))
 
     _add_kw_args(constr_call, kwargs)
 
