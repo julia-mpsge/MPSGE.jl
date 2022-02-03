@@ -11,7 +11,7 @@ function add_parameter_to_jump!(jm, parameter::ScalarParameter)
     jm[parameter.name] = jmp_p
 end
 
-function add_parameter_to_jump!(jn, parameter::IndexedParameter)
+function add_parameter_to_jump!(jm, parameter::IndexedParameter)
     jm[parameter.name] = @eval(JuMP.@NLparameter($jm, [$( ( :($(gensym())=$i) for i in parameter.indices)... )], base_name=string($(QuoteNode(parameter.name)))))
 end
 
