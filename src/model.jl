@@ -441,15 +441,35 @@ function solve!(m::Model; solver::Symbol=:PATH, kwargs...)
     return m
 end
 
-function JuMP.set_value(p::ParameterRef, new_value::Float64)
-    p.model._parameters[p.index].value = new_value
+function JuMP.set_value(parameter::ParameterRef, new_value::Float64)
+    p = parameter.model._parameters[parameter.index]
+    if p isa ScalarParameter
+        p.value = new_value
+    else
+        p.value[parameter.subindex] = new_value
+    end
+    return nothing
 end
 
-function JuMP.set_value(c::ConsumerRef, new_value::Float64)
-    c.model._consumers[c.index].benchmark = new_value
+function JuMP.set_value(consumer::ConsumerRef, new_value::Float64)
+    c = consumer.model._consumers[consumer.index]
+    if c isa ScalarConsumer
+        c.benchmark = new_value
+    else
+        c.benchmark[consumer.subindex] = new_value
+    end
+    return nothing
 end
 
-function JuMP.set_value(c::CommodityRef, new_value::Float64)
+function JuMP.set_value(commodity::CommodityRef, new_value::Float64)
+    c = commodity.model._commodities[commodity.index]
+    if c isa ScalarCommodity
+        c.benchmark = new_value
+    else
+        c.benchmark[commodity.subindex] = new_value
+    end
+    return nothing
+
     c.model._commodities[c.index].benchmark = new_value
 end
 
