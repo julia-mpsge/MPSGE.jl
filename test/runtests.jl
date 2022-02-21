@@ -6,7 +6,7 @@ using MPSGE.JuMP.Containers
 
     @testset "TWOBYTWO (functional version)" begin
         m = Model()
-       
+# Here parameter values are doubled and input data halved from MPSGE version       
         inputcoeff = add!(m, Parameter(:inputcoeff, value=2.))
         endow = add!(m, Parameter(:endow, value=2.))
         elascoeff = add!(m, Parameter(:elascoeff, value=2.))
@@ -86,7 +86,7 @@ using MPSGE.JuMP.Containers
 
     @testset "TWOBYTWO (macro version)" begin
         m = Model()
-       
+# Here again, parameter values are doubled and input data halved from MPSGE version       
         inputcoeff = @parameter(m, inputcoeff, 2.)
         endow = @parameter(m, endow, 2.)
         elascoeff = @parameter(m, elascoeff, 2.)
@@ -238,7 +238,7 @@ using MPSGE.JuMP.Containers
         X = add!(m, Sector(:X, indices=(sectors,)))
         P = add!(m, Commodity(:P, indices=(goods,)))
         PF = add!(m, Commodity(:PF, indices=(factors,)))
-        Y = add!(m, Consumer(:Y, benchmark=sum(fd0)))
+        Y = add!(m, Consumer(:Y, benchmark=sum(fd0)))#example 4 has sum e0
         for j in sectors
             @production(m, X[j], 1, [Output(P[i], make0[i,j]) for i in goods], [[Input(P[i], use0[i,j]) for i in goods]; [Input(PF[f], fd0[f,j]) for f in factors]])
         end
@@ -274,7 +274,8 @@ using MPSGE.JuMP.Containers
 
         #Counter-factual
         set_value(endow, 1.1)
-        set_value(Y, 6.4)
+        fd0 = DenseAxisArray(Float64[1 3; 1 1], factors, sectors); fd0=fd0.*[1.1,1.0]
+        set_value(Y, sum(DenseAxisArray(Float64[sum(fd0[f,:]) for f in factors], factors)))
         set_fixed!(Y, true)
 
         solve!(m)

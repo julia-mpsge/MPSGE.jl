@@ -1,5 +1,5 @@
 using MPSGE
-
+# A replication of the MPSGE Two by Two Scalar , from https://www.gams.com/34/docs/UG_MPSGE_Intro.html#UG_MPSGE_Intro_Appendix_twobytwo1
 m = Model()
 
 @parameter(m, endow, 1.0)

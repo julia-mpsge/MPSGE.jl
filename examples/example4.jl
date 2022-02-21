@@ -1,6 +1,6 @@
 using MPSGE
 using MPSGE.JuMP.Containers
-
+#A replication of the JPMGE from https://www.gams.com/34/docs/UG_MPSGE_Intro.html#UG_MPSGE_Intro_Appendix_jpmge
 m = Model()
 
 goods = [:g1, :g2]
@@ -29,10 +29,23 @@ end
 
 solve!(m, cumulative_iteration_limit=0)
 solve!(m)
+
+#Counterfactual 1: 10% increase in labor endowment. Fix the income level at the default level, i.e. the income level corresponding to the counterfactual endowment at benchmark price
 set_value(endow, 1.1)
-set_value(Y, 6.4)
+fd0 = DenseAxisArray(Float64[1 3; 1 1], factors, sectors); fd0=fd0.*[1.1,1.0]
+set_value(Y, sum(DenseAxisArray(Float64[sum(fd0[f,:]) for f in factors], factors)))
 set_fixed!(Y, true)
 
+solve!(m)
+
+#Counterfactual 2: Fix a numeraire price index and recalculate:
+set_fixed!(Y,false)
+set_fixed!(P[:g1], true)
+solve!(m)
+
+#Counterfactual 3: Recalculate with a different numeraire. "Unfix" the price of X and fix the wage rate:
+set_fixed!(P[:g1], false)
+set_fixed!(PF[:l], true)
 solve!(m)
 
 algebraic_version(m)
