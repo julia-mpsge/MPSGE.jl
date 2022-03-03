@@ -7,7 +7,11 @@ This function takes an expression tree and replaces all instances of
 function swap_our_param_with_jump_param(jm, expr)
     return MacroTools.postwalk(expr) do x
         if x isa ParameterRef
-            return jm[x.model._parameters[x.index].name]
+            if x.subindex===nothing
+                return jm[x.model._parameters[x.index].name]
+            else
+                return jm[x.model._parameters[x.index].name][x.subindex]
+            end
         else
             return x
         end

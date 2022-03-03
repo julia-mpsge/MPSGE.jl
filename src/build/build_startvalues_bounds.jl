@@ -99,8 +99,8 @@ function set_all_parameters(m)
         if p isa ScalarParameter
             JuMP.set_value(jm[p.name], p.value)
         else
-            for pp in p.indices
-                JuMP.set_value(jm[pp.name], pp.value)
+            for pp in Iterators.product(p.indices...)
+                JuMP.set_value(jm[p.name][pp...], p.value[pp...])
             end
         end
     end
