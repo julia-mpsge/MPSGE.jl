@@ -6,7 +6,7 @@ import JuMP.Containers: DenseAxisArray
 
 export add!, Model, solve!, algebraic_version
 export Sector, Commodity, Consumer, Production, DemandFunction, Endowment, Input, Output, Parameter, Demand
-export value, set_value, set_fixed!
+export value, set_value, get_value, set_fixed!
 export @parameter, @sector, @commodity, @consumer, @production, @demand
 
 include("model.jl")

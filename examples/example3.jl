@@ -9,7 +9,7 @@ factors = [:l, :k]
 factor = DenseAxisArray(Float64[50 50; 20 30], goods, factors)
 supply = DenseAxisArray(Float64[100, 50], goods)
 
-@parameter(m, endow, 1.0) # Scalar version, macro, (update to indexed once indexed parameter finished)
+endow = add!(m, Parameter(:endow, indices=(factors,), value=1.0))
 
 Y = add!(m, Sector(:Y, indices=(goods,)))
 U = add!(m, Sector(:U))
@@ -27,7 +27,7 @@ end
 
 @production(m, U, 1, [Output(PU, 150)], [Input(PC[:x], 100), Input(PC[:y], 50)])
 
-@demand(m, RA, [Demand(PU, 150)], [Endowment(PF[:l], :(70 * $endow)), Endowment(PF[:k], 80.)])
+@demand(m, RA, [Demand(PU, 150)], [Endowment(PF[:l], :(70 * $(endow[:l]))), Endowment(PF[:k], :(80. * $(endow[:k])))])
 
 set_fixed!(PC[:x], true) # Set sector x as the numeraire
 solve!(m, cumulative_iteration_limit=0)
@@ -35,9 +35,9 @@ solve!(m)
 
 #Counterfactual 1, increase labour endowment by 10%, default normalisation of price: fix RA income at initial prices
 set_fixed!(PC[:x], false) # unfix, seems to be automatic with new numeraire in MPSGE
-set_value(endow, 1.1)
+set_value(endow[:l], 1.1)
 # In the original indexed, endow[:l] = 1.1*endow[:l]
-set_value(RA, (80. + 1.1 * 70.)) # 
+set_value(RA, get_value(endow[:k] * 80. + get_value(endow[:l]) * 70.))
 set_fixed!(RA, true)
 solve!(m)
 
