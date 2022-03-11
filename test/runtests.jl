@@ -170,7 +170,7 @@ using MPSGE.JuMP.Containers
         factors = [:l, :k]
         factor = DenseAxisArray(Float64[50 50; 20 30], goods, factors)
         supply = DenseAxisArray(Float64[100, 50], goods)
-        @parameter(m, endow, 1.0)
+        endow = add!(m, Parameter(:endow, indices=(factors,), value=1.0)) 
         Y = add!(m, Sector(:Y, indices=(goods,)))
         U = add!(m, Sector(:U))
         PC = add!(m, Commodity(:PC, indices=(goods,)))
@@ -182,7 +182,7 @@ using MPSGE.JuMP.Containers
             @production(m, Y[i], 1, [Output(PC[i], supply[i])], [Input(PF[:l], factor[i,:l]), Input(PF[:k], factor[i,:k])])
         end
         @production(m, U, 1, [Output(PU, 150)], [Input(PC[:x], 100), Input(PC[:y], 50)])
-        @demand(m, RA, [Demand(PU, 150)], [Endowment(PF[:l], :(70 * $endow)), Endowment(PF[:k], 80.)])
+        @demand(m, RA, [Demand(PU, 150)], [Endowment(PF[:l], :(70 * $(endow[:l]))), Endowment(PF[:k], :(80. * $(endow[:k])))])
 
         solve!(m, cumulative_iteration_limit=0)
         
@@ -202,8 +202,9 @@ using MPSGE.JuMP.Containers
         @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PC[x]†U")]) ≈ 100.
         @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PC[y]†U")]) ≈ 50.
 
-        set_value(endow, 1.1)
-        set_value(RA, (80. + 1.1 * 70.))
+        set_fixed!(PC[:x], false)
+        set_value(endow[:l], get_value(endow[:l]).*1.1)
+        set_value(RA, (get_value(endow[:k]) * 80. + get_value(endow[:l]) * 70.))
         set_fixed!(RA, true)
         solve!(m)
         
@@ -272,6 +273,7 @@ using MPSGE.JuMP.Containers
         @test MPSGE.Complementarity.result_value(m._jump_model[:RA]) ≈ 165
                                   
     end
+
     @testset "JPMGE (Joint Production Intermediate Demand)" begin
 
         m = Model()
@@ -283,7 +285,7 @@ using MPSGE.JuMP.Containers
         fd0 = DenseAxisArray(Float64[1 3; 1 1], factors, sectors)
         c0 = DenseAxisArray(Float64[2, 4], goods)
         e0 = DenseAxisArray(Float64[sum(fd0[f,:]) for f in factors], factors)
-        @parameter(m, endow, 1.0)
+        endow = add!(m, Parameter(:endow, indices=(factors,), value=1.0)) 
         X = add!(m, Sector(:X, indices=(sectors,)))
         P = add!(m, Commodity(:P, indices=(goods,)))
         PF = add!(m, Commodity(:PF, indices=(factors,)))
@@ -291,7 +293,8 @@ using MPSGE.JuMP.Containers
         for j in sectors
             @production(m, X[j], 1, [Output(P[i], make0[i,j]) for i in goods], [[Input(P[i], use0[i,j]) for i in goods]; [Input(PF[f], fd0[f,j]) for f in factors]])
         end
-        @demand(m, Y, [Demand(P[i], c0[i]) for i in goods], [Endowment(PF[:k], e0[:k]), Endowment(PF[:l], :($(endow) * $(e0[:l]))) ])
+
+        @demand(m, Y, [Demand(P[i], c0[i]) for i in goods], [Endowment(PF[:k], :($(endow[:k]) * $(e0[:k]))), Endowment(PF[:l], :($(endow[:l]) * $(e0[:l])))])
 
         avm = algebraic_version(m)
         @test typeof(avm) == MPSGE.AlgebraicWrapper
@@ -322,9 +325,9 @@ using MPSGE.JuMP.Containers
         
 
         #Counter-factual 1
-        set_value(endow, 1.1)
-        fd0 = DenseAxisArray(Float64[1 3; 1 1], factors, sectors); fd0=fd0.*[1.1,1.0]
-        set_value(Y, sum(DenseAxisArray(Float64[sum(fd0[f,:]) for f in factors], factors)))
+        set_value(endow[:l], 1.1*get_value(endow[:l]))
+        fd1 = fd0 .* convert(Vector, get_value.(endow))
+        set_value(Y, sum(DenseAxisArray(Float64[sum(fd1[f,:]) for f in factors], factors)))
         set_fixed!(Y, true)
 
         solve!(m)

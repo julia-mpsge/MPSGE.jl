@@ -25,7 +25,7 @@ for j in sectors
     @production(m, X[j], 1, [Output(P[i], make0[i,j]) for i in goods], [[Input(P[i], use0[i,j]) for i in goods]; [Input(PF[f], fd0[f,j]) for f in factors]])
 end
 
-@demand(m, Y, [Demand(P[i], c0[i]) for i in goods], [Endowment(PF[:k], :($(endow[:l]) * $(e0[:k]))), Endowment(PF[:l], :($(endow[:l]) * $(e0[:l])))])
+@demand(m, Y, [Demand(P[i], c0[i]) for i in goods], [Endowment(PF[:k], :($(endow[:k]) * $(e0[:k]))), Endowment(PF[:l], :($(endow[:l]) * $(e0[:l])))])
 
 solve!(m, cumulative_iteration_limit=0)
 solve!(m)
