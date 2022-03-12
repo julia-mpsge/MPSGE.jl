@@ -13,7 +13,7 @@ fd0 = DenseAxisArray(Float64[1 3; 1 1], factors, sectors)
 c0 = DenseAxisArray(Float64[2, 4], goods)
 e0 = DenseAxisArray(Float64[sum(fd0[f,:]) for f in factors], factors)
 
-@parameter(m, endow, 1.0)
+endow = add!(m, Parameter(:endow, indices=(factors,), value=1.0))
 
 X = add!(m, Sector(:X, indices=(sectors,)))
 
@@ -25,15 +25,15 @@ for j in sectors
     @production(m, X[j], 1, [Output(P[i], make0[i,j]) for i in goods], [[Input(P[i], use0[i,j]) for i in goods]; [Input(PF[f], fd0[f,j]) for f in factors]])
 end
 
-@demand(m, Y, [Demand(P[i], c0[i]) for i in goods], [Endowment(PF[:k], e0[:k]), Endowment(PF[:l], :($endow * $(e0[:l])))])
+@demand(m, Y, [Demand(P[i], c0[i]) for i in goods], [Endowment(PF[:k], :($(endow[:k]) * $(e0[:k]))), Endowment(PF[:l], :($(endow[:l]) * $(e0[:l])))])
 
 solve!(m, cumulative_iteration_limit=0)
 solve!(m)
 
 #Counterfactual 1: 10% increase in labor endowment. Fix the income level at the default level, i.e. the income level corresponding to the counterfactual endowment at benchmark price
-set_value(endow, 1.1)
-fd0 = DenseAxisArray(Float64[1 3; 1 1], factors, sectors); fd0=fd0.*[1.1,1.0]
-set_value(Y, sum(DenseAxisArray(Float64[sum(fd0[f,:]) for f in factors], factors)))
+set_value(endow[:l], 1.1)
+fd1 = fd0 .* convert(Vector, get_value.(endow))
+set_value(Y, sum(DenseAxisArray(Float64[sum(fd1[f,:]) for f in factors], factors)))
 set_fixed!(Y, true)
 
 solve!(m)

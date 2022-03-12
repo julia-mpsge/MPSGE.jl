@@ -12,7 +12,9 @@ function add_parameter_to_jump!(jm, parameter::ScalarParameter)
 end
 
 function add_parameter_to_jump!(jm, parameter::IndexedParameter)
-    jm[parameter.name] = @eval(JuMP.@NLparameter($jm, [$( ( :($(gensym())=$i) for i in parameter.indices)... )], base_name=string($(QuoteNode(parameter.name)))))
+    # We set the parameter value to 1.0 here, but in a later model building phase that gets replaced
+    # with the actual values
+    jm[parameter.name] = @eval(JuMP.@NLparameter($jm, [$( ( :($(gensym())=$i) for i in parameter.indices)... )] == 1.0))
 end
 
 function add_sector_to_jump!(jm, sector::ScalarSector)

@@ -451,6 +451,15 @@ function JuMP.set_value(parameter::ParameterRef, new_value::Float64)
     return nothing
 end
 
+function get_value(parameter::ParameterRef)
+    p = parameter.model._parameters[parameter.index]
+    if p isa ScalarParameter
+        return p.value
+    else
+        return p.value[parameter.subindex]
+    end
+end
+
 function JuMP.set_value(consumer::ConsumerRef, new_value::Float64)
     c = consumer.model._consumers[consumer.index]
     if c isa ScalarConsumer
