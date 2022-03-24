@@ -7,14 +7,14 @@ Complementarity = "a9b2a840-c9d5-5181-a245-8df664c2d6e7"
 JuMP = "4076af6c-e467-56ae-b986-b466b2749572"
 MacroTools = "1914dd2f-81c6-5fcd-8719-6d5c9610ff09"
 
+[compat]
+Complementarity = "0.8.2"
+JuMP = "0.22, 1"
+MacroTools = "0.5"
+julia = "1.6"
+
 [extras]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
-
-[compat]
-julia = "1.6"
-Complementarity = "0.8.2"
-JuMP = "0.22"
-MacroTools = "0.5"
 
 [targets]
 test = ["Test"]
