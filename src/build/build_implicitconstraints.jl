@@ -7,15 +7,39 @@ function create_cost_expr(jm, pf::Production)
         )
     )
 
-    return :(
-        *(
-            $(
-                (:(
-                    $(get_jump_variable_for_commodity(jm,input.commodity)) ^ ($(input.quantity)/$temp1)
-                ) for input in pf.inputs)...
+    if pf.elasticity==1 
+        println("HERE the elas is 1, ", pf)
+        return :(
+            *(
+                $(
+                    (:(
+                        $(get_jump_variable_for_commodity(jm,input.commodity)) ^ ($(input.quantity)/$temp1)
+                    ) for input in pf.inputs)...
+                )
             )
         )
-    )
+    else 
+        println("non-1 was triggered and pf.elasticity is ", pf.elasticity)
+        return :(
+            *(
+                $(
+                    (:(
+                        $(get_jump_variable_for_commodity(jm,input.commodity)) ^ ($(input.quantity)/$temp1)
+                    ) for input in pf.inputs)...
+                )
+            )
+        )
+        # return :(
+        #     +(
+        #         $(
+        #             (:(
+        #                 ($(input.quantity)/$temp1) * $(get_jump_variable_for_commodity(jm,input.commodity)) ^ (1-$(pf.elasticity))#($(input.quantity)/$temp1)
+        #             ) for input in pf.inputs)...
+        #         )
+        #     ) ^(1/(1-$(pf.elasticity)))
+        # )
+    end
+    println("is it getting here? ", pf.elasticity)
 end
 
 function create_rev_expr(jm, pf::Production)
@@ -48,12 +72,15 @@ function build_implicitconstraints!(m, jm)
     # Add compensated demand (intermediate and factor)
     for s in m._productions
         for input in s.inputs
+            println("S.ELASTICITY is ",s.elasticity)
             ex = :(
                 JuMP.@NLexpression(
                     $(jm),
                     $(input.quantity) *
-                        $(create_cost_expr(jm, s)) /
-                        $(get_jump_variable_for_commodity(jm, input.commodity)) - 
+                        
+                            $(create_cost_expr(jm, s)) /
+                        $(get_jump_variable_for_commodity(jm, input.commodity))
+                         -#^ $(s.elasticity) - 
                         $(jm[get_comp_demand_name(input)])
                 )
             )

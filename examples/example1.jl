@@ -23,6 +23,7 @@ m = Model()
 @demand(m, RA, [Demand(PU, 150)], [Endowment(PL, :(70 * $endow)), Endowment(PK, 80.)])
 
 solve!(m, cumulative_iteration_limit=0)
+algebraic_version(m)
 
 set_fixed!(PX, true)
 set_value(endow, 1.1)

@@ -32,6 +32,7 @@ end
 set_fixed!(PC[:x], true) # Set sector x as the numeraire
 solve!(m, cumulative_iteration_limit=0)
 solve!(m)
+algebraic_version(m)
 
 #Counterfactual 1, increase labour endowment by 10%, default normalisation of price: fix RA income at initial prices
 set_fixed!(PC[:x], false) # unfix, seems to be automatic with new numeraire in MPSGE
