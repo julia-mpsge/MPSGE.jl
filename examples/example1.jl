@@ -25,9 +25,17 @@ m = Model()
 solve!(m, cumulative_iteration_limit=0)
 algebraic_version(m)
 
-set_fixed!(PX, true)
 set_value(endow, 1.1)
+set_value(RA, 70. * get_value(endow) + 80.)
+set_fixed!(RA, true)
+solve!(m)
 
+set_fixed!(PX, true)
+set_fixed!(RA, false)
+solve!(m)
+
+set_fixed!(PX, false)
+set_fixed!(PL, true)
 solve!(m)
 
 algebraic_version(m)
