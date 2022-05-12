@@ -29,7 +29,7 @@ end
 
 solve!(m, cumulative_iteration_limit=0)
 solve!(m)
-
+algebraic_version(m)
 #Counterfactual 1: 10% increase in labor endowment. Fix the income level at the default level, i.e. the income level corresponding to the counterfactual endowment at benchmark price
 set_value(endow[:l], 1.1)
 fd1 = fd0 .* convert(Vector, get_value.(endow))
