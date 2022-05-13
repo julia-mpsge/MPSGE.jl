@@ -36,7 +36,7 @@ using XLSX
 
         solve!(m)
 
-        MPSGEResults = XLSX.readxlsx("test\\MPSGEresults.xlsx")
+        MPSGEResults = XLSX.readxlsx("MPSGEresults.xlsx")
         ATable = MPSGEResults[1][:]
         TwobyTwoScalarResults = DenseAxisArray(ATable[2:end,2:end],ATable[2:end,1], ATable[1,2:end])
 
