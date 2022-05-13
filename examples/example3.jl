@@ -21,11 +21,11 @@ PF = add!(m, Commodity(:PF, indices=(factors,)))
 RA = add!(m, Consumer(:RA, benchmark=150.))
 
 for i in goods
-    @production(m, Y[i], 1, [Output(PC[i], supply[i])], [Input(PF[:l], factor[i,:l]), Input(PF[:k], factor[i,:k])])
+    @production(m, Y[i], 0, 1, [Output(PC[i], supply[i])], [Input(PF[:l], factor[i,:l]), Input(PF[:k], factor[i,:k])])
 end
 # @production(m, [i in goods], Y[i], 1, PC[i], supply[i],  [Input(PF[f], factor[i,f]) for f in factors])
 
-@production(m, U, 1, [Output(PU, 150)], [Input(PC[:x], 100), Input(PC[:y], 50)])
+@production(m, U,0, 1, [Output(PU, 150)], [Input(PC[:x], 100), Input(PC[:y], 50)])
 
 @demand(m, RA, [Demand(PU, 150)], [Endowment(PF[:l], :(70 * $(endow[:l]))), Endowment(PF[:k], :(80. * $(endow[:k])))])
 
