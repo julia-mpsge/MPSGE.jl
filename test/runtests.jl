@@ -154,10 +154,10 @@ using MPSGE.JuMP.Containers
         @test MPSGE.Complementarity.result_value(m._jump_model[:PU]) ≈ 1.00578614
         @test MPSGE.Complementarity.result_value(m._jump_model[:PL]) ≈ 0.91316396
         @test MPSGE.Complementarity.result_value(m._jump_model[:PK]) ≈ 1.09077945
-        @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PL†X")]) ≈ 54.64671953
-        @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PL†Y")]) ≈ 22.25066043
-        @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PK†X")]) ≈ 45.74840029
-        @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PK†Y")]) ≈ 27.94125966
+        @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PL†X")]) ≈ 52.32335975
+        @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PL†Y")]) ≈ 21.34080999
+        @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PK†X")]) ≈ 47.87420013
+        @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PK†Y")]) ≈ 28.7732718
         @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PX†U")]) ≈ 100.5786137
         @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PY†U")]) ≈ 49.42636977
 
