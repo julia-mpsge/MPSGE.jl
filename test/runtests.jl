@@ -1,6 +1,7 @@
 using MPSGE
 using Test
 using MPSGE.JuMP.Containers
+using XLSX
 
 @testset "MPSGE" begin
 
@@ -12,7 +13,6 @@ using MPSGE.JuMP.Containers
         elascoeff = add!(m, Parameter(:elascoeff, value=2.))
         outputmult = add!(m, Parameter(:outputmult, value=2.))
 
-        
         X = add!(m, Sector(:X))
         Y = add!(m, Sector(:Y))
         U = add!(m, Sector(:U))
@@ -36,8 +36,12 @@ using MPSGE.JuMP.Containers
 
         solve!(m)
 
+        MPSGEResults = XLSX.readxlsx("test\\MPSGEresults.xlsx")
+        ATable = MPSGEResults[1][:]
+        TwobyTwoScalarResults = DenseAxisArray(ATable[2:end,2:end],ATable[2:end,1], ATable[1,2:end])
+
         @test value(m, :X) ≈ 1.
-        @test MPSGE.Complementarity.result_value(m._jump_model[:Y]) ≈ 1.
+        @test MPSGE.Complementarity.result_value(m._jump_model[:Y]) ≈ TwobyTwoScalarResults["Y.L","benchmark"]
         @test MPSGE.Complementarity.result_value(m._jump_model[:U]) ≈ 1.
         @test MPSGE.Complementarity.result_value(m._jump_model[:RA]) ≈ 150.
 
@@ -68,7 +72,7 @@ using MPSGE.JuMP.Containers
         solve!(m)
 
         @test value(m, :X) ≈ 1.04880885
-        @test MPSGE.Complementarity.result_value(m._jump_model[:Y]) ≈ 1.03886012
+        @test MPSGE.Complementarity.result_value(m._jump_model[:Y]) ≈ TwobyTwoScalarResults["Y.L","PX=1"]
         @test MPSGE.Complementarity.result_value(m._jump_model[:U]) ≈ 1.04548206
         @test MPSGE.Complementarity.result_value(m._jump_model[:RA]) ≈ 157.321327225523
         @test MPSGE.Complementarity.result_value(m._jump_model[:PX]) ≈ 1.0000000000
