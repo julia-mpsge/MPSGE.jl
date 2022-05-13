@@ -25,9 +25,9 @@ using MPSGE.JuMP.Containers
 
         RA = add!(m, Consumer(:RA, benchmark=150.))
 
-        add!(m, Production(X, 1, [Output(PX, 100)], [Input(PL, :(25 * $inputcoeff)), Input(PK, 50)]))
-        add!(m, Production(Y, :(0.5 * $elascoeff), [Output(PY, 50)], [Input(PL, 20), Input(PK, 30)]))
-        add!(m, Production(U, 1, [Output(PU, :(75 * $outputmult))], [Input(PX, 100), Input(PY, 50)]))
+        add!(m, Production(X, 0, 1, [Output(PX, 100)], [Input(PL, :(25 * $inputcoeff)), Input(PK, 50)]))
+        add!(m, Production(Y, 0, :(0.5 * $elascoeff), [Output(PY, 50)], [Input(PL, 20), Input(PK, 30)]))
+        add!(m, Production(U, 0, 1, [Output(PU, :(75 * $outputmult))], [Input(PX, 100), Input(PY, 50)]))
 
         add!(m, DemandFunction(RA, [Demand(PU,150)], [Endowment(PL, :(35 * $endow)), Endowment(PK, 80)]))
 

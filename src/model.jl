@@ -162,12 +162,13 @@ end
 
 struct Production
     sector::SectorRef
+    tr_elasticity::Union{Float64,Expr}
     elasticity::Union{Float64,Expr}
     outputs::Vector{Output}
     inputs::Vector{Input}
 
-    function Production(sector::SectorRef, elasticity::Union{Float64,Expr}, outputs::Vector{Output}, inputs::Vector{Input})
-        x = new(sector, elasticity, outputs, inputs)
+    function Production(sector::SectorRef, tr_elasticity::Union{Float64,Expr}, elasticity::Union{Float64,Expr}, outputs::Vector{Output}, inputs::Vector{Input})
+        x = new(sector, tr_elasticity, elasticity, outputs, inputs)
 
         for output in outputs
             output.production_function = x
@@ -189,7 +190,7 @@ end
 mutable struct Demand
     commodity::CommodityRef
     quantity::Union{Float64,Expr}
-    demand_function::Any
+        demand_function::Any
 
     function Demand(commodity::CommodityRef, quantity::Union{Float64,Expr})
         return new(commodity, quantity, nothing)
@@ -318,13 +319,16 @@ function Output(commodity::CommodityRef, quantity::Number)
     return Output(commodity, convert(Float64, quantity))
 end
 
-function Production(sector::SectorRef, elasticity::Union{Number,Expr}, outputs::Vector{Output}, inputs::Vector{Input})
+function Production(sector::SectorRef, tr_elasticity::Union{Number,Expr}, elasticity::Union{Number,Expr}, outputs::Vector{Output}, inputs::Vector{Input})
 
+    if isa(tr_elasticity,Number)
+        tr_elasticity = convert(Float64, tr_elasticity)
+    end
     if isa(elasticity,Number)
         elasticity = convert(Float64, elasticity)
     end
-
-    return Production(sector, elasticity, outputs, inputs)
+    
+    return Production(sector, tr_elasticity, elasticity, outputs, inputs)
 end
 
 function Endowment(commodity::CommodityRef, quantity::Number)
