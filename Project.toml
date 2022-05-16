@@ -9,6 +9,7 @@ MacroTools = "1914dd2f-81c6-5fcd-8719-6d5c9610ff09"
 
 [extras]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+XLSX = "fdbf4ff8-1666-58a4-91e7-1b58723a45e0"
 
 [compat]
 julia = "1.6"
@@ -17,4 +18,4 @@ JuMP = "0.22"
 MacroTools = "0.5"
 
 [targets]
-test = ["Test"]
+test = ["Test", "XLSX"]

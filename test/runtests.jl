@@ -1,6 +1,7 @@
 using MPSGE
 using Test
 using MPSGE.JuMP.Containers
+using XLSX
 
 @testset "MPSGE" begin
 
@@ -12,7 +13,6 @@ using MPSGE.JuMP.Containers
         elascoeff = add!(m, Parameter(:elascoeff, value=2.))
         outputmult = add!(m, Parameter(:outputmult, value=2.))
 
-        
         X = add!(m, Sector(:X))
         Y = add!(m, Sector(:Y))
         U = add!(m, Sector(:U))
@@ -25,9 +25,9 @@ using MPSGE.JuMP.Containers
 
         RA = add!(m, Consumer(:RA, benchmark=150.))
 
-        add!(m, Production(X, 1, [Output(PX, 100)], [Input(PL, :(25 * $inputcoeff)), Input(PK, 50)]))
-        add!(m, Production(Y, :(0.5 * $elascoeff), [Output(PY, 50)], [Input(PL, 20), Input(PK, 30)]))
-        add!(m, Production(U, 1, [Output(PU, :(75 * $outputmult))], [Input(PX, 100), Input(PY, 50)]))
+        add!(m, Production(X, 0, 1, [Output(PX, 100)], [Input(PL, :(25 * $inputcoeff)), Input(PK, 50)]))
+        add!(m, Production(Y, 0, :(0.5 * $elascoeff), [Output(PY, 50)], [Input(PL, 20), Input(PK, 30)]))
+        add!(m, Production(U, 0, 1, [Output(PU, :(75 * $outputmult))], [Input(PX, 100), Input(PY, 50)]))
 
         add!(m, DemandFunction(RA, [Demand(PU,150)], [Endowment(PL, :(35 * $endow)), Endowment(PK, 80)]))
 
@@ -36,8 +36,12 @@ using MPSGE.JuMP.Containers
 
         solve!(m)
 
+        gams_results = XLSX.readxlsx("MPSGEresults.xlsx")
+        a_table = gams_results["TwoxTwoScalar"][:]
+        two_by_two_scalar_results = DenseAxisArray(a_table[2:end,2:end],a_table[2:end,1],a_table[1,2:end])
+
         @test value(m, :X) ≈ 1.
-        @test MPSGE.Complementarity.result_value(m._jump_model[:Y]) ≈ 1.
+        @test MPSGE.Complementarity.result_value(m._jump_model[:Y]) ≈ two_by_two_scalar_results["Y.L","benchmark"]
         @test MPSGE.Complementarity.result_value(m._jump_model[:U]) ≈ 1.
         @test MPSGE.Complementarity.result_value(m._jump_model[:RA]) ≈ 150.
 
@@ -68,7 +72,7 @@ using MPSGE.JuMP.Containers
         solve!(m)
 
         @test value(m, :X) ≈ 1.04880885
-        @test MPSGE.Complementarity.result_value(m._jump_model[:Y]) ≈ 1.03886012
+        @test MPSGE.Complementarity.result_value(m._jump_model[:Y]) ≈ two_by_two_scalar_results["Y.L","PX=1"]
         @test MPSGE.Complementarity.result_value(m._jump_model[:U]) ≈ 1.04548206
         @test MPSGE.Complementarity.result_value(m._jump_model[:RA]) ≈ 157.321327225523
         @test MPSGE.Complementarity.result_value(m._jump_model[:PX]) ≈ 1.0000000000
@@ -104,9 +108,9 @@ using MPSGE.JuMP.Containers
 
         RA = add!(m, Consumer(:RA, benchmark=150.))
 
-        add!(m, Production(X, 0.5, [Output(PX, 100)], [Input(PL, :(25 * $inputcoeff)), Input(PK, 50)]))
-        add!(m, Production(Y, :(0.3 * $elascoeff), [Output(PY, 50)], [Input(PL, 20), Input(PK, 30)]))
-        add!(m, Production(U, 1, [Output(PU, :(75 * $outputmult))], [Input(PX, 100), Input(PY, 50)]))
+        add!(m, Production(X, 0, 0.5, [Output(PX, 100)], [Input(PL, :(25 * $inputcoeff)), Input(PK, 50)]))
+        add!(m, Production(Y, 0, :(0.3 * $elascoeff), [Output(PY, 50)], [Input(PL, 20), Input(PK, 30)]))
+        add!(m, Production(U, 0, 1, [Output(PU, :(75 * $outputmult))], [Input(PX, 100), Input(PY, 50)]))
 
         add!(m, DemandFunction(RA, [Demand(PU,150)], [Endowment(PL, :(35 * $endow)), Endowment(PK, 80)]))
 
@@ -184,9 +188,9 @@ using MPSGE.JuMP.Containers
 
         @consumer(m, RA, benchmark=150.)
 
-        @production(m, X, 1, [Output(PX, 100)], [Input(PL, :(25 * $inputcoeff)), Input(PK, 50)])
-        @production(m, Y, :(0.5 * $elascoeff), [Output(PY, 50)], [Input(PL, 20), Input(PK, 30)])
-        @production(m, U, 1, [Output(PU, :(75 * $outputmult))], [Input(PX, 100), Input(PY, 50)])
+        @production(m, X, 0, 1, [Output(PX, 100)], [Input(PL, :(25 * $inputcoeff)), Input(PK, 50)])
+        @production(m, Y, 0, :(0.5 * $elascoeff), [Output(PY, 50)], [Input(PL, 20), Input(PK, 30)])
+        @production(m, U, 0, 1, [Output(PU, :(75 * $outputmult))], [Input(PX, 100), Input(PY, 50)])
 
         @demand(m, RA, [Demand(PU, 150)], [Endowment(PL, :(35 * $endow)), Endowment(PK, 80)])
 
@@ -258,9 +262,9 @@ using MPSGE.JuMP.Containers
         RA = add!(m, Consumer(:RA, benchmark=150.))
 
         for i in goods
-            @production(m, Y[i], 1, [Output(PC[i], supply[i])], [Input(PF[:l], factor[i,:l]), Input(PF[:k], factor[i,:k])])
+            @production(m, Y[i], 0, 1, [Output(PC[i], supply[i])], [Input(PF[:l], factor[i,:l]), Input(PF[:k], factor[i,:k])])
         end
-        @production(m, U, 1, [Output(PU, 150)], [Input(PC[:x], 100), Input(PC[:y], 50)])
+        @production(m, U, 0, 1, [Output(PU, 150)], [Input(PC[:x], 100), Input(PC[:y], 50)])
         @demand(m, RA, [Demand(PU, 150)], [Endowment(PF[:l], :(70 * $(endow[:l]))), Endowment(PF[:k], :(80. * $(endow[:k])))])
 
         solve!(m, cumulative_iteration_limit=0)
@@ -370,7 +374,7 @@ using MPSGE.JuMP.Containers
         PF = add!(m, Commodity(:PF, indices=(factors,)))
         Y = add!(m, Consumer(:Y, benchmark=sum(fd0)))#example 4 has sum e0
         for j in sectors
-            @production(m, X[j], 1, [Output(P[i], make0[i,j]) for i in goods], [[Input(P[i], use0[i,j]) for i in goods]; [Input(PF[f], fd0[f,j]) for f in factors]])
+            @production(m, X[j], 0, 1, [Output(P[i], make0[i,j]) for i in goods], [[Input(P[i], use0[i,j]) for i in goods]; [Input(PF[f], fd0[f,j]) for f in factors]])
         end
 
         @demand(m, Y, [Demand(P[i], c0[i]) for i in goods], [Endowment(PF[:k], :($(endow[:k]) * $(e0[:k]))), Endowment(PF[:l], :($(endow[:l]) * $(e0[:l])))])
