@@ -12,6 +12,9 @@ use0 = DenseAxisArray(Float64[4 2; 2 6], goods, sectors)
 fd0 = DenseAxisArray(Float64[1 3; 1 1], factors, sectors)
 c0 = DenseAxisArray(Float64[2, 4], goods)
 e0 = DenseAxisArray(Float64[sum(fd0[f,:]) for f in factors], factors)
+sub_elas = DenseAxisArray(Float64[1,1], sectors) 
+tr_elas = DenseAxisArray(Float64[0, 0.000001], sectors)
+
 
 endow = add!(m, Parameter(:endow, indices=(factors,), value=1.0))
 
@@ -22,7 +25,7 @@ PF = add!(m, Commodity(:PF, indices=(factors,)))
 Y = add!(m, Consumer(:Y, benchmark=sum(e0)))
 
 for j in sectors
-    @production(m, X[j], 0, 1, [Output(P[i], make0[i,j]) for i in goods], [[Input(P[i], use0[i,j]) for i in goods]; [Input(PF[f], fd0[f,j]) for f in factors]])
+    @production(m, X[j], tr_elas[j], sub_elas[j], [Output(P[i], make0[i,j]) for i in goods], [[Input(P[i], use0[i,j]) for i in goods]; [Input(PF[f], fd0[f,j]) for f in factors]])
 end
 
 @demand(m, Y, [Demand(P[i], c0[i]) for i in goods], [Endowment(PF[:k], :($(endow[:k]) * $(e0[:k]))), Endowment(PF[:l], :($(endow[:l]) * $(e0[:l])))])
