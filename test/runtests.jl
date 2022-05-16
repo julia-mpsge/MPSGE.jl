@@ -36,12 +36,12 @@ using XLSX
 
         solve!(m)
 
-        MPSGEResults = XLSX.readxlsx("MPSGEresults.xlsx")
-        ATable = MPSGEResults[1][:]
-        TwobyTwoScalarResults = DenseAxisArray(ATable[2:end,2:end],ATable[2:end,1], ATable[1,2:end])
+        gams_results = XLSX.readxlsx("MPSGEresults.xlsx")
+        a_table = gams_results["TwoxTwoScalar"][:]
+        two_by_two_scalar_results = DenseAxisArray(a_table[2:end,2:end],a_table[2:end,1],a_table[1,2:end])
 
         @test value(m, :X) ≈ 1.
-        @test MPSGE.Complementarity.result_value(m._jump_model[:Y]) ≈ TwobyTwoScalarResults["Y.L","benchmark"]
+        @test MPSGE.Complementarity.result_value(m._jump_model[:Y]) ≈ two_by_two_scalar_results["Y.L","benchmark"]
         @test MPSGE.Complementarity.result_value(m._jump_model[:U]) ≈ 1.
         @test MPSGE.Complementarity.result_value(m._jump_model[:RA]) ≈ 150.
 
@@ -72,7 +72,7 @@ using XLSX
         solve!(m)
 
         @test value(m, :X) ≈ 1.04880885
-        @test MPSGE.Complementarity.result_value(m._jump_model[:Y]) ≈ TwobyTwoScalarResults["Y.L","PX=1"]
+        @test MPSGE.Complementarity.result_value(m._jump_model[:Y]) ≈ two_by_two_scalar_results["Y.L","PX=1"]
         @test MPSGE.Complementarity.result_value(m._jump_model[:U]) ≈ 1.04548206
         @test MPSGE.Complementarity.result_value(m._jump_model[:RA]) ≈ 157.321327225523
         @test MPSGE.Complementarity.result_value(m._jump_model[:PX]) ≈ 1.0000000000

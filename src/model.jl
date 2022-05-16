@@ -190,7 +190,7 @@ end
 mutable struct Demand
     commodity::CommodityRef
     quantity::Union{Float64,Expr}
-        demand_function::Any
+    demand_function::Any
 
     function Demand(commodity::CommodityRef, quantity::Union{Float64,Expr})
         return new(commodity, quantity, nothing)
