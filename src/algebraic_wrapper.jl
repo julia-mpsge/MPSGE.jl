@@ -45,20 +45,20 @@ function Base.show(io::IO, m::AlgebraicWrapper)
 
     for (i, (constraint_string, c)) in enumerate(zip(constraint_strings, m._source.ext[:MCP]))
         if i==1
-            println(io, "Compensated Demand")
+            println(io, "  Compensated Demand")
         elseif i==m.n_comp_dem + 1
-            println(io, "Compensated Supply")
+            println(io, "  Compensated Supply")
         elseif i==m.n_comp_dem + m.n_comp_supply + 1
-            println(io, "Final Demand")
+            println(io, "  Final Demand")
         elseif i==m.n_comp_dem + m.n_comp_supply + m.n_final_demand + 1
-            println(io, "Zero Profit")
+            println(io, "  Zero Profit")
         elseif i==m.n_comp_dem + m.n_comp_supply + m.n_final_demand + m.n_zero_profits + 1
-            println(io, "Market clearance")
+            println(io, "  Market clearance")
         elseif i==m.n_comp_dem + m.n_comp_supply + m.n_final_demand + m.n_zero_profits + m.n_market_clearance + 1
-            println(io, "Income balance")
+            println(io, "  Income balance")
         end
 
-        print(io, "  ")
+        print(io, "    ")
 
         print(io, rpad(constraint_string, column1_width))
 
