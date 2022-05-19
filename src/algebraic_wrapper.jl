@@ -1,13 +1,25 @@
 struct AlgebraicWrapper
     _source
+    n_comp_dem::Int
+    n_comp_supply::Int
+    n_final_demand::Int
+    n_zero_profits::Int
+    n_market_clearance::Int
+    n_income_balance::Int
 end
 
-function algebraic_version(m::Model)
-    if m._jump_model===nothing
-        return AlgebraicWrapper(build(m))
-    else
-        return AlgebraicWrapper(m._jump_model)
-    end
+function algebraic_version(m::Model)    
+    jump_model = m._jump_model===nothing ? build(m) : m._jump_model
+
+    return AlgebraicWrapper(
+        jump_model,
+        sum(length(s.inputs) for s in m._productions),
+        sum(length(s.outputs) for s in m._productions),
+        sum(length(d.demands) for d in m._demands),
+        length(m._productions),
+        length(m._commodities),
+        length(m._demands)
+    )
 end
 
 function constraint_values(m::Model)
@@ -31,7 +43,20 @@ function Base.show(io::IO, m::AlgebraicWrapper)
     
     column1_width = maximum(textwidth.(constraint_strings))
 
-    for (constraint_string, c) in zip(constraint_strings, m._source.ext[:MCP])
+    for (i, (constraint_string, c)) in enumerate(zip(constraint_strings, m._source.ext[:MCP]))
+        if i==1
+            println(io, "Compensated Demand")
+        elseif i==m.n_comp_dem + 1
+            println(io, "Compensated Supply")
+        elseif i==m.n_comp_dem + m.n_comp_supply + 1
+            println(io, "Final Demand")
+        elseif i==m.n_comp_dem + m.n_comp_supply + m.n_final_demand + 1
+            println(io, "Zero Profit")
+        elseif i==m.n_comp_dem + m.n_comp_supply + m.n_final_demand + m.n_zero_profits + 1
+            println(io, "Market clearance")
+        elseif i==m.n_comp_dem + m.n_comp_supply + m.n_final_demand + m.n_zero_profits + m.n_market_clearance + 1
+            println(io, "Income balance")
+        end
 
         print(io, "  ")
 
@@ -51,11 +76,24 @@ end
 
 function Base.show(io::IO, ::MIME"text/latex", m::AlgebraicWrapper)
     println(io, raw"$$ \begin{alignat*}{3}\\")
-    for c in m._source.ext[:MCP]
+    for (i, c) in enumerate(m._source.ext[:MCP])
+        if i==1
+            println(io, raw"& \text{Compensated Demand} \quad && \quad && \\\\")
+        elseif i==m.n_comp_dem + 1
+            println(io, raw"& \text{Compensated Supply} \quad && \quad && \\\\")
+        elseif i==m.n_comp_dem + m.n_comp_supply + 1
+            println(io, raw"& \text{Final Demand} \quad && \quad && \\\\")
+        elseif i==m.n_comp_dem + m.n_comp_supply + m.n_final_demand + 1
+            println(io, raw"& \text{Zero Profit} \quad && \quad && \\\\")
+        elseif i==m.n_comp_dem + m.n_comp_supply + m.n_final_demand + m.n_zero_profits + 1
+            println(io, raw"& \text{Market clearance} \quad && \quad && \\\\")
+        elseif i==m.n_comp_dem + m.n_comp_supply + m.n_final_demand + m.n_zero_profits + m.n_market_clearance + 1
+            println(io, raw"& \text{Income balance} \quad && \quad && \\\\")
+        end
 
-        print(io, "& ")
+        print(io, "& \\quad ")
 
-        println(io, JuMP.nl_expr_string(m._source, JuMP.IJuliaMode, m._source.nlp_data.nlexpr[c.F.index]))
+        print(io, JuMP.nl_expr_string(m._source, JuMP.IJuliaMode, m._source.nlp_data.nlexpr[c.F.index]))
 
         print(io, raw"\quad && \perp \quad && ")
 
@@ -65,7 +103,7 @@ function Base.show(io::IO, ::MIME"text/latex", m::AlgebraicWrapper)
             print(io, isinf(c.lb) ? "" : "$(c.lb) <", c.var_name, isinf(c.ub) ? "" : " < $(c.ub)")
         end
 
-        print(io, "\\\\")
+        println(io, "\\\\")
     end
     println(io, raw"\end{alignat*}")
     println(io, raw" $$")
