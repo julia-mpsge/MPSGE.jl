@@ -78,6 +78,10 @@ mutable struct IndexedSector <: Sector
     end
 end
 
+mutable struct AnonSector <: Sector
+    name::Symbol
+end
+
 function Sector(name; indices=nothing, kwargs...)
     return indices===nothing ? ScalarSector(name; kwargs...) : IndexedSector(name, indices; kwargs...)
 end
@@ -105,6 +109,10 @@ mutable struct IndexedCommodity <: Commodity
     function IndexedCommodity(name::Symbol, indices; description::AbstractString="", benchmark::Float64=1., fixed=false)
         return new(name, indices, DenseAxisArray(fill(benchmark, length.(indices)...), indices...), description, DenseAxisArray(fill(fixed, length.(indices)...), indices...))
     end
+end
+
+mutable struct AnonCommodity <: Commodity
+    name::Symbol
 end
 
 function Commodity(name; indices=nothing, kwargs...)
@@ -150,6 +158,15 @@ mutable struct Input
     end
 end
 
+mutable struct Inputs
+    elasticity::Union{Float64,Expr}
+    inputs::Vector{Union{Input,Inputs}}
+
+    function Inputs(args...; elasticity=0.)
+        return new(elasticity, args)
+    end
+end
+
 mutable struct Output
     commodity::CommodityRef
     quantity::Union{Float64,Expr}
@@ -165,7 +182,7 @@ struct Production
     tr_elasticity::Union{Float64,Expr}
     elasticity::Union{Float64,Expr}
     outputs::Vector{Output}
-    inputs::Vector{Input}
+    inputs::Vector{Union{Input,Inputs}}
 
     function Production(sector::SectorRef, tr_elasticity::Union{Float64,Expr}, elasticity::Union{Float64,Expr}, outputs::Vector{Output}, inputs::Vector{Input})
         x = new(sector, tr_elasticity, elasticity, outputs, inputs)
