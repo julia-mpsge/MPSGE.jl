@@ -141,8 +141,30 @@ function build_implicitconstraints!(m, jm)
                     )
                 )
             )            
+        if eval(swap_our_param_with_val(demand_function.elasticity))==1
             for demand in demand_function.demands
-                    ex = :(
+                ex = :(
+            JuMP.@NLexpression(
+                $(jm),
+                (
+                $(demand.quantity)* #^$(demand_function.elasticity) *
+                    (
+                        $(create_expenditure_expr(jm, demand_function)))#^$(demand_function.elasticity)
+                   )^$(demand_function.elasticity) /
+                        # ($(demand.quantity)/$temp1) * $(get_jump_variable_for_consumer(jm,demand_function.consumer)) ^ (1-$(demand_function.elasticity)))/
+                    $(get_jump_variable_for_commodity(jm, demand.commodity))
+                        - 
+                    $(jm[get_final_demand_name(demand)])
+                    )
+                )
+                exb = eval( swap_our_param_with_jump_param(jm, ex) )
+
+                Complementarity.add_complementarity(jm, jm[get_final_demand_name(demand)], exb, string("F_", get_final_demand_name(demand)))
+                push!(m._nlexpressions, exb)
+            end
+    else
+        for demand in demand_function.demands
+            ex = :(
                 JuMP.@NLexpression(
                     $(jm),
                     $(demand.quantity)^$(demand_function.elasticity) *
@@ -150,15 +172,15 @@ function build_implicitconstraints!(m, jm)
                             # $(create_expenditure_expr(jm, demand_function)))^$(demand_function.elasticity) /
                             ($(demand.quantity)/$temp1) * $(get_jump_variable_for_consumer(jm,demand_function.consumer)) ^ (1-$(demand_function.elasticity)))/
                         $(get_jump_variable_for_commodity(jm, demand.commodity))
-                         - 
+                            - 
                         $(jm[get_final_demand_name(demand)])
                 )
             )
-        
             exb = eval( swap_our_param_with_jump_param(jm, ex) )
 
             Complementarity.add_complementarity(jm, jm[get_final_demand_name(demand)], exb, string("F_", get_final_demand_name(demand)))
             push!(m._nlexpressions, exb)
+            end
         end
     end
 end
