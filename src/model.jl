@@ -199,11 +199,12 @@ end
 
 struct DemandFunction
     consumer::ConsumerRef
+    elasticity::Union{Float64,Expr}
     demands::Vector{Demand}
     endowments::Vector{Endowment}
 
-    function DemandFunction(consumer::ConsumerRef, demands::Vector{Demand}, endowments::Vector{Endowment})
-        x = new(consumer, demands, endowments)
+    function DemandFunction(consumer::ConsumerRef, elasticity::Union{Float64,Expr}, demands::Vector{Demand}, endowments::Vector{Endowment})
+        x = new(consumer, elasticity, demands, endowments)
 
         for demand in demands
             demand.demand_function = x

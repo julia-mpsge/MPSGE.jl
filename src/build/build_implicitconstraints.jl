@@ -55,6 +55,37 @@ function create_rev_expr(jm, pf::Production)
     )
 end
 
+function create_expenditure_expr(jm, dm::DemandFunction)
+    temp1 = :(
+        +(
+            $(
+                (demand.quantity for demand in dm.demands)...
+            )
+        )
+    )
+    if eval(swap_our_param_with_val(dm.elasticity))==1
+        return :(
+            *(
+                $(
+                    (:(
+                        $(get_jump_variable_for_commodity(jm,demand.commodity)) ^ ($(demand.quantity)/$temp1)
+                    ) for demand in dm.demands)...
+                )
+            )
+        )
+    else 
+        return :(
+            (+(
+                $(
+                    (:(
+                        ($(demand.quantity)/$temp1) * $(get_jump_variable_for_commodity(jm,demand.commodity)) ^ (1-$(dm.elasticity))
+                    ) for demand in dm.demands)...
+                )
+            ))^(1/(1-$(dm.elasticity)))
+        )
+    end
+end
+
 function build_implicitconstraints!(m, jm)
     # Add compensated demand (intermediate and factor)
     for s in m._productions
@@ -99,27 +130,23 @@ function build_implicitconstraints!(m, jm)
         end
     end
 
+
+
     # Add final demand
     for demand_function in m._demands
-        temp1 = :(
-            +(
-                $(
-                    (demand.quantity for demand in demand_function.demands)...
-                )
-            )
-        )
         for demand in demand_function.demands
             ex = :(
                 JuMP.@NLexpression(
                     $(jm),
-                        $(demand.quantity) /
-                        $temp1 *
-                        $(get_jump_variable_for_consumer(jm, demand_function.consumer)) /
-                        $(get_jump_variable_for_commodity(jm, demand.commodity)) - 
+                    $(demand.quantity) *
+                        (
+                            $(create_expenditure_expr(jm, demand_function)) /
+                        $(get_jump_variable_for_commodity(jm, demand.commodity))
+                        )^$(demand_function.elasticity) - 
                         $(jm[get_final_demand_name(demand)])
                 )
             )
-
+        
             exb = eval( swap_our_param_with_jump_param(jm, ex) )
 
             Complementarity.add_complementarity(jm, jm[get_final_demand_name(demand)], exb, string("F_", get_final_demand_name(demand)))

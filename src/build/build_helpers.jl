@@ -62,6 +62,10 @@ function get_jump_variable_for_consumer(jm, consumer)
     return jm[get_name(consumer)]
 end
 
+function get_jump_variable_for_consumer(jm, consumer::ConsumerRef)
+    return jm[get_name(consumer)]
+end
+
 function get_jump_variable_for_intermediate_supply(jm, output)
     return jm[get_comp_supply_name(output)]
 end
