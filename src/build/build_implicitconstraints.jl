@@ -68,7 +68,7 @@ function create_expenditure_expr(jm, dm::DemandFunction)
             *(
                 $(
                     (:(
-                        $(get_jump_variable_for_commodity(jm,demand.commodity)) ^ ($(demand.quantity)/$temp1)
+                        $(get_jump_variable_for_consumer(jm,dm.consumer)) ^ ($(demand.quantity)/$temp1)
                     ) for demand in dm.demands)...
                 )
             )
@@ -78,7 +78,7 @@ function create_expenditure_expr(jm, dm::DemandFunction)
             (+(
                 $(
                     (:(
-                        ($(demand.quantity)/$temp1) * $(get_jump_variable_for_commodity(jm,demand.commodity)) ^ (1-$(dm.elasticity))
+                        ($(demand.quantity)/$temp1) * $(get_jump_variable_for_consumer(jm,dm.consumer)) ^ (1-$(dm.elasticity))
                     ) for demand in dm.demands)...
                 )
             ))^(1/(1-$(dm.elasticity)))
@@ -138,7 +138,7 @@ function build_implicitconstraints!(m, jm)
             ex = :(
                 JuMP.@NLexpression(
                     $(jm),
-                    $(demand.quantity) *
+                    # $(demand.quantity) *
                         (
                             $(create_expenditure_expr(jm, demand_function)) /
                         $(get_jump_variable_for_commodity(jm, demand.commodity))
