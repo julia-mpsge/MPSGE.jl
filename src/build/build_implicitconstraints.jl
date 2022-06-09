@@ -39,19 +39,19 @@ function create_rev_expr(jm, pf::Production)
     )
 
     return :(
-        sqrt(
+        (
             +(
                 $(
                     (
                         :(
                             $(output.quantity) * 
-                            $(get_jump_variable_for_commodity(jm,output.commodity))^2 /
+                            $(get_jump_variable_for_commodity(jm,output.commodity))^(1.0 + $(pf.tr_elasticity)) /
                             $temp1
                         ) for output in pf.outputs
                     )...
                 )
             )
-        )        
+        )^(1.0/(1.0+$(pf.tr_elasticity)))
     )
 end
 
@@ -86,8 +86,10 @@ function build_implicitconstraints!(m, jm)
                 JuMP.@NLexpression(
                     $(jm),
                     $(output.quantity) *
-                        $(get_jump_variable_for_commodity(jm, output.commodity)) /
-                        $(create_rev_expr(jm, s)) - 
+                        (
+                            $(get_jump_variable_for_commodity(jm, output.commodity)) /
+                            $(create_rev_expr(jm, s))
+                        )^$(s.tr_elasticity) -
                         $(jm[get_comp_supply_name(output)])
                 )
             )
