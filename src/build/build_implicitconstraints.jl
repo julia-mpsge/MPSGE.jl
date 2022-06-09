@@ -1,12 +1,15 @@
+function Θ(pf::Production, i)
+    return :( $(i.quantity) * $(get_commodity_benchmark(i.commodity)) / +($( (:( $(o.quantity) * $(get_commodity_benchmark(o.commodity)) ) for o in pf.outputs)...) ) )
+end
+
 function create_cost_expr(jm, pf::Production)
-    Θ(i) = :( $(i.quantity) * $(get_commodity_benchmark(i.commodity)) / +($( (:( $(o.quantity) * $(get_commodity_benchmark(o.commodity)) ) for o in pf.outputs)...) ) )
 
     if eval(swap_our_param_with_val(pf.elasticity))==1
             return :(
             *(
                 $(
                     (:(
-                        ($(get_jump_variable_for_commodity(jm,input.commodity))/$(get_commodity_benchmark(input.commodity))) ^ $(Θ(input))
+                        ($(get_jump_variable_for_commodity(jm,input.commodity))/$(get_commodity_benchmark(input.commodity))) ^ $(Θ(pf, input))
                     ) for input in pf.inputs)...
                 )
             )
@@ -16,7 +19,7 @@ function create_cost_expr(jm, pf::Production)
             (+(
                 $(
                     (:(
-                        $(Θ(input)) * ($(get_jump_variable_for_commodity(jm,input.commodity))/$(get_commodity_benchmark(input.commodity))) ^ (1-$(pf.elasticity))
+                        $(Θ(pf, input)) * ($(get_jump_variable_for_commodity(jm,input.commodity))/$(get_commodity_benchmark(input.commodity))) ^ (1-$(pf.elasticity))
                     ) for input in pf.inputs)...
                 )
             ))^(1/(1-$(pf.elasticity)))
