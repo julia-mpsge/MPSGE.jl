@@ -310,6 +310,14 @@ function get_full(c::CommodityRef)
     return c.model._commodities[c.index]
 end
 
+function get_commodity_benchmark(c::CommodityRef)
+    if c.subindex===nothing
+        return get_full(c).benchmark
+    else
+        return get_full(c).benchmark[c.subindex]
+    end
+end
+
 # Outer constructors
 
 function Input(commodity::CommodityRef, quantity::Number)

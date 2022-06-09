@@ -13,7 +13,7 @@ fd0 = DenseAxisArray(Float64[1 3; 1 1], factors, sectors)
 c0 = DenseAxisArray(Float64[2, 4], goods)
 e0 = DenseAxisArray(Float64[sum(fd0[f,:]) for f in factors], factors)
 sub_elas = DenseAxisArray(Float64[1,1], sectors) 
-tr_elas = DenseAxisArray(Float64[0, 0.00000], sectors)
+tr_elas = DenseAxisArray(Float64[1., 1.], sectors)
 
 
 endow = add!(m, Parameter(:endow, indices=(factors,), value=1.0))
