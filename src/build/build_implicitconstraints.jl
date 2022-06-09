@@ -75,11 +75,11 @@ function create_expenditure_expr(jm, dm::DemandFunction)
         )
     else 
         return :(
-            (+(
+            (#(
                 $(
                     (:(
                         ($(demand.quantity)/$temp1) * $(get_jump_variable_for_consumer(jm,dm.consumer)) ^ (1-$(dm.elasticity))
-                    ) for demand in dm.demands)...
+                    )# for demand in dm.demands)...
                 )
             ))^(1/(1-$(dm.elasticity)))
         )
@@ -134,15 +134,23 @@ function build_implicitconstraints!(m, jm)
 
     # Add final demand
     for demand_function in m._demands
-        for demand in demand_function.demands
-            ex = :(
+    temp1 = :(
+                +(
+                    $(
+                        (demand.quantity for demand in demand_function.demands)...
+                    )
+                )
+            )            
+            for demand in demand_function.demands
+                    ex = :(
                 JuMP.@NLexpression(
                     $(jm),
-                    # $(demand.quantity) *
+                    $(demand.quantity)^$(demand_function.elasticity) *
                         (
-                            $(create_expenditure_expr(jm, demand_function)) /
+                            # $(create_expenditure_expr(jm, demand_function)))^$(demand_function.elasticity) /
+                            ($(demand.quantity)/$temp1) * $(get_jump_variable_for_consumer(jm,demand_function.consumer)) ^ (1-$(demand_function.elasticity)))/
                         $(get_jump_variable_for_commodity(jm, demand.commodity))
-                        )^$(demand_function.elasticity) - 
+                         - 
                         $(jm[get_final_demand_name(demand)])
                 )
             )
