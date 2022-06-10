@@ -310,7 +310,19 @@ function get_full(c::CommodityRef)
     return c.model._commodities[c.index]
 end
 
+function get_full(c::ConsumerRef)
+    return c.model._consumers[c.index]
+end
+
 function get_commodity_benchmark(c::CommodityRef)
+    if c.subindex===nothing
+        return get_full(c).benchmark
+    else
+        return get_full(c).benchmark[c.subindex]
+    end
+end
+
+function get_consumer_benchmark(c::ConsumerRef)
     if c.subindex===nothing
         return get_full(c).benchmark
     else
