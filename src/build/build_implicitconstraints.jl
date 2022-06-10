@@ -146,7 +146,9 @@ function build_implicitconstraints!(m, jm)
                 ex = :(
             JuMP.@NLexpression(
                 $(jm),
-                $(demand.quantity)*
+                $(get_jump_variable_for_consumer(jm, demand_function.consumer))
+                # $(demand.quantity)
+                *
                 # Income/benchmark Income
                 $(get_commodity_benchmark(demand.commodity))  # p__bar_i?
                    /
