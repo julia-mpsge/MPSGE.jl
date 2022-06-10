@@ -1,66 +1,47 @@
-function Θ(pf::Production, i)
-    return :( $(i.quantity) * $(get_commodity_benchmark(i.commodity)) / +($( (:( $(o.quantity) * $(get_commodity_benchmark(o.commodity)) ) for o in pf.outputs)...) ) )
-end
-
-function y_over_y_bar(jm, pf::Production)
-    if eval(swap_our_param_with_val(pf.elasticity))==0
-        return :(
-            min(
-                $(( :( $(jm[get_comp_demand_name(i)])/$(i.quantity) ) for i in pf.inputs)...)
-            )
-        )
-    elseif eval(swap_our_param_with_val(pf.elasticity))==1
-        return :(
-            *(
-                $(( :( ($(jm[get_comp_demand_name(i)])/$(i.quantity))^$(Θ(pf,i)) ) for i in pf.inputs)...)
-            )
-        )
-    else
-        ρ = :(($(pf.elasticity)-1)/$(pf.elasticity))
-        return :(
-            (
-                +(
-                    $((:( $(Θ(pf,i)) * ($(jm[get_comp_demand_name(i)])/$(i.quantity))^$ρ ) for i in pf.inputs)...)
-                )
-            )^(1/$ρ)
-        )
-    end
-end
-
 function create_cost_expr(jm, pf::Production)
+    Θ(i) = :( $(i.quantity) * $(get_commodity_benchmark(i.commodity)) / +($( (:( $(o.quantity) * $(get_commodity_benchmark(o.commodity)) ) for o in pf.outputs)...) ) )
 
     if eval(swap_our_param_with_val(pf.elasticity))==1
             return :(
             *(
                 $(
                     (:(
-                        ($(get_jump_variable_for_commodity(jm,input.commodity))/$(get_commodity_benchmark(input.commodity))) ^ $(Θ(pf, input))
+                        ($(get_jump_variable_for_commodity(jm,input.commodity))/$(get_commodity_benchmark(input.commodity))) ^ $(Θ(input))
                     ) for input in pf.inputs)...
                 )
-            ) * $(y_over_y_bar(jm, pf))
+            )
         )
     else 
         return :(
             (+(
                 $(
                     (:(
-                        $(Θ(pf, input)) * ($(get_jump_variable_for_commodity(jm,input.commodity))/$(get_commodity_benchmark(input.commodity))) ^ (1-$(pf.elasticity))
+                        $(Θ(input)) * ($(get_jump_variable_for_commodity(jm,input.commodity))/$(get_commodity_benchmark(input.commodity))) ^ (1-$(pf.elasticity))
                     ) for input in pf.inputs)...
                 )
-            ))^(1/(1-$(pf.elasticity))) * $(y_over_y_bar(jm, pf))
+            ))^(1/(1-$(pf.elasticity)))
         )
     end
 end
 
 function create_rev_expr(jm, pf::Production)
+    temp1 = :(
+        +(
+            $(
+                (output.quantity for output in pf.outputs)...
+            )
+        )
+    )
+
     return :(
         (
             +(
                 $(
                     (
                         :(
-                            $(Θ(pf, output)) *
-                            ($(get_jump_variable_for_commodity(jm,output.commodity))/$(get_commodity_benchmark(output.commodity)))^(1.0 + $(pf.tr_elasticity))
+                            $(output.quantity) * 
+                            $(get_jump_variable_for_commodity(jm,output.commodity))^(1.0 + $(pf.tr_elasticity)) /
+                            $temp1
                         ) for output in pf.outputs
                     )...
                 )
@@ -112,7 +93,6 @@ function build_implicitconstraints!(m, jm)
                 JuMP.@NLexpression(
                     $(jm),
                     $(input.quantity) *
-                    $(y_over_y_bar(jm, s)) *
                  (       
                             $(create_cost_expr(jm, s)) * $(get_commodity_benchmark(input.commodity)) /
                         $(get_jump_variable_for_commodity(jm, input.commodity))
@@ -135,11 +115,9 @@ function build_implicitconstraints!(m, jm)
                 JuMP.@NLexpression(
                     $(jm),
                     $(output.quantity) *
-                    $(y_over_y_bar(jm, s)) *
                         (
                             $(get_jump_variable_for_commodity(jm, output.commodity)) /
-                            $(create_rev_expr(jm, s)) /
-                            $(get_commodity_benchmark(output.commodity))
+                            $(create_rev_expr(jm, s))
                         )^$(s.tr_elasticity) -
                         $(jm[get_comp_supply_name(output)])
                 )
@@ -168,15 +146,16 @@ function build_implicitconstraints!(m, jm)
                 ex = :(
             JuMP.@NLexpression(
                 $(jm),
-                (
-                $(demand.quantity)* #^$(demand_function.elasticity) *
-                    (
-                        $(create_expenditure_expr(jm, demand_function))) * $(get_commodity_benchmark(demand.commodity))#^$(demand_function.elasticity)
-                #    )^$(demand_function.elasticity) 
+                $(demand.quantity)*
+                # Income/benchmark Income
+                $(get_commodity_benchmark(demand.commodity))  # p__bar_i?
                    /
-                        # ($(demand.quantity)/$temp1) * $(get_jump_variable_for_consumer(jm,demand_function.consumer)) ^ (1-$(demand_function.elasticity)))/
-                    $(get_jump_variable_for_commodity(jm, demand.commodity))
-                    )^$(demand_function.elasticity)
+                   $(get_jump_variable_for_commodity(jm, demand.commodity)) #p_bar
+                   * (
+                    +($((:($(swap_our_param_with_jump_param(jm, en.quantity)) * 
+                    $(get_jump_variable_for_commodity(jm, en.commodity))) for en in demand_function.endowments)...)) #Income(?)
+                   / $(get_consumer_benchmark(demand_function.consumer))) # benchmark income (?)
+                   # ($(demand.quantity)/$temp1) * $(get_jump_variable_for_consumer(jm,demand_function.consumer)) ^ (1-$(demand_function.elasticity)))/
                         - 
                     $(jm[get_final_demand_name(demand)])
                     )
