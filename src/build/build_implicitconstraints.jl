@@ -2,6 +2,31 @@ function Θ(pf::Production, i)
     return :( $(i.quantity) * $(get_commodity_benchmark(i.commodity)) / +($( (:( $(o.quantity) * $(get_commodity_benchmark(o.commodity)) ) for o in pf.outputs)...) ) )
 end
 
+function y_over_y_bar(jm, pf::Production)
+    if eval(swap_our_param_with_val(pf.elasticity))==0
+        return :(
+            min(
+                $(( :( $(jm[get_comp_demand_name(i)])/$(i.quantity) ) for i in pf.inputs)...)
+            )
+        )
+    elseif eval(swap_our_param_with_val(pf.elasticity))==1
+        return :(
+            *(
+                $(( :( ($(jm[get_comp_demand_name(i)])/$(i.quantity))^$(Θ(pf,i)) ) for i in pf.inputs)...)
+            )
+        )
+    else
+        ρ = :(($(pf.elasticity)-1)/$(pf.elasticity))
+        return :(
+            (
+                +(
+                    $((:( $(Θ(pf,i)) * ($(jm[get_comp_demand_name(i)])/$(i.quantity))^$ρ ) for i in pf.inputs)...)
+                )
+            )^(1/$ρ)
+        )
+    end
+end
+
 function create_cost_expr(jm, pf::Production)
 
     if eval(swap_our_param_with_val(pf.elasticity))==1
@@ -12,7 +37,7 @@ function create_cost_expr(jm, pf::Production)
                         ($(get_jump_variable_for_commodity(jm,input.commodity))/$(get_commodity_benchmark(input.commodity))) ^ $(Θ(pf, input))
                     ) for input in pf.inputs)...
                 )
-            )
+            ) * $(y_over_y_bar(jm, pf))
         )
     else 
         return :(
@@ -22,7 +47,7 @@ function create_cost_expr(jm, pf::Production)
                         $(Θ(pf, input)) * ($(get_jump_variable_for_commodity(jm,input.commodity))/$(get_commodity_benchmark(input.commodity))) ^ (1-$(pf.elasticity))
                     ) for input in pf.inputs)...
                 )
-            ))^(1/(1-$(pf.elasticity)))
+            ))^(1/(1-$(pf.elasticity))) * $(y_over_y_bar(jm, pf))
         )
     end
 end
@@ -62,6 +87,7 @@ function build_implicitconstraints!(m, jm)
                 JuMP.@NLexpression(
                     $(jm),
                     $(input.quantity) *
+                    $(y_over_y_bar(jm, s)) *
                  (       
                             $(create_cost_expr(jm, s)) * $(get_commodity_benchmark(input.commodity)) /
                         $(get_jump_variable_for_commodity(jm, input.commodity))
