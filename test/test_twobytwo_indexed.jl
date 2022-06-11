@@ -2,6 +2,7 @@
     m = Model()
     goods = [:x, :y]
     factors = [:l, :k]
+    consumers = [:ra]
     factor = DenseAxisArray(Float64[50 50; 20 30], goods, factors)
     supply = DenseAxisArray(Float64[100, 50], goods)
     endow = add!(m, Parameter(:endow, indices=(factors,), value=1.0)) 
@@ -10,20 +11,20 @@
     PC = add!(m, Commodity(:PC, indices=(goods,)))
     PU = add!(m, Commodity(:PU))
     PF = add!(m, Commodity(:PF, indices=(factors,)))
-    RA = add!(m, Consumer(:RA, benchmark=150.))
+    C = add!(m, Consumer(:C, indices=(consumers,), benchmark=150.))
 
     for i in goods
         @production(m, Y[i], 0, 1, [Output(PC[i], supply[i])], [Input(PF[:l], factor[i,:l]), Input(PF[:k], factor[i,:k])])
     end
     @production(m, U, 0, 1, [Output(PU, 150)], [Input(PC[:x], 100), Input(PC[:y], 50)])
-    @demand(m, RA, [Demand(PU, 150)], [Endowment(PF[:l], :(70 * $(endow[:l]))), Endowment(PF[:k], :(80. * $(endow[:k])))])
+    @demand(m, C[:ra], [Demand(PU, 150)], [Endowment(PF[:l], :(70 * $(endow[:l]))), Endowment(PF[:k], :(80. * $(endow[:k])))])
 
     solve!(m, cumulative_iteration_limit=0)
     
     @test MPSGE.Complementarity.result_value(m._jump_model[:Y][:x]) ≈ 1.
     @test MPSGE.Complementarity.result_value(m._jump_model[:Y][:y]) ≈ 1.
     @test MPSGE.Complementarity.result_value(m._jump_model[:U]) ≈ 1.
-    @test MPSGE.Complementarity.result_value(m._jump_model[:RA]) ≈ 150.
+    @test MPSGE.Complementarity.result_value(m._jump_model[:C][:ra]) ≈ 150.
     @test MPSGE.Complementarity.result_value(m._jump_model[:PC][:x]) ≈ 1.
     @test MPSGE.Complementarity.result_value(m._jump_model[:PC][:y]) ≈ 1.
     @test MPSGE.Complementarity.result_value(m._jump_model[:PU]) ≈ 1.
@@ -38,8 +39,8 @@
 
     set_fixed!(PC[:x], false)
     set_value(endow[:l], get_value(endow[:l]).*1.1)
-    set_value(RA, (get_value(endow[:k]) * 80. + get_value(endow[:l]) * 70.))
-    set_fixed!(RA, true)
+    set_value(C[:ra], (get_value(endow[:k]) * 80. + get_value(endow[:l]) * 70.))
+    set_fixed!(C[:ra], true)
     solve!(m)
     
     # TODO #67 What is the status of these commented lines here? Can they be removed?
@@ -65,16 +66,16 @@
     @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PF[k]†Y[y]")]) ≈ 28.877805079685
     @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PC[x]†U")]) ≈ 100.318205802571
     @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PC[y]†U")]) ≈ 49.6833066029729
-    @test MPSGE.Complementarity.result_value(m._jump_model[:RA]) ≈ 157
+    @test MPSGE.Complementarity.result_value(m._jump_model[:C][:ra]) ≈ 157
           
-    set_fixed!(RA, false)
+    set_fixed!(C[:ra], false)
     set_fixed!(PC[:x], true)
 
     solve!(m)
     @test MPSGE.Complementarity.result_value(m._jump_model[:Y][:x]) ≈ 1.04880885
     @test MPSGE.Complementarity.result_value(m._jump_model[:Y][:y]) ≈ 1.03886012
     @test MPSGE.Complementarity.result_value(m._jump_model[:U]) ≈ 1.04548206
-    @test MPSGE.Complementarity.result_value(m._jump_model[:RA]) ≈ 157.321327225523
+    @test MPSGE.Complementarity.result_value(m._jump_model[:C][:ra]) ≈ 157.321327225523
     @test MPSGE.Complementarity.result_value(m._jump_model[:PC][:x]) ≈ 1.0000000000
     @test MPSGE.Complementarity.result_value(m._jump_model[:PC][:y]) ≈ 1.00957658
     @test MPSGE.Complementarity.result_value(m._jump_model[:PU]) ≈ 1.00318206
@@ -105,5 +106,5 @@
     @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PF[k]†Y[y]")]) ≈ 28.87780508 #note - digits after 28.8778 added from MPSGE.jl results bc GAMS not showing
     @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PC[x]†U")]) ≈ 100.3182058 #note - digits after 100.3182 added from MPSGE.jl results bc GAMS not showing
     @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PC[y]†U")]) ≈ 49.6833066 #note - digits after 49.6833 added from MPSGE.jl results bc GAMS not showing
-    @test MPSGE.Complementarity.result_value(m._jump_model[:RA]) ≈ 165                            
+    @test MPSGE.Complementarity.result_value(m._jump_model[:C][:ra]) ≈ 165                            
 end

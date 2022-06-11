@@ -28,7 +28,13 @@ function set_all_start_values(m)
     end
 
     for c in m._consumers
-        Complementarity.set_start_value(jm[c.name], c.benchmark)
+        if c isa ScalarConsumer
+            Complementarity.set_start_value(jm[c.name], c.benchmark)
+        else
+            for i in Iterators.product(c.indices...)
+                Complementarity.set_start_value(jm[c.name][i...], c.benchmark[i...])
+            end
+        end
     end
 
 
@@ -81,12 +87,28 @@ function set_all_bounds(m)
     
     end
     for cs in m._consumers
-        jump_var = jm[cs.name]
-        if cs.fixed
-            JuMP.fix(jump_var, cs.benchmark, force=true)
+        if cs isa ScalarConsumer
+            jump_var = jm[cs.name]
+            if cs.fixed
+                JuMP.fix(jump_var, cs.benchmark, force=true)
+            else
+                if JuMP.is_fixed(jump_var)
+                    JuMP.unfix(jump_var)
+                end
+            end
         else
-            if JuMP.is_fixed(jump_var)
-                JuMP.unfix(jump_var)
+            for i in Iterators.product(cs.indices...)
+                jump_var = jm[cs.name][i...]
+
+                if cs.fixed[i...]
+                    JuMP.fix(jump_var, cs.benchmark[i...], force=true)
+                else
+                    if JuMP.is_fixed(jump_var)
+                        JuMP.unfix(jump_var)
+                    end
+        
+                    JuMP.set_lower_bound(jump_var, 0.001)
+                end
             end
         end
     end
