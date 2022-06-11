@@ -134,30 +134,19 @@ function build_implicitconstraints!(m, jm)
 
     # Add final demand
     for demand_function in m._demands
-    # temp1 = :(
-    #             +(
-    #                 $(
-    #                     (demand.quantity for demand in demand_function.demands)...
-    #                 )
-    #             )
-    #         )            
         if eval(swap_our_param_with_val(demand_function.elasticity))==1
             for demand in demand_function.demands
                 ex = :(
             JuMP.@NLexpression(
                 $(jm),
-                $(get_jump_variable_for_consumer(jm, demand_function.consumer))
-                # $(demand.quantity)
+                $(demand.quantity) * 
+                ($(get_jump_variable_for_consumer(jm, demand_function.consumer)) # (consumer's) income
+                /$(get_consumer_benchmark(demand_function.consumer))) # benchmark income (?)
                 *
                 # Income/benchmark Income
-                $(get_commodity_benchmark(demand.commodity))  # p__bar_i?
+                ($(get_commodity_benchmark(demand.commodity))  # p__bar_i?
                    /
-                   $(get_jump_variable_for_commodity(jm, demand.commodity)) #p_bar
-                   * (
-                    +($((:($(swap_our_param_with_jump_param(jm, en.quantity)) * 
-                    $(get_jump_variable_for_commodity(jm, en.commodity))) for en in demand_function.endowments)...)) #Income(?)
-                   / $(get_consumer_benchmark(demand_function.consumer))) # benchmark income (?)
-                   # ($(demand.quantity)/$temp1) * $(get_jump_variable_for_consumer(jm,demand_function.consumer)) ^ (1-$(demand_function.elasticity)))/
+                   $(get_jump_variable_for_commodity(jm, demand.commodity))) #p_bar
                         - 
                     $(jm[get_final_demand_name(demand)])
                     )
@@ -167,18 +156,21 @@ function build_implicitconstraints!(m, jm)
                 Complementarity.add_complementarity(jm, jm[get_final_demand_name(demand)], exb, string("F_", get_final_demand_name(demand)))
                 push!(m._nlexpressions, exb)
             end
-    else
-        for demand in demand_function.demands
-            ex = :(
-                JuMP.@NLexpression(
-                    $(jm),
-                    $(demand.quantity)^$(demand_function.elasticity) *
-                        (
-                            # $(create_expenditure_expr(jm, demand_function)))^$(demand_function.elasticity) /
-                            ($(demand.quantity)/$temp1) * $(get_jump_variable_for_consumer(jm,demand_function.consumer)) ^ (1-$(demand_function.elasticity)))/
-                        $(get_jump_variable_for_commodity(jm, demand.commodity))
-                            - 
-                        $(jm[get_final_demand_name(demand)])
+        elseif eval(swap_our_param_with_val(demand_function.elasticity))==0
+            for demand in demand_function.demands
+                ex = :(
+            JuMP.@NLexpression(
+                $(jm),
+                $(demand.quantity) * 
+                ($(get_jump_variable_for_consumer(jm, demand_function.consumer)) # (consumer's) income
+                /$(get_consumer_benchmark(demand_function.consumer))) # benchmark income (?)
+                *
+                # Income/benchmark Income
+                ($(get_commodity_benchmark(demand.commodity))  # p__bar_i?
+                   /
+                   $(get_jump_variable_for_commodity(jm, demand.commodity))) #p_bar
+                        - 
+                    $(jm[get_final_demand_name(demand)])
                 )
             )
             exb = eval( swap_our_param_with_jump_param(jm, ex) )
