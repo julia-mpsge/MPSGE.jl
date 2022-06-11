@@ -158,6 +158,7 @@ function build_implicitconstraints!(m, jm)
             end
         elseif eval(swap_our_param_with_val(demand_function.elasticity))==0
             for demand in demand_function.demands
+                Θ(j) = :( +($( (:($(i.quantity) * $(get_commodity_benchmark(i.commodity)) ) for i in demand_function.demands)...))/$(get_consumer_benchmark(j.consumer)))
                 ex = :(
             JuMP.@NLexpression(
                 $(jm),
@@ -166,9 +167,9 @@ function build_implicitconstraints!(m, jm)
                 /$(get_consumer_benchmark(demand_function.consumer))) # benchmark income (?)
                 *
                 # Income/benchmark Income
-                ($(get_commodity_benchmark(demand.commodity))  # p__bar_i?
+                (       +($( (:($(Θ(demand_function))*$(get_commodity_benchmark(demand.commodity)) ) for demand in demand_function.demands)...))  # sum(demand theta * p__bar_j)?
                    /
-                   $(get_jump_variable_for_commodity(jm, demand.commodity))) #p_bar
+                        +($( (:($(Θ(demand_function))*$(get_jump_variable_for_commodity(jm, demand.commodity))) for demand in demand_function.demands)...) ))# sum(demand theta * p_bar
                         - 
                     $(jm[get_final_demand_name(demand)])
                 )
