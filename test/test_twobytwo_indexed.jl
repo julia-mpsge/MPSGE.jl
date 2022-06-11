@@ -42,6 +42,7 @@
     set_fixed!(RA, true)
     solve!(m)
     
+    # TODO #67 What is the status of these commented lines here? Can they be removed?
     # @test MPSGE.Complementarity.result_value(m._jump_model[:Y][:x]) ≈ 1.04986567
     # @test MPSGE.Complementarity.result_value(m._jump_model[:Y][:y]) ≈ 1.03676649
     # @test MPSGE.Complementarity.result_value(m._jump_model[:U]) ≈ 1.04335615
