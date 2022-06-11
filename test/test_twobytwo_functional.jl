@@ -22,7 +22,7 @@
     add!(m, Production(Y, 0, :(0.5 * $elascoeff), [Output(PY, 50)], [Input(PL, 20), Input(PK, 30)]))
     add!(m, Production(U, 0, 1, [Output(PU, :(75 * $outputmult))], [Input(PX, 100), Input(PY, 50)]))
 
-    add!(m, DemandFunction(RA, [Demand(PU,150)], [Endowment(PL, :(35 * $endow)), Endowment(PK, 80)]))
+    add!(m, DemandFunction(RA, 1., [Demand(PU,150)], [Endowment(PL, :(35 * $endow)), Endowment(PK, 80)]))
 
     avm = algebraic_version(m)
     @test typeof(avm) == MPSGE.AlgebraicWrapper
