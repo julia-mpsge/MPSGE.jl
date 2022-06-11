@@ -178,7 +178,7 @@ function build_implicitconstraints!(m, jm)
             end
         elseif eval(swap_our_param_with_val(demand_function.elasticity))==0
             for demand in demand_function.demands
-                Θ(j) = :( +($( (:($(i.quantity) * $(get_commodity_benchmark(i.commodity)) ) for i in demand_function.demands)...))/$(get_consumer_benchmark(j.consumer)))
+                Θ(d, df) = :( $(d.quantity) * $(get_commodity_benchmark(d.commodity)) /$(get_consumer_benchmark(df.consumer)))
                 ex = :(
             JuMP.@NLexpression(
                 $(jm),
@@ -186,11 +186,33 @@ function build_implicitconstraints!(m, jm)
                 ($(get_jump_variable_for_consumer(jm, demand_function.consumer)) # (consumer's) income
                 /$(get_consumer_benchmark(demand_function.consumer))) # benchmark income (?)
                 *
-                # Income/benchmark Income
-                (       +($( (:($(Θ(demand_function))*$(get_commodity_benchmark(demand.commodity)) ) for demand in demand_function.demands)...))  # sum(demand theta * p__bar_j)?
+                (       +($( (:($(Θ(demand, demand_function))*$(get_commodity_benchmark(demand.commodity)) ) for demand in demand_function.demands)...))  # sum(demand theta * p__bar_j)?
                    /
-                        +($( (:($(Θ(demand_function))*$(get_jump_variable_for_commodity(jm, demand.commodity))) for demand in demand_function.demands)...) ))# sum(demand theta * p_bar
+                        +($( (:($(Θ(demand, demand_function))*$(get_jump_variable_for_commodity(jm, demand.commodity))) for demand in demand_function.demands)...) ))# sum(demand theta * p_bar
                         - 
+                    $(jm[get_final_demand_name(demand)])
+                )
+            )
+            exb = eval( swap_our_param_with_jump_param(jm, ex) )
+
+            Complementarity.add_complementarity(jm, jm[get_final_demand_name(demand)], exb, string("F_", get_final_demand_name(demand)))
+            push!(m._nlexpressions, exb)
+            end
+        
+        else
+            for demand in demand_function.demands
+                Θ(d, df) = :( $(d.quantity) * $(get_commodity_benchmark(d.commodity)) /$(get_consumer_benchmark(df.consumer)))
+                ex = :(
+            JuMP.@NLexpression(
+                $(jm),
+                $(demand.quantity) * 
+                ($(get_jump_variable_for_consumer(jm, demand_function.consumer)) # (consumer's) income
+                /$(get_consumer_benchmark(demand_function.consumer))) # benchmark income (?)
+                *
+                (       +($( (:($(Θ(demand, demand_function))*$(get_commodity_benchmark(demand.commodity)) ) for demand in demand_function.demands)...))  # sum(demand theta * p__bar_j)?
+                /
+                     +($( (:($(Θ(demand, demand_function))*$(get_jump_variable_for_commodity(jm, demand.commodity))) for demand in demand_function.demands)...) ))# sum(demand theta * p_bar
+                      - 
                     $(jm[get_final_demand_name(demand)])
                 )
             )
