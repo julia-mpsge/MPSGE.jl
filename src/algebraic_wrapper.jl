@@ -17,7 +17,7 @@ function algebraic_version(m::Model)
         sum(length(s.outputs) for s in m._productions),
         sum(length(d.demands) for d in m._demands),
         length(m._productions),
-        length(m._commodities),
+        sum(c isa ScalarCommodity ? 1 : c isa IndexedCommodity ? prod(length.(c.indices)) : error("Invalid") for c in m._commodities),
         length(m._demands)
     )
 end
