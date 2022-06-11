@@ -58,12 +58,20 @@ function get_jump_variable_for_commodity(jm, commodity::IndexedCommodity)
     return jm[get_name(commodity)][commodity.subindex]
 end
 
-function get_jump_variable_for_consumer(jm, consumer)
+function get_jump_variable_for_consumer(jm, consumer::ConsumerRef)
+    if consumer.subindex===nothing
+        return jm[get_name(consumer)]
+    else
+        return jm[get_name(consumer)][consumer.subindex]
+    end
+end
+
+function get_jump_variable_for_consumer(jm, consumer::ScalarConsumer)
     return jm[get_name(consumer)]
 end
 
-function get_jump_variable_for_consumer(jm, consumer::ConsumerRef)
-    return jm[get_name(consumer)]
+function get_jump_variable_for_consumer(jm, consumer::IndexedConsumer)
+    return jm[get_name(consumer)][consumer.subindex]
 end
 
 function get_jump_variable_for_intermediate_supply(jm, output)
@@ -83,7 +91,7 @@ function get_prod_func_name(x::Production)
 end
 
 function get_demand_func_name(x::DemandFunction)
-    return Symbol("$(get_name(x.consumer))")
+    return Symbol("$(get_name(x.consumer, true))")
 end
 
 function get_comp_demand_name(i::Input)
