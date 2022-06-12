@@ -33,17 +33,17 @@
     a_table = gams_results["TwoxTwoScalar"][:]
     two_by_two_scalar_results = DenseAxisArray(a_table[2:end,2:end],a_table[2:end,1],a_table[1,2:end])
 
-    @test value(m, :X) ≈ 1.
+    @test value(m, :X) ≈ two_by_two_scalar_results["X.L","benchmark"]
     @test MPSGE.Complementarity.result_value(m._jump_model[:Y]) ≈ two_by_two_scalar_results["Y.L","benchmark"]
-    @test MPSGE.Complementarity.result_value(m._jump_model[:U]) ≈ 1.
-    @test MPSGE.Complementarity.result_value(m._jump_model[:RA]) ≈ 150.
+    @test MPSGE.Complementarity.result_value(m._jump_model[:U]) ≈ two_by_two_scalar_results["U.L","benchmark"]
+    @test MPSGE.Complementarity.result_value(m._jump_model[:RA]) ≈ two_by_two_scalar_results["RA.L","benchmark"]
 
-    @test MPSGE.Complementarity.result_value(m._jump_model[:PX]) ≈ 1.
-    @test MPSGE.Complementarity.result_value(m._jump_model[:PY]) ≈ 1.
-    @test MPSGE.Complementarity.result_value(m._jump_model[:PU]) ≈ 1.
-    @test MPSGE.Complementarity.result_value(m._jump_model[:PL]) ≈ 1.
-    @test MPSGE.Complementarity.result_value(m._jump_model[:PK]) ≈ 1.
-
+    @test MPSGE.Complementarity.result_value(m._jump_model[:PX]) ≈ two_by_two_scalar_results["PX.L","benchmark"]
+    @test MPSGE.Complementarity.result_value(m._jump_model[:PY]) ≈ two_by_two_scalar_results["PY.L","benchmark"]
+    @test MPSGE.Complementarity.result_value(m._jump_model[:PU]) ≈ two_by_two_scalar_results["PU.L","benchmark"]
+    @test MPSGE.Complementarity.result_value(m._jump_model[:PL]) ≈ two_by_two_scalar_results["PL.L","benchmark"]
+    @test MPSGE.Complementarity.result_value(m._jump_model[:PK]) ≈ two_by_two_scalar_results["PK.L","benchmark"]
+#Implicit variables
     @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PL†X")]) ≈ 50.
     @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PL†Y")]) ≈ 20.
     @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PK†X")]) ≈ 50.
@@ -64,15 +64,15 @@
     set_value(endow, 2.2)
     solve!(m)
 
-    @test value(m, :X) ≈ 1.04880885
+    @test value(m, :X) ≈ two_by_two_scalar_results["X.L","PX=1"]#    1.04880885
     @test MPSGE.Complementarity.result_value(m._jump_model[:Y]) ≈ two_by_two_scalar_results["Y.L","PX=1"]
-    @test MPSGE.Complementarity.result_value(m._jump_model[:U]) ≈ 1.04548206
-    @test MPSGE.Complementarity.result_value(m._jump_model[:RA]) ≈ 157.321327225523
-    @test MPSGE.Complementarity.result_value(m._jump_model[:PX]) ≈ 1.0000000000
-    @test MPSGE.Complementarity.result_value(m._jump_model[:PY]) ≈ 1.00957658
-    @test MPSGE.Complementarity.result_value(m._jump_model[:PU]) ≈ 1.00318206
-    @test MPSGE.Complementarity.result_value(m._jump_model[:PL]) ≈ 0.95346259
-    @test MPSGE.Complementarity.result_value(m._jump_model[:PK]) ≈ 1.04880885
+    @test MPSGE.Complementarity.result_value(m._jump_model[:U]) ≈ two_by_two_scalar_results["U.L","PX=1"]#    1.04548206
+    @test MPSGE.Complementarity.result_value(m._jump_model[:RA]) ≈ two_by_two_scalar_results["RA.L","PX=1"]#    157.321327225523
+    @test MPSGE.Complementarity.result_value(m._jump_model[:PX]) ≈ two_by_two_scalar_results["PX.L","PX=1"]#    1.0000000000
+    @test MPSGE.Complementarity.result_value(m._jump_model[:PY]) ≈ two_by_two_scalar_results["PY.L","PX=1"]#    1.00957658
+    @test MPSGE.Complementarity.result_value(m._jump_model[:PU]) ≈ two_by_two_scalar_results["PU.L","PX=1"]#    1.00318206
+    @test MPSGE.Complementarity.result_value(m._jump_model[:PL]) ≈ two_by_two_scalar_results["PL.L","PX=1"]#    0.95346259
+    @test MPSGE.Complementarity.result_value(m._jump_model[:PK]) ≈ two_by_two_scalar_results["PK.L","PX=1"]#    1.04880885
     @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PL†X")]) ≈ 52.4404424085075
     @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PL†Y")]) ≈ 21.1770570584356
     @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PK†X")]) ≈ 47.6731294622795

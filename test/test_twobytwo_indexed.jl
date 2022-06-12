@@ -21,6 +21,7 @@
 
     solve!(m, cumulative_iteration_limit=0)
     
+    
     @test MPSGE.Complementarity.result_value(m._jump_model[:Y][:x]) ≈ 1.
     @test MPSGE.Complementarity.result_value(m._jump_model[:Y][:y]) ≈ 1.
     @test MPSGE.Complementarity.result_value(m._jump_model[:U]) ≈ 1.
