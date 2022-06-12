@@ -69,6 +69,23 @@ function create_rev_expr(jm, pf::Production)
     )
 end
 
+function create_utility_expr(jm, dm::DemandFunction)
+    return :( 
+        (
+            +(
+                $(
+                    (
+                        :(
+                            ($(demand.quantity)*$(get_commodity_benchmark(demand.commodity)) /$(get_consumer_benchmark(dm.consumer))) *
+    ($(demand.quantity)/$(demand.quantity))^(($(dm.elasticity)-1)/$(dm.elasticity)) #TODO Fix the numerator here 
+    ) for demand in dm.demands
+    )...
+                    )
+                )
+       )^(1/(($(dm.elasticity)-1)/$(dm.elasticity)))
+       )
+end
+
 function create_expenditure_expr(jm, dm::DemandFunction)
     return :( 
         (
@@ -83,7 +100,7 @@ function create_expenditure_expr(jm, dm::DemandFunction)
                     )
                 )
        )^(1/(1-$(dm.elasticity)))
-    # TODO   * utility/benchmark utility
+       * $(create_utility_expr(jm, dm))
        )
 end
 
