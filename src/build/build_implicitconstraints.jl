@@ -81,7 +81,7 @@ function create_utility_expr(jm, dm::DemandFunction)
                     (
                         :(
                             $( Θ(dm, demand) ) *
-                            # TODO Figure out why the commented version doesn't work, it matches paper
+                            # TODO #71 Figure out why the commented version doesn't work, it matches paper
                             # (
                             #     $(jm[get_final_demand_name(demand)]) / $(demand.quantity)
                             # )^(
