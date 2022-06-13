@@ -48,8 +48,8 @@
     @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("P[g2]†X[s2]")]) ≈ 6.
     @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PF[l]†X[s2]")]) ≈ 3.
     @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PF[k]†X[s2]")]) ≈ 1.
-    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("P[g1]ρY")]) ≈ two_by_two_jpmge["C.g1","benchmark"] # 2.
-    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("P[g2]ρY")]) ≈ two_by_two_jpmge["C.g2","benchmark"] # 4.
+    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("P[g1]ρY")]) ≈ two_by_two_jpmge["PY.g1","benchmark"] # 2.
+    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("P[g2]ρY")]) ≈ two_by_two_jpmge["PY.g2","benchmark"] # 4.
     
 
     #Counter-factual 1, labour supply increased by 10%
@@ -78,8 +78,8 @@
     @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("P[g2]†X[s2]")]) ≈ 6.018624497730061 ##note - digits after 6.0186 added from MPSGE.jl results bc GAMS not showing  # two_by_two_jpmge["P.g1","Y=6.4"] implicit don't match
     @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PF[l]†X[s2]")]) ≈ 3.06483480444652 # two_by_two_jpmge["P.g1","Y=6.4"] implicit don't match
     @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PF[k]†X[s2]")]) ≈ 0.94903406 # two_by_two_jpmge["P.g1","Y=6.4"] implicit don't match
-    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("P[g1]ρY")]) ≈ two_by_two_jpmge["C.g1","Y=6.4"] # 2.1058245831306
-    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("P[g2]ρY")]) ≈ two_by_two_jpmge["C.g2","Y=6.4"] # 4.28949135539776
+    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("P[g1]ρY")]) ≈ two_by_two_jpmge["PY.g1","Y=6.4"] # 2.1058245831306
+    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("P[g2]ρY")]) ≈ two_by_two_jpmge["PY.g2","Y=6.4"] # 4.28949135539776
 
     # Counter-factual 2, use Price of good 1 as the numeraire
     set_fixed!(Y,false)
@@ -105,8 +105,8 @@
     @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PF[l]†X[s2]")]) ≈ 3.06483479672782#note - digits after 3.0648348 added from MPSGE.jl results bc GAMS not showing
     @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PF[k]†X[s2]")]) ≈ 0.949034056851536#note - digits after 0.94903405 added from MPSGE.jl results bc GAMS not showing
     @test MPSGE.Complementarity.result_value(m._jump_model[:Y]) ≈ two_by_two_jpmge["Y._","P(\"g1\")=1"] # 6.31747374939373 # not quite…6.31747363
-    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("P[g1]ρY")]) ≈ two_by_two_jpmge["C.g1","P(\"g1\")=1"] # 2.10582458313124 # not quite…2.10582454
-    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("P[g2]ρY")]) ≈ two_by_two_jpmge["C.g2","P(\"g1\")=1"] # 4.28949139508602 # not quite…4.28949136
+    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("P[g1]ρY")]) ≈ two_by_two_jpmge["PY.g1","P(\"g1\")=1"] # 2.10582458313124 # not quite…2.10582454
+    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("P[g2]ρY")]) ≈ two_by_two_jpmge["PY.g2","P(\"g1\")=1"] # 4.28949139508602 # not quite…4.28949136
                  
     # Counter-factual 3, use price of labour (wages) as the numeraire
     set_fixed!(P[:g1], false)
@@ -132,8 +132,8 @@
     @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PF[l]†X[s2]")]) ≈ 3.06483479678299# not quite…3.06483456
     @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PF[k]†X[s2]")]) ≈ 0.949034056889784# not quite…0.94903402
     @test MPSGE.Complementarity.result_value(m._jump_model[:Y]) ≈ 6.55295034252603# not quite…6.55295028
-    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("P[g1]ρY")]) ≈ two_by_two_jpmge["C.g1","PF(\"labor\")=1"] # 2.10582458311357# not quite…2.10582449
-    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("P[g2]ρY")]) ≈ two_by_two_jpmge["C.g2","PF(\"labor\")=1"] # 4.28949139501026# not quite…4.28949135                                                     
+    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("P[g1]ρY")]) ≈ two_by_two_jpmge["PY.g1","PF(\"labor\")=1"] # 2.10582458311357# not quite…2.10582449
+    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("P[g2]ρY")]) ≈ two_by_two_jpmge["PY.g2","PF(\"labor\")=1"] # 4.28949139501026# not quite…4.28949135                                                     
 
 
 #A replication of the JPMGE from https://www.gams.com/34/docs/UG_MPSGE_Intro.html#UG_MPSGE_Intro_Appendix_jpmge
@@ -192,8 +192,8 @@
     @test MPSGE.Complementarity.result_value(m._jump_model[:PF][:l]) ≈ two_by_two_jpmge["PF.labor","D_elas=0,Y=6.4"] # 
     @test MPSGE.Complementarity.result_value(m._jump_model[:PF][:k]) ≈ two_by_two_jpmge["PF.capital","D_elas=0,Y=6.4"] # 
     @test MPSGE.Complementarity.result_value(m._jump_model[:Y]) ≈ two_by_two_jpmge["Y._","D_elas=0,Y=6.4"] # 6.4
-    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("P[g1]ρY")]) ≈ two_by_two_jpmge["C.g1","D_elas=0,Y=6.4"] # 
-    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("P[g2]ρY")]) ≈ two_by_two_jpmge["C.g2","D_elas=0,Y=6.4"] # 
+    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("P[g1]ρY")]) ≈ two_by_two_jpmge["PY.g1","D_elas=0,Y=6.4"] # 
+    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("P[g2]ρY")]) ≈ two_by_two_jpmge["PY.g2","D_elas=0,Y=6.4"] # 
     # Implicit variables don't match
     # @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("P[g1]‡X[s1]")]) ≈ 6.0271570795595
     # @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("P[g2]‡X[s1]")]) ≈ 1.97259368637181
@@ -220,8 +220,8 @@
     @test MPSGE.Complementarity.result_value(m._jump_model[:PF][:l]) ≈ two_by_two_jpmge["PF.labor","D_elas=0,P(\"g1\")=1"] atol = 0.0000001# 
     @test MPSGE.Complementarity.result_value(m._jump_model[:PF][:k]) ≈ two_by_two_jpmge["PF.capital","D_elas=0,P(\"g1\")=1"] # 
     @test MPSGE.Complementarity.result_value(m._jump_model[:Y]) ≈ two_by_two_jpmge["Y._","D_elas=0,P(\"g1\")=1"] atol = 0.000001#
-    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("P[g1]ρY")]) ≈ two_by_two_jpmge["C.g1","D_elas=0,P(\"g1\")=1"] # 
-    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("P[g2]ρY")]) ≈ two_by_two_jpmge["C.g2","D_elas=0,P(\"g1\")=1"] # 
+    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("P[g1]ρY")]) ≈ two_by_two_jpmge["PY.g1","D_elas=0,P(\"g1\")=1"] # 
+    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("P[g2]ρY")]) ≈ two_by_two_jpmge["PY.g2","D_elas=0,P(\"g1\")=1"] # 
    
     # @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("P[g1]‡X[s1]")]) ≈ 6.02715706941587#note - digits after 6.0272 added from MPSGE.jl results bc GAMS not showing
     # @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("P[g2]‡X[s1]")]) ≈ 1.97259369533833#note - digits after 1.9726 added from MPSGE.jl results bc GAMS not showing
@@ -248,8 +248,8 @@
     @test MPSGE.Complementarity.result_value(m._jump_model[:PF][:l]) ≈ two_by_two_jpmge["PF.labor","D_elas=0,PF(\"l\")=1"] # 
     @test MPSGE.Complementarity.result_value(m._jump_model[:PF][:k]) ≈ two_by_two_jpmge["PF.capital","D_elas=0,PF(\"l\")=1"] # 
     @test MPSGE.Complementarity.result_value(m._jump_model[:Y]) ≈ two_by_two_jpmge["Y._","D_elas=0,PF(\"l\")=1"] # 6.4
-    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("P[g1]ρY")]) ≈ two_by_two_jpmge["C.g1","D_elas=0,PF(\"l\")=1"] atol = 0.00000001# 
-    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("P[g2]ρY")]) ≈ two_by_two_jpmge["C.g2","D_elas=0,PF(\"l\")=1"] # 
+    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("P[g1]ρY")]) ≈ two_by_two_jpmge["PY.g1","D_elas=0,PF(\"l\")=1"] atol = 0.00000001# 
+    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("P[g2]ρY")]) ≈ two_by_two_jpmge["PY.g2","D_elas=0,PF(\"l\")=1"] # 
 
     # @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("P[g1]‡X[s1]")]) ≈ 6.02715706940364#note - digits after 6.0272 added from MPSGE.jl results bc GAMS not showing
     # @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("P[g2]‡X[s1]")]) ≈ 1.97259369534545#note - digits after 1.9726 added from MPSGE.jl results bc GAMS not showing
@@ -320,8 +320,8 @@
     @test MPSGE.Complementarity.result_value(m._jump_model[:PF][:l]) ≈ two_by_two_jpmge["PF.labor","D_elas=2,Y=6.4"] # 
     @test MPSGE.Complementarity.result_value(m._jump_model[:PF][:k]) ≈ two_by_two_jpmge["PF.capital","D_elas=2,Y=6.4"] # 
     @test MPSGE.Complementarity.result_value(m._jump_model[:Y]) ≈ two_by_two_jpmge["Y._","D_elas=2,Y=6.4"] # 6.4
-    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("P[g1]ρY")]) ≈ two_by_two_jpmge["C.g1","D_elas=2,Y=6.4"] # 
-    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("P[g2]ρY")]) ≈ two_by_two_jpmge["C.g2","D_elas=2,Y=6.4"] # 
+    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("P[g1]ρY")]) ≈ two_by_two_jpmge["PY.g1","D_elas=2,Y=6.4"] # 
+    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("P[g2]ρY")]) ≈ two_by_two_jpmge["PY.g2","D_elas=2,Y=6.4"] # 
 
     # @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("P[g1]‡X[s1]")]) ≈ 6.0271570795595
     # @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("P[g2]‡X[s1]")]) ≈ 1.97259368637181
@@ -348,8 +348,8 @@
     @test MPSGE.Complementarity.result_value(m._jump_model[:PF][:l]) ≈ two_by_two_jpmge["PF.labor","D_elas=2,P(\"g1\")=1"] # 
     @test MPSGE.Complementarity.result_value(m._jump_model[:PF][:k]) ≈ two_by_two_jpmge["PF.capital","D_elas=2,P(\"g1\")=1"] # 
     @test MPSGE.Complementarity.result_value(m._jump_model[:Y]) ≈ two_by_two_jpmge["Y._","D_elas=2,P(\"g1\")=1"] # 6.4
-    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("P[g1]ρY")]) ≈ two_by_two_jpmge["C.g1","D_elas=2,P(\"g1\")=1"] atol = 1.0e-7 # 
-    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("P[g2]ρY")]) ≈ two_by_two_jpmge["C.g2","D_elas=2,P(\"g1\")=1"] # 
+    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("P[g1]ρY")]) ≈ two_by_two_jpmge["PY.g1","D_elas=2,P(\"g1\")=1"] atol = 1.0e-7 # 
+    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("P[g2]ρY")]) ≈ two_by_two_jpmge["PY.g2","D_elas=2,P(\"g1\")=1"] # 
 
     # @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("P[g1]‡X[s1]")]) ≈ 6.02715706941587#note - digits after 6.0272 added from MPSGE.jl results bc GAMS not showing
     # @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("P[g2]‡X[s1]")]) ≈ 1.97259369533833#note - digits after 1.9726 added from MPSGE.jl results bc GAMS not showing
@@ -376,8 +376,8 @@
     @test MPSGE.Complementarity.result_value(m._jump_model[:PF][:l]) ≈ two_by_two_jpmge["PF.labor","D_elas=2,PF(\"l\")=1"] # 
     @test MPSGE.Complementarity.result_value(m._jump_model[:PF][:k]) ≈ two_by_two_jpmge["PF.capital","D_elas=2,PF(\"l\")=1"] # 
     @test MPSGE.Complementarity.result_value(m._jump_model[:Y]) ≈ two_by_two_jpmge["Y._","D_elas=2,PF(\"l\")=1"] # 6.4
-    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("P[g1]ρY")]) ≈ two_by_two_jpmge["C.g1","D_elas=2,PF(\"l\")=1"] atol = 0.00000001# 
-    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("P[g2]ρY")]) ≈ two_by_two_jpmge["C.g2","D_elas=2,PF(\"l\")=1"] # 
+    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("P[g1]ρY")]) ≈ two_by_two_jpmge["PY.g1","D_elas=2,PF(\"l\")=1"] atol = 0.00000001# 
+    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("P[g2]ρY")]) ≈ two_by_two_jpmge["PY.g2","D_elas=2,PF(\"l\")=1"] # 
     
     # @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("P[g1]‡X[s1]")]) ≈ 6.02715706940364#note - digits after 6.0272 added from MPSGE.jl results bc GAMS not showing
     # @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("P[g2]‡X[s1]")]) ≈ 1.97259369534545#note - digits after 1.9726 added from MPSGE.jl results bc GAMS not showing
