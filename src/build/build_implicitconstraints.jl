@@ -2,6 +2,10 @@ function Θ(pf::Production, i)
     return :( $(i.quantity) * $(get_commodity_benchmark(i.commodity)) / +($( (:( $(o.quantity) * $(get_commodity_benchmark(o.commodity)) ) for o in pf.outputs)...) ) )
 end
 
+function Θ(df::DemandFunction, i)
+    return :( $(i.quantity) * $(get_commodity_benchmark(i.commodity)) / $(get_consumer_benchmark(df.consumer)))
+end
+
 function y_over_y_bar(jm, pf::Production)
     if eval(swap_our_param_with_val(pf.elasticity))==0
         return :(
@@ -76,14 +80,26 @@ function create_utility_expr(jm, dm::DemandFunction)
                 $(
                     (
                         :(
-                            ($(demand.quantity)*$(get_commodity_benchmark(demand.commodity)) /$(get_consumer_benchmark(dm.consumer))) *
-    ($(demand.quantity)/$(demand.quantity))^(($(dm.elasticity)-1)/$(dm.elasticity)) #TODO Fix the numerator here 
-    ) for demand in dm.demands
-    )...
-                    )
+                            $( Θ(dm, demand) ) *
+                            # TODO Figure out why the commented version doesn't work, it matches paper
+                            # (
+                            #     $(jm[get_final_demand_name(demand)]) / $(demand.quantity)
+                            # )^(
+                            #     ($(dm.elasticity)-1)/$(dm.elasticity)
+                            # )
+                            ($(demand.quantity)/$(demand.quantity))^(($(dm.elasticity)-1)/$(dm.elasticity))
+                        ) for demand in dm.demands
+                    )...
                 )
-       )^(1/(($(dm.elasticity)-1)/$(dm.elasticity)))
-       )
+            )
+        )^(
+            1 / 
+            (
+                ($(dm.elasticity)-1) / 
+                $(dm.elasticity)
+            )
+        )
+    )
 end
 
 function create_expenditure_expr(jm, dm::DemandFunction)
@@ -93,15 +109,18 @@ function create_expenditure_expr(jm, dm::DemandFunction)
                 $(
                     (
                         :(
-                            $(demand.quantity)*$(get_commodity_benchmark(demand.commodity)) /$(get_consumer_benchmark(dm.consumer)) *
-    ($(get_jump_variable_for_commodity(jm, demand.commodity)) /$(get_commodity_benchmark(demand.commodity)))^(1-$(dm.elasticity))
-    ) for demand in dm.demands
-    )...
-                    )
+                            $(Θ(dm, demand)) *
+                            (
+                                $(get_jump_variable_for_commodity(jm, demand.commodity)) /
+                                $(get_commodity_benchmark(demand.commodity))
+                            )^(1-$(dm.elasticity))
+                        ) for demand in dm.demands
+                    )...
                 )
-       )^(1/(1-$(dm.elasticity)))
-       * $(create_utility_expr(jm, dm))
-       )
+            )
+       )^(1/(1-$(dm.elasticity))) *
+       $(create_utility_expr(jm, dm))
+    )
 end
 
 function build_implicitconstraints!(m, jm)
@@ -158,17 +177,16 @@ function build_implicitconstraints!(m, jm)
         if eval(swap_our_param_with_val(demand_function.elasticity))==1
             for demand in demand_function.demands
                 ex = :(
-            JuMP.@NLexpression(
-                $(jm),
-                $(demand.quantity) * 
-                ($(get_jump_variable_for_consumer(jm, demand_function.consumer)) # (consumer's) income
-                /$(get_consumer_benchmark(demand_function.consumer))) # benchmark income (?)
-                *
-                ($(get_commodity_benchmark(demand.commodity))  # p__bar_i?
-                   /
-                   $(get_jump_variable_for_commodity(jm, demand.commodity))) #p_bar
-                        - 
-                    $(jm[get_final_demand_name(demand)])
+                    JuMP.@NLexpression(
+                        $(jm),
+                        $(demand.quantity) * 
+                        ($(get_jump_variable_for_consumer(jm, demand_function.consumer)) / # (consumer's) income
+                        $(get_consumer_benchmark(demand_function.consumer))) * # benchmark income (?)
+                        (
+                            $(get_commodity_benchmark(demand.commodity)) / # p__bar_i?
+                            $(get_jump_variable_for_commodity(jm, demand.commodity))
+                        ) - #p_bar
+                        $(jm[get_final_demand_name(demand)])
                     )
                 )
                 exb = eval( swap_our_param_with_jump_param(jm, ex) )
@@ -178,7 +196,6 @@ function build_implicitconstraints!(m, jm)
             end
         elseif eval(swap_our_param_with_val(demand_function.elasticity))==0
             for demand in demand_function.demands
-                Θ(d, df) = :( $(d.quantity) * $(get_commodity_benchmark(d.commodity)) /$(get_consumer_benchmark(df.consumer)))
                 ex = :(
             JuMP.@NLexpression(
                 $(jm),
@@ -186,9 +203,9 @@ function build_implicitconstraints!(m, jm)
                 ($(get_jump_variable_for_consumer(jm, demand_function.consumer)) # (consumer's) income
                 /$(get_consumer_benchmark(demand_function.consumer))) # benchmark income (?)
                 *
-                (       +($( (:($(Θ(demand, demand_function))*$(get_commodity_benchmark(demand.commodity)) ) for demand in demand_function.demands)...))  # sum(demand theta * p__bar_j)?
+                (       +($( (:($(Θ(demand_function, demand))*$(get_commodity_benchmark(demand.commodity)) ) for demand in demand_function.demands)...))  # sum(demand theta * p__bar_j)?
                    /
-                        +($( (:($(Θ(demand, demand_function))*$(get_jump_variable_for_commodity(jm, demand.commodity))) for demand in demand_function.demands)...) ))# sum(demand theta * p_bar
+                        +($( (:($(Θ(demand_function, demand))*$(get_jump_variable_for_commodity(jm, demand.commodity))) for demand in demand_function.demands)...) ))# sum(demand theta * p_bar
                         - 
                     $(jm[get_final_demand_name(demand)])
                 )
@@ -201,24 +218,27 @@ function build_implicitconstraints!(m, jm)
         else
             for demand in demand_function.demands
                 ex = :(
-            JuMP.@NLexpression(
-                $(jm),
-                $(demand.quantity) * 
-                ($(get_jump_variable_for_consumer(jm, demand_function.consumer)) # (consumer's) income
-                /$(get_consumer_benchmark(demand_function.consumer))) # benchmark income (?)
-                *
-                $(create_expenditure_expr(jm, demand_function))^($(demand_function.elasticity)-1) *
-                ($(get_commodity_benchmark(demand.commodity)) # p__bar_i
-                /
-                $(get_jump_variable_for_commodity(jm, demand.commodity)))^$(demand_function.elasticity) # p_i
-                      - 
-                    $(jm[get_final_demand_name(demand)])
+                    JuMP.@NLexpression(
+                        $(jm),
+                        $(demand.quantity) * 
+                        (
+                            $(get_jump_variable_for_consumer(jm, demand_function.consumer)) / # (consumer's) income
+                            $(get_consumer_benchmark(demand_function.consumer)) # benchmark income (?)
+                        ) *
+                        (
+                            $(create_expenditure_expr(jm, demand_function))
+                        )^($(demand_function.elasticity)-1) *
+                        (
+                            $(get_commodity_benchmark(demand.commodity)) / # p__bar_i
+                            $(get_jump_variable_for_commodity(jm, demand.commodity))
+                        )^$(demand_function.elasticity) - # p_i
+                        $(jm[get_final_demand_name(demand)])
+                    )
                 )
-            )
-            exb = eval( swap_our_param_with_jump_param(jm, ex) )
+                exb = eval( swap_our_param_with_jump_param(jm, ex) )
 
-            Complementarity.add_complementarity(jm, jm[get_final_demand_name(demand)], exb, string("F_", get_final_demand_name(demand)))
-            push!(m._nlexpressions, exb)
+                Complementarity.add_complementarity(jm, jm[get_final_demand_name(demand)], exb, string("F_", get_final_demand_name(demand)))
+                push!(m._nlexpressions, exb)
             end
         end
     end
