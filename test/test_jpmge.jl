@@ -25,7 +25,7 @@
 
     solve!(m)
 
-    gams_results = XLSX.readxlsx("MPSGEresults.xlsx")
+    gams_results = XLSX.readxlsx(joinpath(@__DIR__, "MPSGEresults.xlsx"))
     a_table = gams_results["JPMGE"][:]
     two_by_two_jpmge = DenseAxisArray(a_table[2:end,3:end],string.(a_table[2:end,1],".",a_table[2:end,2]),a_table[1,3:end])
 
@@ -267,6 +267,14 @@
     #A replication of the JPMGE from https://www.gams.com/34/docs/UG_MPSGE_Intro.html#UG_MPSGE_Intro_Appendix_jpmge
     # Re-running the model and tests as checks on different Demand elasticities - here with Demand elasticity = 2. (A CES example)
     m = Model()
+    goods = [:g1, :g2]
+    factors = [:l, :k]
+    sectors = [:s1, :s2]
+    make0 = DenseAxisArray(Float64[6 2; 2 10], goods, sectors)
+    use0 = DenseAxisArray(Float64[4 2; 2 6], goods, sectors)
+    fd0 = DenseAxisArray(Float64[1 3; 1 1], factors, sectors)
+    c0 = DenseAxisArray(Float64[2, 4], goods)
+    e0 = DenseAxisArray(Float64[sum(fd0[f,:]) for f in factors], factors)
 # All indices and data as above
     endow = add!(m, Parameter(:endow, indices=(factors,), value=1.0)) 
     X = add!(m, Sector(:X, indices=(sectors,)))
