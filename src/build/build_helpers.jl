@@ -58,6 +58,25 @@ function get_jump_variable_for_commodity(jm, commodity::IndexedCommodity)
     return jm[get_name(commodity)][commodity.subindex]
 end
 
+function get_jump_expression_for_commodity_producer_price(m::Model, jm, commodity::CommodityRef)
+    jump_commoidty = get_jump_variable_for_commodity(jm, commodity)
+
+    taxes = []
+    for pf in m._productions
+        for output in pf.outputs
+            if output.commodity == commodity
+                for tax in output.taxes
+                    push!(taxes, tax.rate)
+                end
+            end
+        end
+    end
+
+    tax = :(+(0., $(taxes...)))
+
+    return :($jump_commoidty * (1. + $tax))
+end
+
 function get_jump_variable_for_consumer(jm, consumer::ConsumerRef)
     if consumer.subindex===nothing
         return jm[get_name(consumer)]

@@ -150,13 +150,19 @@ mutable struct Input
     end
 end
 
+struct Tax
+    rate::Union{Float64,Expr}
+    agent::ConsumerRef
+end
+
 mutable struct Output
     commodity::CommodityRef
     quantity::Union{Float64,Expr}
+    taxes::Vector{Tax}
     production_function::Any
 
-    function Output(commodity::CommodityRef, quantity::Union{Float64,Expr})
-        return new(commodity, quantity, nothing)
+    function Output(commodity::CommodityRef, quantity::Union{Float64,Expr}, taxes::Vector{Tax}=Tax[])
+        return new(commodity, quantity, taxes, nothing)
     end
 end
 
@@ -336,8 +342,8 @@ function Input(commodity::CommodityRef, quantity::Number)
     return Input(commodity, convert(Float64, quantity))
 end
 
-function Output(commodity::CommodityRef, quantity::Number)
-    return Output(commodity, convert(Float64, quantity))
+function Output(commodity::CommodityRef, quantity::Number, taxes::Vector{Tax}=Tax[])
+    return Output(commodity, convert(Float64, quantity), taxes)
 end
 
 function Production(sector::SectorRef, tr_elasticity::Union{Number,Expr}, elasticity::Union{Number,Expr}, outputs::Vector{Output}, inputs::Vector{Input})
