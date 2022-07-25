@@ -115,11 +115,11 @@ abstract type Consumer end;
 
 mutable struct ScalarConsumer <: Consumer
     name::Symbol
-    benchmark::Float64
+    xbenchmark::Union{Nothing,Float64}
     description::String
     fixed::Bool
     
-    function ScalarConsumer(name::Symbol; description::AbstractString="", benchmark::Float64=1., fixed=false)
+    function ScalarConsumer(name::Symbol; description::AbstractString="", benchmark::Union{Nothing,Float64}=nothing, fixed=false)
         return new(name, benchmark, description, fixed)
     end
 end
@@ -127,11 +127,11 @@ end
 mutable struct IndexedConsumer <: Consumer
     name::Symbol
     indices::Any
-    benchmark::DenseAxisArray
+    xbenchmark::DenseAxisArray
     description::String
     fixed::DenseAxisArray
 
-    function IndexedConsumer(name::Symbol, indices; description::AbstractString="", benchmark::Float64=1., fixed=false)
+    function IndexedConsumer(name::Symbol, indices; description::AbstractString="", benchmark::Union{Nothing,Float64}=nothing, fixed=false)
         return new(name, indices, DenseAxisArray(fill(benchmark, length.(indices)...), indices...), description, DenseAxisArray(fill(fixed, length.(indices)...), indices...))
     end
 end
