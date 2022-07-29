@@ -11,7 +11,7 @@
     PC = add!(m, Commodity(:PC, indices=(goods,)))
     PU = add!(m, Commodity(:PU))
     PF = add!(m, Commodity(:PF, indices=(factors,)))
-    C = add!(m, Consumer(:C, indices=(consumers,), benchmark=150.))
+    C = add!(m, Consumer(:C, indices=(consumers,)))
 
     for i in goods
         @production(m, Y[i], 0, 1, [Output(PC[i], supply[i])], [Input(PF[:l], factor[i,:l]), Input(PF[:k], factor[i,:k])])

@@ -115,24 +115,22 @@ abstract type Consumer end;
 
 mutable struct ScalarConsumer <: Consumer
     name::Symbol
-    xbenchmark::Union{Nothing,Float64}
     description::String
     fixed::Bool
     
-    function ScalarConsumer(name::Symbol; description::AbstractString="", benchmark::Union{Nothing,Float64}=nothing, fixed=false)
-        return new(name, benchmark, description, fixed)
+    function ScalarConsumer(name::Symbol; description::AbstractString="", fixed=false)
+        return new(name, description, fixed)
     end
 end
 
 mutable struct IndexedConsumer <: Consumer
     name::Symbol
     indices::Any
-    xbenchmark::DenseAxisArray
     description::String
     fixed::DenseAxisArray
 
-    function IndexedConsumer(name::Symbol, indices; description::AbstractString="", benchmark::Union{Nothing,Float64}=nothing, fixed=false)
-        return new(name, indices, DenseAxisArray(fill(benchmark, length.(indices)...), indices...), description, DenseAxisArray(fill(fixed, length.(indices)...), indices...))
+    function IndexedConsumer(name::Symbol, indices; description::AbstractString="", fixed=false)
+        return new(name, indices, description, DenseAxisArray(fill(fixed, length.(indices)...), indices...))
     end
 end
 
@@ -228,6 +226,8 @@ mutable struct Model
 
     _nlexpressions::Vector{Any}
 
+    _consumer_refs::Vector{Any}
+
     function Model()
         return new(
             Parameter[],
@@ -238,6 +238,7 @@ mutable struct Model
             DemandFunction[],
             nothing,
             nothing,
+            [],
             []
         )
     end
@@ -261,7 +262,7 @@ function Base.show(io::IO, m::Model)
 
     if length(m._consumers) > 0
         print(io, "  Consumers: ")
-        print(io, join(["$(c.name) (bm=$(c.benchmark))" for c in m._consumers], ", "))
+        print(io, join(["$(c.name)" for c in m._consumers], ", "))
         println(io)
     end
 
@@ -323,11 +324,19 @@ function get_commodity_benchmark(c::CommodityRef)
 end
 
 function get_consumer_benchmark(c::ConsumerRef)
-    if c.subindex===nothing
-        return get_full(c).benchmark
-    else
-        return get_full(c).benchmark[c.subindex]
+    m = c.model
+
+    endowments = []
+    for d in m._demands
+        if d.consumer == c
+            push!(endowments, :(
+                +($((:($(en.quantity) * 
+                $(en.commodity)) for en in d.endowments)...))
+            ))
+        end
     end
+
+    return :(+(0., $(endowments...)))
 end
 
 # Outer constructors
@@ -401,7 +410,9 @@ end
 function add!(m::Model, cn::ScalarConsumer)
     m._jump_model = nothing
     push!(m._consumers, cn)
-    return ConsumerRef(m, length(m._consumers), nothing, nothing)
+    cr = ConsumerRef(m, length(m._consumers), nothing, nothing)
+    push!(m._consumer_refs, cr)
+    return cr
 end
 
 function add!(m::Model, cn::IndexedConsumer)

@@ -17,7 +17,7 @@
     @commodity(m, PL)
     @commodity(m, PK)
 
-    @consumer(m, RA, benchmark=150.)
+    @consumer(m, RA)
 
     @production(m, X, 0, 1, [Output(PX, 100)], [Input(PL, :(25 * $inputcoeff)), Input(PK, 50)])
     @production(m, Y, 0, :(0.5 * $elascoeff), [Output(PY, 50)], [Input(PL, 20), Input(PK, 30)])

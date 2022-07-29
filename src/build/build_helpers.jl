@@ -12,6 +12,8 @@ function swap_our_param_with_jump_param(jm, expr)
             else
                 return jm[x.model._parameters[x.index].name][x.subindex]
             end
+        elseif x isa CommodityRef
+            get_jump_variable_for_commodity(jm, x)
         else
             return x
         end
@@ -28,6 +30,13 @@ function swap_our_param_with_val(expr)
     return MacroTools.postwalk(expr) do x
         if x isa ParameterRef
             return x.model._parameters[x.index].value
+        elseif x isa CommodityRef
+            c = get_full(x)
+            if c isa ScalarCommodity
+                return c.benchmark
+            else
+                return c.benchmark[subindex...]
+            end
         else
             return x
         end

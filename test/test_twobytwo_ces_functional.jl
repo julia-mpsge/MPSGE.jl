@@ -16,7 +16,7 @@
     PL = add!(m, Commodity(:PL))
     PK = add!(m, Commodity(:PK))
 
-    RA = add!(m, Consumer(:RA, benchmark=150.))
+    RA = add!(m, Consumer(:RA))
 
     add!(m, Production(X, 0, 0.5, [Output(PX, 100)], [Input(PL, :(25 * $inputcoeff)), Input(PK, 50)]))
     add!(m, Production(Y, 0, :(0.3 * $elascoeff), [Output(PY, 50)], [Input(PL, 20), Input(PK, 30)]))

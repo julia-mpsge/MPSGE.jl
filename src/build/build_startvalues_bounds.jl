@@ -27,9 +27,11 @@ function set_all_start_values(m)
         end
     end
 
-    for c in m._consumers
+    for (i,c) in enumerate(m._consumers)
         if c isa ScalarConsumer
-            Complementarity.set_start_value(jm[c.name], c.benchmark)
+            endows = get_consumer_benchmark(m._consumer_refs[i])
+            start_val = eval(swap_our_param_with_val(endows))
+            Complementarity.set_start_value(jm[c.name], start_val)
         else
             for i in Iterators.product(c.indices...)
                 Complementarity.set_start_value(jm[c.name][i...], c.benchmark[i...])
