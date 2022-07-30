@@ -226,8 +226,6 @@ mutable struct Model
 
     _nlexpressions::Vector{Any}
 
-    _consumer_refs::Vector{Any}
-
     function Model()
         return new(
             Parameter[],
@@ -238,7 +236,6 @@ mutable struct Model
             DemandFunction[],
             nothing,
             nothing,
-            [],
             []
         )
     end
@@ -339,6 +336,38 @@ function get_consumer_benchmark(c::ConsumerRef)
     return :(+(0., $(endowments...)))
 end
 
+function get_consumer_benchmark(m, c::ScalarConsumer)
+    endowments = []
+    for d in m._demands
+        if get_full(d.consumer) == c
+            push!(endowments, :(
+                +($((:($(en.quantity) * 
+                $(en.commodity)) for en in d.endowments)...))
+            ))
+        end
+    end
+
+    return :(+(0., $(endowments...)))
+end
+
+function get_consumer_benchmark(m, c::IndexedConsumer, i)
+    endowments = []
+    for d in m._demands
+        c_for_d = get_full(d.consumer)
+        error("The next comparison is incorrect")
+        # TODO d.consumer.subindex is a CartesianIndices, while i is a tuple of symbols
+        if c_for_d == c && d.consumer.subindex == i
+            push!(endowments, :(
+                +($((:($(en.quantity) * 
+                $(en.commodity)) for en in d.endowments)...))
+            ))
+        end
+    end
+
+    return :(+(0., $(endowments...)))
+end
+
+
 # Outer constructors
 
 function Input(commodity::CommodityRef, quantity::Number)
@@ -411,7 +440,6 @@ function add!(m::Model, cn::ScalarConsumer)
     m._jump_model = nothing
     push!(m._consumers, cn)
     cr = ConsumerRef(m, length(m._consumers), nothing, nothing)
-    push!(m._consumer_refs, cr)
     return cr
 end
 
@@ -425,7 +453,8 @@ function add!(m::Model, cn::IndexedConsumer)
         # TODO Fix the [1] thing here to properly work with n-dimensional data
         temp_array[i] = ConsumerRef(m, length(m._consumers), i, string(cn.indices[1][i]))
     end
-    return JuMP.Containers.DenseAxisArray(temp_array, cn.indices...)
+    cr = JuMP.Containers.DenseAxisArray(temp_array, cn.indices...)
+    return cr
 end
 
 function add!(m::Model, p::Production)

@@ -29,13 +29,17 @@ This function takes an expression tree and replaces all instances of
 function swap_our_param_with_val(expr)
     return MacroTools.postwalk(expr) do x
         if x isa ParameterRef
-            return x.model._parameters[x.index].value
+            if x.subindex===nothing
+                return x.model._parameters[x.index].value
+            else
+                return x.model._parameters[x.index].value[x.subindex]
+            end
         elseif x isa CommodityRef
             c = get_full(x)
             if c isa ScalarCommodity
                 return c.benchmark
             else
-                return c.benchmark[subindex...]
+                return c.benchmark[x.subindex]
             end
         else
             return x
