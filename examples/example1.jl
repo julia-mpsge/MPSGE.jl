@@ -26,7 +26,6 @@ solve!(m, cumulative_iteration_limit=0)
 algebraic_version(m)
 
 set_value(endow, 1.1)
-set_value(RA, 70. * get_value(endow) + 80.)
 set_fixed!(RA, true)
 solve!(m)
 
@@ -59,13 +58,12 @@ m = Model()
 @production(m, Y, 0, 0.6, [Output(PY, 50)], [Input(PL, 20), Input(PK, 30)])
 @production(m, U, 0, 1, [Output(PU, 150)], [Input(PX, 100), Input(PY, 50)])
 
-@demand(m, RA, [Demand(PU, 150)], [Endowment(PL, :(70 * $endow)), Endowment(PK, 80.)])
+@demand(m, RA, 1., [Demand(PU, 150)], [Endowment(PL, :(70 * $endow)), Endowment(PK, 80.)])
 
 solve!(m, cumulative_iteration_limit=0)
 algebraic_version(m)
 
 set_value(endow, 1.1)
-set_value(RA, 70. * get_value(endow) + 80.)
 set_fixed!(RA, true)
 solve!(m)
 

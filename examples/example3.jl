@@ -38,7 +38,6 @@ algebraic_version(m)
 set_fixed!(PC[:x], false) # unfix, seems to be automatic with new numeraire in MPSGE
 set_value(endow[:l], 1.1.*get_value(endow[:l]))
 # In the original indexed, endow[:l] = 1.1*endow[:l]
-set_value(RA, get_value(endow[:k]) * 80. + get_value(endow[:l]) * 70.)
 set_fixed!(RA, true)
 solve!(m)
 
