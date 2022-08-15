@@ -14,7 +14,7 @@ m = Model()
 @commodity(m, PL)
 @commodity(m, PK)
 
-@consumer(m, RA)
+@consumer(m, RA, benchmark = 150.)
 
 @production(m, X, 0, 1, [Output(PX, 100)], [Input(PL, 50), Input(PK, 50)])
 @production(m, Y,0, 1, [Output(PY, 50)], [Input(PL, 20), Input(PK, 30)])
@@ -52,7 +52,7 @@ m = Model()
 @commodity(m, PL)
 @commodity(m, PK)
 
-@consumer(m, RA)
+@consumer(m, RA, benchmark = 150.)
 
 @production(m, X, 0, 0.5, [Output(PX, 100)], [Input(PL, 50), Input(PK, 50)])
 @production(m, Y, 0, 0.6, [Output(PY, 50)], [Input(PL, 20), Input(PK, 30)])
