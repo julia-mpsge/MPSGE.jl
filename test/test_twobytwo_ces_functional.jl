@@ -28,7 +28,7 @@
     @test typeof(avm) == MPSGE.AlgebraicWrapper
 
     solve!(m)
-    gams_results = XLSX.readxlsx("MPSGEresults.xlsx")
+    gams_results = XLSX.readxlsx(joinpath(@__DIR__, "MPSGEresults.xlsx"))
     a_table = gams_results["TwoxTwoCESProd"][:]  # Generated with TwoByTwo_wElas_Scalar_Algeb-MPSGE.gms
     two_by_two_CES = DenseAxisArray(a_table[2:end,2:end],a_table[2:end,1],a_table[1,2:end])
 
