@@ -54,8 +54,6 @@
 
     #Counter-factual 1, labour supply increased by 10%
     set_value(endow[:l], 1.1*get_value(endow[:l]))
-    fd1 = fd0 .* convert(Vector, get_value.(endow))
-    set_value(Y, sum(DenseAxisArray(Float64[sum(fd1[f,:]) for f in factors], factors)))
     set_fixed!(Y, true)
 
     solve!(m)
@@ -180,8 +178,6 @@
 
     #Counter-factual 1, labour supply increased by 10%
     set_value(endow[:l], 1.1*get_value(endow[:l]))
-    fd1 = fd0 .* convert(Vector, get_value.(endow))
-    set_value(Y, sum(DenseAxisArray(Float64[sum(fd1[f,:]) for f in factors], factors)))
     set_fixed!(Y, true)
 
     solve!(m)
@@ -316,8 +312,6 @@
 
     #Counter-factual 1, labour supply increased by 10%
     set_value(endow[:l], 1.1*get_value(endow[:l]))
-    fd1 = fd0 .* convert(Vector, get_value.(endow))
-    set_value(Y, sum(DenseAxisArray(Float64[sum(fd1[f,:]) for f in factors], factors)))
     set_fixed!(Y, true)
 
     solve!(m)

@@ -282,7 +282,7 @@ function get_name(sector::SectorRef, include_subindex=false)
     if sector.subindex===nothing || include_subindex==false
         return sector.model._sectors[sector.index].name
     else
-        return Symbol("$(sector.model._sectors[sector.index].name )[$(sector.subindex_names)]")
+        return Symbol("$(sector.model._sectors[sector.index].name )[$(join(string.(sector.subindex_names), ", "))]") 
     end
 end
 
@@ -290,7 +290,7 @@ function get_name(commodity::CommodityRef, include_subindex=false)
     if commodity.subindex===nothing || include_subindex==false
         return commodity.model._commodities[commodity.index].name
     else
-        return Symbol("$(commodity.model._commodities[commodity.index].name )[$(commodity.subindex_names)]")
+        return Symbol("$(commodity.model._commodities[commodity.index].name )[$(join(string.(commodity.subindex_names), ", "))]") 
     end
 end
 
@@ -298,7 +298,7 @@ function get_name(consumer::ConsumerRef, include_subindex=false)
     if consumer.subindex===nothing || include_subindex===false
         return consumer.model._consumers[consumer.index].name
     else
-        return Symbol("$(consumer.model._consumers[consumer.index].name )[$(consumer.subindex_names)]") 
+        return Symbol("$(consumer.model._consumers[consumer.index].name )[$(join(string.(consumer.subindex_names), ", "))]") 
     end 
 end
 
@@ -329,6 +329,53 @@ function get_consumer_benchmark(c::ConsumerRef)
         return get_full(c).benchmark[c.subindex]
     end
 end
+
+function get_consumer_total_endowment(c::ConsumerRef)
+    m = c.model
+
+    endowments = []
+    for d in m._demands
+        if d.consumer == c
+            push!(endowments, :(
+                +($((:($(en.quantity) * 
+                $(en.commodity)) for en in d.endowments)...))
+            ))
+        end
+    end
+
+    return :(+(0., $(endowments...)))
+end
+
+function get_consumer_total_endowment(m, c::ScalarConsumer)
+    endowments = []
+    for d in m._demands
+        if get_full(d.consumer) == c
+            push!(endowments, :(
+                +($((:($(en.quantity) * 
+                $(en.commodity)) for en in d.endowments)...))
+            ))
+        end
+    end
+
+    return :(+(0., $(endowments...)))
+end
+
+function get_consumer_total_endowment(m, c::IndexedConsumer, i)
+    endowments = []
+    for d in m._demands
+        c_for_d = get_full(d.consumer)
+        
+        if c_for_d == c && d.consumer.subindex_names == i
+            push!(endowments, :(
+                +($((:($(en.quantity) * 
+                $(en.commodity)) for en in d.endowments)...))
+            ))
+        end
+    end
+
+    return :(+(0., $(endowments...)))
+end
+
 
 # Outer constructors
 
@@ -373,8 +420,7 @@ function add!(m::Model, s::IndexedSector)
     temp_array = Array{SectorRef}(undef, length.(s.indices)...)
 
     for i in CartesianIndices(temp_array)
-        # TODO Fix the [1] thing here to properly work with n-dimensional data
-        temp_array[i] = SectorRef(m, length(m._sectors), i, string(s.indices[1][i]))
+        temp_array[i] = SectorRef(m, length(m._sectors), i, Tuple(s.indices[j][v] for (j,v) in enumerate(Tuple(i))))
     end
     return JuMP.Containers.DenseAxisArray(temp_array, s.indices...)
 end
@@ -392,8 +438,7 @@ function add!(m::Model, c::IndexedCommodity)
     temp_array = Array{CommodityRef}(undef, length.(c.indices)...)
 
     for i in CartesianIndices(temp_array)
-        # TODO Fix the [1] thing here to properly work with n-dimensional data
-        temp_array[i] = CommodityRef(m, length(m._commodities), i, string(c.indices[1][i]))
+        temp_array[i] = CommodityRef(m, length(m._commodities), i, Tuple(c.indices[j][v] for (j,v) in enumerate(Tuple(i))))
     end
     return JuMP.Containers.DenseAxisArray(temp_array, c.indices...)
 end
@@ -401,7 +446,8 @@ end
 function add!(m::Model, cn::ScalarConsumer)
     m._jump_model = nothing
     push!(m._consumers, cn)
-    return ConsumerRef(m, length(m._consumers), nothing, nothing)
+    cr = ConsumerRef(m, length(m._consumers), nothing, nothing)
+    return cr
 end
 
 function add!(m::Model, cn::IndexedConsumer)
@@ -411,10 +457,10 @@ function add!(m::Model, cn::IndexedConsumer)
     temp_array = Array{ConsumerRef}(undef, length.(cn.indices)...)
 
     for i in CartesianIndices(temp_array)
-        # TODO Fix the [1] thing here to properly work with n-dimensional data
-        temp_array[i] = ConsumerRef(m, length(m._consumers), i, string(cn.indices[1][i]))
+        temp_array[i] = ConsumerRef(m, length(m._consumers), i, Tuple(cn.indices[j][v] for (j,v) in enumerate(Tuple(i))))
     end
-    return JuMP.Containers.DenseAxisArray(temp_array, cn.indices...)
+    cr = JuMP.Containers.DenseAxisArray(temp_array, cn.indices...)
+    return cr
 end
 
 function add!(m::Model, p::Production)
@@ -442,8 +488,7 @@ function add!(m::Model, p::IndexedParameter)
     temp_array = Array{ParameterRef}(undef, length.(p.indices)...)
 
     for i in CartesianIndices(temp_array)
-        # TODO Fix the [1] thing here to properly work with n-dimensional data
-        temp_array[i] = ParameterRef(m, length(m._parameters), i, string(p.indices[1][i]))
+        temp_array[i] = ParameterRef(m, length(m._parameters), i, Tuple(p.indices[j][v] for (j,v) in enumerate(Tuple(i))))
     end
     return JuMP.Containers.DenseAxisArray(temp_array, p.indices...)
 end

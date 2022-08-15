@@ -29,10 +29,13 @@ function set_all_start_values(m)
 
     for c in m._consumers
         if c isa ScalarConsumer
-            Complementarity.set_start_value(jm[c.name], c.benchmark)
+            start_val = eval(swap_our_param_with_val(get_consumer_total_endowment(m, c)))
+            
+            Complementarity.set_start_value(jm[c.name], start_val)
         else
             for i in Iterators.product(c.indices...)
-                Complementarity.set_start_value(jm[c.name][i...], c.benchmark[i...])
+                start_val = eval(swap_our_param_with_val(get_consumer_total_endowment(m, c, i)))
+                Complementarity.set_start_value(jm[c.name][i...], start_val)
             end
         end
     end
@@ -90,7 +93,8 @@ function set_all_bounds(m)
         if cs isa ScalarConsumer
             jump_var = jm[cs.name]
             if cs.fixed
-                JuMP.fix(jump_var, cs.benchmark, force=true)
+                start_val = eval(swap_our_param_with_val(get_consumer_total_endowment(m, cs)))
+                JuMP.fix(jump_var, start_val, force=true)
             else
                 if JuMP.is_fixed(jump_var)
                     JuMP.unfix(jump_var)
@@ -101,7 +105,8 @@ function set_all_bounds(m)
                 jump_var = jm[cs.name][i...]
 
                 if cs.fixed[i...]
-                    JuMP.fix(jump_var, cs.benchmark[i...], force=true)
+                    start_val = eval(swap_our_param_with_val(get_consumer_total_endowment(m, cs, i)))
+                    JuMP.fix(jump_var, start_val, force=true)
                 else
                     if JuMP.is_fixed(jump_var)
                         JuMP.unfix(jump_var)

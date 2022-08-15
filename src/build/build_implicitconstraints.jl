@@ -181,7 +181,7 @@ function build_implicitconstraints!(m, jm)
                         $(jm),
                         $(demand.quantity) * 
                         ($(get_jump_variable_for_consumer(jm, demand_function.consumer)) / # (consumer's) income
-                        $(get_consumer_benchmark(demand_function.consumer))) * # benchmark income (?)
+                        $(swap_our_param_with_jump_param(jm, get_consumer_benchmark(demand_function.consumer)))) * # benchmark income (?)
                         (
                             $(get_commodity_benchmark(demand.commodity)) / # p__bar_i?
                             $(get_jump_variable_for_commodity(jm, demand.commodity))
