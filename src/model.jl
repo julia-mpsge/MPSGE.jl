@@ -115,22 +115,24 @@ abstract type Consumer end;
 
 mutable struct ScalarConsumer <: Consumer
     name::Symbol
+    benchmark::Float64
     description::String
     fixed::Bool
     
-    function ScalarConsumer(name::Symbol; description::AbstractString="", fixed=false)
-        return new(name, description, fixed)
+    function ScalarConsumer(name::Symbol; description::AbstractString="", benchmark::Float64=1., fixed=false)
+        return new(name, benchmark, description, fixed)
     end
 end
 
 mutable struct IndexedConsumer <: Consumer
     name::Symbol
     indices::Any
+    benchmark::DenseAxisArray
     description::String
     fixed::DenseAxisArray
 
-    function IndexedConsumer(name::Symbol, indices; description::AbstractString="", fixed=false)
-        return new(name, indices, description, DenseAxisArray(fill(fixed, length.(indices)...), indices...))
+    function IndexedConsumer(name::Symbol, indices; description::AbstractString="", benchmark::Float64=1., fixed=false)
+        return new(name, indices, DenseAxisArray(fill(benchmark, length.(indices)...), indices...), description, DenseAxisArray(fill(fixed, length.(indices)...), indices...))
     end
 end
 
@@ -259,7 +261,7 @@ function Base.show(io::IO, m::Model)
 
     if length(m._consumers) > 0
         print(io, "  Consumers: ")
-        print(io, join(["$(c.name)" for c in m._consumers], ", "))
+        print(io, join(["$(c.name) (bm=$(c.benchmark))" for c in m._consumers], ", "))
         println(io)
     end
 
@@ -280,7 +282,7 @@ function get_name(sector::SectorRef, include_subindex=false)
     if sector.subindex===nothing || include_subindex==false
         return sector.model._sectors[sector.index].name
     else
-        return Symbol("$(sector.model._sectors[sector.index].name )[$(sector.subindex_names)]")
+        return Symbol("$(sector.model._sectors[sector.index].name )[$(join(string.(sector.subindex_names), ", "))]") 
     end
 end
 
@@ -288,7 +290,7 @@ function get_name(commodity::CommodityRef, include_subindex=false)
     if commodity.subindex===nothing || include_subindex==false
         return commodity.model._commodities[commodity.index].name
     else
-        return Symbol("$(commodity.model._commodities[commodity.index].name )[$(commodity.subindex_names)]")
+        return Symbol("$(commodity.model._commodities[commodity.index].name )[$(join(string.(commodity.subindex_names), ", "))]") 
     end
 end
 
@@ -296,7 +298,7 @@ function get_name(consumer::ConsumerRef, include_subindex=false)
     if consumer.subindex===nothing || include_subindex===false
         return consumer.model._consumers[consumer.index].name
     else
-        return Symbol("$(consumer.model._consumers[consumer.index].name )[$(consumer.subindex_names)]") 
+        return Symbol("$(consumer.model._consumers[consumer.index].name )[$(join(string.(consumer.subindex_names), ", "))]") 
     end 
 end
 
@@ -321,6 +323,14 @@ function get_commodity_benchmark(c::CommodityRef)
 end
 
 function get_consumer_benchmark(c::ConsumerRef)
+    if c.subindex===nothing
+        return get_full(c).benchmark
+    else
+        return get_full(c).benchmark[c.subindex]
+    end
+end
+
+function get_consumer_total_endowment(c::ConsumerRef)
     m = c.model
 
     endowments = []
@@ -336,7 +346,7 @@ function get_consumer_benchmark(c::ConsumerRef)
     return :(+(0., $(endowments...)))
 end
 
-function get_consumer_benchmark(m, c::ScalarConsumer)
+function get_consumer_total_endowment(m, c::ScalarConsumer)
     endowments = []
     for d in m._demands
         if get_full(d.consumer) == c
@@ -350,13 +360,12 @@ function get_consumer_benchmark(m, c::ScalarConsumer)
     return :(+(0., $(endowments...)))
 end
 
-function get_consumer_benchmark(m, c::IndexedConsumer, i)
+function get_consumer_total_endowment(m, c::IndexedConsumer, i)
     endowments = []
     for d in m._demands
         c_for_d = get_full(d.consumer)
-        error("The next comparison is incorrect")
-        # TODO d.consumer.subindex is a CartesianIndices, while i is a tuple of symbols
-        if c_for_d == c && d.consumer.subindex == i
+        
+        if c_for_d == c && d.consumer.subindex_names == i
             push!(endowments, :(
                 +($((:($(en.quantity) * 
                 $(en.commodity)) for en in d.endowments)...))
@@ -411,8 +420,7 @@ function add!(m::Model, s::IndexedSector)
     temp_array = Array{SectorRef}(undef, length.(s.indices)...)
 
     for i in CartesianIndices(temp_array)
-        # TODO Fix the [1] thing here to properly work with n-dimensional data
-        temp_array[i] = SectorRef(m, length(m._sectors), i, string(s.indices[1][i]))
+        temp_array[i] = SectorRef(m, length(m._sectors), i, Tuple(s.indices[j][v] for (j,v) in enumerate(Tuple(i))))
     end
     return JuMP.Containers.DenseAxisArray(temp_array, s.indices...)
 end
@@ -430,8 +438,7 @@ function add!(m::Model, c::IndexedCommodity)
     temp_array = Array{CommodityRef}(undef, length.(c.indices)...)
 
     for i in CartesianIndices(temp_array)
-        # TODO Fix the [1] thing here to properly work with n-dimensional data
-        temp_array[i] = CommodityRef(m, length(m._commodities), i, string(c.indices[1][i]))
+        temp_array[i] = CommodityRef(m, length(m._commodities), i, Tuple(c.indices[j][v] for (j,v) in enumerate(Tuple(i))))
     end
     return JuMP.Containers.DenseAxisArray(temp_array, c.indices...)
 end
@@ -450,8 +457,7 @@ function add!(m::Model, cn::IndexedConsumer)
     temp_array = Array{ConsumerRef}(undef, length.(cn.indices)...)
 
     for i in CartesianIndices(temp_array)
-        # TODO Fix the [1] thing here to properly work with n-dimensional data
-        temp_array[i] = ConsumerRef(m, length(m._consumers), i, string(cn.indices[1][i]))
+        temp_array[i] = ConsumerRef(m, length(m._consumers), i, Tuple(cn.indices[j][v] for (j,v) in enumerate(Tuple(i))))
     end
     cr = JuMP.Containers.DenseAxisArray(temp_array, cn.indices...)
     return cr
@@ -482,8 +488,7 @@ function add!(m::Model, p::IndexedParameter)
     temp_array = Array{ParameterRef}(undef, length.(p.indices)...)
 
     for i in CartesianIndices(temp_array)
-        # TODO Fix the [1] thing here to properly work with n-dimensional data
-        temp_array[i] = ParameterRef(m, length(m._parameters), i, string(p.indices[1][i]))
+        temp_array[i] = ParameterRef(m, length(m._parameters), i, Tuple(p.indices[j][v] for (j,v) in enumerate(Tuple(i))))
     end
     return JuMP.Containers.DenseAxisArray(temp_array, p.indices...)
 end

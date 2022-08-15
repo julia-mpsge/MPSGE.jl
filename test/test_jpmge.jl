@@ -13,7 +13,7 @@
     X = add!(m, Sector(:X, indices=(sectors,)))
     P = add!(m, Commodity(:P, indices=(goods,)))
     PF = add!(m, Commodity(:PF, indices=(factors,)))
-    Y = add!(m, Consumer(:Y))#example 4 has sum e0
+    Y = add!(m, Consumer(:Y, benchmark=sum(fd0)))#example 4 has sum e0
     for j in sectors
         @production(m, X[j], 1, 1, [Output(P[i], make0[i,j]) for i in goods], [[Input(P[i], use0[i,j]) for i in goods]; [Input(PF[f], fd0[f,j]) for f in factors]])
     end
@@ -142,7 +142,7 @@
     X = add!(m, Sector(:X, indices=(sectors,)))
     P = add!(m, Commodity(:P, indices=(goods,)))
     PF = add!(m, Commodity(:PF, indices=(factors,)))
-    Y = add!(m, Consumer(:Y))#example 4 has sum e0
+    Y = add!(m, Consumer(:Y, benchmark=sum(fd0)))#example 4 has sum e0
     for j in sectors
         @production(m, X[j], 1, 1, [Output(P[i], make0[i,j]) for i in goods], [[Input(P[i], use0[i,j]) for i in goods]; [Input(PF[f], fd0[f,j]) for f in factors]])
     end
@@ -276,7 +276,7 @@
     X = add!(m, Sector(:X, indices=(sectors,)))
     P = add!(m, Commodity(:P, indices=(goods,)))
     PF = add!(m, Commodity(:PF, indices=(factors,)))
-    Y = add!(m, Consumer(:Y))#example 4 has sum e0
+    Y = add!(m, Consumer(:Y, benchmark=sum(fd0)))#example 4 has sum e0
     for j in sectors
         @production(m, X[j], 1, 1, [Output(P[i], make0[i,j]) for i in goods], [[Input(P[i], use0[i,j]) for i in goods]; [Input(PF[f], fd0[f,j]) for f in factors]])
     end
