@@ -1,4 +1,6 @@
-@testset "JPMGE (Joint Production Intermediate Demand)" begin
+@testitem "JPMGE (Joint Production Intermediate Demand)" begin
+    using Test, MPSGE, XLSX, MPSGE.JuMP.Containers
+    
 #A replication of the JPMGE from https://www.gams.com/34/docs/UG_MPSGE_Intro.html#UG_MPSGE_Intro_Appendix_jpmge
     m = Model()
     goods = [:g1, :g2]
