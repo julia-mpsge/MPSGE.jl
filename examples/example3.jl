@@ -23,7 +23,7 @@ PC = add!(m, Commodity(:PC, indices=(goods,)))
 PU = add!(m, Commodity(:PU))
 PF = add!(m, Commodity(:PF, indices=(factors,)))
 
-RA = add!(m, Consumer(:RA))#, benchmark=150.))
+RA = add!(m, Consumer(:RA, benchmark = 150.))
 
 for i in goods
     @production(m, Y[i], 0, 1, [Output(PC[i], supply[i], [MPSGE.Tax(0.2, RA)])], [Input(PF[:l], factor[i,:l]), Input(PF[:k], factor[i,:k])])
