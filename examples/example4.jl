@@ -15,7 +15,7 @@ e0 = DenseAxisArray(Float64[sum(fd0[f,:]) for f in factors], factors)
 sub_elas = DenseAxisArray(Float64[1,1], sectors) 
 tr_elas = DenseAxisArray(Float64[1., 1.], sectors)
 
-
+dm_elas = add!(m, Parameter(:dm_elas, value=0.5))
 endow = add!(m, Parameter(:endow, indices=(factors,), value=1.0))
 
 X = add!(m, Sector(:X, indices=(sectors,)))
@@ -28,13 +28,84 @@ for j in sectors
 @production(m, X[j], tr_elas[j], sub_elas[j], [Output(P[i], make0[i,j]) for i in goods], [[Input(P[i], use0[i,j]) for i in goods]; [Input(PF[f], fd0[f,j]) for f in factors]])
 end
 
-@demand(m, Y, 2., [Demand(P[i], c0[i]) for i in goods], [Endowment(PF[:k], :($(endow[:k]) * $(e0[:k]))), Endowment(PF[:l], :($(endow[:l]) * $(e0[:l])))])
+@demand(m, Y, (:($(dm_elas)*2)), [Demand(P[i], c0[i]) for i in goods], [Endowment(PF[:k], :($(endow[:k]) * $(e0[:k]))), Endowment(PF[:l], :($(endow[:l]) * $(e0[:l])))])
 
 solve!(m, cumulative_iteration_limit=0)
 solve!(m)
 algebraic_version(m)
 #Counterfactual 1: 10% increase in labor endowment. Fix the income level at the default level, i.e. the income level corresponding to the counterfactual endowment at benchmark price
 set_value(endow[:l], 1.1)
+set_fixed!(Y, true)
+
+solve!(m)
+
+#Counterfactual 2: Fix a numeraire price index and recalculate:
+set_fixed!(Y,false)
+set_fixed!(P[:g1], true)
+solve!(m)
+
+#Counterfactual 3: Recalculate with a different numeraire. "Unfix" the price of X and fix the wage rate:
+set_fixed!(P[:g1], false)
+set_fixed!(PF[:l], true)
+solve!(m)
+
+algebraic_version(m)
+
+
+# Re-set model to update Demand elasticity to 2.0 (as an expression of the parameter dm_elas=0.5 x 4 in the demand function)
+m = Model()
+dm_elas = add!(m, Parameter(:dm_elas, value=0.5))
+endow = add!(m, Parameter(:endow, indices=(factors,), value=1.0))
+X = add!(m, Sector(:X, indices=(sectors,)))
+P = add!(m, Commodity(:P, indices=(goods,)))
+PF = add!(m, Commodity(:PF, indices=(factors,)))
+Y = add!(m, Consumer(:Y, benchmark=sum(e0)))
+
+for j in sectors
+@production(m, X[j], tr_elas[j], sub_elas[j], [Output(P[i], make0[i,j]) for i in goods], [[Input(P[i], use0[i,j]) for i in goods]; [Input(PF[f], fd0[f,j]) for f in factors]])
+end
+@demand(m, Y, (:($(dm_elas)*4)), [Demand(P[i], c0[i]) for i in goods], [Endowment(PF[:k], :($(endow[:k]) * $(e0[:k]))), Endowment(PF[:l], :($(endow[:l]) * $(e0[:l])))])
+
+solve!(m)
+#Counterfactual 1: 10% increase in labor endowment. Fix the income level at the default level, i.e. the income level corresponding to the counterfactual endowment at benchmark price
+set_value(endow[:l], 1.1)
+fd1 = fd0 .* convert(Vector, get_value.(endow))
+set_value(Y, sum(DenseAxisArray(Float64[sum(fd1[f,:]) for f in factors], factors)))
+set_fixed!(Y, true)
+
+solve!(m)
+
+#Counterfactual 2: Fix a numeraire price index and recalculate:
+set_fixed!(Y,false)
+set_fixed!(P[:g1], true)
+solve!(m)
+
+#Counterfactual 3: Recalculate with a different numeraire. "Unfix" the price of X and fix the wage rate:
+set_fixed!(P[:g1], false)
+set_fixed!(PF[:l], true)
+solve!(m)
+
+algebraic_version(m)
+
+# Re-set model to update Demand elasticity to 0, Leontief (as an expression of the parameter dm_elas=0.5 x 0 in the demand function)
+m = Model()
+dm_elas = add!(m, Parameter(:dm_elas, value=0.5))
+endow = add!(m, Parameter(:endow, indices=(factors,), value=1.0))
+X = add!(m, Sector(:X, indices=(sectors,)))
+P = add!(m, Commodity(:P, indices=(goods,)))
+PF = add!(m, Commodity(:PF, indices=(factors,)))
+Y = add!(m, Consumer(:Y, benchmark=sum(e0)))
+
+for j in sectors
+@production(m, X[j], tr_elas[j], sub_elas[j], [Output(P[i], make0[i,j]) for i in goods], [[Input(P[i], use0[i,j]) for i in goods]; [Input(PF[f], fd0[f,j]) for f in factors]])
+end
+@demand(m, Y, (:($(dm_elas)*0.)), [Demand(P[i], c0[i]) for i in goods], [Endowment(PF[:k], :($(endow[:k]) * $(e0[:k]))), Endowment(PF[:l], :($(endow[:l]) * $(e0[:l])))])
+
+solve!(m)
+#Counterfactual 1: 10% increase in labor endowment. Fix the income level at the default level, i.e. the income level corresponding to the counterfactual endowment at benchmark price
+set_value(endow[:l], 1.1)
+fd1 = fd0 .* convert(Vector, get_value.(endow))
+set_value(Y, sum(DenseAxisArray(Float64[sum(fd1[f,:]) for f in factors], factors)))
 set_fixed!(Y, true)
 
 solve!(m)
