@@ -22,7 +22,7 @@ X = add!(m, Sector(:X, indices=(sectors,)))
 
 P = add!(m, Commodity(:P, indices=(goods,)))
 PF = add!(m, Commodity(:PF, indices=(factors,)))
-Y = add!(m, Consumer(:Y, benchmark=sum(e0)))
+Y = add!(m, Consumer(:Y))
 
 for j in sectors
 @production(m, X[j], tr_elas[j], sub_elas[j], [Output(P[i], make0[i,j]) for i in goods], [[Input(P[i], use0[i,j]) for i in goods]; [Input(PF[f], fd0[f,j]) for f in factors]])
@@ -35,8 +35,6 @@ solve!(m)
 algebraic_version(m)
 #Counterfactual 1: 10% increase in labor endowment. Fix the income level at the default level, i.e. the income level corresponding to the counterfactual endowment at benchmark price
 set_value(endow[:l], 1.1)
-fd1 = fd0 .* convert(Vector, get_value.(endow))
-set_value(Y, sum(DenseAxisArray(Float64[sum(fd1[f,:]) for f in factors], factors)))
 set_fixed!(Y, true)
 
 solve!(m)

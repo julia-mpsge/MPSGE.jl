@@ -42,7 +42,6 @@
 
     set_fixed!(PC[:x], true)
     set_value(endow[:l], get_value(endow[:l]).*1.1)
-    set_value(C[:ra], (get_value(endow[:k]) * 80. + get_value(endow[:l]) * 70.))
     set_fixed!(C[:ra], true)
     solve!(m)
 
