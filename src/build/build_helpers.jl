@@ -99,31 +99,34 @@ function get_jump_variable_for_consumer(jm, consumer::ConsumerRef)
 end
 
 function get_jump_variable_for_consumer(jm, consumer::ScalarConsumer)
-    return jm[get_name(consumer)]
+    return jm[consumer.name]
 end
 
 function get_jump_variable_for_consumer(jm, consumer::IndexedConsumer)
-    return jm[get_name(consumer)][consumer.subindex]
+    return jm[consumer.name][consumer.subindex]
 end
 
-function get_tax_revenue_for_consumer(jm, m, consumer::ConsumerRef)
-    jump_consumer = get_jump_variable_for_consumer(jm, consumer)
+function get_tax_revenue_for_consumer(jm, m, consumer::ScalarConsumer)
     taxes = []
     for pf in m._productions
         for output in pf.outputs
-            # if output.commodity == commodity
-                for tax in output.taxes
-                    if tax.agent == jump_consumer
+            for tax in output.taxes
+                if get_full(tax.agent) == consumer
                     push!(taxes, :($(tax.rate) * $(output.quantity)))
-                    end
                 end
-            # end
+            end
         end
     end
 
     tax = :(+(0., $(taxes...)))
 
     return :($tax)
+end
+
+function get_tax_revenue_for_consumer(jm, m, consumer::ConsumerRef)
+    c = get_full(consumer)
+    
+    return get_tax_revenue_for_consumer(jm, m, c)
 end
 
 function get_jump_variable_for_intermediate_supply(jm, output)

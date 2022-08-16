@@ -336,7 +336,7 @@ function get_consumer_benchmark(c::ConsumerRef)
     end
 end
 
-function get_consumer_total_endowment(c::ConsumerRef)
+function get_consumer_total_endowment(jm, c::ConsumerRef)
     m = c.model
 
     endowments = []
@@ -352,7 +352,7 @@ function get_consumer_total_endowment(c::ConsumerRef)
     return :(+(0., $(endowments...)))
 end
 
-function get_consumer_total_endowment(m, c::ScalarConsumer)
+function get_consumer_total_endowment(jm, m, c::ScalarConsumer)
     endowments = []
     for d in m._demands
         if get_full(d.consumer) == c
@@ -363,10 +363,12 @@ function get_consumer_total_endowment(m, c::ScalarConsumer)
         end
     end
 
-    return :(+(0., $(endowments...)))
+    total_end = :(+(0., $(get_tax_revenue_for_consumer(jm, m, c)),  $(endowments...)))
+
+    return total_end
 end
 
-function get_consumer_total_endowment(m, c::IndexedConsumer, i)
+function get_consumer_total_endowment(jm, m, c::IndexedConsumer, i)
     endowments = []
     for d in m._demands
         c_for_d = get_full(d.consumer)
