@@ -23,7 +23,7 @@ PC = add!(m, Commodity(:PC, indices=(goods,)))
 PU = add!(m, Commodity(:PU))
 PF = add!(m, Commodity(:PF, indices=(factors,)))
 
-RA = add!(m, Consumer(:RA, benchmark = 150.))
+RA = add!(m, Consumer(:RA, benchmark = 187.5))
 
 for i in goods
     @production(m, Y[i], 0, 1, [Output(PC[i], supply[i], [MPSGE.Tax(0.2, RA)])], [Input(PF[:l], factor[i,:l]), Input(PF[:k], factor[i,:k])])
@@ -42,7 +42,7 @@ algebraic_version(m)
 
 #Counterfactual 1, increase labour endowment by 10%, default normalisation of price: fix RA income at initial prices
 set_fixed!(PC[:x], false) # unfix, seems to be automatic with new numeraire in MPSGE
-set_value(endow[:l], 1.1.*get_value(endow[:l]))
+set_value(endow[:l], 1.1)
 # In the original indexed, endow[:l] = 1.1*endow[:l]
 set_fixed!(RA, true)
 solve!(m)
