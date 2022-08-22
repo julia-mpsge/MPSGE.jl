@@ -12,5 +12,7 @@ function build(m::Model)
 
     build_incomebalance!(m, jm)  
 
+    build_auxconstraints!(m, jm)
+
     return jm
 end

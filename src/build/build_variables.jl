@@ -41,6 +41,15 @@ function add_consumer_to_jump!(jm, consumer::IndexedConsumer)
     jm[consumer.name] = @eval(JuMP.@variable($jm, [$( ( :($(gensym())=$i) for i in consumer.indices)... )], base_name=string($(QuoteNode(consumer.name))), lower_bound=0.))
 end
 
+function add_aux_to_jump!(jm, aux::ScalarAux)
+    add_variable!(jm, aux.name, 0.)
+end
+
+function add_aux_to_jump!(jm, aux::IndexedAux)
+    jm[aux.name] = @eval(JuMP.@variable($jm, [$( ( :($(gensym())=$i) for i in aux.indices)... )], base_name=string($(QuoteNode(aux.name))), lower_bound=0.))
+end
+
+
 function build_variables!(m, jm)
     # Add all parameters
 
@@ -58,6 +67,11 @@ function build_variables!(m, jm)
 
     for c in m._commodities
         add_commodity_to_jump!(jm, c)
+    end
+
+    # Add aux variables
+    for aux in m._auxs
+        add_aux_to_jump!(jm, aux)
     end
 
     # Add compensated supply variables
