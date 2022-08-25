@@ -1,4 +1,6 @@
-@testset "TWOBYTWO (indexed version)" begin
+@testitem "TWOBYTWO (indexed version)" begin
+    using XLSX, MPSGE.JuMP.Containers
+    
     m = Model()
     goods = [:x, :y]
     factors = [:l, :k]

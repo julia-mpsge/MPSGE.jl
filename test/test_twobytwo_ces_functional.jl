@@ -1,4 +1,6 @@
-@testset "TWOBYTWO (functional version copied, with non-1 elasticities of substitution in production)" begin
+@testitem "TWOBYTWO (functional version copied, with non-1 elasticities of substitution in production)" begin
+    using XLSX, MPSGE.JuMP.Containers
+    
     m = Model()
     # Here parameter values are doubled and input data halved from MPSGE version       
     inputcoeff = add!(m, Parameter(:inputcoeff, value=2.))
