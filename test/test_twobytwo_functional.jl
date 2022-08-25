@@ -1,5 +1,5 @@
 @testitem "TWOBYTWO (functional version)" begin
-    using Test, MPSGE, XLSX, MPSGE.JuMP.Containers
+    using XLSX, MPSGE.JuMP.Containers
 
     m = Model()
     # Here parameter values are doubled and input data halved from MPSGE version       
