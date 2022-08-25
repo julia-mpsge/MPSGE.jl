@@ -14,6 +14,8 @@ function swap_our_param_with_jump_param(jm, expr)
             end
         elseif x isa CommodityRef
             get_jump_variable_for_commodity(jm, x)
+        elseif x isa AuxRef
+            get_jump_variable_for_aux(jm, x)
         else
             return x
         end
@@ -85,6 +87,22 @@ end
 
 function get_jump_variable_for_consumer(jm, consumer::IndexedConsumer)
     return jm[get_name(consumer)][consumer.subindex]
+end
+
+function get_jump_variable_for_aux(jm, aux::AuxRef)
+    if aux.subindex===nothing
+        return jm[get_name(aux)]
+    else
+        return jm[get_name(aux)][aux.subindex]
+    end
+end
+
+function get_jump_variable_for_aux(jm, a::ScalarAux)
+    return jm[get_name(a)]
+end
+
+function get_jump_variable_for_aux(jm, a::IndexedAux)
+    return jm[get_name(a)][a.subindex]
 end
 
 function get_jump_variable_for_intermediate_supply(jm, output)
