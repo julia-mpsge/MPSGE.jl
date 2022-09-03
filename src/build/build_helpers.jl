@@ -125,6 +125,23 @@ function get_tax_revenue_for_consumer(jm, m, consumer::ScalarConsumer)
     return :($tax)
 end
 
+function get_tax_revenue_for_consumer(jm, m, consumer::IndexedConsumer)
+    taxes = []
+    for pf in m._productions
+        for output in pf.outputs
+            for tax in output.taxes
+                if get_full(tax.agent) == consumer[consumer.subindex]
+                    push!(taxes, :($(tax.rate) * $(output.quantity)))
+                end
+            end
+        end
+    end
+
+    tax = :(+(0., $(taxes...)))
+
+    return :($tax)
+end
+
 function get_tax_revenue_for_consumer(jm, m, consumer::ConsumerRef)
     c = get_full(consumer)
     
