@@ -40,6 +40,15 @@ function set_all_start_values(m)
         end
     end
 
+    for aux in m._auxs
+        if aux isa ScalarAux
+            Complementarity.set_start_value(jm[aux.name], aux.benchmark)
+        else
+            for i in Iterators.product(aux.indices...)
+                Complementarity.set_start_value(jm[aux.name][i...], aux.benchmark[i...])
+            end
+        end
+    end
 
     # Add compensated supply variables
     for s in m._productions

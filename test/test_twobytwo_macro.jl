@@ -1,4 +1,6 @@
-@testset "TWOBYTWO (macro version)" begin
+@testitem "TWOBYTWO (macro version)" begin
+    using XLSX, MPSGE.JuMP.Containers
+    
     m = Model()
     # Here again, parameter values are doubled and input data halved from MPSGE version       
     inputcoeff = @parameter(m, inputcoeff, 2.)
