@@ -140,7 +140,7 @@ solve!(m, cumulative_iteration_limit=0)
 algebraic_version(m)
 
 gams_results = XLSX.readxlsx(joinpath(@__DIR__, "MPSGEresults.xlsx"))
-a_table = gams_results["TwoxTwoCET-Scalar"][:]  # Generated from TwoByTwo_Scalar_Algeb-MPSGE.gms
+a_table = gams_results["TwoxTwoCET-Scalar"][:]  # Generated from TwoByTwo_Scalar_MPSGE_forCETTests.gms
 two_by_two_scalar_results = DenseAxisArray(a_table[2:end,2:end],a_table[2:end,1],a_table[1,2:end])
 
 @test value(m, :A) ≈ two_by_two_scalar_results["A.L","benchmark"]#    1.
