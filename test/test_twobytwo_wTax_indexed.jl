@@ -47,7 +47,7 @@ set_fixed!(PC[:x], true) # Set sector x as the numeraire
 solve!(m, cumulative_iteration_limit=0)
 
 gams_results = XLSX.readxlsx(joinpath(@__DIR__, "MPSGEresults.xlsx"))
-a_table = gams_results["TwoxTwowTax"][:]  # Generated from TwoByTwo_Scalar_Algeb-MPSGE.gms
+a_table = gams_results["TwoxTwowTax"][:]  # Generated from TwoByTwo_Scalar_wTax-MPSGE.gms, Tax at 0.2
 two_by_two_scalar_results = DenseAxisArray(a_table[2:end,2:end],a_table[2:end,1],a_table[1,2:end])
 
 @test MPSGE.Complementarity.result_value(m._jump_model[:Y][:x]) ≈ two_by_two_scalar_results["Y.L","benchmark"] # 1.
