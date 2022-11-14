@@ -82,12 +82,12 @@ function create_utility_expr(jm, dm::DemandFunction)
                         :(
                             $( Θ(dm, demand) ) *
                             # TODO #71 Figure out why the commented version doesn't work, it matches paper
-                            # (
-                            #     $(jm[get_final_demand_name(demand)]) / $(demand.quantity)
-                            # )^(
-                            #     ($(dm.elasticity)-1)/$(dm.elasticity)
-                            # )
-                            ($(demand.quantity)/$(demand.quantity))^(($(dm.elasticity)-1)/$(dm.elasticity))
+                            (
+                                # $(jm[get_final_demand_name(demand)]) /
+                                 $(demand.quantity)/
+                                 $(demand.quantity)
+                             )^(
+                                ($(dm.elasticity)-1)/$(dm.elasticity))
                         ) for demand in dm.demands
                     )...
                 )
