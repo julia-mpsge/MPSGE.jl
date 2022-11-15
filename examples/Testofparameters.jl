@@ -25,16 +25,18 @@ solve!(m, cumulative_iteration_limit=0)
 
 algebraic_version(m)
 
-# set_value(endow, 1.1)
+set_value(diff, 10.)
+# set_value(RA, 165.)
+set_value(endow, 1.1)
 set_fixed!(RA, true)
 solve!(m)
 
 set_value(diff, 10.)
 solve!(m)
 
-set_fixed!(RA, false)
+# set_fixed!(RA, false)
 set_fixed!(PX, true)
-solve!(m)
+# solve!(m)
 
 # set_fixed!(PX, false)
 # set_fixed!(PL, true)
