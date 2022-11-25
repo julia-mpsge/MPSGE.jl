@@ -1,6 +1,19 @@
+# function Θ(pf::Production, i::Input)
+#         println("In θpf: ", get_theta_name(pf, i.commodity), ".")
+#     # if 
+#     println(isdefined(θ, get_theta_name(pf,i.commodity)))# ||
+#         # ===nothing
+#         println("what is? ", i)
+#         @eval(get_theta_name(pf, i.commodity) = :( $(i.quantity) * $(get_commodity_benchmark(i.commodity)) / +($( (:( $(o.quantity) * $(get_commodity_benchmark(o.commodity)) ) for o in pf.outputs)...) ) ) )
+#     # end
+#         println("got here, but no further ", eval(get_theta_name(pf, i.commodity)))
+#         return :($(get_theta_name(pf,i.commodity)))
+# end
+
 function Θ(pf::Production, i)
     return :( $(i.quantity) * $(get_commodity_benchmark(i.commodity)) / +($( (:( $(o.quantity) * $(get_commodity_benchmark(o.commodity)) ) for o in pf.outputs)...) ) )
 end
+
 
 function Θ(df::DemandFunction, i)
     return :( $(i.quantity) * $(get_commodity_benchmark(i.commodity)) / $(get_consumer_benchmark(df.consumer)))
