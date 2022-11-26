@@ -1,25 +1,36 @@
-function Θ(pf::Production, i::Input)
-        println("In θpf: ", get_theta_name(pf, i.commodity), ".")
-        println(typeof(get_theta_name(pf, i.commodity)))
-    if (get_theta_name(pf,i.commodity))===nothing
-        println("no i, but got through the if")
-        println("what is? ", i)
-    else
-        println("Which ## i is it?")
-        var_name = get_theta_name(pf, i.commodity)
-        println(var_name)
-        @eval $(Symbol("$var_name")) = $(i.quantity) * $(get_commodity_benchmark(i.commodity)) / +($( (:( $(o.quantity) * $(get_commodity_benchmark(o.commodity)) ) for o in pf.outputs)...) )
-        println("it did evaluate",var_name)
+    function Θ(pf::Production, i::Input)
+    # if haskey(Thetas, get_theta_name(pf, i.commodity))
+    # else
+    #     merge!(Thetas,Dict((get_theta_name(pf, i.commodity)=>:( $(i.quantity) * $(get_commodity_benchmark(i.commodity)) / +($( (:( $(o.quantity) * $(get_commodity_benchmark(o.commodity)) ) for o in pf.outputs)...) ) ) )))
+    # end 
+    # return Thetas[get_theta_name(pf, i.commodity)]
 
-    end
-        println("up to before the return")    
-        println("got here, but no further ", eval(get_theta_name(pf, i.commodity)))
-        return :($(get_theta_name(pf,i.commodity)))
+                #         println("In θpf: ", get_theta_name(pf, i.commodity), ".")
+                #         println(typeof(get_theta_name(pf, i.commodity)))
+                #     if (get_theta_name(pf,i.commodity))!==nothing
+                #         println("no i, but got through the if")
+                #         # println("what is? ", i)
+                #         theta_val = eval( :($(i.quantity) * $(get_commodity_benchmark(i.commodity)) / +($( (:( $(o.quantity) * $(get_commodity_benchmark(o.commodity)) ) for o in pf.outputs)...) )))
+                #         @eval $(get_theta_name(pf, i.commodity)) = theta_val
+                #         println(".5 worked")
+                #         println(@eval($(get_theta_name(pf, i.commodity))))
+                        
+                #     else
+                #         println("Which ## i is it?")
+                #         @eval $(get_theta_name(pf, i.commodity)) = $(i.quantity) * $(get_commodity_benchmark(i.commodity)) / +($( (:( $(o.quantity) * $(get_commodity_benchmark(o.commodity)) ) for o in pf.outputs)...) )
+                #         println("it did evaluate",var_name)
+
+                #     end
+                #         println("up to before the return")    
+                #         println("got here, but no further ", eval(get_theta_name(pf, i.commodity)))
+                #         return eval(get_theta_name(pf,i.commodity))
+# function Θ(pf::Production, i)
+    return :( $(i.quantity) * $(get_commodity_benchmark(i.commodity)) / +($( (:( $(o.quantity) * $(get_commodity_benchmark(o.commodity)) ) for o in pf.outputs)...) ) )
 end
 
-# function Θ(pf::Production, i)
-#     return :( $(i.quantity) * $(get_commodity_benchmark(i.commodity)) / +($( (:( $(o.quantity) * $(get_commodity_benchmark(o.commodity)) ) for o in pf.outputs)...) ) )
-# end
+function Θ(pf::Production, i::Output)
+    return :( $(i.quantity) * $(get_commodity_benchmark(i.commodity)) / +($( (:( $(o.quantity) * $(get_commodity_benchmark(o.commodity)) ) for o in pf.outputs)...) ) )
+end
 
 
 function Θ(df::DemandFunction, i)
