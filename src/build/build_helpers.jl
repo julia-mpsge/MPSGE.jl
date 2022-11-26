@@ -148,3 +148,13 @@ A function to get the name of a production function theta parameter commodity co
 function get_theta_name(pf::Production, i::CommodityRef)
     return Symbol("θ$(get_prod_func_name(pf))i$(get_name(i))")
 end
+
+
+"""
+    get_theta_name(jm, pf::Production, i::Input)
+
+A function to get the name of a production function theta parameter commodity combination
+"""
+function get_theta_name(pf::Production, i::Input)
+    return Symbol("θ$(get_prod_func_name(pf))i$(get_name(i.commodity))")
+end

@@ -1,4 +1,5 @@
     function Θ(pf::Production, i::Input)
+        println(get_theta_name(pf, i))
     # if haskey(Thetas, get_theta_name(pf, i.commodity))
     # else
     #     merge!(Thetas,Dict((get_theta_name(pf, i.commodity)=>:( $(i.quantity) * $(get_commodity_benchmark(i.commodity)) / +($( (:( $(o.quantity) * $(get_commodity_benchmark(o.commodity)) ) for o in pf.outputs)...) ) ) )))
