@@ -547,7 +547,7 @@ end
 function add!(m::Model, sh::ShareParameter)
     m._jump_model = nothing
     push!(m._shareparams, sh)
-    shr = ShareParamRef(m, length(m._shareparams), nothing, nothing)
+    shr = ShareParamRef(m, length(m._shareparams))
     return shr
 end
 
@@ -612,6 +612,7 @@ function solve!(m::Model; solver::Symbol=:PATH, kwargs...)
 
     set_all_start_values(m)
     set_all_parameters(m)
+    # set_all_shareparameters(m)
     set_all_bounds(m)
 
     m._status = Complementarity.solveMCP(m._jump_model; solver=solver, kwargs...)

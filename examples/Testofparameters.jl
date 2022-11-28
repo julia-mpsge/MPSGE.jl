@@ -16,7 +16,7 @@ m = Model()
 
 @consumer(m, RA, benchmark = 150.)
 
-@production(m, X, 0, 0, [Output(PX, :(100+$diff))], [Input(PL, 50), Input(PK, 50)])
+@production(m, X, 0, 1, [Output(PX, :(100+$diff))], [Input(PL, 50), Input(PK, 50)])
 @production(m, Y, 0, 1, [Output(PY, 50)], [Input(PL, 20), Input(PK, 30)])
 @production(m, U, 0, 1, [Output(PU, 150)], [Input(PX, 100), Input(PY, 50)])
 
@@ -32,9 +32,9 @@ set_fixed!(RA, true)
 solve!(m)
 
 
-# set_fixed!(RA, false)
-# set_fixed!(PX, true)
-# # solve!(m)
+set_fixed!(RA, false)
+set_fixed!(PX, true)
+solve!(m)
 
 # set_fixed!(PX, false)
 # set_fixed!(PL, true)
