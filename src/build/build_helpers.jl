@@ -140,6 +140,7 @@ function get_final_demand_name(demand::Demand)
     return Symbol("$(get_name(demand.commodity, true))ρ$(get_demand_func_name(demand_function))")
 end
 
+# TODO One of these isn't used, figure out and delete it
 """
     get_theta_name(jm, pf::Production, i::Input)
 
