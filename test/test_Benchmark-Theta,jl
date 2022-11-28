@@ -56,17 +56,16 @@ solve!(m)
         @test MPSGE.Complementarity.result_value(m._jump_model[:PU]) ≈ 0.93949978
         @test MPSGE.Complementarity.result_value(m._jump_model[:PL]) ≈ 0.95151515
         @test MPSGE.Complementarity.result_value(m._jump_model[:PK]) ≈ 1.04666667
-        @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PL†X")]) ≈ 110
-        @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PK†X")]) ≈ 50
-        @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PL†Y")]) ≈ 150
-        @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PK†Y")]) ≈ 52.44044241
-        @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PX†U")]) ≈ 47.67312946
-        @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PY†U")]) ≈ 21.17705706
-        @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PX‡X")]) ≈ 28.87780508
-        @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PY‡Y")]) ≈ 103.5565
-        @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PU‡U")]) ≈ 46.62462680
+        @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PL†X")]) ≈ 52.44044241
+        @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PK†X")]) ≈ 47.67312946
+        @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PL†Y")]) ≈ 21.17705706
+        @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PK†Y")]) ≈ 28.87780508
+        @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PX†U")]) ≈ 103.5565 atol=1.0e-4
+        @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PY†U")]) ≈ 46.62462680
+        @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PX‡X")]) ≈ 110
+        @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PY‡Y")]) ≈ 50
+        @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PU‡U")]) ≈ 150
         @test MPSGE.Complementarity.result_value(m._jump_model[:RA]) ≈ 157
-        @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PUρRA")]) ≈ 167.1102
-
+        @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PUρRA")]) ≈ 167.1102 atol=1.0e-5
 
 end
