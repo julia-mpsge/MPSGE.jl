@@ -196,7 +196,7 @@ solve!(m)
 
 set_value(PW, 1.0)
 set_fixed!(PW, true)
-# set_fixed!(CONS, false)
+set_fixed!(CONS, false)
 solve!(m)
 
 @test value(m, :A) ≈ two_by_two_scalar_results["A.L","PX.FX=1"]#

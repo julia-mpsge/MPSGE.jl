@@ -1,6 +1,30 @@
-function Θ(pf::Production, i)
+function Θ(pf::Production, i::Input)
+        m = pf.sector.model
+    return get_theta_value(m, pf, i)    
+    # return :( $(i.quantity) * $(get_commodity_benchmark(i.commodity)) / +($( (:( $(o.quantity) * $(get_commodity_benchmark(o.commodity)) ) for o in pf.outputs)...) ) )
+end
+
+function get_theta_value(m, pf::Production, i::Input)
+    for sh in m._shareparams
+        if get_theta_name(pf, i) == sh.name
+           return sh.value
+        end
+    end
+end
+
+function calc_thetas(m)
+    for pf in m._productions
+        for i in pf.inputs
+            v = eval(:( $(swap_our_param_with_val(i.quantity)) * $(get_commodity_benchmark(i.commodity)) / +($( (:( $(swap_our_param_with_val(o.quantity)) * $(get_commodity_benchmark(o.commodity)) ) for o in pf.outputs)...) ) ))
+            add!(m, ShareParameter(Symbol(get_theta_name(pf,i)), v, ""))
+            end
+    end
+end
+
+function Θ(pf::Production, i::Output)
     return :( $(i.quantity) * $(get_commodity_benchmark(i.commodity)) / +($( (:( $(o.quantity) * $(get_commodity_benchmark(o.commodity)) ) for o in pf.outputs)...) ) )
 end
+
 
 function Θ(df::DemandFunction, i)
     return :( $(i.quantity) * $(get_commodity_benchmark(i.commodity)) / $(get_consumer_benchmark(df.consumer)))

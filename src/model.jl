@@ -4,7 +4,10 @@ struct ParameterRef
     subindex::Any
     subindex_names::Any
 end
-
+ struct ShareParamRef
+    model
+    index::Int
+ end
 struct SectorRef
     model
     index::Int
@@ -31,6 +34,12 @@ struct AuxRef
     index::Int
     subindex::Any
     Subindex_names::Any
+end
+
+mutable struct ShareParameter
+    name::Symbol
+    value::Float64
+    description::String
 end
 
 abstract type Parameter end;
@@ -259,6 +268,7 @@ mutable struct Model
     _parameters::Vector{Parameter}
     _sectors::Vector{Sector}
     _commodities::Vector{Commodity}
+    _shareparams::Vector{ShareParameter}
     _consumers::Vector{Consumer}
     _auxs::Vector{Aux}
 
@@ -276,6 +286,7 @@ mutable struct Model
             Parameter[],
             Sector[],
             Commodity[],
+            ShareParameter[],
             Consumer[],
             Aux[],
             Production[],
@@ -533,6 +544,13 @@ function add!(m::Model, a::ScalarAux)
     return ar
 end
 
+function add!(m::Model, sh::ShareParameter)
+    m._jump_model = nothing
+    push!(m._shareparams, sh)
+    shr = ShareParamRef(m, length(m._shareparams))
+    return shr
+end
+
 function add!(m::Model, a::IndexedAux)
     m._jump_model = nothing
     push!(m._auxs, a)
@@ -619,7 +637,7 @@ function get_value(parameter::ParameterRef)
         return p.value[parameter.subindex]
     end
 end
-
+#TODO This doesn't work
 function JuMP.set_value(consumer::ConsumerRef, new_value::Float64)
     c = consumer.model._consumers[consumer.index]
     if c isa ScalarConsumer

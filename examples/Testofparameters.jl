@@ -31,13 +31,11 @@ set_value(endow, 1.1)
 set_fixed!(RA, true)
 solve!(m)
 
-set_value(diff, 10.)
-solve!(m)
 
 set_fixed!(RA, false)
 set_fixed!(PX, true)
-# solve!(m)
-
-set_fixed!(PX, false)
-set_fixed!(PL, true)
 solve!(m)
+
+# set_fixed!(PX, false)
+# set_fixed!(PL, true)
+# solve!(m)
