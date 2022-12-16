@@ -16,7 +16,9 @@ m = Model()
 
 @consumer(m, RA, benchmark = 150.)
 
-@production(m, X, 0, 1, [Output(PX, :(100+$diff))], [Input(PL, 50), Input(PK, 50)])
+# @production(m, X, 0, 1, [Output(PX, :(100+$diff))], [Input(PL, 50), Input(PK, 50)])
+# Test of using a parameter in inputs instead of output
+@production(m, X, 0, 1, [Output(PX, 100)], [Input(PL, :(50+$diff)), Input(PK, 50)])
 @production(m, Y, 0, 1, [Output(PY, 50)], [Input(PL, 20), Input(PK, 30)])
 @production(m, U, 0, 1, [Output(PU, 150)], [Input(PX, 100), Input(PY, 50)])
 
@@ -26,6 +28,8 @@ solve!(m, cumulative_iteration_limit=0)
 algebraic_version(m)
 
 set_value(diff, 10.)
+set_fixed!(RA, true)
+solve!(m)
 # set_value(RA, 165.)
 set_value(endow, 1.1)
 set_fixed!(RA, true)
@@ -36,6 +40,6 @@ set_fixed!(RA, false)
 set_fixed!(PX, true)
 solve!(m)
 
-# set_fixed!(PX, false)
-# set_fixed!(PL, true)
-# solve!(m)
+set_fixed!(PX, false)
+set_fixed!(PL, true)
+solve!(m)
