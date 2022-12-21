@@ -1,3 +1,24 @@
+function calc_thetas(m)
+    for pf in m._productions
+        for i in pf.inputs
+            val = eval(:( $(swap_our_param_with_val(i.quantity)) * $(get_commodity_benchmark(i.commodity)) / +($( (:( $(swap_our_param_with_val(o.quantity)) * $(get_commodity_benchmark(o.commodity)) ) for o in pf.outputs)...) ) ))
+            add!(m, ShareParameter(Symbol(get_theta_name(pf,i)), val, ""))
+            end
+    end
+    for pf in m._productions
+        for out in pf.outputs
+            val = eval(:( $(swap_our_param_with_val(out.quantity)) * $(get_commodity_benchmark(out.commodity)) / +($( (:( $(swap_our_param_with_val(o.quantity)) * $(get_commodity_benchmark(o.commodity)) ) for o in pf.outputs)...) ) ))
+            add!(m, ShareParameter(Symbol(get_theta_name(pf,out)), val, ""))
+            end
+    end
+    for df in m._demands
+        for dm in df.demands
+            val = eval(:( $(swap_our_param_with_val(dm.quantity)) * $(get_commodity_benchmark(dm.commodity))/ $(get_consumer_benchmark(df.consumer))))
+            add!(m, ShareParameter(Symbol(get_theta_name(df,dm)), val, "")) 
+        end
+    end
+end
+
 function Θ(pf::Production, i::Input)
         m = pf.sector.model
     return get_theta_value(m, pf, i)    
@@ -12,22 +33,32 @@ function get_theta_value(m, pf::Production, i::Input)
     end
 end
 
-function calc_thetas(m)
-    for pf in m._productions
-        for i in pf.inputs
-            v = eval(:( $(swap_our_param_with_val(i.quantity)) * $(get_commodity_benchmark(i.commodity)) / +($( (:( $(swap_our_param_with_val(o.quantity)) * $(get_commodity_benchmark(o.commodity)) ) for o in pf.outputs)...) ) ))
-            add!(m, ShareParameter(Symbol(get_theta_name(pf,i)), v, ""))
-            end
+function Θ(pf::Production, i::Output)
+    m = pf.sector.model
+    return get_theta_value(m, pf, i)    
+    # return :( $(i.quantity) * $(get_commodity_benchmark(i.commodity)) / +($( (:( $(o.quantity) * $(get_commodity_benchmark(o.commodity)) ) for o in pf.outputs)...) ) )
+end
+
+function get_theta_value(m, pf::Production, i::Output)
+    for sh in m._shareparams
+        if get_theta_name(pf, i) == sh.name
+           return sh.value
+        end
     end
 end
 
-function Θ(pf::Production, i::Output)
-    return :( $(i.quantity) * $(get_commodity_benchmark(i.commodity)) / +($( (:( $(o.quantity) * $(get_commodity_benchmark(o.commodity)) ) for o in pf.outputs)...) ) )
+function Θ(df::DemandFunction, dm)   
+    # return :( $(i.quantity) * $(get_commodity_benchmark(i.commodity)) / $(get_consumer_benchmark(df.consumer)))
+    m = df.consumer.model
+    return get_theta_value(m, df, dm)    
 end
 
-
-function Θ(df::DemandFunction, i)
-    return :( $(i.quantity) * $(get_commodity_benchmark(i.commodity)) / $(get_consumer_benchmark(df.consumer)))
+function get_theta_value(m, df::DemandFunction, dm::Demand)
+    for sh in m._shareparams
+        if get_theta_name(df, dm) == sh.name
+           return sh.value
+        end
+    end
 end
 
 function y_over_y_bar(jm, pf::Production)
@@ -88,16 +119,16 @@ function create_rev_expr(jm, pf::Production)
                     (
                         :(
                             $(Θ(pf, output)) *
-                            ($(get_jump_variable_for_commodity(jm,output.commodity))/$(get_commodity_benchmark(output.commodity)))^(1.0 + $(pf.tr_elasticity))
+                            ($(get_jump_variable_for_commodity(jm,output.commodity))/$(get_commodity_benchmark(output.commodity)))^(1.0 + $(pf.tr_elasticity)) # should be ((1.0 + $(pf.tr_elasticity)/$(pf.tr_elasticity))?
                         ) for output in pf.outputs
                     )...
                 )
             )
-        )^(1.0/(1.0+$(pf.tr_elasticity)))
+        )^(1.0/(1.0+$(pf.tr_elasticity))) #Should be $(pf.tr_elasticity)/(1.0+$(pf.tr_elasticity)) ?
     )
 end
 
-function create_utility_expr(jm, dm::DemandFunction)
+function create_utility_expr(dm::DemandFunction)
     return :( 
         (
             +(
@@ -106,12 +137,12 @@ function create_utility_expr(jm, dm::DemandFunction)
                         :(
                             $( Θ(dm, demand) ) *
                             # TODO #71 Figure out why the commented version doesn't work, it matches paper
-                            # (
-                            #     $(jm[get_final_demand_name(demand)]) / $(demand.quantity)
-                            # )^(
-                            #     ($(dm.elasticity)-1)/$(dm.elasticity)
-                            # )
-                            ($(demand.quantity)/$(demand.quantity))^(($(dm.elasticity)-1)/$(dm.elasticity))
+                            (
+                            $(swap_our_param_with_val(demand.commodity)) # Attempted fix 2022-12-21
+                                # $(demand.quantity)  # 71 version
+                            #  / $(demand.quantity))  # 71 version
+                          /$(get_commodity_benchmark(demand.commodity))) # Attempted fix 2022-12-21
+                            ^(($(dm.elasticity)-1)/$(dm.elasticity))
                         ) for demand in dm.demands
                     )...
                 )
@@ -143,7 +174,7 @@ function create_expenditure_expr(jm, dm::DemandFunction)
                 )
             )
        )^(1/(1-$(dm.elasticity))) *
-       $(create_utility_expr(jm, dm))
+       $(create_utility_expr(dm))
     )
 end
 
