@@ -25,6 +25,12 @@ function Θ(pf::Production, i::Input)
     # return :( $(i.quantity) * $(get_commodity_benchmark(i.commodity)) / +($( (:( $(o.quantity) * $(get_commodity_benchmark(o.commodity)) ) for o in pf.outputs)...) ) )
 end
 
+function Θy(pf::Production, i::Input)
+        # m = pf.sector.model
+    # return get_theta_value(m, pf, i)    
+    return :( $(i.quantity) * $(get_commodity_benchmark(i.commodity)) / +($( (:( $(o.quantity) * $(get_commodity_benchmark(o.commodity)) ) for o in pf.outputs)...) ) )
+end
+
 function get_theta_value(m, pf::Production, i::Input)
     for sh in m._shareparams
         if get_theta_name(pf, i) == sh.name
@@ -39,6 +45,12 @@ function Θ(pf::Production, i::Output)
     # return :( $(i.quantity) * $(get_commodity_benchmark(i.commodity)) / +($( (:( $(o.quantity) * $(get_commodity_benchmark(o.commodity)) ) for o in pf.outputs)...) ) )
 end
 
+function Θy(pf::Production, i::Output)
+    # m = pf.sector.model
+    # return get_theta_value(m, pf, i)    
+    return :( $(i.quantity) * $(get_commodity_benchmark(i.commodity)) / +($( (:( $(o.quantity) * $(get_commodity_benchmark(o.commodity)) ) for o in pf.outputs)...) ) )
+end
+
 function get_theta_value(m, pf::Production, i::Output)
     for sh in m._shareparams
         if get_theta_name(pf, i) == sh.name
@@ -51,6 +63,12 @@ function Θ(df::DemandFunction, dm)
     # return :( $(i.quantity) * $(get_commodity_benchmark(i.commodity)) / $(get_consumer_benchmark(df.consumer)))
     m = df.consumer.model
     return get_theta_value(m, df, dm)    
+end
+
+function Θy(df::DemandFunction, dm)   
+    return :( $(dm.quantity) * $(get_commodity_benchmark(dm.commodity)) / $(get_consumer_benchmark(df.consumer)))
+    # m = df.consumer.model
+    # return get_theta_value(m, df, dm)    
 end
 
 function get_theta_value(m, df::DemandFunction, dm::Demand)
@@ -86,6 +104,31 @@ function y_over_y_bar(jm, pf::Production)
     end
 end
 
+function y_over_y_bary(jm, pf::Production)
+    if eval(swap_our_param_with_val(pf.elasticity))==0
+        return :(
+            min(
+                $(( :( $(jm[get_comp_demand_name(i)])/$(i.quantity) ) for i in pf.inputs)...)
+            )
+        )
+    elseif eval(swap_our_param_with_val(pf.elasticity))==1
+        return :(
+            *(
+                $(( :( ($(jm[get_comp_demand_name(i)])/$(i.quantity))^$(Θy(pf,i)) ) for i in pf.inputs)...)
+            )
+        )
+    else
+        ρ = :(($(pf.elasticity)-1)/$(pf.elasticity))
+        return :(
+            (
+                +(
+                    $((:( $(Θy(pf,i)) * ($(jm[get_comp_demand_name(i)])/$(i.quantity))^$ρ ) for i in pf.inputs)...)
+                )
+            )^(1/$ρ)
+        )
+    end
+end
+
 function create_cost_expr(jm, pf::Production)
 
     if eval(swap_our_param_with_val(pf.elasticity))==1
@@ -96,7 +139,7 @@ function create_cost_expr(jm, pf::Production)
                         ($(get_jump_variable_for_commodity(jm,input.commodity))/$(get_commodity_benchmark(input.commodity))) ^ $(Θ(pf, input))
                     ) for input in pf.inputs)...
                 )
-            ) * $(y_over_y_bar(jm, pf))
+            ) * $(y_over_y_bary(jm, pf))
         )
     else 
         return :(
@@ -120,11 +163,13 @@ function create_rev_expr(jm, pf::Production)
                         :(
                             $(Θ(pf, output)) *
                             ($(get_jump_variable_for_commodity(jm,output.commodity))/$(get_commodity_benchmark(output.commodity)))^(1.0 + $(pf.tr_elasticity)) # should be ((1.0 + $(pf.tr_elasticity)/$(pf.tr_elasticity))?
+                            # ($(get_jump_variable_for_commodity(jm,output.commodity))/$(get_commodity_benchmark(output.commodity)))^((1.0 + $(pf.tr_elasticity))/$(pf.tr_elasticity)) # should be ((1.0 + $(pf.tr_elasticity)/$(pf.tr_elasticity))?
                         ) for output in pf.outputs
                     )...
                 )
             )
         )^(1.0/(1.0+$(pf.tr_elasticity))) #Should be $(pf.tr_elasticity)/(1.0+$(pf.tr_elasticity)) ?
+        # )^($(pf.tr_elasticity)/(1.0+$(pf.tr_elasticity))) #Should be $(pf.tr_elasticity)/(1.0+$(pf.tr_elasticity)) ?
     )
 end
 
@@ -164,7 +209,7 @@ function create_expenditure_expr(jm, dm::DemandFunction)
                 $(
                     (
                         :(
-                            $(Θ(dm, demand)) *
+                            $(y(dm, demand)) *
                             (
                                 $(get_jump_variable_for_commodity(jm, demand.commodity)) /
                                 $(get_commodity_benchmark(demand.commodity))
@@ -210,7 +255,7 @@ function build_implicitconstraints!(m, jm)
                 JuMP.@NLexpression(
                     $(jm),
                     $(output.quantity) *
-                    $(y_over_y_bar(jm, s)) *
+                    $(y_over_y_bary(jm, s)) *
                         (
                             $(get_jump_variable_for_commodity(jm, output.commodity)) /
                             $(create_rev_expr(jm, s)) /
