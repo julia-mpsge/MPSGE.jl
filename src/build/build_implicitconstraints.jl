@@ -161,7 +161,7 @@ function create_rev_expr(jm, pf::Production)
                 $(
                     (
                         :(
-                            $(Θ(pf, output)) *
+                            $(Θy(pf, output)) *
                             ($(get_jump_variable_for_commodity(jm,output.commodity))/$(get_commodity_benchmark(output.commodity)))^(1.0 + $(pf.tr_elasticity)) # should be ((1.0 + $(pf.tr_elasticity)/$(pf.tr_elasticity))?
                             # ($(get_jump_variable_for_commodity(jm,output.commodity))/$(get_commodity_benchmark(output.commodity)))^((1.0 + $(pf.tr_elasticity))/$(pf.tr_elasticity)) # should be ((1.0 + $(pf.tr_elasticity)/$(pf.tr_elasticity))?
                         ) for output in pf.outputs
