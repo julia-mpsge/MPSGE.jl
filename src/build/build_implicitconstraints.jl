@@ -139,7 +139,7 @@ function create_cost_expr(jm, pf::Production)
                         ($(get_jump_variable_for_commodity(jm,input.commodity))/$(get_commodity_benchmark(input.commodity))) ^ $(Θ(pf, input))
                     ) for input in pf.inputs)...
                 )
-            ) * $(y_over_y_bary(jm, pf))
+            ) * $(y_over_y_bar(jm, pf))
         )
     else 
         return :(
@@ -209,7 +209,7 @@ function create_expenditure_expr(jm, dm::DemandFunction)
                 $(
                     (
                         :(
-                            $(y(dm, demand)) *
+                            $(Θ(dm, demand)) *
                             (
                                 $(get_jump_variable_for_commodity(jm, demand.commodity)) /
                                 $(get_commodity_benchmark(demand.commodity))
@@ -232,7 +232,7 @@ function build_implicitconstraints!(m, jm)
                 JuMP.@NLexpression(
                     $(jm),
                     $(input.quantity) *
-                    $(y_over_y_bar(jm, s)) *
+                    $(y_over_y_bary(jm, s)) *
                  (       
                             $(create_cost_expr(jm, s)) * $(get_commodity_benchmark(input.commodity)) /
                         $(get_jump_variable_for_commodity(jm, input.commodity))
