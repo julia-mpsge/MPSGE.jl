@@ -1,4 +1,4 @@
-@testitem "TWOBYTWO ThetaTest (macro version)" begin
+@testitem "TWOBYTWO outputdiff ThetaTest (macro version)" begin
     using XLSX, MPSGE.JuMP.Containers
 
 m = Model()
