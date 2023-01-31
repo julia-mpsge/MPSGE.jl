@@ -1,11 +1,16 @@
 function calc_thetas(m)
-    jm = Complementarity.MCPModel()
+    # jm = Complementarity.MCPModel()
     for pf in m._productions
         for i in pf.inputs
             val = eval(:( $(swap_our_param_with_val(i.quantity)) * $(get_commodity_benchmark(i.commodity)) / +($( (:( $(swap_our_param_with_val(o.quantity)) * $(get_commodity_benchmark(o.commodity)) ) for o in pf.outputs)...) ) ))
-            # val = eval(:(($(i.quantity) + $(replaceinput(jm, i))) * $(get_commodity_benchmark(i.commodity)) / +($( (:( $(swap_our_param_with_val(o.quantity)) * $(get_commodity_benchmark(o.commodity)) ) for o in pf.outputs)...) ) ))
-            
-            add!(m, ShareParameter(Symbol(get_theta_name(pf,i)), val, ""))
+        #    This should not be right, but seems like possibly what is happening in GAMS MPSGE, based on results
+            # val = eval(:( $(swap_our_param_with_val(i.quantity)) * $(get_commodity_benchmark(i.commodity)) / +($( (:( $(swap_our_param_with_val(i.quantity)) * $(get_commodity_benchmark(i.commodity)) ) for i in pf.inputs)...) ) ))
+            # add!(m, ShareParameter(Symbol(get_theta_name(pf,i)), val, ""))
+            #Trying this to get the Share Parameters in the REPL Workspace (but doesn't do it)
+            name = Symbol(get_theta_name(pf,i))
+            add_theta = add!(m, ShareParameter(Symbol(get_theta_name(pf,i)), val, ""))
+            @eval $(name) = $(add_theta)
+            # Symbol(get_theta_name(pf,i)) = add!(m, ShareParameter(Symbol(get_theta_name(pf,i)), val, ""))
             end
     end
     for pf in m._productions
@@ -25,45 +30,43 @@ end
 function Θ(pf::Production, i::Input)
         m = pf.sector.model
     return get_theta_value(m, pf, i)    
-    # return :( $(i.quantity) * $(get_commodity_benchmark(i.commodity)) / +($( (:( $(o.quantity) * $(get_commodity_benchmark(o.commodity)) ) for o in pf.outputs)...) ) )
 end
 
 function Θy(pf::Production, i::Input)
-        # m = pf.sector.model
-    # return get_theta_value(m, pf, i)    
     return :( $(i.quantity) * $(get_commodity_benchmark(i.commodity)) / +($( (:( $(o.quantity) * $(get_commodity_benchmark(o.commodity)) ) for o in pf.outputs)...) ) )
 end
 
 function get_theta_value(m, pf::Production, i::Input)
+    #Actually, just return the 
+    #HERE, take from _jump_model instead of m?
+    # jm = Complementarity.MCPModel()
+    # pameter.model._parameters[parameter.index].value
     for sh in m._shareparams
         if get_theta_name(pf, i) == sh.name
+        #    return :($(jm[get_theta_name(pf, i)]))
            return sh.value
         end
     end
 end
 
-function Θ(pf::Production, i::Output)
+function Θ(pf::Production, o::Output)
     m = pf.sector.model
-    return get_theta_value(m, pf, i)    
-    # return :( $(i.quantity) * $(get_commodity_benchmark(i.commodity)) / +($( (:( $(o.quantity) * $(get_commodity_benchmark(o.commodity)) ) for o in pf.outputs)...) ) )
+    return get_theta_value(m, pf, o)    
 end
 
 function Θy(pf::Production, i::Output)
-    # m = pf.sector.model
-    # return get_theta_value(m, pf, i)    
     return :( $(i.quantity) * $(get_commodity_benchmark(i.commodity)) / +($( (:( $(o.quantity) * $(get_commodity_benchmark(o.commodity)) ) for o in pf.outputs)...) ) )
 end
 
-function get_theta_value(m, pf::Production, i::Output)
+function get_theta_value(m, pf::Production, o::Output)
     for sh in m._shareparams
-        if get_theta_name(pf, i) == sh.name
+        if get_theta_name(pf, o) == sh.name
            return sh.value
         end
     end
 end
 
 function Θ(df::DemandFunction, dm)   
-    # return :( $(i.quantity) * $(get_commodity_benchmark(i.commodity)) / $(get_consumer_benchmark(df.consumer)))
     m = df.consumer.model
     return get_theta_value(m, df, dm)    
 end

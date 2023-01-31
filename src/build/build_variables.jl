@@ -64,6 +64,10 @@ function build_variables!(m, jm)
         # jm[p.name] = jmp_p
     end
 
+    for sh in m._shareparams
+        add_parameter_to_jump!(jm, sh)
+    end
+    
     # Add all required variables
 
     for s in m._sectors

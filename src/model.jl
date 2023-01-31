@@ -4,10 +4,10 @@ struct ParameterRef
     subindex::Any
     subindex_names::Any
 end
- struct ShareParamRef
+struct ShareParamRef
     model
     index::Int
- end
+end
 struct SectorRef
     model
     index::Int
@@ -37,9 +37,14 @@ struct AuxRef
 end
 
 mutable struct ShareParameter
+# struct ShareParameter
     name::Symbol
     value::Float64
     description::String
+
+    function ShareParameter(name::Symbol, value::Float64=1., description::AbstractString="")
+        return new(name, value, description)
+    end
 end
 
 abstract type Parameter end;
@@ -545,10 +550,20 @@ function add!(m::Model, a::ScalarAux)
 end
 
 function add!(m::Model, sh::ShareParameter)
-    m._jump_model = nothing
-    push!(m._shareparams, sh)
+    # m._jump_model = nothing
+    if !(isempty(m._shareparams))
+        for s in m._shareparams
+            if s.name==sh.name && s.value != sh.value
+                println(sh.name, ": ",s.value, "=>",sh.value)
+                replace!(m._shareparams, s=>sh)
+            end
+        end
+    end
+    if !(sh in m._shareparams)
+        push!(m._shareparams, sh)
+    end
     shr = ShareParamRef(m, length(m._shareparams))
-    return shr
+    return  shr
 end
 
 function add!(m::Model, a::IndexedAux)
@@ -609,10 +624,12 @@ function solve!(m::Model; solver::Symbol=:PATH, kwargs...)
     if m._jump_model===nothing
         m._jump_model = build(m)
     end
-
     set_all_start_values(m)
+    # calc_thetas now in set all parameters
     set_all_parameters(m)
     set_all_bounds(m)
+    # This is a repeat (calc_thetas is also in build) so it happens for benchmark (first solve), and then also other solves. For sure, there's a more elegant and efficient way.
+    # calc_thetas(m)
 
     m._status = Complementarity.solveMCP(m._jump_model; solver=solver, kwargs...)
 
@@ -626,6 +643,12 @@ function JuMP.set_value(parameter::ParameterRef, new_value::Float64)
     else
         p.value[parameter.subindex] = new_value
     end
+    return nothing
+end
+
+function JuMP.set_value(ShareParameter::ShareParamRef, new_value::Float64)
+    sh = ShareParameter.model._shareparams[ShareParameter.index]
+        sh.value = new_value
     return nothing
 end
 

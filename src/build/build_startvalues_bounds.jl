@@ -130,7 +130,6 @@ end
 
 function set_all_parameters(m)
     jm = m._jump_model
-
     for p in m._parameters
         if p isa ScalarParameter
             JuMP.set_value(jm[p.name], p.value)
@@ -139,5 +138,9 @@ function set_all_parameters(m)
                 JuMP.set_value(jm[p.name][pp...], p.value[pp...])
             end
         end
+    end
+    calc_thetas(m)
+    for sh in m._shareparams
+        JuMP.set_value(jm[sh.name], sh.value) 
     end
 end

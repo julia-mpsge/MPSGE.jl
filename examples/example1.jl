@@ -2,7 +2,8 @@ using MPSGE
 # A replication of the MPSGE Two by Two Scalar , from https://www.gams.com/34/docs/UG_MPSGE_Intro.html#UG_MPSGE_Intro_Appendix_twobytwo1
 m = Model()
 
-@parameter(m, endow, 1.0)
+endow = add!(m, Parameter(:endow, value=1.0))
+# @parameter(m, endow, 1.0)
 @parameter(m, sub_elas_x, 1.5)
 @parameter(m, sub_elas_y, 2.)
 @parameter(m, sub_elas_u, 0.5)
@@ -13,7 +14,7 @@ m = Model()
 # sub_elas_x = 1
 # sub_elas_y = 1
 @sector(m, X)
-@sector(m, Y)
+Y = add!(m, Sector(:Y))
 @sector(m, U)
 
 @commodity(m, PX)
@@ -30,6 +31,8 @@ m = Model()
 
 @demand(m, RA, 1., [Demand(PU, 150)], [Endowment(PL, :(70 * $endow)), Endowment(PK, 80.)])
 
+# θXiPL = add!(m, ShareParameter(Symbol("θXiPL"), value=.5))
+# calc_thetas(m)
 solve!(m, cumulative_iteration_limit=0)
 algebraic_version(m)
 
