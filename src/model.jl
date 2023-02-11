@@ -621,9 +621,9 @@ function JuMP.value(m::Model, name::Symbol)
 end
 
 function solve!(m::Model; solver::Symbol=:PATH, kwargs...)
-    if m._jump_model===nothing
+    # if m._jump_model===nothing
         m._jump_model = build(m)
-    end
+    # end
     set_all_start_values(m)
     # calc_thetas now in set all parameters
     set_all_parameters(m)

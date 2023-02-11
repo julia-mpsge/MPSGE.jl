@@ -2,9 +2,9 @@ function calc_thetas(m)
     # jm = Complementarity.MCPModel()
     for pf in m._productions
         for i in pf.inputs
-            val = eval(:( $(swap_our_param_with_val(i.quantity)) * $(get_commodity_benchmark(i.commodity)) / +($( (:( $(swap_our_param_with_val(o.quantity)) * $(get_commodity_benchmark(o.commodity)) ) for o in pf.outputs)...) ) ))
+            # val = eval(:( $(swap_our_param_with_val(i.quantity)) * $(get_commodity_benchmark(i.commodity)) / +($( (:( $(swap_our_param_with_val(o.quantity)) * $(get_commodity_benchmark(o.commodity)) ) for o in pf.outputs)...) ) ))
         #    This should not be right, but seems like possibly what is happening in GAMS MPSGE, based on results
-            # val = eval(:( $(swap_our_param_with_val(i.quantity)) * $(get_commodity_benchmark(i.commodity)) / +($( (:( $(swap_our_param_with_val(i.quantity)) * $(get_commodity_benchmark(i.commodity)) ) for i in pf.inputs)...) ) ))
+            val = eval(:( $(swap_our_param_with_val(i.quantity)) * $(get_commodity_benchmark(i.commodity)) / +($( (:( $(swap_our_param_with_val(i.quantity)) * $(get_commodity_benchmark(i.commodity)) ) for i in pf.inputs)...) ) ))
             # add!(m, ShareParameter(Symbol(get_theta_name(pf,i)), val, ""))
             #Trying this to get the Share Parameters in the REPL Workspace (but doesn't do it)
             name = Symbol(get_theta_name(pf,i))
@@ -327,7 +327,7 @@ function build_implicitconstraints!(m, jm)
                 ex = :(
                         JuMP.@NLexpression(
                             $(jm),
-                            $(input.quantity) *
+                            $(input.quantity) * #benchmark input demenad for i
                                 $(y_over_y_bary(jm, s)) * # This for tr_elasticity ==0
                         (       
                                     $(create_cost_expr(jm, s)) * $(get_commodity_benchmark(input.commodity)) /
@@ -365,7 +365,7 @@ function build_implicitconstraints!(m, jm)
 
             else
                 #    println("Dem: s !=1", :($(jm[get_comp_demand_name(input)])))
-                println(:($(jm[get_comp_demand_name(input)])), ": ", swap_our_param_with_val(:($(input.quantity))))
+                println("comp dem ",:($(jm[get_comp_demand_name(input)])), ": ", swap_our_param_with_val(:($(input.quantity))))
             
                 ex = :(
                     JuMP.@NLexpression(
