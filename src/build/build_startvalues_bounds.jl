@@ -139,8 +139,4 @@ function set_all_parameters(m)
             end
         end
     end
-    calc_thetas(m)
-    # for sh in m._shareparams
-    #     JuMP.set_value(jm[sh.name], sh.value) 
-    # end
 end
