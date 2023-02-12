@@ -150,19 +150,19 @@ function get_theta_name(pf::Production, i::Input)
 end
 
 """
-    get_theta_name(df::DemandFunction, dm::Demand)
-
-A function to get the name of a production function theta parameter commodity combination
-"""
-function get_theta_name(df::DemandFunction, dm::Demand)
-    return Symbol("θ$(get_demand_func_name(df))d$(get_name(dm.commodity,true))")
-end
-
-"""
     get_theta_name(jm, pf::Production, out::Output)
 
 A function to get the name of a production function theta parameter commodity combination
 """
 function get_theta_name(pf::Production, out::Output)
     return Symbol("θ$(get_prod_func_name(pf))o$(get_name(out.commodity,true))")
+end
+
+"""
+    get_theta_name(df::DemandFunction, dm::Demand)
+
+A function to get the name of a production function theta parameter commodity combination
+"""
+function get_theta_name(df::DemandFunction, dm::Demand)
+    return Symbol("θ$(get_demand_func_name(df))d$(get_name(dm.commodity,true))")
 end
