@@ -1,7 +1,6 @@
 function calc_thetas(m)
     for pf in m._productions
         for i in pf.inputs
-        #    This should not be right, but seems like possibly what is happening in GAMS MPSGE, based on results
             val = eval(:( $(swap_our_param_with_val(i.quantity)) * $(get_commodity_benchmark(i.commodity)) / +($( (:( $(swap_our_param_with_val(i.quantity)) * $(get_commodity_benchmark(i.commodity)) ) for i in pf.inputs)...) ) ))
             add!(m, ShareParameter(Symbol(get_theta_name(pf,i)), val, ""))
             end
@@ -22,55 +21,70 @@ end
 
 function Θ(pf::Production, i::Input)
         m = pf.sector.model
-    return get_theta_value(m, pf, i)    
+        for sh in m._shareparams
+            if get_theta_name(pf, i) == sh.name
+                return sh.value
+            end
+        end
+    # return get_theta_value(m, pf, i)    
 end
 
-function get_theta_value(m, pf::Production, i::Input)
-    for sh in m._shareparams
-        if get_theta_name(pf, i) == sh.name
-           return sh.value
-        end
-    end
-end
+# function get_theta_value(m, pf::Production, i::Input)
+#     for sh in m._shareparams
+#         if get_theta_name(pf, i) == sh.name
+#            return sh.value
+#         end
+#     end
+# end
 
 function Θ(pf::Production, o::Output)
     m = pf.sector.model
-    return get_theta_value(m, pf, o)    
-end
-
-function get_theta_value(m, pf::Production, o::Output)
     for sh in m._shareparams
         if get_theta_name(pf, o) == sh.name
            return sh.value
         end
     end
+    # return get_theta_value(m, pf, o)    
 end
+
+# function get_theta_value(m, pf::Production, o::Output)
+#     for sh in m._shareparams
+#         if get_theta_name(pf, o) == sh.name
+#            return sh.value
+#         end
+#     end
+# end
 
 function Θ(df::DemandFunction, dm)   
     m = df.consumer.model
-    return get_theta_value(m, df, dm)    
-end
-
-function get_theta_value(m, df::DemandFunction, dm::Demand)
     for sh in m._shareparams
         if get_theta_name(df, dm) == sh.name
            return sh.value
         end
     end
+    # return get_theta_value(m, df, dm)    
 end
+
+# function get_theta_value(m, df::DemandFunction, dm::Demand)
+#     for sh in m._shareparams
+#         if get_theta_name(df, dm) == sh.name
+#            return sh.value
+#         end
+#     end
+# end
 
 function y_over_y_bar(jm, pf::Production)
     if eval(swap_our_param_with_val(pf.elasticity))==0
         return :(
             min(
                 $(( :( $(jm[get_comp_demand_name(i)])/$(i.quantity) ) for i in pf.inputs)...)
-                )
+            )
         )
     elseif eval(swap_our_param_with_val(pf.elasticity))==1
         return :(
             *(
                 $(( :( ($(jm[get_comp_demand_name(i)])/$(i.quantity))^$(Θ(pf,i)) ) for i in pf.inputs)...)
-                )
+            )
         )
     else
         ρ = :(($(pf.elasticity)-1)/$(pf.elasticity))
@@ -78,7 +92,7 @@ function y_over_y_bar(jm, pf::Production)
             (
                 +(
                     $((:( $(Θ(pf,i)) * ($(jm[get_comp_demand_name(i)])/$(i.quantity))^$ρ ) for i in pf.inputs)...)
-                    )
+                )
             )^(1/$ρ)
         )
     end
@@ -102,7 +116,7 @@ function create_cost_expr(jm, pf::Production)
                 $(
                     (:(
                         $(Θ(pf, input)) * ($(get_jump_variable_for_commodity(jm,input.commodity))/$(get_commodity_benchmark(input.commodity))) ^ (1-$(pf.elasticity))
-                        ) for input in pf.inputs)...
+                    ) for input in pf.inputs)...
                 )
             ))^(1/(1-$(pf.elasticity))) * $(y_over_y_bar(jm, pf))
         )
@@ -116,13 +130,13 @@ function create_rev_expr(jm, pf::Production)
                 $(
                     (
                         :(
-                            $(Θ(pf, output)) * 
+                            $(Θ(pf, output)) *
                             ($(get_jump_variable_for_commodity(jm,output.commodity))/$(get_commodity_benchmark(output.commodity)))^(1.0 + $(pf.tr_elasticity))
-                            ) for output in pf.outputs
+                        ) for output in pf.outputs
                     )...
                 )
             )
-        )^(1.0/(1.0+$(pf.tr_elasticity))) 
+        )^(1.0/(1.0+$(pf.tr_elasticity)))
     )
 end
 
@@ -180,6 +194,7 @@ function build_implicitconstraints!(m, jm)
     # Add compensated demand (intermediate and factor)
     for s in m._productions
         for input in s.inputs
+
                 ex = :(
                         JuMP.@NLexpression(
                             $(jm),

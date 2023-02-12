@@ -554,11 +554,12 @@ function add!(m::Model, sh::ShareParameter)
     if !(isempty(m._shareparams))
         for s in m._shareparams
             if s.name==sh.name && s.value != sh.value
-                println(sh.name, ": ",s.value, "=>",sh.value)
+                # println(sh.name, ": ",s.value, "=>",sh.value)
                 replace!(m._shareparams, s=>sh)
             end
         end
     end
+# TODO this is not avoiding replication in each solve/build as wanted
     if !(sh in m._shareparams)
         push!(m._shareparams, sh)
     end
