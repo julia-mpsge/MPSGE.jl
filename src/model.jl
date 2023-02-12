@@ -625,11 +625,8 @@ function solve!(m::Model; solver::Symbol=:PATH, kwargs...)
         m._jump_model = build(m)
     # end
     set_all_start_values(m)
-    # calc_thetas now in set all parameters
     set_all_parameters(m)
     set_all_bounds(m)
-    # This is a repeat (calc_thetas is also in build) so it happens for benchmark (first solve), and then also other solves. For sure, there's a more elegant and efficient way.
-    # calc_thetas(m)
 
     m._status = Complementarity.solveMCP(m._jump_model; solver=solver, kwargs...)
 
@@ -643,12 +640,6 @@ function JuMP.set_value(parameter::ParameterRef, new_value::Float64)
     else
         p.value[parameter.subindex] = new_value
     end
-    return nothing
-end
-
-function JuMP.set_value(ShareParameter::ShareParamRef, new_value::Float64)
-    sh = ShareParameter.model._shareparams[ShareParameter.index]
-        sh.value = new_value
     return nothing
 end
 

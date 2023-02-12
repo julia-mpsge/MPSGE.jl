@@ -6,11 +6,6 @@ function add_variable!(jm::JuMP.Model, name::Symbol, lower_bound::Union{Float64,
     end
 end
 
-function add_parameter_to_jump!(jm, parameter::ShareParameter)
-    jmp_p = @eval(JuMP.@NLparameter($jm, $(parameter.name) == $(parameter.value)))
-    jm[parameter.name] = jmp_p
-end
-
 function add_parameter_to_jump!(jm, parameter::ScalarParameter)
     jmp_p = @eval(JuMP.@NLparameter($jm, $(parameter.name) == $(parameter.value)))
     jm[parameter.name] = jmp_p
@@ -64,10 +59,6 @@ function build_variables!(m, jm)
         # jm[p.name] = jmp_p
     end
 
-    # for sh in m._shareparams
-    #     add_parameter_to_jump!(jm, sh)
-    # end
-    
     # Add all required variables
 
     for s in m._sectors
