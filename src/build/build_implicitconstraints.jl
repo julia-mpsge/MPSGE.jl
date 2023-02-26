@@ -132,18 +132,18 @@ function build_implicitconstraints!(m, jm)
     for s in m._productions
         for input in s.inputs
 
-                ex = :(
-                        JuMP.@NLexpression(
-                            $(jm),
-                            $(input.quantity) *
-                                $(y_over_y_bar(jm, s)) *
-                        (       
-                                    $(create_cost_expr(jm, s)) * $(get_commodity_benchmark(input.commodity)) /
-                                $(get_jump_variable_for_commodity(jm, input.commodity))
-                        )^$(s.elasticity) - 
-                                $(jm[get_comp_demand_name(input)])
-                        )
-                    )
+            ex = :(
+                JuMP.@NLexpression(
+                    $(jm),
+                    $(input.quantity) *
+                    $(y_over_y_bar(jm, s)) *
+                (       
+                            $(create_cost_expr(jm, s)) * $(get_commodity_benchmark(input.commodity)) /
+                        $(get_jump_variable_for_commodity(jm, input.commodity))
+                )^$(s.elasticity) - 
+                        $(jm[get_comp_demand_name(input)])
+                )
+            )
 
             exb = eval( swap_our_param_with_jump_param(jm, ex) )
 
