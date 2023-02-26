@@ -168,7 +168,7 @@ function build_implicitconstraints!(m, jm)
                         $(jm[get_comp_supply_name(output)])
                 )
             )
-            
+
             exb = eval( swap_our_param_with_jump_param(jm, ex) )
 
             Complementarity.add_complementarity(jm, jm[get_comp_supply_name(output)], exb, string("F_", get_comp_supply_name(output)))
