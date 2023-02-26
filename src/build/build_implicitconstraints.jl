@@ -90,8 +90,8 @@ function create_utility_expr(jm, dm::DemandFunction)
                             #     $(jm[get_final_demand_name(demand)]) / $(demand.quantity)
                             # )^(
                             #     ($(dm.elasticity)-1)/$(dm.elasticity)
-                          # )
-                          ($(demand.quantity)/$(demand.quantity))^(($(dm.elasticity)-1)/$(dm.elasticity))
+                            # )
+                            ($(demand.quantity)/$(demand.quantity))^(($(dm.elasticity)-1)/$(dm.elasticity))
                         ) for demand in dm.demands
                     )...
                 )
