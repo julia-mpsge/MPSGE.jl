@@ -137,7 +137,7 @@ function build_implicitconstraints!(m, jm)
                     $(jm),
                     $(input.quantity) *
                     $(y_over_y_bar(jm, s)) *
-                (       
+                 (       
                             $(create_cost_expr(jm, s)) * $(get_commodity_benchmark(input.commodity)) /
                         $(get_jump_variable_for_commodity(jm, input.commodity))
                 )^$(s.elasticity) - 
