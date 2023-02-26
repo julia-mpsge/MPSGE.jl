@@ -4,10 +4,7 @@ struct ParameterRef
     subindex::Any
     subindex_names::Any
 end
-struct ShareParamRef
-    model
-    index::Int
-end
+
 struct SectorRef
     model
     index::Int
@@ -34,17 +31,6 @@ struct AuxRef
     index::Int
     subindex::Any
     Subindex_names::Any
-end
-
-mutable struct ShareParameter
-# struct ShareParameter
-    name::Symbol
-    value::Float64
-    description::String
-
-    function ShareParameter(name::Symbol, value::Float64=1., description::AbstractString="")
-        return new(name, value, description)
-    end
 end
 
 abstract type Parameter end;
@@ -273,7 +259,6 @@ mutable struct Model
     _parameters::Vector{Parameter}
     _sectors::Vector{Sector}
     _commodities::Vector{Commodity}
-    _shareparams::Vector{ShareParameter}
     _consumers::Vector{Consumer}
     _auxs::Vector{Aux}
 
@@ -291,7 +276,6 @@ mutable struct Model
             Parameter[],
             Sector[],
             Commodity[],
-            ShareParameter[],
             Consumer[],
             Aux[],
             Production[],
@@ -549,24 +533,6 @@ function add!(m::Model, a::ScalarAux)
     return ar
 end
 
-function add!(m::Model, sh::ShareParameter)
-    # m._jump_model = nothing
-    if !(isempty(m._shareparams))
-        for s in m._shareparams
-            if s.name==sh.name && s.value != sh.value
-                # println(sh.name, ": ",s.value, "=>",sh.value)
-                replace!(m._shareparams, s=>sh)
-            end
-        end
-    end
-# TODO this is not avoiding replication in each solve/build as wanted
-    if !(sh in m._shareparams)
-        push!(m._shareparams, sh)
-    end
-    shr = ShareParamRef(m, length(m._shareparams))
-    return  shr
-end
-
 function add!(m::Model, a::IndexedAux)
     m._jump_model = nothing
     push!(m._auxs, a)
@@ -622,9 +588,10 @@ function JuMP.value(m::Model, name::Symbol)
 end
 
 function solve!(m::Model; solver::Symbol=:PATH, kwargs...)
-    # if m._jump_model===nothing
+    if m._jump_model===nothing
         m._jump_model = build(m)
-    # end
+    end
+
     set_all_start_values(m)
     set_all_parameters(m)
     set_all_bounds(m)
@@ -652,6 +619,7 @@ function get_value(parameter::ParameterRef)
         return p.value[parameter.subindex]
     end
 end
+
 #TODO This doesn't work
 function JuMP.set_value(consumer::ConsumerRef, new_value::Float64)
     c = consumer.model._consumers[consumer.index]
