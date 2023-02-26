@@ -77,7 +77,7 @@ function create_rev_expr(jm, pf::Production)
     )
 end
 
-function create_utility_expr(dm::DemandFunction)
+function create_utility_expr(jm, dm::DemandFunction)
     return :( 
         (
             +(
@@ -123,7 +123,7 @@ function create_expenditure_expr(jm, dm::DemandFunction)
                 )
             )
        )^(1/(1-$(dm.elasticity))) *
-       $(create_utility_expr(dm))
+       $(create_utility_expr(jm, dm))
     )
 end
 
