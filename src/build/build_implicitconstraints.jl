@@ -1,77 +1,14 @@
-function calc_thetas(m)
-    for pf in m._productions
-        for i in pf.inputs
-            val = eval(:( $(swap_our_param_with_val(i.quantity)) * $(get_commodity_benchmark(i.commodity)) / +($( (:( $(swap_our_param_with_val(i.quantity)) * $(get_commodity_benchmark(i.commodity)) ) for i in pf.inputs)...) ) ))
-            add!(m, ShareParameter(Symbol(get_theta_name(pf,i)), val, ""))
-            end
-    end
-    for pf in m._productions
-        for out in pf.outputs
-            val = eval(:( $(swap_our_param_with_val(out.quantity)) * $(get_commodity_benchmark(out.commodity)) / +($( (:( $(swap_our_param_with_val(o.quantity)) * $(get_commodity_benchmark(o.commodity)) ) for o in pf.outputs)...) ) ))
-            add!(m, ShareParameter(Symbol(get_theta_name(pf,out)), val, ""))
-            end
-    end
-    for df in m._demands
-        for dm in df.demands
-            val = eval(:( $(swap_our_param_with_val(dm.quantity)) * $(get_commodity_benchmark(dm.commodity))/ $(get_consumer_benchmark(df.consumer))))
-            add!(m, ShareParameter(Symbol(get_theta_name(df,dm)), val, "")) 
-        end
-    end
-end
-
 function Θ(pf::Production, i::Input)
-        m = pf.sector.model
-        for sh in m._shareparams
-            if get_theta_name(pf, i) == sh.name
-                return sh.value
-            end
-        end
-    # return get_theta_value(m, pf, i)    
+    return :( $(i.quantity) * $(get_commodity_benchmark(i.commodity)) / +($( (:( $(i.quantity) * $(get_commodity_benchmark(i.commodity)) ) for i in pf.inputs)...) ) )
 end
-
-# function get_theta_value(m, pf::Production, i::Input)
-#     for sh in m._shareparams
-#         if get_theta_name(pf, i) == sh.name
-#            return sh.value
-#         end
-#     end
-# end
 
 function Θ(pf::Production, o::Output)
-    m = pf.sector.model
-    for sh in m._shareparams
-        if get_theta_name(pf, o) == sh.name
-           return sh.value
-        end
-    end
-    # return get_theta_value(m, pf, o)    
+    return :( $(o.quantity) * $(get_commodity_benchmark(o.commodity)) / +($( (:( $(o.quantity) * $(get_commodity_benchmark(o.commodity)) ) for o in pf.outputs)...) ) )
 end
-
-# function get_theta_value(m, pf::Production, o::Output)
-#     for sh in m._shareparams
-#         if get_theta_name(pf, o) == sh.name
-#            return sh.value
-#         end
-#     end
-# end
 
 function Θ(df::DemandFunction, dm)   
-    m = df.consumer.model
-    for sh in m._shareparams
-        if get_theta_name(df, dm) == sh.name
-           return sh.value
-        end
-    end
-    # return get_theta_value(m, df, dm)    
+    return :( $(dm.quantity) * $(get_commodity_benchmark(dm.commodity))/ $(get_consumer_benchmark(df.consumer)))
 end
-
-# function get_theta_value(m, df::DemandFunction, dm::Demand)
-#     for sh in m._shareparams
-#         if get_theta_name(df, dm) == sh.name
-#            return sh.value
-#         end
-#     end
-# end
 
 function y_over_y_bar(jm, pf::Production)
     if eval(swap_our_param_with_val(pf.elasticity))==0
@@ -207,6 +144,7 @@ function build_implicitconstraints!(m, jm)
                                 $(jm[get_comp_demand_name(input)])
                         )
                     )
+
             exb = eval( swap_our_param_with_jump_param(jm, ex) )
 
             Complementarity.add_complementarity(jm, jm[get_comp_demand_name(input)], exb, string("F_", get_comp_demand_name(input)))    
@@ -231,6 +169,7 @@ function build_implicitconstraints!(m, jm)
                         $(jm[get_comp_supply_name(output)])
                 )
             )
+            
             exb = eval( swap_our_param_with_jump_param(jm, ex) )
 
             Complementarity.add_complementarity(jm, jm[get_comp_supply_name(output)], exb, string("F_", get_comp_supply_name(output)))

@@ -1,7 +1,6 @@
 function build(m::Model)
     m._nlexpressions = []
     jm = Complementarity.MCPModel()
-    calc_thetas(m)
 
     build_variables!(m, jm)
     
