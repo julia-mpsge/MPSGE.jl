@@ -6,7 +6,7 @@ function Θ(pf::Production, o::Output)
     return :( $(o.quantity) * $(get_commodity_benchmark(o.commodity)) / +($( (:( $(o.quantity) * $(get_commodity_benchmark(o.commodity)) ) for o in pf.outputs)...) ) )
 end
 
-function Θ(df::DemandFunction, dm)   
+function Θ(df::DemandFunction, dm::Demand)   
     return :( $(dm.quantity) * $(get_commodity_benchmark(dm.commodity))/ $(get_consumer_benchmark(df.consumer)))
 end
 
