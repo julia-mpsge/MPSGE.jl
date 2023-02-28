@@ -14,8 +14,8 @@ XLSX = "fdbf4ff8-1666-58a4-91e7-1b58723a45e0"
 
 [compat]
 julia = "1.6"
-Complementarity = "0.8.2"
-JuMP = "0.22"
+Complementarity = "0.9"
+JuMP = "1.2"
 MacroTools = "0.5"
 
 [targets]

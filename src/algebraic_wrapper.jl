@@ -39,7 +39,7 @@ end
 
 function Base.show(io::IO, m::AlgebraicWrapper)
     println(io, "Mixed complementarity problem with $(length(m._source.ext[:MCP])) constraints:")
-    constraint_strings = [JuMP.nl_expr_string(m._source, JuMP.REPLMode, m._source.nlp_data.nlexpr[c.F.index]) for c in m._source.ext[:MCP]]
+    constraint_strings = [JuMP.nonlinear_expr_string(m._source, MIME("text/plain"), m._source.nlp_model.expressions[c.F.index]) for c in m._source.ext[:MCP]]
     
     column1_width = maximum(textwidth.(constraint_strings))
 
@@ -93,7 +93,7 @@ function Base.show(io::IO, ::MIME"text/latex", m::AlgebraicWrapper)
 
         print(io, "& \\quad ")
 
-        print(io, JuMP.nl_expr_string(m._source, JuMP.IJuliaMode, m._source.nlp_data.nlexpr[c.F.index]))
+        print(io, JuMP.nonlinear_expr_string(m._source, MIME("text/latex"), m._source.nlp_model.expressions[c.F.index]))
 
         print(io, raw"\quad && \perp \quad && ")
 
