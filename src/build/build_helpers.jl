@@ -49,6 +49,28 @@ function swap_our_param_with_val(expr)
     end
 end
 
+"""
+contains_our_param(expr)
+
+This function takes an expression tree and tests whether it contains
+a `ParameterRef`` or `CommodityRef`
+"""
+function contains_our_param(expr)
+    if expr isa Expr
+        for x in expr.args
+            if contains_our_param(x)
+                return true
+            end
+        end
+
+        return false
+    elseif x isa ParameterRef || x isa CommodityRef
+        return true
+    else
+        return false
+    end
+end
+
 function get_jump_variable_for_sector(jm, sector)
     if sector.subindex===nothing
         return jm[get_name(sector)]

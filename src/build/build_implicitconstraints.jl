@@ -11,52 +11,77 @@ function Θ(df::DemandFunction, dm::Demand)
 end
 
 function y_over_y_bar(jm, pf::Production)
-    if eval(swap_our_param_with_val(pf.elasticity))==0
-        return :(
-            min(
-                $(( :( $(jm[get_comp_demand_name(i)])/$(i.quantity) ) for i in pf.inputs)...)
-            )
-        )
-    elseif eval(swap_our_param_with_val(pf.elasticity))==1
-        return :(
-            *(
-                $(( :( ($(jm[get_comp_demand_name(i)])/$(i.quantity))^$(Θ(pf,i)) ) for i in pf.inputs)...)
-            )
-        )
-    else
+    if contains_our_param(pf.elasticity)
         ρ = :(($(pf.elasticity)-1)/$(pf.elasticity))
+
         return :(
-            (
-                +(
-                    $((:( $(Θ(pf,i)) * ($(jm[get_comp_demand_name(i)])/$(i.quantity))^$ρ ) for i in pf.inputs)...)
+            ifelse(
+                $(pf.elasticity)==0.0,
+                min($(( :( $(jm[get_comp_demand_name(i)])/$(i.quantity) ) for i in pf.inputs)...)),
+                ifelse(
+                    $(pf.elasticity)==1.,
+                    *($(( :( ($(jm[get_comp_demand_name(i)])/$(i.quantity))^$(Θ(pf,i)) ) for i in pf.inputs)...)),
+                    (+($((:( $(Θ(pf,i)) * ($(jm[get_comp_demand_name(i)])/$(i.quantity))^$ρ ) for i in pf.inputs)...)))^(1/$ρ)
                 )
-            )^(1/$ρ)
+            )
         )
+    else # This branch is an optimization: if the elasticity doesn't contain a parameter, we can at build time only insert one case into the expression
+        if eval(swap_our_param_with_val(pf.elasticity))==0
+            return :(
+                min(
+                    $(( :( $(jm[get_comp_demand_name(i)])/$(i.quantity) ) for i in pf.inputs)...)
+                )
+            )
+        elseif eval(swap_our_param_with_val(pf.elasticity))==1
+            return :(
+                *(
+                    $(( :( ($(jm[get_comp_demand_name(i)])/$(i.quantity))^$(Θ(pf,i)) ) for i in pf.inputs)...)
+                )
+            )
+        else
+            ρ = :(($(pf.elasticity)-1)/$(pf.elasticity))
+            return :(
+                (
+                    +(
+                        $((:( $(Θ(pf,i)) * ($(jm[get_comp_demand_name(i)])/$(i.quantity))^$ρ ) for i in pf.inputs)...)
+                    )
+                )^(1/$ρ)
+            )
+        end
     end
 end
 
 function create_cost_expr(jm, pf::Production)
-
-    if eval(swap_our_param_with_val(pf.elasticity))==1
-            return :(
-            *(
-                $(
-                    (:(
-                        ($(get_jump_variable_for_commodity(jm,input.commodity))/$(get_commodity_benchmark(input.commodity))) ^ $(Θ(pf, input))
-                    ) for input in pf.inputs)...
-                )
-            ) * $(y_over_y_bar(jm, pf))
-        )
-    else 
+    if contains_our_param(pf.elasticity)
         return :(
-            (+(
-                $(
-                    (:(
-                        $(Θ(pf, input)) * ($(get_jump_variable_for_commodity(jm,input.commodity))/$(get_commodity_benchmark(input.commodity))) ^ (1-$(pf.elasticity))
-                    ) for input in pf.inputs)...
-                )
-            ))^(1/(1-$(pf.elasticity))) * $(y_over_y_bar(jm, pf))
+            ifelse(
+                $(pf.elasticity)==1.,
+                *($((:(($(get_jump_variable_for_commodity(jm,input.commodity))/$(get_commodity_benchmark(input.commodity))) ^ $(Θ(pf, input))) for input in pf.inputs)...)) * $(y_over_y_bar(jm, pf)),
+                (+($((:($(Θ(pf, input)) * ($(get_jump_variable_for_commodity(jm,input.commodity))/$(get_commodity_benchmark(input.commodity))) ^ (1-$(pf.elasticity))) for input in pf.inputs)...)))^(1/(1-$(pf.elasticity))) * $(y_over_y_bar(jm, pf))
+            )
         )
+    else # This branch is an optimization: if the elasticity doesn't contain a parameter, we can at build time only insert one case into the expression
+        if eval(swap_our_param_with_val(pf.elasticity))==1
+            return :(
+                *(
+                    $(
+                        (:(
+                            ($(get_jump_variable_for_commodity(jm,input.commodity))/$(get_commodity_benchmark(input.commodity))) ^ $(Θ(pf, input))
+                        ) for input in pf.inputs)...
+                    )
+                ) * $(y_over_y_bar(jm, pf))
+            )
+        else 
+            return :(
+                (+(
+                    $(
+                        (:(
+                            $(Θ(pf, input)) * ($(get_jump_variable_for_commodity(jm,input.commodity))/$(get_commodity_benchmark(input.commodity))) ^ (1-$(pf.elasticity))
+                        ) for input in pf.inputs)...
+                    )
+                ))^(1/(1-$(pf.elasticity))) * $(y_over_y_bar(jm, pf))
+            )
+        end
     end
 end
 
