@@ -64,7 +64,7 @@ function contains_our_param(expr)
         end
 
         return false
-    elseif x isa ParameterRef || x isa CommodityRef
+    elseif expr isa ParameterRef || expr isa CommodityRef
         return true
     else
         return false
