@@ -1,9 +1,13 @@
-function Θ(pf::Production, i)
-    return :( $(i.quantity) * $(get_commodity_benchmark(i.commodity)) / +($( (:( $(o.quantity) * $(get_commodity_benchmark(o.commodity)) ) for o in pf.outputs)...) ) )
+function Θ(pf::Production, i::Input)
+    return :( $(i.quantity) * $(get_commodity_benchmark(i.commodity)) / +($( (:( $(i.quantity) * $(get_commodity_benchmark(i.commodity)) ) for i in pf.inputs)...) ) )
 end
 
-function Θ(df::DemandFunction, i)
-    return :( $(i.quantity) * $(get_commodity_benchmark(i.commodity)) / $(get_consumer_benchmark(df.consumer)))
+function Θ(pf::Production, o::Output)
+    return :( $(o.quantity) * $(get_commodity_benchmark(o.commodity)) / +($( (:( $(o.quantity) * $(get_commodity_benchmark(o.commodity)) ) for o in pf.outputs)...) ) )
+end
+
+function Θ(df::DemandFunction, dm::Demand)   
+    return :( $(dm.quantity) * $(get_commodity_benchmark(dm.commodity))/ $(get_consumer_benchmark(df.consumer)))
 end
 
 function y_over_y_bar(jm, pf::Production)
@@ -158,8 +162,8 @@ function build_implicitconstraints!(m, jm)
                     $(y_over_y_bar(jm, s)) *
                         (
                             $(get_jump_variable_for_commodity(jm, output.commodity)) /
-                            $(create_rev_expr(jm, s)) /
-                            $(get_commodity_benchmark(output.commodity))
+                            ( $(create_rev_expr(jm, s)) *
+                            $(get_commodity_benchmark(output.commodity)))
                         )^$(s.tr_elasticity) -
                         $(jm[get_comp_supply_name(output)])
                 )
