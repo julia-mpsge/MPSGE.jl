@@ -2,7 +2,8 @@
 
 [![Project Status: WIP – Initial development is in progress, but there has not yet been a stable, usable release suitable for the public.](https://www.repostatus.org/badges/latest/wip.svg)](https://www.repostatus.org/#wip)
 ![](https://github.com/anthofflab/MPSGE.jl/workflows/Run%20CI%20on%20master/badge.svg)
-[![codecov](https://codecov.io/gh/anthofflab/MPSGE.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/anthofflab/MPSGE.jl)
+[![codecov](https://codecov.io/gh/anthofflab/MPSGE.jl/branch/main/graph/badge.svg?token=wpCdr8HS2u)](https://codecov.io/gh/anthofflab/MPSGE.jl)
+[![](https://img.shields.io/badge/docs-dev-blue.svg)](http://anthofflab.berkeley.edu/MPSGE.jl/dev/)
 
 ## Overview
 
