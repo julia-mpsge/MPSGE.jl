@@ -345,13 +345,38 @@ end
 
     set_value(diff, 10.0)
     set_fixed!(CONS, true)
-    set_fixed!(PW, false)
+    set_fixed!(PW, true)
+    set_value(sub_elas_a, 1.5)
+    set_value(sub_elas_b, 2.)
+    set_value(sub_elas_w, 0.5)
     solve!(m)
 
+    @test MPSGE.Complementarity.result_value(m._jump_model[:A]) ≈ two_by_two_scalar_results["A.L","1.52,.5T0"]#  0.91659821
+    @test MPSGE.Complementarity.result_value(m._jump_model[:B]) ≈ two_by_two_scalar_results["B.L","1.52,.5T0"]#  1.08323854
+    @test MPSGE.Complementarity.result_value(m._jump_model[:W]) ≈ two_by_two_scalar_results["W.L","1.52,.5T0"]#  1.00197574
+    @test MPSGE.Complementarity.result_value(m._jump_model[:PX]) ≈ two_by_two_scalar_results["PX.L","1.52,.5T0"]#  1.03307968
+    @test MPSGE.Complementarity.result_value(m._jump_model[:PY]) ≈ two_by_two_scalar_results["PY.L","1.52,.5T0"]#  0.86740231
+    @test MPSGE.Complementarity.result_value(m._jump_model[:PW]) ≈ two_by_two_scalar_results["PW.L","1.52,.5T0"]#  1
+    @test MPSGE.Complementarity.result_value(m._jump_model[:PL]) ≈ two_by_two_scalar_results["PL.L","1.52,.5T0"]#  1.01178793
+    @test MPSGE.Complementarity.result_value(m._jump_model[:PK]) ≈ two_by_two_scalar_results["PK.L","1.52,.5T0"]#  0.99216354
+    @test MPSGE.Complementarity.result_value(m._jump_model[:CONS]) ≈ two_by_two_scalar_results["CONS.L","1.52,.5T0"]#  200
+    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PX‡A")]) ≈ two_by_two_scalar_results["SAX.L","1.52,.5T0"]#  80
+    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PY‡A")]) ≈ two_by_two_scalar_results["SAY.L","1.52,.5T0"]#  20
+    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PX‡B")]) ≈ two_by_two_scalar_results["SBX.L","1.52,.5T0"]#  30
+    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PY‡B")]) ≈ two_by_two_scalar_results["SBY.L","1.52,.5T0"]#  80
+    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PL†A")]) ≈ two_by_two_scalar_results["DAL.L","1.52,.5T0"]#  39.29971476
+    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PK†A")]) ≈ two_by_two_scalar_results["DAK.L","1.52,.5T0"]#  60.70717236
+    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PL†B")]) ≈ two_by_two_scalar_results["DBL.L","1.52,.5T0"]#  59.06173874
+    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PK†B")]) ≈ two_by_two_scalar_results["DBK.L","1.52,.5T0"]#  40.94750382
+    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PW‡W")]) ≈ two_by_two_scalar_results["SW.L","1.52,.5T0"]#  200
+    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PX†W")]) ≈ two_by_two_scalar_results["DWX.L","1.52,.5T0"]#  105.6163
+    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PY†W")]) ≈ two_by_two_scalar_results["DWY.L","1.52,.5T0"]#  104.784
+    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PWρCONS")]) ≈ two_by_two_scalar_results["DW.L","1.52,.5T0"]#  200
 
 
-
-    set_fixed!(PW, true)
+    set_value(sub_elas_a, 0.0)
+    set_value(sub_elas_b, 0.)
+    set_value(sub_elas_w, 0.)
     solve!(m)
 
     @test MPSGE.Complementarity.result_value(m._jump_model[:A]) ≈ two_by_two_scalar_results["A.L","Sub=0Tr=0"]#  1
