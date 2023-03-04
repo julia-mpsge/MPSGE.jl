@@ -16,6 +16,8 @@ function swap_our_param_with_jump_param(jm, expr)
             get_jump_variable_for_commodity(jm, x)
         elseif x isa AuxRef
             get_jump_variable_for_aux(jm, x)
+        elseif x isa SectorRef
+            get_jump_variable_for_sector(jm, x)
         else
             return x
         end
@@ -79,6 +81,15 @@ function get_jump_variable_for_sector(jm, sector)
     end
 end
 
+function get_jump_variable_for_sector(jm, sector::SectorRef)
+    if sector.subindex===nothing
+        return jm[get_name(sector)]
+    else
+        return jm[get_name(sector)][sector.subindex]
+    end
+end
+
+
 function get_jump_variable_for_commodity(jm, commodity::CommodityRef)
     if commodity.subindex===nothing
         return jm[get_name(commodity)]
@@ -136,7 +147,7 @@ function get_tax_revenue_for_consumer(jm, m, consumer::ScalarConsumer)
         for output in pf.outputs
             for tax in output.taxes
                 if get_full(tax.agent) == consumer
-                    push!(taxes, :($(tax.rate) * $(output.quantity)))
+                    push!(taxes, :($(tax.rate) * $(output.quantity) * $(output.commodity) ))
                 end
             end
         end
@@ -153,7 +164,7 @@ function get_tax_revenue_for_consumer(jm, m, consumer::IndexedConsumer)
         for output in pf.outputs
             for tax in output.taxes
                 if get_full(tax.agent) == consumer[consumer.subindex]
-                    push!(taxes, :($(tax.rate) * $(output.quantity)))
+                    push!(taxes, :($(tax.rate) * $(output.quantity) * $(output.commodity)))
                 end
             end
         end
