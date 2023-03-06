@@ -45,6 +45,13 @@ function swap_our_param_with_val(expr)
             else
                 return c.benchmark[x.subindex]
             end
+        elseif x isa SectorRef
+            s = get_full(x)
+            if s isa ScalarSector
+                return s.benchmark
+            else
+                return s.benchmark[x.subindex]
+            end
         else
             return x
         end
@@ -147,7 +154,7 @@ function get_tax_revenue_for_consumer(jm, m, consumer::ScalarConsumer)
         for output in pf.outputs
             for tax in output.taxes
                 if get_full(tax.agent) == consumer
-                    push!(taxes, :($(tax.rate) * $(output.quantity) * $(output.commodity) ))
+                    push!(taxes, :($(tax.rate) * $(output.quantity) * $(output.commodity) * $(pf.sector) ))
                 end
             end
         end
