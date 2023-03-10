@@ -186,15 +186,6 @@ function get_tax_revenue_for_consumer(jm, m, cr::ConsumerRef)
                         push!(taxes, :($(tax.rate) * $(output.quantity) * $(output.commodity) * $(pf.sector)))
                     end
                 end    
-                # for i in Iterators.product(consumer.indices...)
-                    # ind_con = jm[consumer.name][i...]
-                    # ind_con = jm[consumer.name][consumer.name.subindex]
-                    # tax_con = jm[consumer.name][tax.agent.subindex]
-                    # # if tax_con == ind_con #get_full(consumer)
-                    # if get_full(tax.agent) == consumer#[consumer.subindex]    
-                    #     push!(taxes, :($(tax.rate) * $(output.quantity) * $(output.commodity) * $(pf.sector)))
-                    # end
-                # end
             end
         end
     end
@@ -203,14 +194,6 @@ function get_tax_revenue_for_consumer(jm, m, cr::ConsumerRef)
 
     return :($tax)
 end
-
-# function get_tax_revenue_for_consumer(jm, m, consumer::ConsumerRef)
-#     if consumer.subindex === nothing
-#         c = get_full(consumer)
-#     else c=consumer
-#     end
-#     return get_tax_revenue_for_consumer(jm, m, c)
-# end
 
 function get_jump_variable_for_aux(jm, aux::AuxRef)
     if aux.subindex===nothing

@@ -411,7 +411,6 @@ function get_consumer_total_endowment(jm, c::ConsumerRef)
             ))
         end
     end
-    # return :(+(0., $(endowments...))) # This should have get_tax_revenue_for_consumer...
     total_end = :(+(0., $(get_tax_revenue_for_consumer(jm, m, c)),  $(endowments...)))
 
     return total_end
