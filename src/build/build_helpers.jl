@@ -139,6 +139,24 @@ function get_jump_expression_for_commodity_producer_price(m::Model, jm, commodit
     return :($jump_commodity * (1. - $tax))
 end
 
+function get_jump_expression_for_commodity_consumer_price(m::Model, jm, commodity::CommodityRef)
+    jump_commodity = get_jump_variable_for_commodity(jm, commodity)
+    taxes = []
+    for pf in m._productions
+        for input in pf.inputs
+            if input.commodity == commodity
+                for tax in input.taxes
+                    push!(taxes, tax.rate)
+                end
+            end
+        end
+    end
+
+    tax = :(+(0., $(taxes...)))
+
+    return :($jump_commodity * (1. + $tax))
+end
+
 function get_jump_variable_for_consumer(jm, consumer::ConsumerRef)
     if consumer.subindex===nothing
         return jm[get_name(consumer)]
@@ -165,6 +183,13 @@ function get_tax_revenue_for_consumer(jm, m, consumer::ScalarConsumer)
                 end
             end
         end
+        for input in pf.inputs
+            for tax in input.taxes
+                if get_full(tax.agent) == consumer
+                    push!(taxes, :($(tax.rate) * $(input.quantity) * $(input.commodity) * $(pf.sector) ))
+                end
+            end
+        end
     end
 
     tax = :(+(0., $(taxes...)))
@@ -184,6 +209,19 @@ function get_tax_revenue_for_consumer(jm, m, cr::ConsumerRef)
                 else
                     if jm[get_full(cr).name][tax.agent.subindex] ==  jm[get_full(cr).name][cr.subindex]
                         push!(taxes, :($(tax.rate) * $(output.quantity) * $(output.commodity) * $(pf.sector)))
+                    end
+                end    
+            end
+        end
+        for input in pf.inputs
+            for tax in input.taxes
+                if cr.subindex === nothing
+                    if get_full(tax.agent) == get_full(cr)    
+                        push!(taxes, :($(tax.rate) * $(input.quantity) * $(input.commodity) * $(pf.sector)))
+                    end
+                else
+                    if jm[get_full(cr).name][tax.agent.subindex] ==  jm[get_full(cr).name][cr.subindex]
+                        push!(taxes, :($(tax.rate) * $(input.quantity) * $(input.commodity) * $(pf.sector)))
                     end
                 end    
             end

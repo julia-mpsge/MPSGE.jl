@@ -176,19 +176,19 @@ function Aux(name; indices=nothing, kwargs...)
     return indices===nothing ? ScalarAux(name; kwargs...) : IndexedAux(name, indices; kwargs...)
 end
 
-mutable struct Input
-    commodity::CommodityRef
-    quantity::Union{Float64,Expr}
-    production_function::Any
-
-    function Input(commodity::CommodityRef, quantity::Union{Float64,Expr})
-        return new(commodity, quantity, nothing)
-    end
-end
-
 struct Tax
     rate::Union{Float64,Expr}
     agent::ConsumerRef
+end
+mutable struct Input
+    commodity::CommodityRef
+    quantity::Union{Float64,Expr}
+    taxes::Vector{Tax}
+    production_function::Any
+
+    function Input(commodity::CommodityRef, quantity::Union{Float64,Expr}, taxes::Vector{Tax}=Tax[])
+        return new(commodity, quantity, taxes, nothing)
+    end
 end
 
 mutable struct Output
@@ -452,8 +452,8 @@ end
 
 # Outer constructors
 
-function Input(commodity::CommodityRef, quantity::Number)
-    return Input(commodity, convert(Float64, quantity))
+function Input(commodity::CommodityRef, quantity::Number, taxes::Vector{Tax}=Tax[])
+    return Input(commodity, convert(Float64, quantity), taxes)
 end
 
 function Output(commodity::CommodityRef, quantity::Number, taxes::Vector{Tax}=Tax[])
