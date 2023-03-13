@@ -186,13 +186,19 @@ mutable struct Input
     end
 end
 
+struct Tax
+    rate::Union{Float64,Expr}
+    agent::ConsumerRef
+end
+
 mutable struct Output
     commodity::CommodityRef
     quantity::Union{Float64,Expr}
+    taxes::Vector{Tax}
     production_function::Any
 
-    function Output(commodity::CommodityRef, quantity::Union{Float64,Expr})
-        return new(commodity, quantity, nothing)
+    function Output(commodity::CommodityRef, quantity::Union{Float64,Expr}, taxes::Vector{Tax}=Tax[])
+        return new(commodity, quantity, taxes, nothing)
     end
 end
 
@@ -393,7 +399,7 @@ function get_consumer_benchmark(c::ConsumerRef)
     end
 end
 
-function get_consumer_total_endowment(c::ConsumerRef)
+function get_consumer_total_endowment(jm, c::ConsumerRef)
     m = c.model
 
     endowments = []
@@ -405,11 +411,13 @@ function get_consumer_total_endowment(c::ConsumerRef)
             ))
         end
     end
+    total_end = :(+(0., $(get_tax_revenue_for_consumer(jm, m, c)),  $(endowments...)))
 
-    return :(+(0., $(endowments...)))
+    return total_end
+
 end
 
-function get_consumer_total_endowment(m, c::ScalarConsumer)
+function get_consumer_total_endowment(jm, m, c::ScalarConsumer)
     endowments = []
     for d in m._demands
         if get_full(d.consumer) == c
@@ -420,10 +428,12 @@ function get_consumer_total_endowment(m, c::ScalarConsumer)
         end
     end
 
-    return :(+(0., $(endowments...)))
+    total_end = :(+(0., $(get_tax_revenue_for_consumer(jm, m, c)),  $(endowments...)))
+
+    return total_end
 end
 
-function get_consumer_total_endowment(m, c::IndexedConsumer, i)
+function get_consumer_total_endowment(jm, m, c::IndexedConsumer, i)
     endowments = []
     for d in m._demands
         c_for_d = get_full(d.consumer)
@@ -446,8 +456,8 @@ function Input(commodity::CommodityRef, quantity::Number)
     return Input(commodity, convert(Float64, quantity))
 end
 
-function Output(commodity::CommodityRef, quantity::Number)
-    return Output(commodity, convert(Float64, quantity))
+function Output(commodity::CommodityRef, quantity::Number, taxes::Vector{Tax}=Tax[])
+    return Output(commodity, convert(Float64, quantity), taxes)
 end
 
 function Production(sector::SectorRef, tr_elasticity::Union{Number,Expr}, elasticity::Union{Number,Expr}, outputs::Vector{Output}, inputs::Vector{Input})
