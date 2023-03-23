@@ -140,11 +140,13 @@ function get_jump_expression_for_commodity_producer_price(m::Model, jm, commodit
 end
 
 function get_jump_expression_for_commodity_consumer_price(m::Model, jm, commodity::CommodityRef)
+    println("!!!***********yes this is called******************")
+
     jump_commodity = get_jump_variable_for_commodity(jm, commodity)
     taxes = []
     for pf in m._productions
         for input in pf.inputs
-            if input.commodity == commodity
+            if input.commodity == commodity # && #Need to only pick up inputs that have taxes in this specific production function here, not just any input that has an input tax?
                 for tax in input.taxes
                     push!(taxes, tax.rate)
                 end
@@ -156,6 +158,17 @@ function get_jump_expression_for_commodity_consumer_price(m::Model, jm, commodit
 
     return :($jump_commodity * (1. + $tax))
 end
+
+# function get_jump_expression_for_commodity_consumer_price(input::Input)
+#     taxes = []
+#         for tax in input.taxes            
+#             push!(taxes, tax.rate)
+#         end            
+#     tax = :(+(0., $(taxes...)))
+
+#     return :($input * (1. + $tax))
+# end
+
 
 function get_jump_variable_for_consumer(jm, consumer::ConsumerRef)
     if consumer.subindex===nothing
