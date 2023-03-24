@@ -124,7 +124,6 @@ function get_jump_expression_for_commodity_producer_price(m::Model, jm, pf, comm
     jump_commodity = get_jump_variable_for_commodity(jm, commodity)
 
     taxes = []
-    # for pf in m._productions
         for output in pf.outputs
             if output.commodity == commodity
                 for tax in output.taxes
@@ -132,7 +131,6 @@ function get_jump_expression_for_commodity_producer_price(m::Model, jm, pf, comm
                 end
             end
         end
-    # end
 
     tax = :(+(0., $(taxes...)))
 
