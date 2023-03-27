@@ -58,6 +58,7 @@
     
     #Counter-factual 1, labour supply increased by 10%
     set_value(endow[:l], 1.1*get_value(endow[:l]))
+    set_value(Y, 6.4)
     set_fixed!(Y, true)
 
     solve!(m)
@@ -206,6 +207,7 @@ using XLSX, MPSGE.JuMP.Containers
 
     #Counter-factual 1, labour supply increased by 10%
     set_value(endow[:l], 1.1*get_value(endow[:l]))
+    set_value(Y, 6.4)
     set_fixed!(Y, true)
 
     solve!(m)
@@ -346,6 +348,7 @@ using XLSX, MPSGE.JuMP.Containers
 
     #Counter-factual 1, labour supply increased by 10%
     set_value(endow[:l], 1.1*get_value(endow[:l]))
+    set_value(Y, 6.4)
     set_fixed!(Y, true)
 
     solve!(m)

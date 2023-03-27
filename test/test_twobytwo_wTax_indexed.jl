@@ -301,6 +301,8 @@ end
 
     #Counterfactual 1, increase labour endowment by 10%, default normalisation of price: fix RA income at initial prices
     set_value(endow, 1.1)
+    set_value(RA[:a], 78.5)
+    set_value(RA[:b], 78.5)
     set_fixed!(RA[:a], true)
     set_fixed!(RA[:b], true)
     solve!(m)

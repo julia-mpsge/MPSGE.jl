@@ -61,6 +61,7 @@
     repr(MIME("text/latex"), avm2)
 
     set_value(endow, 2.2)
+    set_value(RA, 157.)
     set_fixed!(RA, true)
     solve!(m)
 
