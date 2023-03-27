@@ -38,17 +38,17 @@ m = Model()
 
 @demand(m, CONS, 1., [Demand(PW, 200.)], [Endowment(PL, 100.0), Endowment(PK, 100.0)])
 
-solve!(m, cumulative_iteration_limit=0)
-algebraic_version(m)
+# solve!(m, cumulative_iteration_limit=0)
+# algebraic_version(m)
 
 set_value(Otax1, 0.1)
 # # set_value(Otax3, 0.1)
 # set_value(CONS, 200.0)
-# set_fixed!(CONS, true)
+set_fixed!(CONS, true)
 set_fixed!(PW, true)
 solve!(m)
 
-set_fixed!(CONS, true)
+# set_fixed!(CONS, true)
 set_fixed!(PW, false)
 set_value(sub_elas_a, 1.0)
 set_value(sub_elas_b, 1.)
@@ -57,16 +57,44 @@ solve!(m)
 
 
 set_fixed!(PW, true)
-# set_fixed!(CONS, false)
+set_fixed!(CONS, false)
 solve!(m)
 
 set_value(Otax1, 0.2)
 solve!(m)
 
-@parameter(m, t_elas_a, 3.0)
-@parameter(m, t_elas_b, 1.0)
+set_value(t_elas_a, 3.0)
+set_value(t_elas_b, 1.0)
 solve!(m)
 
-@parameter(m, t_elas_a, 1.0)
-@parameter(m, t_elas_b, 1.0)
+set_value(t_elas_a, 1.0)
+set_value(t_elas_b, 1.0)
 solve!(m)
+
+set_value(sub_elas_a, 0.)
+set_value(sub_elas_b, 0.)
+set_value(sub_elas_w, 0.)
+set_value(t_elas_a, 1.0)
+set_value(t_elas_b, 1.0)
+solve!(m)
+
+set_value(sub_elas_a, 1.5)
+set_value(sub_elas_b, 2.)
+set_value(sub_elas_w, 0.5)
+set_value(t_elas_a, 0.0)
+set_value(t_elas_b, 0.0)
+solve!(m)
+
+set_value(t_elas_a, 2.0)
+set_value(t_elas_b, 1.5)
+solve!(m)
+
+set_value(t_elas_a, 3.0)
+set_value(t_elas_b, 1.0)
+solve!(m)
+
+set_value(t_elas_a, 1.0)
+set_value(t_elas_b, 1.0)
+solve!(m)
+
+

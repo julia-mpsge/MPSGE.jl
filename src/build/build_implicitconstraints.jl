@@ -93,7 +93,8 @@ function create_rev_expr(m, jm, pf::Production)
                     (
                         :(
                             $(Θ(pf, output)) *
-                            ($(get_jump_expression_for_commodity_producer_price(m, jm, pf, output.commodity))/$(get_commodity_benchmark(output.commodity)))^(1.0 + $(pf.tr_elasticity))
+                            ($(get_jump_variable_for_commodity(jm,output.commodity))/$(get_commodity_benchmark(output.commodity)))^(1.0 + $(pf.tr_elasticity))
+                            # ($(get_jump_expression_for_commodity_producer_price(m, jm, pf, output.commodity))/$(get_commodity_benchmark(output.commodity)))^(1.0 + $(pf.tr_elasticity))
                         ) for output in pf.outputs
                     )...
                 )
