@@ -159,7 +159,10 @@ function get_tax_revenue_for_consumer(jm, m, consumer::ScalarConsumer)
         for output in pf.outputs
             for tax in output.taxes
                 if get_full(tax.agent) == consumer
-                    push!(taxes, :($(tax.rate) * $(output.quantity) * $(output.commodity) * $(pf.sector) ))
+                    push!(taxes, :($(tax.rate) 
+                    # * $jm[get_comp_supply_name($output)] # 
+                    * $(output.quantity)
+                     * $(output.commodity) * $(pf.sector) ))
                 end
             end
         end
@@ -177,11 +180,14 @@ function get_tax_revenue_for_consumer(jm, m, cr::ConsumerRef)
             for tax in output.taxes
                 if cr.subindex === nothing
                     if get_full(tax.agent) == get_full(cr)    
-                        push!(taxes, :($(tax.rate) * $(output.quantity) * $(output.commodity) * $(pf.sector)))
+                        push!(taxes, :($(tax.rate) 
+                        # * $(output.quantity) 
+                        * $jm[get_comp_supply_name($output)]
+                        * $(output.commodity) * $(pf.sector)))
                     end
                 else
                     if jm[get_full(cr).name][tax.agent.subindex] ==  jm[get_full(cr).name][cr.subindex]
-                        push!(taxes, :($(tax.rate) * $(output.quantity) * $(output.commodity) * $(pf.sector)))
+                        push!(taxes, :($(tax.rate) * $jm[get_comp_supply_name($output)] * $(output.commodity) * $(pf.sector)))
                     end
                 end    
             end
