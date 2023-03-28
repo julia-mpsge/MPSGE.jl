@@ -16,7 +16,7 @@ function build_zeroprofit!(m, jm)
                 +(
                     $(
                         (:(
-                            $(get_jump_expression_for_commodity_producer_price(m, jm,output.commodity)) * $(jm[get_comp_supply_name(output)])
+                            $(get_jump_expression_for_commodity_producer_price(m, jm, s, output.commodity)) * $(jm[get_comp_supply_name(output)])
                         ) for output in s.outputs)...
                     )
                 )
