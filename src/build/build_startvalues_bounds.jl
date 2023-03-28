@@ -110,9 +110,6 @@ function set_all_bounds(m)
             jump_var = jm[cs.name]
             if cs.fixed
                 start_val = cs.benchmark
-                # else
-                # start_val = eval(swap_our_param_with_val(get_consumer_total_endowment(jm, m, cs)))
-                # end
                 JuMP.fix(jump_var, start_val, force=true)
             else
                 if JuMP.is_fixed(jump_var)
@@ -122,11 +119,8 @@ function set_all_bounds(m)
         else
             for i in Iterators.product(cs.indices...)
                 jump_var = jm[cs.name][i...]
-                # HERE TODO
                 if cs.fixed[i...]
-                    # start_val = cs.benchmark[i[1]]
                     start_val = cs.benchmark[i...]
-                    # start_val = eval(swap_our_param_with_val(get_consumer_total_endowment(jm, m, cs, i)))
                     JuMP.fix(jump_var, start_val, force=true)
                 else
                     if JuMP.is_fixed(jump_var)
