@@ -44,6 +44,7 @@ solve!(m, cumulative_iteration_limit=0)
 
 set_value(diff, 10.)
 set_value(endow, 1.1)
+set_value(RA, 157.0)
 set_fixed!(RA, true)
 solve!(m)
 
@@ -138,6 +139,7 @@ solve!(m)
         @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PUρRA")]) ≈ 140.5066 atol=1.0e-4
 
         set_value(endow, 1.1)
+        set_value(RA,157.0)
         set_fixed!(RA, true)
         solve!(m)
         

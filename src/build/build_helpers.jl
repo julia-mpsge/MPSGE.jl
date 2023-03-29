@@ -120,11 +120,10 @@ function get_jump_variable_for_commodity(jm, commodity::IndexedCommodity)
     return jm[get_name(commodity)][commodity.subindex]
 end
 
-function get_jump_expression_for_commodity_producer_price(m::Model, jm, commodity::CommodityRef)
+function get_jump_expression_for_commodity_producer_price(m::Model, jm, pf, commodity::CommodityRef)
     jump_commodity = get_jump_variable_for_commodity(jm, commodity)
 
     taxes = []
-    for pf in m._productions
         for output in pf.outputs
             if output.commodity == commodity
                 for tax in output.taxes
@@ -132,7 +131,6 @@ function get_jump_expression_for_commodity_producer_price(m::Model, jm, commodit
                 end
             end
         end
-    end
 
     tax = :(+(0., $(taxes...)))
 
@@ -162,6 +160,7 @@ function get_tax_revenue_for_consumer(jm, m, consumer::ScalarConsumer)
             for tax in output.taxes
                 if get_full(tax.agent) == consumer
                     push!(taxes, :($(tax.rate) * $(output.quantity) * $(output.commodity) * $(pf.sector) ))
+                    # * $jm[get_comp_supply_name($output)] # Note: It doesn't work to update output.quantity here, but also doesn't break tests to leave it. 
                 end
             end
         end
@@ -179,11 +178,11 @@ function get_tax_revenue_for_consumer(jm, m, cr::ConsumerRef)
             for tax in output.taxes
                 if cr.subindex === nothing
                     if get_full(tax.agent) == get_full(cr)    
-                        push!(taxes, :($(tax.rate) * $(output.quantity) * $(output.commodity) * $(pf.sector)))
+                        push!(taxes, :($(tax.rate) * $(jm[get_comp_supply_name(output)]) * $(output.commodity) * $(pf.sector)))
                     end
                 else
                     if jm[get_full(cr).name][tax.agent.subindex] ==  jm[get_full(cr).name][cr.subindex]
-                        push!(taxes, :($(tax.rate) * $(output.quantity) * $(output.commodity) * $(pf.sector)))
+                        push!(taxes, :($(tax.rate) * $(jm[get_comp_supply_name(output)]) * $(output.commodity) * $(pf.sector)))
                     end
                 end    
             end

@@ -630,7 +630,6 @@ function get_value(parameter::ParameterRef)
     end
 end
 
-#TODO This doesn't work
 function JuMP.set_value(consumer::ConsumerRef, new_value::Float64)
     c = consumer.model._consumers[consumer.index]
     if c isa ScalarConsumer
