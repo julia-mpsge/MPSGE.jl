@@ -1179,6 +1179,7 @@ solve!(m, cumulative_iteration_limit=0)
     
     #Counterfactual 1, increase labour endowment by 10%, default normalisation of price: fix RA income at initial prices
 set_value(endow, 1.1)
+set_value(RA, 157.)
 set_fixed!(RA, true)
 solve!(m)
 

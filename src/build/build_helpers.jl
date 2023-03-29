@@ -137,36 +137,21 @@ function get_jump_expression_for_commodity_producer_price(m::Model, jm, pf, comm
     return :($jump_commodity * (1. - $tax))
 end
 
-function get_jump_expression_for_commodity_consumer_price(m::Model, jm, commodity::CommodityRef)
-    println("!!!***********yes this is called******************")
-
+function get_jump_expression_for_commodity_consumer_price(m::Model, jm, pf, commodity::CommodityRef)
     jump_commodity = get_jump_variable_for_commodity(jm, commodity)
     taxes = []
-    for pf in m._productions
         for input in pf.inputs
-            if input.commodity == commodity # && #Need to only pick up inputs that have taxes in this specific production function here, not just any input that has an input tax?
+            if input.commodity == commodity
                 for tax in input.taxes
                     push!(taxes, tax.rate)
                 end
             end
-        end
     end
 
     tax = :(+(0., $(taxes...)))
 
     return :($jump_commodity * (1. + $tax))
 end
-
-# function get_jump_expression_for_commodity_consumer_price(input::Input)
-#     taxes = []
-#         for tax in input.taxes            
-#             push!(taxes, tax.rate)
-#         end            
-#     tax = :(+(0., $(taxes...)))
-
-#     return :($input * (1. + $tax))
-# end
-
 
 function get_jump_variable_for_consumer(jm, consumer::ConsumerRef)
     if consumer.subindex===nothing
@@ -229,11 +214,11 @@ function get_tax_revenue_for_consumer(jm, m, cr::ConsumerRef)
             for tax in input.taxes
                 if cr.subindex === nothing
                     if get_full(tax.agent) == get_full(cr)    
-                        push!(taxes, :($(tax.rate) * $(input.quantity) * $(input.commodity) * $(pf.sector)))
+                        push!(taxes, :($(tax.rate) * $jm[get_comp_demand_name($input)] * $(input.commodity) * $(pf.sector)))
                     end
                 else
                     if jm[get_full(cr).name][tax.agent.subindex] ==  jm[get_full(cr).name][cr.subindex]
-                        push!(taxes, :($(tax.rate) * $(input.quantity) * $(input.commodity) * $(pf.sector)))
+                        push!(taxes, :($(tax.rate) * $jm[get_comp_demand_name($input)] * $(input.commodity) * $(pf.sector)))
                     end
                 end    
             end
