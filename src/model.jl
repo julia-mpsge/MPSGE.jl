@@ -181,12 +181,6 @@ struct Tax
     agent::ConsumerRef
 end
 
-# struct Taxes
-#     taxname::Symbol
-#     rate::Union{Float64,Expr}
-#     agent::ConsumerRef
-# end
-
 mutable struct Input
     commodity::CommodityRef
     quantity::Union{Float64,Expr}
@@ -213,14 +207,11 @@ struct Production
     sector::SectorRef
     tr_elasticity::Union{Float64,Expr}
     elasticity::Union{Float64,Expr}
-    # taxes::Dict{Taxes}
     outputs::Vector{Output}
     inputs::Vector{Input}
 
-    function Production(sector::SectorRef, tr_elasticity::Union{Float64,Expr}, elasticity::Union{Float64,Expr}, # taxes::Dict{Taxes},
-        outputs::Vector{Output}, inputs::Vector{Input})
-        x = new(sector, tr_elasticity, elasticity, #taxes,
-        outputs, inputs)
+    function Production(sector::SectorRef, tr_elasticity::Union{Float64,Expr}, elasticity::Union{Float64,Expr}, outputs::Vector{Output}, inputs::Vector{Input})
+        x = new(sector, tr_elasticity, elasticity, outputs, inputs)
 
         for output in outputs
             output.production_function = x
@@ -568,40 +559,8 @@ end
 
 function add!(m::Model, p::Production)
     m._jump_model = nothing
-    # taxes = []
-    # for input in p.inputs
-    #     inputtax = InTax(p,input)
-    #     push!(taxes, inputtax)
-    # end
-    # for output in p.outputs
-    #     outputtax = OutTax(p,output)
-    #     push!(taxes, outputtax)
-    # end
-    # p.taxes = merge(taxes)
     push!(m._productions, p)
     return m
-end
-
-function InTax(p, i)
-    taxes = []
-    var = Symbol("$(get_name(i.commodity, true))τin$(get_prod_func_name(p))")
-    for t in i.taxes
-        irate = t.rate
-        agent = t.agent
-        push!(taxes, [irate, agent])
-    end
-    return Dict(var=>taxes)
-end
-
-function OutTax(p, o)
-    taxes = []
-    var = Symbol("$(get_name(o.commodity, true))τout$(get_prod_func_name(p))")
-    for t in o.taxes
-        orate = t.rate
-        agent = t.agent
-        push!(taxes, [orate, agent])
-    end
-    return Dict(var=>taxes)
 end
 
 function add!(m::Model, c::DemandFunction)
@@ -615,7 +574,6 @@ function add!(m::Model, ac::AuxConstraint)
     push!(m._auxconstraints, ac)
     return m
 end
-
 
 function add!(m::Model, p::ScalarParameter)
     m._jump_model = nothing
