@@ -9,6 +9,7 @@
     supply = DenseAxisArray(Float64[100, 50], goods)
     endow = add!(m, Parameter(:endow, indices=(factors,), value=1.0)) 
     Outtax = add!(m, Parameter(:Outtax, indices=(goods,), value=0.))
+    Intax = add!(m, Parameter(:Intax, indices=(goods,), value=0.))
 
     Y = add!(m, Sector(:Y, indices=(goods,)))
     U = add!(m, Sector(:U))
@@ -18,7 +19,7 @@
     C = add!(m, Consumer(:C, indices=(consumers,), benchmark=150.))
 
     for i in goods
-        @production(m, Y[i], 0, 1, [Output(PC[i], supply[i], [MPSGE.Tax(:(1 * $(Outtax[i])), C[:ra])])], [Input(PF[:l], factor[i,:l]), Input(PF[:k], factor[i,:k])])
+        @production(m, Y[i], 0, 1, [Output(PC[i], supply[i], [MPSGE.Tax(:(1 * $(Outtax[i])), C[:ra])])], [Input(PF[:l], factor[i,:l], [MPSGE.Tax(:(1 * $(Intax[i])), C[:ra])]), Input(PF[:k], factor[i,:k])])
     end
     @production(m, U, 0, 1, [Output(PU, 150)], [Input(PC[:x], 100), Input(PC[:y], 50)])
     @demand(m, C[:ra], 1., [Demand(PU, 150)], [Endowment(PF[:l], :(70 * $(endow[:l]))), Endowment(PF[:k], :(80. * $(endow[:k])))])
@@ -106,7 +107,7 @@ set_fixed!(PC[:x], true)
     @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PC[x]†U")]) ≈ two_by_two_scalar_results["DX.L","PL=1"] # 100.3182058
     @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PC[y]†U")]) ≈ two_by_two_scalar_results["DY.L","PL=1"] # 49.6833066
 
-# Test indexed Tax
+# Test indexed Taxes, Output taxes, then Input Taxes
 gams_results = XLSX.readxlsx(joinpath(@__DIR__, "MPSGEresults.xlsx"))
 a_table = gams_results["TwoxTwowOTax"][:]  # Generated from TwoByTwo_Scalar_wTax-MPSGE.gms
 two_by_two_scalar_results = DenseAxisArray(a_table[2:end,2:end],a_table[2:end,1],a_table[1,2:end])
@@ -135,5 +136,29 @@ solve!(m)
     @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PU‡U")]) ≈ two_by_two_scalar_results["SU.L","Otax=.1"]#    50.
     @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PUρC[ra]")]) ≈ two_by_two_scalar_results["CWI.L","Otax=.1"] # 156.6285843
 
-
+#Tax on labor for good/sector x (single output sector) 
+set_value(Outtax[:x], 0.0)
+set_value(Intax[:x], 0.1)
+solve!(m)
+    
+    @test MPSGE.Complementarity.result_value(m._jump_model[:Y][:x]) ≈ two_by_two_scalar_results["X.L","Itax=.1"] # 1.03413947
+    @test MPSGE.Complementarity.result_value(m._jump_model[:Y][:y]) ≈ two_by_two_scalar_results["Y.L","Itax=.1"] # 1.06713746
+    @test MPSGE.Complementarity.result_value(m._jump_model[:U]) ≈ two_by_two_scalar_results["U.L","Itax=.1"] # 1.04502384
+    @test MPSGE.Complementarity.result_value(m._jump_model[:C][:ra]) ≈ two_by_two_scalar_results["RA.L","Itax=.1"] # 176.4583
+    @test MPSGE.Complementarity.result_value(m._jump_model[:PC][:x]) ≈ two_by_two_scalar_results["PX.L","Itax=.1"] # 1.13755342
+    @test MPSGE.Complementarity.result_value(m._jump_model[:PC][:y]) ≈ two_by_two_scalar_results["PY.L","Itax=.1"] # 1.10237802
+    @test MPSGE.Complementarity.result_value(m._jump_model[:PU]) ≈ two_by_two_scalar_results["PU.L","Itax=.1"] # 1.12570531
+    @test MPSGE.Complementarity.result_value(m._jump_model[:PF][:l]) ≈ two_by_two_scalar_results["PL.L","Itax=.1"] # 1
+    @test MPSGE.Complementarity.result_value(m._jump_model[:PF][:k]) ≈ two_by_two_scalar_results["PK.L","Itax=.1"] # 1.17638888
+    # Implicit Variables # 
+    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PF[l]†Y[x]")]) ≈ two_by_two_scalar_results["DXL.L","Itax=.1"] # 100
+    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PF[l]†Y[y]")]) ≈ two_by_two_scalar_results["DYL.L","Itax=.1"] # 50
+    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PF[k]†Y[x]")]) ≈ two_by_two_scalar_results["DXK.L","Itax=.1"] # 51.70697336
+    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PF[k]†Y[y]")]) ≈ two_by_two_scalar_results["DYK.L","Itax=.1"] # 48.349378
+    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PC[x]†U")]) ≈ two_by_two_scalar_results["DUX.L","Itax=.1"] # 22.04756047
+    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PC[y]†U")]) ≈ two_by_two_scalar_results["DUY.L","Itax=.1"] # 28.11259204
+    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PC[x]‡Y[x]")]) ≈ two_by_two_scalar_results["SX.L","Itax=.1"] # 150
+    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PC[y]‡Y[y]")]) ≈ two_by_two_scalar_results["SY.L","Itax=.1"] # 98.95845727
+    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PU‡U")]) ≈ two_by_two_scalar_results["SU.L","Itax=.1"] # 51.05804385
+    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PUρC[ra]")]) ≈ two_by_two_scalar_results["CWI.L","Itax=.1"] # 150
 end
