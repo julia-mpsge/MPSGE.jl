@@ -23,7 +23,6 @@ RA = add!(m, Consumer(:RA, benchmark = 150.))
 
 @production(m, X, 0, :($esub_x*1.0), [Output(PX, 100., [MPSGE.Tax(:($Otax*1.0), RA)])], [Input(PL, 50.), Input(PK,50.)])
 @production(m, Y, 0, :($esub_y*1.0), [Output(PY, 50.)], [Input(PL, 20.), Input(PK,30.)])
-# @production(m, Y, 0, :($esub_y*1.0), [Output(PY, 50.,  [MPSGE.Tax(:($Otax*1.0), RA)])], [Input(PL, 20.), Input(PK,30.)])
 @production(m, U, 0, 1.0, [Output(PU, 150.)], [Input(PX, 100.), Input(PY,50.)])
 
 @demand(m, RA, 1., [Demand(PU, 150. )], [Endowment(PL, :(70. * $(endow))), Endowment(PK, 80)])
@@ -617,7 +616,7 @@ end
     @parameter(m, Otax2, 0.0)
     @parameter(m, Otax3, 0.0)
     @parameter(m, Otax4, 0.0)
-    @parameter(m, TA, 0.0)
+    @parameter(m, Itax, 0.0)
     
     
     @sector(m, A)
@@ -632,14 +631,9 @@ end
     
     @consumer(m, CONS, benchmark=200.0)
     
-    # @production(m, A, 0, 1, [Output(PX, 80),          Output(PY, 20)], [Input(PL, 40), Input(PK, 60)])
-    @production(m, A, :($t_elas_a*1.), :($sub_elas_a*1.), [Output(PX, 80, [MPSGE.Tax(:($Otax1*1.0), CONS)]), Output(PY, 20, [MPSGE.Tax(:($Otax2*1.0), CONS)])], [Input(PL, 40), Input(PK, 60)])
-    # @production(m, B, 0, 1, [Output(PX, 20), Output(PY, 80)], [Input(PL, 60), Input(PK, 40)])
-    # @production(m, B, :($t_elas_b*1.), 1, [Output(PX, 20), Output(PY, 80)], [Input(PL, 60), Input(PK, 40)])
+    @production(m, A, :($t_elas_a*1.), :($sub_elas_a*1.), [Output(PX, 80, [MPSGE.Tax(:($Otax1*1.0), CONS)]), Output(PY, 20, [MPSGE.Tax(:($Otax2*1.0), CONS)])], [Input(PL, 40, [MPSGE.Tax(:($Itax*1.0), CONS)]), Input(PK, 60, [MPSGE.Tax(:($Itax*1.0), CONS)])])
     @production(m, B, :($t_elas_b*1.), :($sub_elas_b*1.), [Output(PX, 20, [MPSGE.Tax(:($Otax3*1.0), CONS)]), Output(PY, 80, [MPSGE.Tax(:($Otax4*1.0), CONS)])], [Input(PL, 60), Input(PK, 40)])
     @production(m, W, 0, :($sub_elas_w*1.), [Output(PW, 200.0)],[Input(PX, 100.0), Input(PY, 100.0)])
-    # @production(m, W, 0, 1, [Output(PW, 200.0)], [Input(PX, 100.0), Input(PY, 100.0)])
-    # @production(m, W, 0.,1, [Output(PW, :(200.0+$diff))], [Input(PX, :(100.0+$diff)), Input(PY, 100.0)])
     
     @demand(m, CONS, 1., [Demand(PW, 200.)], [Endowment(PL, 100.0), Endowment(PK, 100.0)])
     
@@ -673,8 +667,6 @@ end
     # CWI ")]) ≈ two_by_two_scalar_results["CWI.L","benchmark"]#  1
         
 set_value(Otax1, 0.1)
-# # set_value(Otax3, 0.1)
-# set_value(CONS, 200.0)
 set_fixed!(CONS, true)
 set_fixed!(PW, true)
 solve!(m)
@@ -1116,4 +1108,110 @@ solve!(m)
     @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PWρCONS")]) ≈ two_by_two_scalar_results["DW.L","S.T1,O4=.1"]#  198.7937
     # CWI ")]) ≈ two_by_two_scalar_results["CWI.L","S.T1,O4=.1"]#  0.99396862
 
-end
+
+set_value(Itax, 0.1)
+solve!(m)    
+    
+    @test MPSGE.Complementarity.result_value(m._jump_model[:A]) ≈ two_by_two_scalar_results["A.L","O4,I=0.1"]#  0.63672356
+    @test MPSGE.Complementarity.result_value(m._jump_model[:B]) ≈ two_by_two_scalar_results["B.L","O4,I=0.1"]#  1.36032283
+    @test MPSGE.Complementarity.result_value(m._jump_model[:W]) ≈ two_by_two_scalar_results["W.L","O4,I=0.1"]#  0.97648969
+    @test MPSGE.Complementarity.result_value(m._jump_model[:PX]) ≈ two_by_two_scalar_results["PX.L","O4,I=0.1"]#  1.18245598
+    @test MPSGE.Complementarity.result_value(m._jump_model[:PY]) ≈ two_by_two_scalar_results["PY.L","O4,I=0.1"]#  0.83282431
+    @test MPSGE.Complementarity.result_value(m._jump_model[:PW]) ≈ two_by_two_scalar_results["PW.L","O4,I=0.1"]#  1
+    @test MPSGE.Complementarity.result_value(m._jump_model[:PL]) ≈ two_by_two_scalar_results["PL.L","O4,I=0.1"]#  0.88286437
+    @test MPSGE.Complementarity.result_value(m._jump_model[:PK]) ≈ two_by_two_scalar_results["PK.L","O4,I=0.1"]#  0.81377744
+    @test MPSGE.Complementarity.result_value(m._jump_model[:CONS]) ≈ two_by_two_scalar_results["CONS.L","O4,I=0.1"]#  195.2979
+    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PX‡A")]) ≈ two_by_two_scalar_results["SAX.L","O4,I=0.1"]#  81.8622781
+    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PY‡A")]) ≈ two_by_two_scalar_results["SAY.L","O4,I=0.1"]#  18.01782051
+    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PX‡B")]) ≈ two_by_two_scalar_results["SBX.L","O4,I=0.1"]#  27.69645309
+    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PY‡B")]) ≈ two_by_two_scalar_results["SBY.L","O4,I=0.1"]#  70.22553628
+    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PL†A")]) ≈ two_by_two_scalar_results["DAL.L","O4,I=0.1"]#  37.1493891
+    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PK†A")]) ≈ two_by_two_scalar_results["DAK.L","O4,I=0.1"]#  62.96880528
+    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PL†B")]) ≈ two_by_two_scalar_results["DBL.L","O4,I=0.1"]#  56.12352231
+    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PK†B")]) ≈ two_by_two_scalar_results["DBK.L","O4,I=0.1"]#  44.03828026
+    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PW‡W")]) ≈ two_by_two_scalar_results["SW.L","O4,I=0.1"]#  200
+    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PX†W")]) ≈ two_by_two_scalar_results["DWX.L","O4,I=0.1"]#  91.96180957
+    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PY†W")]) ≈ two_by_two_scalar_results["DWY.L","O4,I=0.1"]#  109.578
+    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PWρCONS")]) ≈ two_by_two_scalar_results["DW.L","O4,I=0.1"]#  195.2979
+    # CWI ")]) ≈ two_by_two_scalar_results["CWI.L","O4,I=0.1"]#  0.97648969
+
+
+set_value(Otax4, 0.0)
+solve!(m)    
+
+    @test MPSGE.Complementarity.result_value(m._jump_model[:A]) ≈ two_by_two_scalar_results["A.L","ITAX=0.1"]#  0.54435839
+    @test MPSGE.Complementarity.result_value(m._jump_model[:B]) ≈ two_by_two_scalar_results["B.L","ITAX=0.1"]#  1.45106586
+    @test MPSGE.Complementarity.result_value(m._jump_model[:W]) ≈ two_by_two_scalar_results["W.L","ITAX=0.1"]#  0.96551295
+    @test MPSGE.Complementarity.result_value(m._jump_model[:PX]) ≈ two_by_two_scalar_results["PX.L","ITAX=0.1"]#  1.25371686
+    @test MPSGE.Complementarity.result_value(m._jump_model[:PY]) ≈ two_by_two_scalar_results["PY.L","ITAX=0.1"]#  0.77493692
+    @test MPSGE.Complementarity.result_value(m._jump_model[:PW]) ≈ two_by_two_scalar_results["PW.L","ITAX=0.1"]#  1
+    @test MPSGE.Complementarity.result_value(m._jump_model[:PL]) ≈ two_by_two_scalar_results["PL.L","ITAX=0.1"]#  0.92927845
+    @test MPSGE.Complementarity.result_value(m._jump_model[:PK]) ≈ two_by_two_scalar_results["PK.L","ITAX=0.1"]#  0.84027402
+    @test MPSGE.Complementarity.result_value(m._jump_model[:CONS]) ≈ two_by_two_scalar_results["CONS.L","ITAX=0.1"]#  193.1026
+    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PX‡A")]) ≈ two_by_two_scalar_results["SAX.L","ITAX=0.1"]#  83.43323254
+    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PY‡A")]) ≈ two_by_two_scalar_results["SAY.L","ITAX=0.1"]#  16.11595257
+    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PX‡B")]) ≈ two_by_two_scalar_results["SBX.L","ITAX=0.1"]#  28.12581929
+    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PY‡B")]) ≈ two_by_two_scalar_results["SBY.L","ITAX=0.1"]#  69.53957979
+    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PL†A")]) ≈ two_by_two_scalar_results["DAL.L","ITAX=0.1"]#  36.5016685
+    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PK†A")]) ≈ two_by_two_scalar_results["DAK.L","ITAX=0.1"]#  63.6782873
+    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PL†B")]) ≈ two_by_two_scalar_results["DBL.L","ITAX=0.1"]#  55.22148407
+    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PK†B")]) ≈ two_by_two_scalar_results["DBK.L","ITAX=0.1"]#  45.02634343
+    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PW‡W")]) ≈ two_by_two_scalar_results["SW.L","ITAX=0.1"]#  200
+    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PX†W")]) ≈ two_by_two_scalar_results["DWX.L","ITAX=0.1"]#  89.31003664
+    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PY†W")]) ≈ two_by_two_scalar_results["DWY.L","ITAX=0.1"]#  113.597
+    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PWρCONS")]) ≈ two_by_two_scalar_results["DW.L","ITAX=0.1"]#  193.1026
+    # CWI ")]) ≈ two_by_two_scalar_results["CWI.L","ITAX=0.1"]#  0.96551295
+
+set_value(Otax2, 0.3 )
+set_value(Itax, 0.2 )
+solve!(m)    
+    
+    @test MPSGE.Complementarity.result_value(m._jump_model[:A]) ≈ two_by_two_scalar_results["A.L","O2=.3,I=.2"]#  0.26298582
+    @test MPSGE.Complementarity.result_value(m._jump_model[:B]) ≈ two_by_two_scalar_results["B.L","O2=.3,I=.2"]#  1.72557704
+    @test MPSGE.Complementarity.result_value(m._jump_model[:W]) ≈ two_by_two_scalar_results["W.L","O2=.3,I=.2"]#  0.91527149
+    @test MPSGE.Complementarity.result_value(m._jump_model[:PX]) ≈ two_by_two_scalar_results["PX.L","O2=.3,I=.2"]#  1.37998382
+    @test MPSGE.Complementarity.result_value(m._jump_model[:PY]) ≈ two_by_two_scalar_results["PY.L","O2=.3,I=.2"]#  0.68107531
+    @test MPSGE.Complementarity.result_value(m._jump_model[:PW]) ≈ two_by_two_scalar_results["PW.L","O2=.3,I=.2"]#  1
+    @test MPSGE.Complementarity.result_value(m._jump_model[:PL]) ≈ two_by_two_scalar_results["PL.L","O2=.3,I=.2"]#  0.92558632
+    @test MPSGE.Complementarity.result_value(m._jump_model[:PK]) ≈ two_by_two_scalar_results["PK.L","O2=.3,I=.2"]#  0.79214911
+    @test MPSGE.Complementarity.result_value(m._jump_model[:CONS]) ≈ two_by_two_scalar_results["CONS.L","O2=.3,I=.2"]#  183.0543
+    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PX‡A")]) ≈ two_by_two_scalar_results["SAX.L","O2=.3,I=.2"]#  87.42786978
+    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PY‡A")]) ≈ two_by_two_scalar_results["SAY.L","O2=.3,I=.2"]#  9.43885039
+    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PX‡B")]) ≈ two_by_two_scalar_results["SBX.L","O2=.3,I=.2"]#  31.82775909
+    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PY‡B")]) ≈ two_by_two_scalar_results["SBY.L","O2=.3,I=.2"]#  62.83291339
+    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PL†A")]) ≈ two_by_two_scalar_results["DAL.L","O2=.3,I=.2"]#  34.6951557
+    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PK†A")]) ≈ two_by_two_scalar_results["DAK.L","O2=.3,I=.2"]#  65.73173321
+    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PL†B")]) ≈ two_by_two_scalar_results["DBL.L","O2=.3,I=.2"]#  52.66392871
+    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PK†B")]) ≈ two_by_two_scalar_results["DBK.L","O2=.3,I=.2"]#  47.93381262
+    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PW‡W")]) ≈ two_by_two_scalar_results["SW.L","O2=.3,I=.2"]#  200
+    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PX†W")]) ≈ two_by_two_scalar_results["DWX.L","O2=.3,I=.2"]#  85.12615199
+    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PY†W")]) ≈ two_by_two_scalar_results["DWY.L","O2=.3,I=.2"]#  121.172
+    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PWρCONS")]) ≈ two_by_two_scalar_results["DW.L","O2=.3,I=.2"]#  183.0543
+    # CWI ")]) ≈ two_by_two_scalar_results["CWI.L","O2=.3,I=.2"]#  0.91527149
+    
+    set_value(Itax, 1.0)
+    solve!(m)
+
+    @test MPSGE.Complementarity.result_value(m._jump_model[:A]) ≈ 0 #two_by_two_scalar_results["A.L","ITAX=100%"]#  NULL
+    @test MPSGE.Complementarity.result_value(m._jump_model[:B]) ≈ two_by_two_scalar_results["B.L","ITAX=100%"]#  1.9797959
+    @test MPSGE.Complementarity.result_value(m._jump_model[:W]) ≈ two_by_two_scalar_results["W.L","ITAX=100%"]#  0.85094166
+    @test MPSGE.Complementarity.result_value(m._jump_model[:PX]) ≈ two_by_two_scalar_results["PX.L","ITAX=100%"]#  1.50558687
+    @test MPSGE.Complementarity.result_value(m._jump_model[:PY]) ≈ two_by_two_scalar_results["PY.L","ITAX=100%"]#  0.59749254
+    @test MPSGE.Complementarity.result_value(m._jump_model[:PW]) ≈ two_by_two_scalar_results["PW.L","ITAX=100%"]#  1
+    @test MPSGE.Complementarity.result_value(m._jump_model[:PL]) ≈ two_by_two_scalar_results["PL.L","ITAX=100%"]#  0.93690422
+    @test MPSGE.Complementarity.result_value(m._jump_model[:PK]) ≈ two_by_two_scalar_results["PK.L","ITAX=100%"]#  0.76497909
+    @test MPSGE.Complementarity.result_value(m._jump_model[:CONS]) ≈ two_by_two_scalar_results["CONS.L","ITAX=100%"]#  170.1883
+    # @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PX‡A")]) ≈ 0 # two_by_two_scalar_results["SAX.L","ITAX=100%"]# UNDF in GAMS, but has a value in Julia
+    # @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PY‡A")]) ≈ 0 # two_by_two_scalar_results["SAY.L","ITAX=100%"]# UNDF in GAMS, but has a value in Julia
+    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PX‡B")]) ≈ two_by_two_scalar_results["SBX.L","ITAX=100%"]#  35.0288964
+    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PY‡B")]) ≈ two_by_two_scalar_results["SBY.L","ITAX=100%"]#  55.60490686
+    # @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PL†A")]) ≈ 0 # two_by_two_scalar_results["DAL.L","ITAX=100%"]# UNDF in GAMS, but has a value in Julia
+    # @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PK†A")]) ≈ 0 # two_by_two_scalar_results["DAK.L","ITAX=100%"]#  UNDF in GAMS, but has a value in Julia
+    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PL†B")]) ≈ two_by_two_scalar_results["DBL.L","ITAX=100%"]#  50.51025716
+    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PK†B")]) ≈ two_by_two_scalar_results["DBK.L","ITAX=100%"]#  50.51025729
+    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PW‡W")]) ≈ two_by_two_scalar_results["SW.L","ITAX=100%"]#  200
+    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PX†W")]) ≈ two_by_two_scalar_results["DWX.L","ITAX=100%"]#  81.49802621
+    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PY†W")]) ≈ two_by_two_scalar_results["DWY.L","ITAX=100%"]#  129.3701
+    @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PWρCONS")]) ≈ two_by_two_scalar_results["DW.L","ITAX=100%"]#  170.1883
+    # CWI ")]) ≈ two_by_two_scalar_results["CWI.L","ITAX=100%"]#  0.85094165
+    end
