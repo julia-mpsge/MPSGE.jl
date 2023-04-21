@@ -182,12 +182,12 @@ struct Tax
 end
 
 mutable struct Input
-    commodity::CommodityRef
+    commodity::Any
     quantity::Union{Float64,Expr}
     taxes::Vector{Tax}
     production_function::Any
 
-    function Input(commodity::CommodityRef, quantity::Union{Float64,Expr}, taxes::Vector{Tax}=Tax[])
+    function Input(commodity, quantity::Union{Float64,Expr}, taxes::Vector{Tax}=Tax[])
         return new(commodity, quantity, taxes, nothing)
     end
 end
@@ -223,6 +223,13 @@ struct Production
 
         return x
     end
+end
+
+struct Nest
+    name::Symbol
+    elasticity::Union{Float64,Expr}
+    benchmark::Union{Float64,Expr}
+    inputs::Vector{Input}    
 end
 
 struct Endowment
@@ -453,7 +460,7 @@ end
 
 # Outer constructors
 
-function Input(commodity::CommodityRef, quantity::Number, taxes::Vector{Tax}=Tax[])
+function Input(commodity, quantity::Number, taxes::Vector{Tax}=Tax[])
     return Input(commodity, convert(Float64, quantity), taxes)
 end
 
@@ -559,6 +566,21 @@ end
 
 function add!(m::Model, p::Production)
     m._jump_model = nothing
+
+    for (i,v) in enumerate(p.inputs)        
+        if v.commodity isa Nest
+            sector_name = Symbol("$(get_name(p.sector))→$(v.commodity.name)")
+            commodity_name = Symbol("P$(get_name(p.sector))→$(v.commodity.name)")
+            sector_ref = add!(m, Sector(sector_name))
+            commodity_ref = add!(m, Commodity(commodity_name))
+            add!(m, Production(sector_ref, 0, v.commodity.elasticity, [Output(commodity_ref, v.commodity.benchmark)], v.commodity.inputs))
+
+            new_input = Input(commodity_ref, v.quantity, v.taxes)
+            new_input.production_function = v.production_function
+            p.inputs[i] = new_input
+        end
+    end
+
     push!(m._productions, p)
     return m
 end
@@ -700,4 +722,12 @@ function set_fixed!(sector::SectorRef, new_value::Bool)
         s.fixed[sector.subindex] = new_value
     end
     return nothing
+end
+
+function get_nested_commodity(x::SectorRef, name::Symbol)
+    for (i,v) in enumerate(x.model._commodities)
+        if v.name == Symbol("P$(get_name(x))→$name")
+            return CommodityRef(x.model, i, nothing, nothing)
+        end
+    end
 end
