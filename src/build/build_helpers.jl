@@ -140,12 +140,12 @@ end
 function get_jump_expression_for_commodity_consumer_price(m::Model, jm, pf, commodity::CommodityRef)
     jump_commodity = get_jump_variable_for_commodity(jm, commodity)
     taxes = []
-        for input in pf.inputs
-            if input.commodity == commodity
-                for tax in input.taxes
-                    push!(taxes, tax.rate)
-                end
+    for input in pf.inputs
+        if input.commodity == commodity
+            for tax in input.taxes
+                push!(taxes, tax.rate)
             end
+        end
     end
 
     tax = :(+(0., $(taxes...)))
