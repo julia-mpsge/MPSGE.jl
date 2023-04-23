@@ -28,7 +28,7 @@ end
 
 @production(m, U,0, 1, [Output(PU, 150)], [Input(PC[:x], 100), Input(PC[:y], 50)])
 
-@demand(m, RA, 1., [Demand(PU, 150,)], [Endowment(PF[:l], :(70 * $(endow[:l]))), Endowment(PF[:k], :(80. * $(endow[:k])))])
+@demand(m, RA, 1., [Demand(PU, 150)], [Endowment(PF[:l], :(70 * $(endow[:l]))), Endowment(PF[:k], :(80. * $(endow[:k])))])
 
 set_fixed!(PC[:x], true) # Set sector x as the numeraire
 solve!(m, cumulative_iteration_limit=0)
