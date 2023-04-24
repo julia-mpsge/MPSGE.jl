@@ -8,8 +8,8 @@
     factor = DenseAxisArray(Float64[50 50; 20 30], goods, factors)
     supply = DenseAxisArray(Float64[100, 50], goods)
     endow = add!(m, Parameter(:endow, indices=(factors,), value=1.0)) 
-    Outtax = add!(m, Parameter(:Outtax, indices=(goods,), value=0.))
-    Intax = add!(m, Parameter(:Intax, indices=(goods,), value=0.))
+    outax = add!(m, Parameter(:outax, indices=(goods,), value=0.))
+    intax = add!(m, Parameter(:intax, indices=(goods,), value=0.))
 
     Y = add!(m, Sector(:Y, indices=(goods,)))
     U = add!(m, Sector(:U))
@@ -19,7 +19,7 @@
     C = add!(m, Consumer(:C, indices=(consumers,), benchmark=150.))
 
     for i in goods
-        @production(m, Y[i], 0, 1, [Output(PC[i], supply[i], [MPSGE.Tax(:(1 * $(Outtax[i])), C[:ra])])], [Input(PF[:l], factor[i,:l], [MPSGE.Tax(:(1 * $(Intax[i])), C[:ra])]), Input(PF[:k], factor[i,:k])])
+        @production(m, Y[i], 0, 1, [Output(PC[i], supply[i], [Tax(:(1 * $(outax[i])), C[:ra])])], [Input(PF[:l], factor[i,:l], [Tax(:(1 * $(intax[i])), C[:ra])]), Input(PF[:k], factor[i,:k])])
     end
     @production(m, U, 0, 1, [Output(PU, 150)], [Input(PC[:x], 100), Input(PC[:y], 50)])
     @demand(m, C[:ra], 1., [Demand(PU, 150)], [Endowment(PF[:l], :(70 * $(endow[:l]))), Endowment(PF[:k], :(80. * $(endow[:k])))])
@@ -112,7 +112,7 @@ gams_results = XLSX.readxlsx(joinpath(@__DIR__, "MPSGEresults.xlsx"))
 a_table = gams_results["TwoxTwowOTax"][:]  # Generated from TwoByTwo_Scalar_wTax-MPSGE.gms
 two_by_two_scalar_results = DenseAxisArray(a_table[2:end,2:end],a_table[2:end,1],a_table[1,2:end])
 
-set_value(Outtax[:x], 0.1)
+set_value(outax[:x], 0.1)
 solve!(m)
 
     @test MPSGE.Complementarity.result_value(m._jump_model[:Y][:x]) ≈ two_by_two_scalar_results["X.L","Otax=.1"]#    1.0116855688658395
@@ -137,8 +137,8 @@ solve!(m)
     @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PUρC[ra]")]) ≈ two_by_two_scalar_results["CWI.L","Otax=.1"] # 156.6285843
 
 #Tax on labor for good/sector x (single output sector) 
-set_value(Outtax[:x], 0.0)
-set_value(Intax[:x], 0.1)
+set_value(outax[:x], 0.0)
+set_value(intax[:x], 0.1)
 solve!(m)
     
     @test MPSGE.Complementarity.result_value(m._jump_model[:Y][:x]) ≈ two_by_two_scalar_results["X.L","Itax=.1"] # 1.03413947

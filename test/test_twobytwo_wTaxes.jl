@@ -7,7 +7,7 @@ m = Model()
 esub_x = add!(m, Parameter(:esub_x, value=1.0))    
 esub_y = add!(m, Parameter(:esub_y, value=1.0))    
 endow  = add!(m, Parameter(:endow, value=1.0))
-Otax   = add!(m, Parameter(:Otax, value = 0.0))
+otax   = add!(m, Parameter(:otax, value = 0.0))
 
 X = add!(m, Sector(:X))
 Y = add!(m, Sector(:Y))
@@ -21,7 +21,7 @@ PK = add!(m, Commodity(:PK))
 
 RA = add!(m, Consumer(:RA, benchmark = 150.))
 
-@production(m, X, 0, :($esub_x*1.0), [Output(PX, 100., [MPSGE.Tax(:($Otax*1.0), RA)])], [Input(PL, 50.), Input(PK,50.)])
+@production(m, X, 0, :($esub_x*1.0), [Output(PX, 100., [Tax(:($otax*1.0), RA)])], [Input(PL, 50.), Input(PK,50.)])
 @production(m, Y, 0, :($esub_y*1.0), [Output(PY, 50.)], [Input(PL, 20.), Input(PK,30.)])
 @production(m, U, 0, 1.0, [Output(PU, 150.)], [Input(PX, 100.), Input(PY,50.)])
 
@@ -135,7 +135,7 @@ solve!(m)
     @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PU‡U")]) ≈ two_by_two_scalar_results["SU.L","PL=1"]#    50.
     @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PUρRA")]) ≈ two_by_two_scalar_results["CWI.L","PL=1"] # 156.8223095
 
-set_value(Otax, 0.1)
+set_value(otax, 0.1)
 solve!(m)
 
     @test value(m, :X)                                          ≈ two_by_two_scalar_results["X.L","Otax=.1"]#    1.0116855688658395
@@ -159,7 +159,7 @@ solve!(m)
     @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PU‡U")]) ≈ two_by_two_scalar_results["SU.L","Otax=.1"]#    50.
     @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PUρRA")]) ≈ two_by_two_scalar_results["CWI.L","Otax=.1"] # 156.6285843
 
-set_value(Otax, 0.2)
+set_value(otax, 0.2)
 solve!(m)
 
     @test value(m, :X)                                          ≈ two_by_two_scalar_results["X.L","Otax=.2"]#    0.9688481110216813
@@ -183,7 +183,7 @@ solve!(m)
     @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PU‡U")]) ≈ two_by_two_scalar_results["SU.L","Otax=.2"]#    50.
     @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PUρRA")]) ≈ two_by_two_scalar_results["CWI.L","Otax=.2"] # 155.9452109
 
-set_value(Otax, 0.5)
+set_value(otax, 0.5)
 solve!(m)
 
     @test value(m, :X)                                          ≈ two_by_two_scalar_results["X.L","Otax=.5"]#    0.7888106357533915
@@ -207,7 +207,7 @@ solve!(m)
     @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PU‡U")]) ≈ two_by_two_scalar_results["SU.L","Otax=.5"]#    50.
     @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PUρRA")]) ≈ two_by_two_scalar_results["CWI.L","Otax=.5"] # 148.2708074
 
-set_value(Otax, 0.9)
+set_value(otax, 0.9)
 solve!(m)
 
     @test value(m, :X)                                          ≈ two_by_two_scalar_results["X.L","Otax=.9"]#    0.2653299831628428
@@ -245,8 +245,8 @@ end
     esub_x = add!(m, Parameter(:esub_x, value=1.0))    
     esub_y = add!(m, Parameter(:esub_y, value=1.0))    
     endow  = add!(m, Parameter(:endow, value=1.0))
-    Otaxa   = add!(m, Parameter(:Otaxa, value = 0.0))
-    Otaxb   = add!(m, Parameter(:Otaxb, value = 0.0))
+    otaxa   = add!(m, Parameter(:otaxa, value = 0.0))
+    otaxb   = add!(m, Parameter(:otaxb, value = 0.0))
     
     X = add!(m, Sector(:X))
     Y = add!(m, Sector(:Y))
@@ -260,8 +260,8 @@ end
     
     RA = add!(m, Consumer(:RA, indices=(consumers,), benchmark=75.))#(consumption)))
  
-    @production(m, X, 0, :($esub_x*1.0), [Output(PX, 100., [MPSGE.Tax(:($Otaxa*1.0), RA[:a])])], [Input(PL, 50.), Input(PK,50.)])
-    @production(m, Y, 0, :($esub_y*1.0), [Output(PY, 50.,  [MPSGE.Tax(:($Otaxb*1.0), RA[:b])])], [Input(PL, 20.), Input(PK,30.)])
+    @production(m, X, 0, :($esub_x*1.0), [Output(PX, 100., [Tax(:($otaxa*1.0), RA[:a])])], [Input(PL, 50.), Input(PK,50.)])
+    @production(m, Y, 0, :($esub_y*1.0), [Output(PY, 50.,  [Tax(:($otaxb*1.0), RA[:b])])], [Input(PL, 20.), Input(PK,30.)])
     @production(m, U, 0, 1.0, [Output(PU, 150.)], [Input(PX, 100.), Input(PY,50.)])
 
     for r in consumers
@@ -386,7 +386,7 @@ solve!(m)
     @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PUρRA[a]")]) ≈ two_by_two_scalar_results["DURAA.L","PL=1"] 	#	78.41115477
     @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PUρRA[b]")]) ≈ two_by_two_scalar_results["DURAB.L","PL=1"] 	#	78.41115477
 
-set_value(Otaxa, 0.1)		
+set_value(otaxa, 0.1)		
 solve!(m)		
 
     @test value(m, :X)                                          ≈ two_by_two_scalar_results["X.L","Otaxa=.1"]	#	1.01168557
@@ -412,7 +412,7 @@ solve!(m)
     @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PUρRA[a]")]) ≈ two_by_two_scalar_results["DURAA.L","Otaxa=.1"] 	#	83.53524497
     @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PUρRA[b]")]) ≈ two_by_two_scalar_results["DURAB.L","Otaxa=.1"] 	#	73.09333934
 		
-set_value(Otaxa, 0.2)		
+set_value(otaxa, 0.2)		
 solve!(m)		
 		
     @test value(m, :X)                                          ≈ two_by_two_scalar_results["X.L","Otaxa=.2"]	#	0.96884811
@@ -438,7 +438,7 @@ solve!(m)
     @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PUρRA[a]")]) ≈ two_by_two_scalar_results["DURAA.L","Otaxa=.2"] 	#	88.36895287
     @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PUρRA[b]")]) ≈ two_by_two_scalar_results["DURAB.L","Otaxa=.2"] 	#	67.57625804
 		
-set_value(Otaxa, 0.5)		
+set_value(otaxa, 0.5)		
 solve!(m)		
 		
     @test value(m, :X)                                          ≈ two_by_two_scalar_results["X.L","Otaxa=.5"]	#	0.78881064
@@ -464,7 +464,7 @@ solve!(m)
     @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PUρRA[a]")]) ≈ two_by_two_scalar_results["DURAA.L","Otaxa=.5"] 	#	98.84720496
     @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PUρRA[b]")]) ≈ two_by_two_scalar_results["DURAB.L","Otaxa=.5"] 	#	49.42360248
 		
-set_value(Otaxa, 0.9)		
+set_value(otaxa, 0.9)		
 solve!(m)		
 		
     @test value(m, :X)                                          ≈ two_by_two_scalar_results["X.L","Otaxa=.9"]	#	0.26532998
@@ -490,8 +490,8 @@ solve!(m)
     @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PUρRA[a]")]) ≈ two_by_two_scalar_results["DURAA.L","Otaxa=.9"] 	#	67.91774892
     @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PUρRA[b]")]) ≈ two_by_two_scalar_results["DURAB.L","Otaxa=.9"] 	#	16.97943723
    		
-set_value(Otaxa, 0.1)		
-set_value(Otaxb, 0.1)		
+set_value(otaxa, 0.1)		
+set_value(otaxb, 0.1)		
 solve!(m)		
 		
     @test value(m, :X)                                          ≈ two_by_two_scalar_results["X.L","Otax=.1"]	#	1.04880885
@@ -517,8 +517,8 @@ solve!(m)
     @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PUρRA[a]")]) ≈ two_by_two_scalar_results["DURAA.L","Otax=.1"] 	#	81.02485989
     @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PUρRA[b]")]) ≈ two_by_two_scalar_results["DURAB.L","Otax=.1"] 	#	75.79744957
 		
-set_value(Otaxa, 0.2)		
-set_value(Otaxb, 0.2)		
+set_value(otaxa, 0.2)		
+set_value(otaxb, 0.2)		
 solve!(m)		
 		
     @test value(m, :X)                                          ≈ two_by_two_scalar_results["X.L","Otax=.2"]	#	1.04880885
@@ -544,8 +544,8 @@ solve!(m)
     @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PUρRA[a]")]) ≈ two_by_two_scalar_results["DURAA.L","Otax=.2"] 	#	83.63856509
     @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PUρRA[b]")]) ≈ two_by_two_scalar_results["DURAB.L","Otax=.2"] 	#	73.18374445
 		
-set_value(Otaxa, 0.5)		
-set_value(Otaxb, 0.5)		
+set_value(otaxa, 0.5)		
+set_value(otaxb, 0.5)		
 solve!(m)		
 		
     @test value(m, :X)                                          ≈ two_by_two_scalar_results["X.L","Otax=.5"]	#	1.04880885
@@ -571,8 +571,8 @@ solve!(m)
     @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PUρRA[a]")]) ≈ two_by_two_scalar_results["DURAA.L","Otax=.5"] 	#	91.47968056
     @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PUρRA[b]")]) ≈ two_by_two_scalar_results["DURAB.L","Otax=.5"] 	#	65.34262897
 		
-set_value(Otaxa, 0.9)		
-set_value(Otaxb, 0.9)		
+set_value(otaxa, 0.9)		
+set_value(otaxb, 0.9)		
 solve!(m)		
 		
     @test value(m, :X)                                          ≈ two_by_two_scalar_results["X.L","Otax=.9"]	#	1.04880885
@@ -612,11 +612,11 @@ end
     @parameter(m, sub_elas_w, 0.)
     @parameter(m, t_elas_a, 0.0)
     @parameter(m, t_elas_b, 0.0)
-    @parameter(m, Otax1, 0.0)
-    @parameter(m, Otax2, 0.0)
-    @parameter(m, Otax3, 0.0)
-    @parameter(m, Otax4, 0.0)
-    @parameter(m, Itax, 0.0)
+    @parameter(m, otax1, 0.0)
+    @parameter(m, otax2, 0.0)
+    @parameter(m, otax3, 0.0)
+    @parameter(m, otax4, 0.0)
+    @parameter(m, itax, 0.0)
     
     
     @sector(m, A)
@@ -631,8 +631,8 @@ end
     
     @consumer(m, CONS, benchmark=200.0)
     
-    @production(m, A, :($t_elas_a*1.), :($sub_elas_a*1.), [Output(PX, 80, [MPSGE.Tax(:($Otax1*1.0), CONS)]), Output(PY, 20, [MPSGE.Tax(:($Otax2*1.0), CONS)])], [Input(PL, 40, [MPSGE.Tax(:($Itax*1.0), CONS)]), Input(PK, 60, [MPSGE.Tax(:($Itax*1.0), CONS)])])
-    @production(m, B, :($t_elas_b*1.), :($sub_elas_b*1.), [Output(PX, 20, [MPSGE.Tax(:($Otax3*1.0), CONS)]), Output(PY, 80, [MPSGE.Tax(:($Otax4*1.0), CONS)])], [Input(PL, 60), Input(PK, 40)])
+    @production(m, A, :($t_elas_a*1.), :($sub_elas_a*1.), [Output(PX, 80, [Tax(:($otax1*1.0), CONS)]), Output(PY, 20, [Tax(:($otax2*1.0), CONS)])], [Input(PL, 40, [Tax(:($itax*1.0), CONS)]), Input(PK, 60, [Tax(:($itax*1.0), CONS)])])
+    @production(m, B, :($t_elas_b*1.), :($sub_elas_b*1.), [Output(PX, 20, [Tax(:($otax3*1.0), CONS)]), Output(PY, 80, [Tax(:($otax4*1.0), CONS)])], [Input(PL, 60), Input(PK, 40)])
     @production(m, W, 0, :($sub_elas_w*1.), [Output(PW, 200.0)],[Input(PX, 100.0), Input(PY, 100.0)])
     
     @demand(m, CONS, 1., [Demand(PW, 200.)], [Endowment(PL, 100.0), Endowment(PK, 100.0)])
@@ -666,7 +666,7 @@ end
     @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PWρCONS")]) ≈ two_by_two_scalar_results["DW.L","benchmark"]#  200
     # CWI ")]) ≈ two_by_two_scalar_results["CWI.L","benchmark"]#  1
         
-set_value(Otax1, 0.1)
+set_value(otax1, 0.1)
 set_fixed!(CONS, true)
 set_fixed!(PW, true)
 solve!(m)
@@ -751,7 +751,7 @@ solve!(m)
     @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PWρCONS")]) ≈ two_by_two_scalar_results["DW.L","PW.FX=1"]#  199.5448
     # CWI ")]) ≈ two_by_two_scalar_results["CWI.L","PW.FX=1"]#  0.99772418
 
-set_value(Otax1, 0.2)
+set_value(otax1, 0.2)
 solve!(m)
     
     @test MPSGE.Complementarity.result_value(m._jump_model[:A]) ≈ two_by_two_scalar_results["A.L","OUTTAX=0.2"]#  0.77047179
@@ -1028,7 +1028,7 @@ solve!(m)
     @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PWρCONS")]) ≈ two_by_two_scalar_results["DW.L","S...T1"]#  197.5734
     # CWI ")]) ≈ two_by_two_scalar_results["CWI.L","S...T1,1"]#  0.98786685
 
-set_value(Otax2, 0.1)
+set_value(otax2, 0.1)
 solve!(m)
 
     @test MPSGE.Complementarity.result_value(m._jump_model[:A]) ≈ two_by_two_scalar_results["A.L","S.T1,O2=.1"]#  0.69377214
@@ -1054,8 +1054,8 @@ solve!(m)
     @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PWρCONS")]) ≈ two_by_two_scalar_results["DW.L","S.T1,O2=.1"]#  196.8372
     # CWI ")]) ≈ two_by_two_scalar_results["CWI.L","S.T1,O2=.1"]#  0.98418612
 
-set_value(Otax2, 0.)
-set_value(Otax3, 0.1)
+set_value(otax2, 0.)
+set_value(otax3, 0.1)
 solve!(m)
 
     @test MPSGE.Complementarity.result_value(m._jump_model[:A]) ≈ two_by_two_scalar_results["A.L","S.T1,O3=.1"]#  0.8361865
@@ -1081,8 +1081,8 @@ solve!(m)
     @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PWρCONS")]) ≈ two_by_two_scalar_results["DW.L","S.T1,O3=.1"]#  198.8847
     # CWI ")]) ≈ two_by_two_scalar_results["CWI.L","S.T1,O3=.1"]#  0.99442372
 
-set_value(Otax3, 0.)
-set_value(Otax4, 0.1)
+set_value(otax3, 0.)
+set_value(otax4, 0.1)
 solve!(m)
 
     @test MPSGE.Complementarity.result_value(m._jump_model[:A]) ≈ two_by_two_scalar_results["A.L","S.T1,O4=.1"]#  0.85040405
@@ -1109,7 +1109,7 @@ solve!(m)
     # CWI ")]) ≈ two_by_two_scalar_results["CWI.L","S.T1,O4=.1"]#  0.99396862
 
 
-set_value(Itax, 0.1)
+set_value(itax, 0.1)
 solve!(m)    
     
     @test MPSGE.Complementarity.result_value(m._jump_model[:A]) ≈ two_by_two_scalar_results["A.L","O4,I=0.1"]#  0.63672356
@@ -1136,7 +1136,7 @@ solve!(m)
     # CWI ")]) ≈ two_by_two_scalar_results["CWI.L","O4,I=0.1"]#  0.97648969
 
 
-set_value(Otax4, 0.0)
+set_value(otax4, 0.0)
 solve!(m)    
 
     @test MPSGE.Complementarity.result_value(m._jump_model[:A]) ≈ two_by_two_scalar_results["A.L","ITAX=0.1"]#  0.54435839
@@ -1162,8 +1162,8 @@ solve!(m)
     @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PWρCONS")]) ≈ two_by_two_scalar_results["DW.L","ITAX=0.1"]#  193.1026
     # CWI ")]) ≈ two_by_two_scalar_results["CWI.L","ITAX=0.1"]#  0.96551295
 
-set_value(Otax2, 0.3 )
-set_value(Itax, 0.2 )
+set_value(otax2, 0.3 )
+set_value(itax, 0.2 )
 solve!(m)    
     
     @test MPSGE.Complementarity.result_value(m._jump_model[:A]) ≈ two_by_two_scalar_results["A.L","O2=.3,I=.2"]#  0.26298582
@@ -1189,7 +1189,7 @@ solve!(m)
     @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PWρCONS")]) ≈ two_by_two_scalar_results["DW.L","O2=.3,I=.2"]#  183.0543
     # CWI ")]) ≈ two_by_two_scalar_results["CWI.L","O2=.3,I=.2"]#  0.91527149
     
-    set_value(Itax, 1.0)
+    set_value(itax, 1.0)
     solve!(m)
 
     @test MPSGE.Complementarity.result_value(m._jump_model[:A]) ≈ 0 #two_by_two_scalar_results["A.L","ITAX=100%"]#  NULL
