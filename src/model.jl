@@ -238,13 +238,20 @@ struct Endowment
 end
 
 mutable struct Demand
-    commodity::CommodityRef
+    commodity::Any
     quantity::Union{Float64,Expr}
     demand_function::Any
 
-    function Demand(commodity::CommodityRef, quantity::Union{Float64,Expr})
+    function Demand(commodity, quantity::Union{Float64,Expr})
         return new(commodity, quantity, nothing)
     end
+end
+
+struct DNest
+    name::Symbol
+    elasticity::Union{Float64,Expr}
+    benchmark::Union{Float64,Expr}
+    demands::Vector{Demand}    
 end
 
 struct DemandFunction
@@ -484,7 +491,7 @@ function Endowment(commodity::CommodityRef, quantity::Number)
     return Endowment(commodity, convert(Float64, quantity))
 end
 
-function Demand(commodity::CommodityRef, quantity::Number)
+function Demand(commodity, quantity::Number)
     return Demand(commodity, convert(Float64, quantity))
 end
 
@@ -589,14 +596,14 @@ function add!(m::Model, c::DemandFunction)
     m._jump_model = nothing
 
     for (i,v) in enumerate(c.demands)        
-        if v.commodity isa Nest
+        if v.commodity isa DNest
             consumer_name = Symbol("$(get_name(c.consumer))→$(v.commodity.name)")
             commodity_name = Symbol("P$(get_name(c.consumer))→$(v.commodity.name)")
             consumer_ref = add!(m, Consumer(consumer_name))
             commodity_ref = add!(m, Commodity(commodity_name))
             add!(m, DemandFunction(consumer_ref, v.commodity.elasticity, [Endowment(commodity_ref, v.commodity.benchmark)], v.commodity.demands))
 
-            new_demand = Demand(commodity_ref, v.quantity, v.taxes)
+            new_demand = Demand(commodity_ref, v.quantity)
             new_demand.demand_function = v.demand_function
             p.demands[i] = new_demand
         end
