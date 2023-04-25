@@ -587,6 +587,21 @@ end
 
 function add!(m::Model, c::DemandFunction)
     m._jump_model = nothing
+
+    for (i,v) in enumerate(c.demands)        
+        if v.commodity isa Nest
+            consumer_name = Symbol("$(get_name(c.consumer))→$(v.commodity.name)")
+            commodity_name = Symbol("P$(get_name(c.consumer))→$(v.commodity.name)")
+            consumer_ref = add!(m, Consumer(consumer_name))
+            commodity_ref = add!(m, Commodity(commodity_name))
+            add!(m, DemandFunction(consumer_ref, v.commodity.elasticity, [Endowment(commodity_ref, v.commodity.benchmark)], v.commodity.demands))
+
+            new_demand = Demand(commodity_ref, v.quantity, v.taxes)
+            new_demand.demand_function = v.demand_function
+            p.demands[i] = new_demand
+        end
+    end
+
     push!(m._demands, c)
     return m
 end
