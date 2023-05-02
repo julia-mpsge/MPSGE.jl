@@ -596,18 +596,35 @@ function add!(m::Model, c::DemandFunction)
     m._jump_model = nothing
 
     for (i,v) in enumerate(c.demands)        
-        if v.commodity isa DNest
-            consumer_name = Symbol("$(get_name(c.consumer))→$(v.commodity.name)")
+        if v.commodity isa Nest
+            sector_name = Symbol("$(get_name(c.consumer))→$(v.commodity.name)")
             commodity_name = Symbol("P$(get_name(c.consumer))→$(v.commodity.name)")
-            consumer_ref = add!(m, Consumer(consumer_name))
+            sector_ref = add!(m, Sector(sector_name))
             commodity_ref = add!(m, Commodity(commodity_name))
-            add!(m, DemandFunction(consumer_ref, v.commodity.elasticity, [Endowment(commodity_ref, v.commodity.benchmark)], v.commodity.demands))
+            add!(m, Production(sector_ref, 0, v.commodity.elasticity, [Output(commodity_ref, v.commodity.benchmark)], v.commodity.inputs))
 
-            new_demand = Demand(commodity_ref, v.quantity)
-            new_demand.demand_function = v.demand_function
-            p.demands[i] = new_demand
+            new_Input = Demand(commodity_ref, v.quantity)
+            new_Input.demand_function = v.demand_function
+            c.demands[i] = new_Input
         end
     end
+
+# function add!(m::Model, c::DemandFunction)
+#     m._jump_model = nothing
+
+#     for (i,v) in enumerate(c.demands)        
+#         if v.commodity isa DNest
+#             consumer_name = Symbol("$(get_name(c.consumer))→$(v.commodity.name)")
+#             commodity_name = Symbol("P$(get_name(c.consumer))→$(v.commodity.name)")
+#             consumer_ref = add!(m, Consumer(consumer_name))
+#             commodity_ref = add!(m, Commodity(commodity_name))
+#             add!(m, DemandFunction(consumer_ref, v.commodity.elasticity, v.commodity.demands, [Endowment(commodity_ref, v.commodity.benchmark)]))
+
+#             new_demand = Demand(commodity_ref, v.quantity)
+#             new_demand.demand_function = v.demand_function
+#             c.demands[i] = new_demand
+#         end
+#     end
 
     push!(m._demands, c)
     return m
