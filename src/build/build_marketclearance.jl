@@ -11,6 +11,12 @@ function build_marketclearance!(m, jm)
             push!(commodities, output.commodity)
         end
     end
+    for df in m._demands
+        for demand in df.demands
+            push!(commodities, demand.commodity)
+        end
+    end
+
 
     # Loop over commodities
     for commodity in commodities
