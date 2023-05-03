@@ -1,5 +1,8 @@
 $title  Simple Model for Nested Demands
-
+*Model Constructed to test Demand Nests against a model without the nest
+*Demand nests are generally a feature to allow for the elasticity in the nest/for a consumer
+*to be *different* than the overall production elasticities using those commodities, but
+*here it is set up to have the same elasticities for testing purposes.
 
 parameter   sigmac      Armington elasticity in final demand  /1/
             endow       change in labour supply      /1/
@@ -43,11 +46,11 @@ $report:
      v:DKY   i:RK    prod:Y
      v:DLY   i:PL    prod:Y
 
-$PROD:A  s:sigmadm t:0 !This prod out for nested (leave report commented out)
+$PROD:A  s:sigmadm t:0 !This whole Production out for nested
         O:PA    Q:90          
         I:PD    Q:30                          ! DA
         I:PM    Q:60
-*$report:
+*$report: !(leave whole report commented out to run nested/non-nested with same results set)
 *    v:SAA    o:PA    prod:A
 *    v:DDA    i:PD    prod:A
 *    v:DMA    i:PM    prod:A
@@ -75,10 +78,10 @@ $DEMAND:GOVT s:1 !  c:sigmadm  ! Take out "!" before the c:sigmadm for the Neste
 *        D:PD    Q:30   c:
 *        D:PM    Q:60   c:
 $report:    
-     v:CXG    d:PX    demand:GOVT ! Leave commented out for union of comparison
-*    v:CAG    d:PA    demand:GOVT ! Leave commented out for union of comparison
-*    v:CMG    d:PM    demand:GOVT ! Leave commented out for union of comparison
-*    v:CDG    d:PD    demand:GOVT ! Leave commented out for union of comparison
+     v:CXG    d:PX    demand:GOVT
+*    v:CAG    d:PA    demand:GOVT ! Leave commented out to run nested/non-nested with same results set
+*    v:CMG    d:PM    demand:GOVT ! Leave commented out to run nested/non-nested with same results set
+*    v:CDG    d:PD    demand:GOVT ! Leave commented out to run nested/non-nested with same results set
 
 $DEMAND:HH  s:sigma
         E:PL    Q:(80*endow)
@@ -86,22 +89,7 @@ $DEMAND:HH  s:sigma
 $report:
     v:W       w:HH
     v:CXHH    d:PX    demand:HH
-
-*And now, the idea is to build a model where A and D&M and very simple replacements for each other
-*because with more complicated interactions in the demands and productions with A, M, and D, there
-*isn't a match. I think because of the different number of commodities in Demands making the elasticities
-*not equal each other.
-
-*Work with Sector A, not another Demand.
-*Okay, so the idea is that standard, A is created with a combination of D and M, with a subelas sigmadm.
-*The idea of nesting is that while some of A is produced with that r'ship, maybe the HH final consumption prefers a specific
-*combination of D and M in final demand that doesn't follow the Production combination, so it has a specific elasticity.
-*With that, the idea is not to have a separate demand, but just to replace Demand for A with Demand for D and M with that elasticity.
-    
-* What I'm trying to do is set up consumers such that 1 consumer (HH) has PL in Endowment (with *endow),
-* and another consumer (GOVT) has 1) everything else with a PM&DM nest or 2) everything else except PM&DM
-* and a 3rd Consumer (C) has PM&DM 
-   
+  
 $offtext
 $sysinclude mpsgeset MGE123DN
 
