@@ -247,13 +247,6 @@ mutable struct Demand
     end
 end
 
-struct DNest
-    name::Symbol
-    elasticity::Union{Float64,Expr}
-    benchmark::Union{Float64,Expr}
-    demands::Vector{Demand}    
-end
-
 struct DemandFunction
     consumer::ConsumerRef
     elasticity::Union{Float64,Expr}
@@ -608,23 +601,6 @@ function add!(m::Model, c::DemandFunction)
             c.demands[i] = new_Input
         end
     end
-
-# function add!(m::Model, c::DemandFunction)
-#     m._jump_model = nothing
-
-#     for (i,v) in enumerate(c.demands)        
-#         if v.commodity isa DNest
-#             consumer_name = Symbol("$(get_name(c.consumer))→$(v.commodity.name)")
-#             commodity_name = Symbol("P$(get_name(c.consumer))→$(v.commodity.name)")
-#             consumer_ref = add!(m, Consumer(consumer_name))
-#             commodity_ref = add!(m, Commodity(commodity_name))
-#             add!(m, DemandFunction(consumer_ref, v.commodity.elasticity, v.commodity.demands, [Endowment(commodity_ref, v.commodity.benchmark)]))
-
-#             new_demand = Demand(commodity_ref, v.quantity)
-#             new_demand.demand_function = v.demand_function
-#             c.demands[i] = new_demand
-#         end
-#     end
 
     push!(m._demands, c)
     return m
