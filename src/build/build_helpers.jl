@@ -54,7 +54,7 @@ function swap_our_param_with_val(expr)
             end
         elseif x isa AuxRef
             a = get_full(x)
-            if a isa ScalarSector
+            if a isa ScalarAux
                 return a.benchmark
             else
                 return a.benchmark[x.subindex]

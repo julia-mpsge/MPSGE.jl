@@ -3,7 +3,7 @@ function build_auxconstraints!(m::Model, jm)
     for ac in m._auxconstraints
         ac.equation isa Expr || error("You must pass an expression as an aux constraint.")
         (ac.equation.head == :call && length(ac.equation.args) == 3 && ac.equation.args[1] == :(==)) || error("Must pass an equation with an == sign.")
-
+# TODO Need >=, and possibly >=
         equation_expr = swap_our_param_with_jump_param(jm, :( $(ac.equation.args[2]) - $(ac.equation.args[3]) ))
         
         ex6a = :(
