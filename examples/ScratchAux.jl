@@ -35,9 +35,14 @@ set_value(CONS,210.)
 set_fixed!(CONS,true)
 solve!(m)
 
-set_value(tlx, 0.25)
 set_value(tkx, 0.25)
 set_value(tx, 0.0)
 set_fixed!(CONS,false)
 set_fixed!(PX,true)
+solve!(m)
+
+set_value(ty, 0.5)
+solve!(m)
+
+set_value(tkx, 0.0)
 solve!(m)
