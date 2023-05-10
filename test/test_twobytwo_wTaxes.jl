@@ -1393,7 +1393,6 @@ using XLSX, MPSGE.JuMP.Containers
 gams_results = XLSX.readxlsx(joinpath(@__DIR__, "MPSGEresults.xlsx"))
 a_table = gams_results["two_by_two_AuxinInput"][:]  # Generated from TwoByTwo_Scalar_Algeb-MPSGE.gms
 two_by_two_AuxinInput = DenseAxisArray(a_table[2:end,2:end],a_table[2:end,1],a_table[1,2:end])
-
     
 # A replication of the Markusen M2_3S model, with Auxiliary constraint in associated with Inputs: AuxinProdTest.gms
 
@@ -1637,4 +1636,122 @@ solve!(m)
 @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PK†TK")]) ≈ two_by_two_AuxinInput["DKTK","L-.05,K.45"]#  100
 @test MPSGE.Complementarity.result_value(m._jump_model[:CONS]) ≈ two_by_two_AuxinInput["CONS","L-.05,K.45"]#  335.0362347
 @test MPSGE.Complementarity.result_value(m._jump_model[:PWρCONS]) ≈ two_by_two_AuxinInput["CWCONS","L-.05,K.45"]#  340.5704246
+end
+
+@testitem "TWObyTWO_wAuxinOutputs" begin
+    using XLSX, MPSGE.JuMP.Containers
+    gams_results = XLSX.readxlsx(joinpath(@__DIR__, "MPSGEresults.xlsx"))
+    a_table = gams_results["two_by_two_AuxinOutput"][:]  # Generated from AuxinOutputTest.gms
+    two_by_two_AuxinOutput = DenseAxisArray(a_table[2:end,2:end],a_table[2:end,1],a_table[1,2:end])
+    
+m = Model()
+# A set up to test N: Endogenous taxes (and M: the multiplier), the Auxiliary Variable in Production blocks (applied to Outputs)       
+
+sigma = add!(m,Parameter(:sigma, value=9.0))
+
+X = add!(m, Sector(:X))
+Y = add!(m, Sector(:Y))
+W = add!(m, Sector(:W))
+
+PX = add!(m, Commodity(:PX))
+PY = add!(m, Commodity(:PY))
+PW = add!(m, Commodity(:PW))
+PL = add!(m, Commodity(:PL))
+PK = add!(m, Commodity(:PK))
+
+CONS = add!(m, Consumer(:CONS, benchmark=180.))
+
+SHAREX = add!(m, Aux(:SHAREX, benchmark=0.5))
+MARKUP = add!(m, Aux(:MARKUP, benchmark=0.2))
+
+add!(m, Production(X, 0, 1.0, [Output(PX, 80., [Tax(:(1.0*$MARKUP), CONS)])], [Input(PL, 14), Input(PK, 50)]))
+add!(m, Production(Y, 0, 1.0, [Output(PY, 100.)],                             [Input(PL, 60), Input(PK, 40)]))
+add!(m, Production(W, 0, 9.0, [Output(PW, 180.)], [Input(PX,80), Input(PY,100.)]))
+
+add!(m, DemandFunction(CONS, 1., [Demand(PW,180.)], [Endowment(PL, 74.), Endowment(PK, 90)]))
+add!(m, AuxConstraint(SHAREX, :($SHAREX == 100*$PX*$X / (100*$PX*$X + 100*$PY*$Y))))
+add!(m, AuxConstraint(MARKUP, :($MARKUP == 1 / ($sigma - ($sigma-1) * $SHAREX))))
+
+set_fixed!(CONS, true)
+solve!(m, cumulative_iteration_limit=0)
+# benchmark
+@test MPSGE.Complementarity.result_value(m._jump_model[:X]) ≈ two_by_two_AuxinOutput["X","benchmark"]#  1
+@test MPSGE.Complementarity.result_value(m._jump_model[:Y]) ≈ two_by_two_AuxinOutput["Y","benchmark"]#  1
+@test MPSGE.Complementarity.result_value(m._jump_model[:W]) ≈ two_by_two_AuxinOutput["W","benchmark"]#  1
+@test MPSGE.Complementarity.result_value(m._jump_model[:PX]) ≈ two_by_two_AuxinOutput["PX","benchmark"]#  1
+@test MPSGE.Complementarity.result_value(m._jump_model[:PY]) ≈ two_by_two_AuxinOutput["PY","benchmark"]#  1
+@test MPSGE.Complementarity.result_value(m._jump_model[:PW]) ≈ two_by_two_AuxinOutput["PW","benchmark"]#  1
+@test MPSGE.Complementarity.result_value(m._jump_model[:PL]) ≈ two_by_two_AuxinOutput["PL","benchmark"]#  1
+@test MPSGE.Complementarity.result_value(m._jump_model[:PK]) ≈ two_by_two_AuxinOutput["PK","benchmark"]#  1
+@test MPSGE.Complementarity.result_value(m._jump_model[:SHAREX]) ≈ two_by_two_AuxinOutput["SHAREX","benchmark"]#  0.5
+@test MPSGE.Complementarity.result_value(m._jump_model[:MARKUP]) ≈ two_by_two_AuxinOutput["MARKUP","benchmark"]#  0.2
+@test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PX‡X")]) ≈ two_by_two_AuxinOutput["SXX","benchmark"]#  80
+@test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PY‡Y")]) ≈ two_by_two_AuxinOutput["SYY","benchmark"]#  100
+@test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PW‡W")]) ≈ two_by_two_AuxinOutput["SWW","benchmark"]#  180
+@test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PL†X")]) ≈ two_by_two_AuxinOutput["DLX","benchmark"]#  14
+@test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PK†X")]) ≈ two_by_two_AuxinOutput["DKX","benchmark"]#  50
+@test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PL†Y")]) ≈ two_by_two_AuxinOutput["DLY","benchmark"]#  60
+@test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PK†Y")]) ≈ two_by_two_AuxinOutput["DKY","benchmark"]#  40
+@test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PX†W")]) ≈ two_by_two_AuxinOutput["DXW","benchmark"]#  80
+@test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PY†W")]) ≈ two_by_two_AuxinOutput["DYW","benchmark"]#  100
+@test MPSGE.Complementarity.result_value(m._jump_model[Symbol("CONS")]) ≈ two_by_two_AuxinOutput["CONS","benchmark"]#  180
+@test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PWρCONS")]) ≈ two_by_two_AuxinOutput["CWCONS","benchmark"]#  180
+
+set_value(CONS,164.)
+set_value(MARKUP, 0.)
+set_fixed!(MARKUP, true)
+set_value(SHAREX, 0.5)
+solve!(m)
+# S.5,M.FX=0
+@test MPSGE.Complementarity.result_value(m._jump_model[:X]) ≈ two_by_two_AuxinOutput["X","S.5,M.FX=0"]#  1.47532914
+@test MPSGE.Complementarity.result_value(m._jump_model[:Y]) ≈ two_by_two_AuxinOutput["Y","S.5,M.FX=0"]#  0.67462967
+@test MPSGE.Complementarity.result_value(m._jump_model[:W]) ≈ two_by_two_AuxinOutput["W","S.5,M.FX=0"]#  1.02198842
+@test MPSGE.Complementarity.result_value(m._jump_model[:PX]) ≈ two_by_two_AuxinOutput["PX","S.5,M.FX=0"]#  0.85587331
+@test MPSGE.Complementarity.result_value(m._jump_model[:PY]) ≈ two_by_two_AuxinOutput["PY","S.5,M.FX=0"]#  0.93361463
+@test MPSGE.Complementarity.result_value(m._jump_model[:PW]) ≈ two_by_two_AuxinOutput["PW","S.5,M.FX=0"]#  0.89150825
+@test MPSGE.Complementarity.result_value(m._jump_model[:PL]) ≈ two_by_two_AuxinOutput["PL","S.5,M.FX=0"]#  0.8092947
+@test MPSGE.Complementarity.result_value(m._jump_model[:PK]) ≈ two_by_two_AuxinOutput["PK","S.5,M.FX=0"]#  1.15680214
+@test MPSGE.Complementarity.result_value(m._jump_model[:SHAREX]) ≈ two_by_two_AuxinOutput["SHAREX","S.5,M.FX=0"]#  0.66719622
+@test MPSGE.Complementarity.result_value(m._jump_model[:MARKUP]) ≈ 0 # two_by_two_AuxinOutput["MARKUP","S.5,M.FX=0"]#  
+@test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PX‡X")]) ≈ two_by_two_AuxinOutput["SXX","S.5,M.FX=0"]#  80
+@test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PY‡Y")]) ≈ two_by_two_AuxinOutput["SYY","S.5,M.FX=0"]#  100
+@test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PW‡W")]) ≈ two_by_two_AuxinOutput["SWW","S.5,M.FX=0"]#  180
+@test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PL†X")]) ≈ two_by_two_AuxinOutput["DLX","S.5,M.FX=0"]#  18.50720517
+@test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PK†X")]) ≈ two_by_two_AuxinOutput["DKX","S.5,M.FX=0"]#  46.2413409
+@test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PL†Y")]) ≈ two_by_two_AuxinOutput["DLY","S.5,M.FX=0"]#  69.21690976
+@test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PK†Y")]) ≈ two_by_two_AuxinOutput["DKY","S.5,M.FX=0"]#  32.28260394
+@test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PX†W")]) ≈ two_by_two_AuxinOutput["DXW","S.5,M.FX=0"]#  115.4869552
+@test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PY†W")]) ≈ two_by_two_AuxinOutput["DYW","S.5,M.FX=0"]#  66.01147878
+@test MPSGE.Complementarity.result_value(m._jump_model[Symbol("CONS")]) ≈ two_by_two_AuxinOutput["CONS","S.5,M.FX=0"]#  164
+@test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PWρCONS")]) ≈ two_by_two_AuxinOutput["CWCONS","S.5,M.FX=0"]#  183.9579158
+
+set_value(CONS,214.5077935)
+set_value(SHAREX, 0.2)
+set_fixed!(SHAREX, true)
+set_fixed!(MARKUP, false)
+set_value(MARKUP, 0.5)
+solve!(m)
+# S.FX.2,M.5
+@test MPSGE.Complementarity.result_value(m._jump_model[:X]) ≈ two_by_two_AuxinOutput["X","S.FX.2,M.5"]#  1.17202012
+@test MPSGE.Complementarity.result_value(m._jump_model[:Y]) ≈ two_by_two_AuxinOutput["Y","S.FX.2,M.5"]#  0.8873001
+@test MPSGE.Complementarity.result_value(m._jump_model[:W]) ≈ two_by_two_AuxinOutput["W","S.FX.2,M.5"]#  1.01275399
+@test MPSGE.Complementarity.result_value(m._jump_model[:PX]) ≈ two_by_two_AuxinOutput["PX","S.FX.2,M.5"]#  1.15776045
+@test MPSGE.Complementarity.result_value(m._jump_model[:PY]) ≈ two_by_two_AuxinOutput["PY","S.FX.2,M.5"]#  1.19412035
+@test MPSGE.Complementarity.result_value(m._jump_model[:PW]) ≈ two_by_two_AuxinOutput["PW","S.FX.2,M.5"]#  1.17670232
+@test MPSGE.Complementarity.result_value(m._jump_model[:PL]) ≈ two_by_two_AuxinOutput["PL","S.FX.2,M.5"]#  1.136618
+@test MPSGE.Complementarity.result_value(m._jump_model[:PK]) ≈ two_by_two_AuxinOutput["PK","S.FX.2,M.5"]#  1.28587413
+@test MPSGE.Complementarity.result_value(m._jump_model[:SHAREX]) ≈ two_by_two_AuxinOutput["SHAREX","S.FX.2,M.5"]#  0.2
+@test MPSGE.Complementarity.result_value(m._jump_model[:MARKUP]) ≈ two_by_two_AuxinOutput["MARKUP","S.FX.2,M.5"]#  0.13513514
+@test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PX‡X")]) ≈ two_by_two_AuxinOutput["SXX","S.FX.2,M.5"]#  80
+@test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PY‡Y")]) ≈ two_by_two_AuxinOutput["SYY","S.FX.2,M.5"]#  100
+@test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PW‡W")]) ≈ two_by_two_AuxinOutput["SWW","S.FX.2,M.5"]#  180
+@test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PL†X")]) ≈ two_by_two_AuxinOutput["DLX","S.FX.2,M.5"]#  15.41666668
+@test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PK†X")]) ≈ two_by_two_AuxinOutput["DKX","S.FX.2,M.5"]#  48.66856253
+@test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PL†Y")]) ≈ two_by_two_AuxinOutput["DLY","S.FX.2,M.5"]#  63.03544503
+@test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PK†Y")]) ≈ two_by_two_AuxinOutput["DKY","S.FX.2,M.5"]#  37.14579281
+@test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PX†W")]) ≈ two_by_two_AuxinOutput["DXW","S.FX.2,M.5"]#  92.58083471
+@test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PY†W")]) ≈ two_by_two_AuxinOutput["DYW","S.FX.2,M.5"]#  87.6125997
+@test MPSGE.Complementarity.result_value(m._jump_model[Symbol("CONS")]) ≈ two_by_two_AuxinOutput["CONS","S.FX.2,M.5"]#  214.5077935
+@test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PWρCONS")]) ≈ two_by_two_AuxinOutput["CWCONS","S.FX.2,M.5"]#  182.2957177
+
 end
