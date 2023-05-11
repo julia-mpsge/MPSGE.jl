@@ -1,4 +1,4 @@
-@testitem "TWOBYTWO (functional version)" begin
+@testitem "TWOBYTWO Input Nest (functional version)" begin
     using XLSX, MPSGE.JuMP.Containers
 
     m = Model()

@@ -238,11 +238,11 @@ struct Endowment
 end
 
 mutable struct Demand
-    commodity::CommodityRef
+    commodity::Any
     quantity::Union{Float64,Expr}
     demand_function::Any
 
-    function Demand(commodity::CommodityRef, quantity::Union{Float64,Expr})
+    function Demand(commodity, quantity::Union{Float64,Expr})
         return new(commodity, quantity, nothing)
     end
 end
@@ -484,7 +484,7 @@ function Endowment(commodity::CommodityRef, quantity::Number)
     return Endowment(commodity, convert(Float64, quantity))
 end
 
-function Demand(commodity::CommodityRef, quantity::Number)
+function Demand(commodity, quantity::Number)
     return Demand(commodity, convert(Float64, quantity))
 end
 
@@ -587,6 +587,21 @@ end
 
 function add!(m::Model, c::DemandFunction)
     m._jump_model = nothing
+
+    for (i,v) in enumerate(c.demands)        
+        if v.commodity isa Nest
+            sector_name = Symbol("$(get_name(c.consumer))→$(v.commodity.name)")
+            commodity_name = Symbol("P$(get_name(c.consumer))→$(v.commodity.name)")
+            sector_ref = add!(m, Sector(sector_name))
+            commodity_ref = add!(m, Commodity(commodity_name))
+            add!(m, Production(sector_ref, 0, v.commodity.elasticity, [Output(commodity_ref, v.commodity.benchmark)], v.commodity.inputs))
+
+            new_Input = Demand(commodity_ref, v.quantity)
+            new_Input.demand_function = v.demand_function
+            c.demands[i] = new_Input
+        end
+    end
+
     push!(m._demands, c)
     return m
 end
