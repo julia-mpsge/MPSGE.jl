@@ -598,7 +598,7 @@ function add!(m::Model, c::DemandFunction)
             commodity_ref = add!(m, Commodity(commodity_name))
             add!(m, Production(sector_ref, 0, v.commodity.elasticity, [Output(commodity_ref, v.commodity.benchmark)], v.commodity.inputs))
 
-            new_Input = Demand(commodity_ref, v.quantity, v.taxes, v.price)
+            new_Input = Demand(commodity_ref, v.quantity)
             new_Input.demand_function = v.demand_function
             c.demands[i] = new_Input
         end
