@@ -1,9 +1,11 @@
 function Θ(pf::Production, i::Input)
-    return :( $(i.quantity) * $(get_commodity_benchmark(i.commodity)) / +($( (:( $(i.quantity) * $(get_commodity_benchmark(i.commodity)) ) for i in pf.inputs)...) ) )
+    return :( $(i.quantity) * $(i.price) * $(get_commodity_benchmark(i.commodity)) / +($( (:( $(i.quantity) * $(i.price) * $(get_commodity_benchmark(i.commodity)) ) for i in pf.inputs)...) ) )
+    # return :( $(i.quantity) * $(get_commodity_benchmark(i.commodity)) / +($( (:( $(i.quantity) * $(get_commodity_benchmark(i.commodity)) ) for i in pf.inputs)...) ) )
 end
 
 function Θ(pf::Production, o::Output)
-    return :( $(o.quantity) * $(get_commodity_benchmark(o.commodity)) / +($( (:( $(o.quantity) * $(get_commodity_benchmark(o.commodity)) ) for o in pf.outputs)...) ) )
+    return :( $(o.quantity) * $(o.price) * $(get_commodity_benchmark(o.commodity)) / +($( (:( $(o.quantity) * $(o.price) * $(get_commodity_benchmark(o.commodity)) ) for o in pf.outputs)...) ) )
+    # return :( $(o.quantity) * $(get_commodity_benchmark(o.commodity)) / +($( (:( $(o.quantity) * $(get_commodity_benchmark(o.commodity)) ) for o in pf.outputs)...) ) )
 end
 
 function Θ(df::DemandFunction, dm::Demand)   
@@ -160,6 +162,7 @@ function build_implicitconstraints!(m, jm)
             ex = :(
                 JuMP.@NLexpression(
                     $(jm),
+                    # $(input.quantity) * $(input.price) *
                     $(input.quantity) *
                     $(y_over_y_bar(jm, s)) *
                  (       
@@ -183,6 +186,7 @@ function build_implicitconstraints!(m, jm)
             ex = :(
                 JuMP.@NLexpression(
                     $(jm),
+                    # $(output.quantity) * $(output.price) *
                     $(output.quantity) *
                     $(y_over_y_bar(jm, s)) *
                         (
