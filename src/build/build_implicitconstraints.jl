@@ -58,8 +58,8 @@ function create_cost_expr(m, jm, pf::Production)
         return :(
             ifelse(
                 $(pf.elasticity)==1.,
-                *($((:((($(get_jump_expression_for_commodity_consumer_price(m, jm, pf, input.commodity)))/($(get_commodity_benchmark(input.commodity)))) ^ $(Θ(pf, input))) for input in pf.inputs)...)) * $(y_over_y_bar(jm, pf)),
-                (+($((:($(Θ(pf, input)) * (($(get_jump_expression_for_commodity_consumer_price(m, jm, pf, input.commodity)))/($(get_commodity_benchmark(input.commodity)))) ^ (1-$(pf.elasticity))) for input in pf.inputs)...)))^(1/(1-$(pf.elasticity))) * $(y_over_y_bar(jm, pf))
+                *($((:(($(get_jump_expression_for_commodity_consumer_price(m, jm, pf, input.commodity))/$(get_commodity_benchmark(input.commodity))) ^ $(Θ(pf, input))) for input in pf.inputs)...)) * $(y_over_y_bar(jm, pf)),
+                (+($((:($(Θ(pf, input)) * ($(get_jump_expression_for_commodity_consumer_price(m, jm, pf, input.commodity))/$(get_commodity_benchmark(input.commodity))) ^ (1-$(pf.elasticity))) for input in pf.inputs)...)))^(1/(1-$(pf.elasticity))) * $(y_over_y_bar(jm, pf))
             )
         )
     else # This branch is an optimization: if the elasticity doesn't contain a parameter, we can at build time only insert one case into the expression
@@ -68,7 +68,7 @@ function create_cost_expr(m, jm, pf::Production)
                 *(
                     $(
                         (:(
-                            (($(get_jump_expression_for_commodity_consumer_price(m, jm, pf, input.commodity)))/($(get_commodity_benchmark(input.commodity)))) ^ $(Θ(pf, input))
+                            ($(get_jump_expression_for_commodity_consumer_price(m, jm, pf, input.commodity))/$(get_commodity_benchmark(input.commodity))) ^ $(Θ(pf, input))
                         ) for input in pf.inputs)...
                     )
                 ) * $(y_over_y_bar(jm, pf))
@@ -78,7 +78,7 @@ function create_cost_expr(m, jm, pf::Production)
                 (+(
                     $(
                         (:(
-                            $(Θ(pf, input)) * (($(get_jump_expression_for_commodity_consumer_price(m, jm, pf, input.commodity)))/($(get_commodity_benchmark(input.commodity)))) ^ (1-$(pf.elasticity))  
+                            $(Θ(pf, input)) * ($(get_jump_expression_for_commodity_consumer_price(m, jm, pf, input.commodity))/$(get_commodity_benchmark(input.commodity))) ^ (1-$(pf.elasticity))  
                         ) for input in pf.inputs)...
                     )
                 ))^(1/(1-$(pf.elasticity))) * $(y_over_y_bar(jm, pf))
@@ -94,8 +94,8 @@ function create_rev_expr(m, jm, pf::Production)
                 $(
                     (
                         :(
-                            $(Θ(pf, output)) *
-                            ($(get_jump_expression_for_commodity_producer_price(m, jm, pf, output.commodity))/$(get_commodity_benchmark(output.commodity)))^(1.0 + $(pf.tr_elasticity))
+                                    $(Θ(pf, output)) *
+                                    ($(get_jump_expression_for_commodity_producer_price(m, jm, pf, output.commodity))/$(get_commodity_benchmark(output.commodity)))^(1.0 + $(pf.tr_elasticity))
                         ) for output in pf.outputs
                     )...
                 )
