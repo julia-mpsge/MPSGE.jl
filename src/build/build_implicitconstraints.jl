@@ -11,8 +11,8 @@ function Θ(jm, df::DemandFunction, dm::Demand)
     # return :( $(dm.quantity) * $(dm.price) / $(get_consumer_benchmark(df.consumer)))
     # return :( $(get_jump_variable_for_commodity(jm, dm.commodity)) * $(dm.price) * $(get_commodity_benchmark(dm.commodity))/ $(get_consumer_benchmark(df.consumer)))
     # return :( $(dm.quantity) * $(get_commodity_benchmark(dm.commodity))/ $(get_consumer_benchmark(df.consumer)))
-    return :( $(dm.quantity) * $(dm.price) * $(get_commodity_benchmark(dm.commodity))/ +($( (:( $(demand.quantity) * $(demand.price) * $(get_commodity_benchmark(demand.commodity))) for demand in df.demands)...) ) )
-    # return :($(dm.quantity) * $(dm.price) * $(get_commodity_benchmark(dm.commodity))/ +($( (:( $(dm.quantity)  * $(get_commodity_benchmark(dm.commodity))) for dm in df.demands)...) ) )
+    return :( $(dm.quantity) * $(dm.price) * $(get_commodity_benchmark(dm.commodity))/ (+($( (:( $(demand.quantity) * $(demand.price) * $(get_commodity_benchmark(demand.commodity))) for demand in df.demands)...) ) ))
+    # return :($(dm.quantity) * $(dm.price) * $(get_commodity_benchmark(dm.commodity))/ (+($( (:( $(dm.quantity) * $(dm.price) * $(get_commodity_benchmark(dm.commodity))) for dm in df.demands)...) ) ))
     # return :( $(dm.price) * $(get_commodity_benchmark(dm.commodity))/ $(get_consumer_benchmark(df.consumer)))
 
     # return :($(dm.quantity) / $(get_consumer_benchmark(df.consumer)))
@@ -115,11 +115,14 @@ function u_over_u_bar(jm, df::DemandFunction)
     if contains_our_param(df.elasticity)
         println("First call")
         ρ = :(($(df.elasticity)-1)/$(df.elasticity))
-        ubar = eval(swap_our_param_with_val(:((+($((:( $(Θ(jm,df,d)) * ($(d.quantity)/$(get_commodity_benchmark(d.commodity)))^$ρ ) for d in df.demands)...)))^(1/$ρ))))
-println("Ubar=", ubar)
-        return :(
-            (+($((:( $(Θ(jm,df,d)) * ($(d.quantity)/$(d.quantity))^$ρ ) for d in df.demands)...)))^(1/$ρ)
-            # (+($((:( $(Θ(jm,df,d)) * ($(jm[get_final_demand_name(d)])/$(get_commodity_benchmark(d.commodity)))^$ρ ) for d in df.demands)...)))^(1/$ρ)
+        # ubar = eval(swap_our_param_with_val(:((+($((:( $(Θ(jm,df,d)) * ($(jm[get_final_demand_name(d)])/$(get_commodity_benchmark(d.commodity)))^$ρ ) for d in df.demands)...)))^(1/$ρ))))
+# println("Ubar=", ubar)
+# return :((+($((:( $(Θ(jm,df,d)) * (($(d.quantity))/($(d.quantity)*$(d.price)))^$ρ ) for d in df.demands)...)))^(1/$ρ)
+# return :((+($((:( $(Θ(jm,df,d)) * (($(d.quantity))/$(d.quantity))^$ρ ) for d in df.demands)...)))^(1/$ρ)
+    # return :((+($((:( $(Θ(jm,df,d)) * (($(d.quantity)*$(d.price))/$(d.quantity))^$ρ ) for d in df.demands)...)))^(1/$ρ)
+return :((+($((:( $(Θ(jm,df,d)) * (($(jm[get_final_demand_name(d)]))/$(d.quantity))^$ρ ) for d in df.demands)...)))^(1/$ρ)
+# return :((+($((:( $(Θ(jm,df,d)) * (($(jm[get_final_demand_name(d)])*$(d.price))/$(d.quantity))^$ρ ) for d in df.demands)...)))^(1/$ρ)
+# return :((+($((:( $(Θ(jm,df,d)) * (($(jm[get_final_demand_name(d)])*$(d.price))/$(get_commodity_benchmark(d.commodity)))^$ρ ) for d in df.demands)...)))^(1/$ρ)
                     # (+($((:( $(Θ(jm,df,d)) * ($(jm[get_final_demand_name(d)])/$(get_commodity_benchmark(d.commodity)))^$ρ ) for d in df.demands)...)))^(1/$ρ)
                 )
     else # This branch is an optimization: if the elasticity doesn't contain a parameter, we can at build time only insert one case into the expression
@@ -128,16 +131,22 @@ println("Ubar=", ubar)
             return :(
                 (
                     +(
+                        # $((:( $(Θ(jm,df,d)) * (($(jm[get_final_demand_name(d)])*$(d.price))/$(get_commodity_benchmark(d.commodity)))^$ρ ) for d in df.demands)...)
+                        # $((:( $(Θ(jm,df,d)) * ($(get_jump_variable_for_commodity(jm, demand.commodity))/$(get_commodity_benchmark(d.commodity)))^$ρ ) for d in df.demands)...)
                         # $((:( $(Θ(jm,df,d)) * ($(d.quantity)/$(get_commodity_benchmark(d.commodity)))^$ρ ) for d in df.demands)...)
-                        $((:( $(Θ(jm,df,d)) * ($(jm[get_final_demand_name(d)])/$(get_commodity_benchmark(d.commodity)))^$ρ ) for d in df.demands)...)
+                        $((:( $(Θ(jm,df,d)) * (($(d.quantity))/$(d.quantity))^$ρ ) for d in df.demands)...)
+                        # $((:( $(Θ(jm,df,d)) * (($(d.quantity)*$(d.price))/$(d.quantity))^$ρ ) for d in df.demands)...)
+                        # $((:( $(Θ(jm,df,d)) * (($(jm[get_final_demand_name(d)])*$(d.price))/$(d.quantity))^$ρ ) for d in df.demands)...)
+                        # $((:( $(Θ(jm,df,d)) * (($(get_jump_variable_for_commodity(jm, demand.commodity))*$(d.price))/$(d.quantity))^$ρ ) for d in df.demands)...)
                     )
                 )^(1/$ρ)
             )
-        
-    end
+     end
 end
 
 function create_utility_expr(jm, dm::DemandFunction)
+    ρ = :(($(dm.elasticity)-1)/$(dm.elasticity))
+
     return :( 
         (
             +(
@@ -166,18 +175,18 @@ function create_utility_expr(jm, dm::DemandFunction)
                             # (($(demand.quantity)*$(demand.price))/$(demand.quantity))^(($(dm.elasticity)-1)/$(dm.elasticity))
                             # (($(get_jump_variable_for_commodity(jm, demand.commodity))*$(demand.price))/($(get_commodity_benchmark(demand.commodity))*$(demand.price)))^(($(dm.elasticity)-1)/$(dm.elasticity))
                             # (($(get_jump_variable_for_commodity(jm, demand.commodity))*$(demand.price))/$(get_commodity_benchmark(demand.commodity)))^(($(dm.elasticity)-1)/$(dm.elasticity))
-                            # ($(get_jump_variable_for_commodity(jm, demand.commodity))/($(get_commodity_benchmark(demand.commodity))))^(($(dm.elasticity)-1)/$(dm.elasticity))                          
+                            (($(get_jump_variable_for_commodity(jm, demand.commodity))*$(dm.price))/($(get_commodity_benchmark(demand.commodity))*$(demand.price)))^(($(dm.elasticity)-1)/$(dm.elasticity))                          
 
                             # ($(get_commodity_benchmark(demand.commodity))/$(get_commodity_benchmark(demand.commodity)))^(($(dm.elasticity)-1)/$(dm.elasticity))                          
                             # ($(get_jump_variable_for_commodity(jm, demand.commodity))/$(get_jump_variable_for_commodity(jm, demand.commodity)))^(($(dm.elasticity)-1)/$(dm.elasticity))
                             # ($(jm[get_final_demand_name(demand)])/$(jm[get_final_demand_name(demand)])) ^(($(dm.elasticity)-1)/$(dm.elasticity))
-                            ($(demand.quantity)/$(demand.quantity))^(($(dm.elasticity)-1)/$(dm.elasticity))
+                            # ($(demand.quantity)/$(demand.quantity))^(($(dm.elasticity)-1)/$(dm.elasticity))
                         ) for demand in dm.demands
                     )...
                 )
             )
         )^(
-            1 / 
+            1 / #ρ
             (
                 ($(dm.elasticity)-1) / 
                 $(dm.elasticity)
@@ -186,35 +195,88 @@ function create_utility_expr(jm, dm::DemandFunction)
     )
 end
 
-function create_expenditure_expr(jm, df::DemandFunction)
-    return :( 
-        (
-            +(
-                $(
-                    (
-                        :(
-                            $(Θ(jm, df, dm)) *# $(dm.price) *
-                            (
-                                # $(jm[get_final_demand_name(dm)])/
-                                # ($(dm.quantity)) /
-                                # ($(dm.quantity)*$(dm.price))/
-                                # ($(get_jump_variable_for_commodity(jm, dm.commodity))*$(dm.price)) /
-                                # Equivalent of get_jump_expression_for_commodity_consumer_price?
-                                # (1.0+$(dm.price)) /
-                                $(get_jump_variable_for_commodity(jm, dm.commodity)) /
-                                ($(get_commodity_benchmark(dm.commodity))*$(dm.price))#*$(dm.quantity))
-                                # $(get_commodity_benchmark(dm.commodity))
-                                # ($(dm.quantity)*$(dm.price))
+# function create_expenditure_expr(jm, df::DemandFunction)
+#     return :( 
+#         (
+#             +(
+#                 $(
+#                     (
+#                         :(
+#                             $(Θ(jm, df, dm)) *# $(dm.price) *
+#                             (
+#                                 # $(jm[get_final_demand_name(dm)])*$(dm.price)/
+#                                 # ($(dm.quantity)) /
+#                                 # ($(dm.quantity)*$(dm.price))/
+#                                 # ($(get_jump_variable_for_commodity(jm, dm.commodity))/$(dm.price)) /
+#                                 # Equivalent of get_jump_expression_for_commodity_consumer_price?
+#                                 # (1.0+$(dm.price)) /
+#                                 $(get_jump_variable_for_commodity(jm, dm.commodity)) /
+#                                 ($(get_commodity_benchmark(dm.commodity))*$(dm.price))#*$(dm.quantity))
+#                                 # $(get_commodity_benchmark(dm.commodity))
+#                                 # ($(dm.quantity)*$(dm.price))
 
-                            )^(1-$(df.elasticity))
-                        ) for dm in df.demands
-                    )...
-                )
-            )
-       )^(1/(1-$(df.elasticity))) *
-        $(create_utility_expr(jm,df))
-        #   $(u_over_u_bar(jm, df))
-    )
+#                             )^(1-$(df.elasticity))
+#                         ) for dm in df.demands
+#                     )...
+#                 )
+#             )
+#        )^(1/(1-$(df.elasticity))) *
+#         # $(create_utility_expr(jm,df))
+#           $(u_over_u_bar(jm, df))
+#     )
+# end
+
+function create_expenditure_expr(jm, df::DemandFunction)
+    if contains_our_param(df.elasticity)
+        return :((
+            (+($((:($(Θ(jm, df, dm)) *
+         ($(get_jump_variable_for_commodity(jm, dm.commodity))
+        #  *$(dm.price)
+         
+         /
+         ($(get_commodity_benchmark(dm.commodity))
+         *$(dm.price)
+         )) ^ (1-$(df.elasticity))) for dm in df.demands)...)))^(1/(1-$(df.elasticity))) * $(u_over_u_bar(jm, df))))
+    else # This branch is an optimization: if the elasticity doesn't contain a parameter, we can at build time only insert one case into the expression
+            return :((
+                (+($((:($(Θ(jm, df, dm)) *
+            ($(get_jump_variable_for_commodity(jm, dm.commodity))
+            # *$(dm.price)
+            
+            /
+            ($(get_commodity_benchmark(dm.commodity))
+            *$(dm.price)
+            )) ^ (1-$(df.elasticity))) for dm in df.demands)...)))^(1/(1-$(df.elasticity))) * $(u_over_u_bar(jm, df))))
+    end
+
+    # return :( 
+    #     (
+    #         +(
+    #             $(
+    #                 (
+    #                     :(
+    #                         $(Θ(jm, df, dm)) *# $(dm.price) *
+    #                         (
+    #                             # $(jm[get_final_demand_name(dm)])*$(dm.price)/
+    #                             # ($(dm.quantity)) /
+    #                             # ($(dm.quantity)*$(dm.price))/
+    #                             # ($(get_jump_variable_for_commodity(jm, dm.commodity))/$(dm.price)) /
+    #                             # Equivalent of get_jump_expression_for_commodity_consumer_price?
+    #                             # (1.0+$(dm.price)) /
+    #                             $(get_jump_variable_for_commodity(jm, dm.commodity)) /
+    #                             ($(get_commodity_benchmark(dm.commodity))*$(dm.price))#*$(dm.quantity))
+    #                             # $(get_commodity_benchmark(dm.commodity))
+    #                             # ($(dm.quantity)*$(dm.price))
+
+    #                         )^(1-$(df.elasticity))
+    #                     ) for dm in df.demands
+    #                 )...
+    #             )
+    #         )
+    #    )^(1/(1-$(df.elasticity))) *
+    #     # $(create_utility_expr(jm,df))
+    #       $(u_over_u_bar(jm, df))
+    # )
 end
 
 function build_implicitconstraints!(m, jm)
@@ -330,14 +392,18 @@ function build_implicitconstraints!(m, jm)
                     JuMP.@NLexpression(
                         $(jm),
                         # $(get_commodity_benchmark(demand.commodity)) * $(demand.price) *
-                        $(demand.quantity) *# $(demand.price) *
-                        ($(get_jump_variable_for_consumer(jm, demand_function.consumer)) / # (consumer's) income
+                        $(demand.quantity) *
+                        # ($(demand.price)) *
+                        (($(get_jump_variable_for_consumer(jm, demand_function.consumer))) / # (consumer's) income
                         $(get_consumer_benchmark(demand_function.consumer)) # benchmark income (?)
+                        # ($(get_consumer_benchmark(demand_function.consumer))*$(demand.price)) # benchmark income (?)
                         ) * 
-                        # 1.000159235
+                        # $(u_over_u_bar(jm,demand_function)) *
                         (
-                            $(create_expenditure_expr(jm, demand_function))* $(demand.price)
-                        )^($(demand_function.elasticity)-1) *
+                            # $(create_expenditure_expr(jm, demand_function))* $(demand.price) *$(get_commodity_benchmark(demand.commodity))/
+                            # $(get_jump_variable_for_commodity(jm, demand.commodity))
+                            $(create_expenditure_expr(jm, demand_function))#* $(demand.price)
+                        )^($(demand_function.elasticity))*#-1) *# $(demand.price) *
                         (
                       
                         # (( $(demand.quantity) * $(demand.price)) )/ # p__bar_i
@@ -346,9 +412,12 @@ function build_implicitconstraints!(m, jm)
                             # (1.0+$(demand.price))
                             # Equivalent of get_jump_expression_for_commodity_consumer_price?
                             $(get_jump_variable_for_commodity(jm, demand.commodity))
-                            # ($(get_jump_variable_for_commodity(jm, demand.commodity))*$(demand.price))
+                            # ($(get_jump_variable_for_commodity(jm, demand.commodity)) * $(demand.price))
                             # ($(demand.quantity)*$(demand.price))
-                        )^$(demand_function.elasticity) - # p_i
+                            # ( ($(get_commodity_benchmark(demand.commodity)) * $(demand.price)) ) # p__bar_i
+
+                        )^$(demand_function.elasticity) 
+                        - # p_i
                         $(jm[get_final_demand_name(demand)])
                     )
                 )

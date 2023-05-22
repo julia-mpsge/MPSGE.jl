@@ -58,7 +58,7 @@ set_value(esub_ra, .6)
 # set_fixed!(PL,true)
 # # # set_value(RA,172.2046917)
 # # # set_fixed!(RA, true)
-set_value(pr_Ud, 2.)
+set_value(pr_Ud, 3.)
 solve!(m)
 
 # set_value(itax, 0.1)
@@ -67,7 +67,7 @@ solve!(m)
 # set_value(otax, 0.1)
 # solve!(m)
 
-algebraic_version(m)
-solve!(m)
+# algebraic_version(m)
+# solve!(m)
 
 
