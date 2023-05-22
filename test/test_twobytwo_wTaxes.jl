@@ -1648,7 +1648,7 @@ m = Model()
 # A set up to test N: Endogenous taxes (and M: the multiplier), the Auxiliary Variable in Production blocks (applied to Outputs)       
 
 sigma = add!(m,Parameter(:sigma, value=9.0))
-
+muindex = [:a, :b]
 X = add!(m, Sector(:X))
 Y = add!(m, Sector(:Y))
 W = add!(m, Sector(:W))
@@ -1662,15 +1662,16 @@ PK = add!(m, Commodity(:PK))
 CONS = add!(m, Consumer(:CONS, benchmark=180.))
 
 SHAREX = add!(m, Aux(:SHAREX, benchmark=0.5))
-MARKUP = add!(m, Aux(:MARKUP, benchmark=0.2))
+MARKUP = add!(m, Aux(:MARKUP, indices=(muindex,), benchmark=0.2))
 
-add!(m, Production(X, 0, 1.0, [Output(PX, 80., [Tax(:(1.0*$MARKUP), CONS)])], [Input(PL, 14), Input(PK, 50)]))
+add!(m, Production(X, 0, 1.0, [Output(PX, 80., [Tax(:(1.0*$(MARKUP[:a])), CONS)])], [Input(PL, 14), Input(PK, 50)]))
 add!(m, Production(Y, 0, 1.0, [Output(PY, 100.)],                             [Input(PL, 60), Input(PK, 40)]))
 add!(m, Production(W, 0, 9.0, [Output(PW, 180.)], [Input(PX,80), Input(PY,100.)]))
 
 add!(m, DemandFunction(CONS, 1., [Demand(PW,180.)], [Endowment(PL, 74.), Endowment(PK, 90)]))
 add!(m, AuxConstraint(SHAREX, :($SHAREX == 100*$PX*$X / (100*$PX*$X + 100*$PY*$Y))))
-add!(m, AuxConstraint(MARKUP, :($MARKUP == 1 / ($sigma - ($sigma-1) * $SHAREX))))
+add!(m, AuxConstraint(MARKUP[:a], :($(MARKUP[:a]) == 1 / ($sigma - ($sigma-1) * $SHAREX))))
+add!(m, AuxConstraint(MARKUP[:b], :(1+1 == 2))) #articificial constraint just to test fixing indexed Aux
 
 set_fixed!(CONS, true)
 solve!(m, cumulative_iteration_limit=0)
@@ -1684,7 +1685,7 @@ solve!(m, cumulative_iteration_limit=0)
 @test MPSGE.Complementarity.result_value(m._jump_model[:PL]) ≈ two_by_two_AuxinOutput["PL","benchmark"]#  1
 @test MPSGE.Complementarity.result_value(m._jump_model[:PK]) ≈ two_by_two_AuxinOutput["PK","benchmark"]#  1
 @test MPSGE.Complementarity.result_value(m._jump_model[:SHAREX]) ≈ two_by_two_AuxinOutput["SHAREX","benchmark"]#  0.5
-@test MPSGE.Complementarity.result_value(m._jump_model[:MARKUP]) ≈ two_by_two_AuxinOutput["MARKUP","benchmark"]#  0.2
+@test MPSGE.Complementarity.result_value(m._jump_model[:MARKUP][:a]) ≈ two_by_two_AuxinOutput["MARKUP","benchmark"]#  0.2
 @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PX‡X")]) ≈ two_by_two_AuxinOutput["SXX","benchmark"]#  80
 @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PY‡Y")]) ≈ two_by_two_AuxinOutput["SYY","benchmark"]#  100
 @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PW‡W")]) ≈ two_by_two_AuxinOutput["SWW","benchmark"]#  180
@@ -1698,8 +1699,8 @@ solve!(m, cumulative_iteration_limit=0)
 @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PWρCONS")]) ≈ two_by_two_AuxinOutput["CWCONS","benchmark"]#  180
 
 set_value(CONS,164.)
-set_value(MARKUP, 0.)
-set_fixed!(MARKUP, true)
+set_value(MARKUP[:a], 0.)
+set_fixed!(MARKUP[:a], true)
 set_value(SHAREX, 0.5)
 solve!(m)
 # S.5,M.FX=0
@@ -1712,7 +1713,7 @@ solve!(m)
 @test MPSGE.Complementarity.result_value(m._jump_model[:PL]) ≈ two_by_two_AuxinOutput["PL","S.5,M.FX=0"]#  0.8092947
 @test MPSGE.Complementarity.result_value(m._jump_model[:PK]) ≈ two_by_two_AuxinOutput["PK","S.5,M.FX=0"]#  1.15680214
 @test MPSGE.Complementarity.result_value(m._jump_model[:SHAREX]) ≈ two_by_two_AuxinOutput["SHAREX","S.5,M.FX=0"]#  0.66719622
-@test MPSGE.Complementarity.result_value(m._jump_model[:MARKUP]) ≈ 0 # two_by_two_AuxinOutput["MARKUP","S.5,M.FX=0"]#  
+@test MPSGE.Complementarity.result_value(m._jump_model[:MARKUP][:a]) ≈0 # two_by_two_AuxinOutput["MARKUP","S.5,M.FX=0"]#  
 @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PX‡X")]) ≈ two_by_two_AuxinOutput["SXX","S.5,M.FX=0"]#  80
 @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PY‡Y")]) ≈ two_by_two_AuxinOutput["SYY","S.5,M.FX=0"]#  100
 @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PW‡W")]) ≈ two_by_two_AuxinOutput["SWW","S.5,M.FX=0"]#  180
@@ -1728,8 +1729,8 @@ solve!(m)
 set_value(CONS,214.5077935)
 set_value(SHAREX, 0.2)
 set_fixed!(SHAREX, true)
-set_fixed!(MARKUP, false)
-set_value(MARKUP, 0.5)
+set_fixed!(MARKUP[:a], false)
+set_value(MARKUP[:a], 0.5)
 solve!(m)
 # S.FX.2,M.5
 @test MPSGE.Complementarity.result_value(m._jump_model[:X]) ≈ two_by_two_AuxinOutput["X","S.FX.2,M.5"]#  1.17202012
@@ -1741,7 +1742,7 @@ solve!(m)
 @test MPSGE.Complementarity.result_value(m._jump_model[:PL]) ≈ two_by_two_AuxinOutput["PL","S.FX.2,M.5"]#  1.136618
 @test MPSGE.Complementarity.result_value(m._jump_model[:PK]) ≈ two_by_two_AuxinOutput["PK","S.FX.2,M.5"]#  1.28587413
 @test MPSGE.Complementarity.result_value(m._jump_model[:SHAREX]) ≈ two_by_two_AuxinOutput["SHAREX","S.FX.2,M.5"]#  0.2
-@test MPSGE.Complementarity.result_value(m._jump_model[:MARKUP]) ≈ two_by_two_AuxinOutput["MARKUP","S.FX.2,M.5"]#  0.13513514
+@test MPSGE.Complementarity.result_value(m._jump_model[:MARKUP][:a]) ≈ two_by_two_AuxinOutput["MARKUP","S.FX.2,M.5"]#  0.13513514
 @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PX‡X")]) ≈ two_by_two_AuxinOutput["SXX","S.FX.2,M.5"]#  80
 @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PY‡Y")]) ≈ two_by_two_AuxinOutput["SYY","S.FX.2,M.5"]#  100
 @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PW‡W")]) ≈ two_by_two_AuxinOutput["SWW","S.FX.2,M.5"]#  180

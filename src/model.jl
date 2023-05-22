@@ -30,7 +30,7 @@ struct AuxRef
     model
     index::Int
     subindex::Any
-    Subindex_names::Any
+    subindex_names::Any
 end
 
 abstract type Parameter end;
