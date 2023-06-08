@@ -153,6 +153,23 @@ function get_jump_expression_for_commodity_consumer_price(m::Model, jm, pf, comm
     return :($jump_commodity * (1. + $tax))
 end
 
+# function get_jump_expression_for_commodity_consumer_price(m::Model, jm, df::DemandFunction, commodity::CommodityRef)
+#     jump_commodity = get_jump_variable_for_commodity(jm, commodity)
+#     price = []
+#     for dm in df.demands
+#         if df.commodity == commodity
+            
+#             for tax in input.taxes
+#                 push!(taxes, tax.rate)
+#             end
+#         end
+#     end
+
+#     tax = :(+(0., $(taxes...)))
+
+#     return :($jump_commodity * (1. + $tax))
+# end
+
 function get_jump_variable_for_consumer(jm, consumer::ConsumerRef)
     if consumer.subindex===nothing
         return jm[get_name(consumer)]
