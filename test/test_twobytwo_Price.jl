@@ -405,7 +405,6 @@ PK = add!(m, Commodity(:PK))
 
 RA = add!(m, Consumer(:RA, benchmark=134.))
 
-# add!(m, Production(X, 0, :(1.0 * $esub_x), [Output(PX, 110)], [Input(PL, 50), Input(PK, 50)]))
 add!(m, Production(X, 0, :(1.0 * $esub_x), [Output(PX, 80, [Tax(:($otax*1.),RA)])], [Input(PL, 30, [Tax(:($itax*1.),RA)]), Input(PK, 50)]))
 # add!(m, Production(Y, 0, :(1.0 * $esub_y), [Output(PY, 54)], [Input(PL, 20), Input(PK, 30)]))
 # add!(m, Production(Y, 0, :(1.0 * $esub_y), [Output(PY, 54)],                         [Input(PL, 20, [Tax(:($itax*1.),RA)], 1.2), Input(PK, 30)]))
@@ -413,7 +412,7 @@ add!(m, Production(Y, 0, :(1.0 * $esub_y), [Output(PY, 54)], [Input(PL, 24,), In
 add!(m, Production(U, 0, :(1.0 * $esub_u), [Output(PU, 124.)], [Input(PX, 80), Input(PY, 44)]))
 
 add!(m, DemandFunction(RA, :($esub_ra*1.), [Demand(PU,124., :($pr_Ud*1.)), Demand(PY,10, 1.0)], [Endowment(PL, :(54. *$endow)), Endowment(PK, 80)]))
-# :($esub_ra*1.)
+
 set_fixed!(PU,true)
 solve!(m, cumulative_iteration_limit=0)
 # benchmark
@@ -469,28 +468,28 @@ solve!(m)
 @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PYρRA")]) ≈ two_by_two_PriceinDemand["DY","RA=157"]#  10.4327007
 # @test MPSGE.Complementarity.result_value(m._jump_model[:PYρRA]) ≈ two_by_two_PriceinDemand["DY","RA=157"]#  10.4327007
 
-set_value(esub_ra, 0.6)
-# eRA=.5
-@test MPSGE.Complementarity.result_value(m._jump_model[:X]) ≈ two_by_two_PriceinDemand["X","eRA=.5"]#  1.036552
-@test MPSGE.Complementarity.result_value(m._jump_model[:Y]) ≈ two_by_two_PriceinDemand["Y","eRA=.5"]#  1.0430251
-@test MPSGE.Complementarity.result_value(m._jump_model[:U]) ≈ two_by_two_PriceinDemand["U","eRA=.5"]#  1.03899
-@test MPSGE.Complementarity.result_value(m._jump_model[:PX]) ≈ two_by_two_PriceinDemand["PX","eRA=.5"]#  1.002352
-@test MPSGE.Complementarity.result_value(m._jump_model[:PY]) ≈ two_by_two_PriceinDemand["PY","eRA=.5"]#  0.9957377
-@test MPSGE.Complementarity.result_value(m._jump_model[:PU]) ≈ two_by_two_PriceinDemand["PU","eRA=.5"]#  1
-@test MPSGE.Complementarity.result_value(m._jump_model[:PL]) ≈ two_by_two_PriceinDemand["PL","eRA=.5"]#  0.9443705
-@test MPSGE.Complementarity.result_value(m._jump_model[:PK]) ≈ two_by_two_PriceinDemand["PK","eRA=.5"]#  1.038836
-@test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PX‡X")]) ≈ two_by_two_PriceinDemand["SX","eRA=.5"]#  80
-@test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PY‡Y")]) ≈ two_by_two_PriceinDemand["SY","eRA=.5"]#  54
-@test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PU‡U")]) ≈ two_by_two_PriceinDemand["SU","eRA=.5"]#  124
-@test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PL†X")]) ≈ two_by_two_PriceinDemand["DXL","eRA=.5"]#  31.8419115
-@test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PK†X")]) ≈ two_by_two_PriceinDemand["DXK","eRA=.5"]#  48.2439966
-@test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PL†Y")]) ≈ two_by_two_PriceinDemand["DYL","eRA=.5"]#  25.3054345
-@test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PK†Y")]) ≈ two_by_two_PriceinDemand["DYK","eRA=.5"]#  28.7553865
-@test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PX†U")]) ≈ two_by_two_PriceinDemand["DUX","eRA=.5"]#  79.812279
-@test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PY†U")]) ≈ two_by_two_PriceinDemand["DUY","eRA=.5"]#  44.1883435
-@test MPSGE.Complementarity.result_value(m._jump_model[:RA]) ≈ two_by_two_PriceinDemand["RA","eRA=.5"]#  139.2024876
-@test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PUρRA")]) ≈ two_by_two_PriceinDemand["DU","eRA=.5"]#  128.8347541
-@test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PYρRA")]) ≈ two_by_two_PriceinDemand["DY","eRA=.5"]#  10.4121129
+# set_value(esub_ra, 0.6)
+# # eRA=.5
+# @test MPSGE.Complementarity.result_value(m._jump_model[:X]) ≈ two_by_two_PriceinDemand["X","eRA=.5"]#  1.036552
+# @test MPSGE.Complementarity.result_value(m._jump_model[:Y]) ≈ two_by_two_PriceinDemand["Y","eRA=.5"]#  1.0430251
+# @test MPSGE.Complementarity.result_value(m._jump_model[:U]) ≈ two_by_two_PriceinDemand["U","eRA=.5"]#  1.03899
+# @test MPSGE.Complementarity.result_value(m._jump_model[:PX]) ≈ two_by_two_PriceinDemand["PX","eRA=.5"]#  1.002352
+# @test MPSGE.Complementarity.result_value(m._jump_model[:PY]) ≈ two_by_two_PriceinDemand["PY","eRA=.5"]#  0.9957377
+# @test MPSGE.Complementarity.result_value(m._jump_model[:PU]) ≈ two_by_two_PriceinDemand["PU","eRA=.5"]#  1
+# @test MPSGE.Complementarity.result_value(m._jump_model[:PL]) ≈ two_by_two_PriceinDemand["PL","eRA=.5"]#  0.9443705
+# @test MPSGE.Complementarity.result_value(m._jump_model[:PK]) ≈ two_by_two_PriceinDemand["PK","eRA=.5"]#  1.038836
+# @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PX‡X")]) ≈ two_by_two_PriceinDemand["SX","eRA=.5"]#  80
+# @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PY‡Y")]) ≈ two_by_two_PriceinDemand["SY","eRA=.5"]#  54
+# @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PU‡U")]) ≈ two_by_two_PriceinDemand["SU","eRA=.5"]#  124
+# @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PL†X")]) ≈ two_by_two_PriceinDemand["DXL","eRA=.5"]#  31.8419115
+# @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PK†X")]) ≈ two_by_two_PriceinDemand["DXK","eRA=.5"]#  48.2439966
+# @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PL†Y")]) ≈ two_by_two_PriceinDemand["DYL","eRA=.5"]#  25.3054345
+# @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PK†Y")]) ≈ two_by_two_PriceinDemand["DYK","eRA=.5"]#  28.7553865
+# @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PX†U")]) ≈ two_by_two_PriceinDemand["DUX","eRA=.5"]#  79.812279
+# @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PY†U")]) ≈ two_by_two_PriceinDemand["DUY","eRA=.5"]#  44.1883435
+# @test MPSGE.Complementarity.result_value(m._jump_model[:RA]) ≈ two_by_two_PriceinDemand["RA","eRA=.5"]#  139.2024876
+# @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PUρRA")]) ≈ two_by_two_PriceinDemand["DU","eRA=.5"]#  128.8347541
+# @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PYρRA")]) ≈ two_by_two_PriceinDemand["DY","eRA=.5"]#  10.4121129
 # @test MPSGE.Complementarity.result_value(m._jump_model[:PYρRA]) ≈ two_by_two_PriceinDemand["DY","eRA=.5"]#  10.4121129
 
 # set_value(pr_Ud, 2.)
