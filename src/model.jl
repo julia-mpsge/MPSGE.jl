@@ -242,10 +242,11 @@ end
 mutable struct Demand
     commodity::Any
     quantity::Union{Float64,Expr}
+    price::Union{Float64,Expr}
     demand_function::Any
 
-    function Demand(commodity, quantity::Union{Float64,Expr})
-        return new(commodity, quantity, nothing)
+    function Demand(commodity, quantity::Union{Float64,Expr}, price::Union{Float64,Expr}=1.)
+        return new(commodity, quantity, price, nothing)
     end
 end
 
@@ -486,8 +487,8 @@ function Endowment(commodity::CommodityRef, quantity::Number)
     return Endowment(commodity, convert(Float64, quantity))
 end
 
-function Demand(commodity, quantity::Number)
-    return Demand(commodity, convert(Float64, quantity))
+function Demand(commodity, quantity::Number, price::Union{Float64,Expr}=1.)
+    return Demand(commodity, convert(Float64, quantity), price)
 end
 
 function add!(m::Model, s::ScalarSector)

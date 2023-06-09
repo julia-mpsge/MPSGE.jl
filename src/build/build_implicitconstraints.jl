@@ -131,24 +131,24 @@ function create_utility_expr(jm, dm::DemandFunction)
     )
 end
 
-function create_expenditure_expr(jm, dm::DemandFunction)
-    return :( 
+function create_expenditure_expr(jm, df::DemandFunction)
+    return :(
         (
             +(
                 $(
                     (
                         :(
-                            $(Θ(dm, demand)) *
+                            $(Θ(df, dm)) *
                             (
-                                $(get_jump_variable_for_commodity(jm, demand.commodity)) /
-                                $(get_commodity_benchmark(demand.commodity))
-                            )^(1-$(dm.elasticity))
-                        ) for demand in dm.demands
+                                $(get_jump_variable_for_commodity(jm, dm.commodity)) /
+                                $(get_commodity_benchmark(dm.commodity))
+                            )^(1-$(df.elasticity))
+                        ) for dm in df.demands
                     )...
                 )
             )
-       )^(1/(1-$(dm.elasticity))) *
-       $(create_utility_expr(jm, dm))
+        )^(1/(1-$(df.elasticity))) *
+        $(create_utility_expr(jm, df))
     )
 end
 
@@ -163,8 +163,8 @@ function build_implicitconstraints!(m, jm)
                     $(input.quantity) *
                     $(y_over_y_bar(jm, s)) *
                  (       
-                    $(create_cost_expr(m, jm, s)) * $(get_commodity_benchmark(input.commodity))*$(input.price) /
-                    $(get_jump_expression_for_commodity_consumer_price(m, jm, s, input.commodity))
+                            $(create_cost_expr(m, jm, s)) * $(get_commodity_benchmark(input.commodity))*$(input.price) /
+                            $(get_jump_expression_for_commodity_consumer_price(m, jm, s, input.commodity))
                 )^$(s.elasticity) - 
                         $(jm[get_comp_demand_name(input)])
                 )
