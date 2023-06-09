@@ -185,10 +185,11 @@ mutable struct Input
     commodity::Any
     quantity::Union{Float64,Expr}
     taxes::Vector{Tax}
+    price::Float64
     production_function::Any
 
-    function Input(commodity, quantity::Union{Float64,Expr}, taxes::Vector{Tax}=Tax[])
-        return new(commodity, quantity, taxes, nothing)
+    function Input(commodity, quantity::Union{Float64,Expr}, taxes::Vector{Tax}=Tax[], price::Float64=1.)
+        return new(commodity, quantity, taxes, price, nothing)
     end
 end
 
@@ -196,10 +197,11 @@ mutable struct Output
     commodity::CommodityRef
     quantity::Union{Float64,Expr}
     taxes::Vector{Tax}
+    price::Float64
     production_function::Any
 
-    function Output(commodity::CommodityRef, quantity::Union{Float64,Expr}, taxes::Vector{Tax}=Tax[])
-        return new(commodity, quantity, taxes, nothing)
+    function Output(commodity::CommodityRef, quantity::Union{Float64,Expr}, taxes::Vector{Tax}=Tax[], price::Float64=1.)
+        return new(commodity, quantity, taxes, price, nothing)
     end
 end
 
@@ -240,10 +242,11 @@ end
 mutable struct Demand
     commodity::Any
     quantity::Union{Float64,Expr}
+    price::Union{Float64,Expr}
     demand_function::Any
 
-    function Demand(commodity, quantity::Union{Float64,Expr})
-        return new(commodity, quantity, nothing)
+    function Demand(commodity, quantity::Union{Float64,Expr}, price::Union{Float64,Expr}=1.)
+        return new(commodity, quantity, price, nothing)
     end
 end
 
@@ -460,12 +463,12 @@ end
 
 # Outer constructors
 
-function Input(commodity, quantity::Number, taxes::Vector{Tax}=Tax[])
-    return Input(commodity, convert(Float64, quantity), taxes)
+function Input(commodity, quantity::Number, taxes::Vector{Tax}=Tax[], price::Float64=1.)
+    return Input(commodity, convert(Float64, quantity), taxes, price)
 end
 
-function Output(commodity::CommodityRef, quantity::Number, taxes::Vector{Tax}=Tax[])
-    return Output(commodity, convert(Float64, quantity), taxes)
+function Output(commodity::CommodityRef, quantity::Number, taxes::Vector{Tax}=Tax[], price::Float64=1.)
+    return Output(commodity, convert(Float64, quantity), taxes, price)
 end
 
 function Production(sector::SectorRef, tr_elasticity::Union{Number,Expr}, elasticity::Union{Number,Expr}, outputs::Vector{Output}, inputs::Vector{Input})
@@ -484,8 +487,8 @@ function Endowment(commodity::CommodityRef, quantity::Number)
     return Endowment(commodity, convert(Float64, quantity))
 end
 
-function Demand(commodity, quantity::Number)
-    return Demand(commodity, convert(Float64, quantity))
+function Demand(commodity, quantity::Number, price::Union{Float64,Expr}=1.)
+    return Demand(commodity, convert(Float64, quantity), price)
 end
 
 function add!(m::Model, s::ScalarSector)
@@ -575,7 +578,7 @@ function add!(m::Model, p::Production)
             commodity_ref = add!(m, Commodity(commodity_name))
             add!(m, Production(sector_ref, 0, v.commodity.elasticity, [Output(commodity_ref, v.commodity.benchmark)], v.commodity.inputs))
 
-            new_input = Input(commodity_ref, v.quantity, v.taxes)
+            new_input = Input(commodity_ref, v.quantity, v.taxes, v.price)
             new_input.production_function = v.production_function
             p.inputs[i] = new_input
         end

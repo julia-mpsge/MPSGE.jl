@@ -176,7 +176,6 @@ function get_tax_revenue_for_consumer(jm, m, consumer::ScalarConsumer)
             for tax in output.taxes
                 if get_full(tax.agent) == consumer
                     push!(taxes, :($(tax.rate) * $(output.quantity) * $(output.commodity) * $(pf.sector) ))
-                    # * $jm[get_comp_supply_name($output)] # Note: It doesn't work to update output.quantity here, but also doesn't break tests to leave it. 
                 end
             end
         end
