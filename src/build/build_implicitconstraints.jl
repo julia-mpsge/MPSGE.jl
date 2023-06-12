@@ -7,7 +7,7 @@ function Θ(pf::Production, o::Output)
 end
 
 function Θ(df::DemandFunction, dm::Demand)   
-    return :( $(dm.quantity) * $(get_commodity_benchmark(dm.commodity))/ $(get_consumer_benchmark(df.consumer)))
+    return :( $(dm.quantity) * $(dm.price) * $(get_commodity_benchmark(dm.commodity))/ +($( (:( $(d.quantity) * $(d.price) * $(get_commodity_benchmark(d.commodity)) ) for d in df.demands)...) ) )
 end
 
 function y_over_y_bar(jm, pf::Production)
@@ -157,7 +157,7 @@ function create_expenditure_expr(jm, df::DemandFunction)
                             $(Θ(df, dm)) *
                             (
                                 $(get_jump_variable_for_commodity(jm, dm.commodity)) /
-                                $(get_commodity_benchmark(dm.commodity))
+                                ($(get_commodity_benchmark(dm.commodity)) * $(dm.price))
                             )^(1-$(df.elasticity))
                         ) for dm in df.demands
                     )...
@@ -248,13 +248,13 @@ function build_implicitconstraints!(m, jm)
                         $(demand.quantity) * 
                         (
                             $(get_jump_variable_for_consumer(jm, demand_function.consumer)) / # (consumer's) income
-                            $(get_consumer_benchmark(demand_function.consumer)) # benchmark income (?)
+                            (+($( (:( $(d.quantity) * $(d.price) * $(get_commodity_benchmark(d.commodity)) ) for d in demand_function.demands)...) )) # benchmark income (?)
                         ) *
                         (
                             $(create_expenditure_expr(jm, demand_function))
                         )^($(demand_function.elasticity)-1) *
                         (
-                            $(get_commodity_benchmark(demand.commodity)) / # p__bar_i
+                            $(get_commodity_benchmark(demand.commodity)) * $(demand.price) / # p__bar_i
                             $(get_jump_variable_for_commodity(jm, demand.commodity))
                         )^$(demand_function.elasticity) - # p_i
                         $(jm[get_final_demand_name(demand)])
