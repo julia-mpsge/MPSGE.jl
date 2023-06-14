@@ -185,10 +185,10 @@ mutable struct Input
     commodity::Any
     quantity::Union{Float64,Expr}
     taxes::Vector{Tax}
-    price::Float64
+    price::Union{Float64,Expr}
     production_function::Any
 
-    function Input(commodity, quantity::Union{Float64,Expr}, taxes::Vector{Tax}=Tax[], price::Float64=1.)
+    function Input(commodity, quantity::Union{Float64,Expr}, taxes::Vector{Tax}=Tax[], price::Union{Float64,Expr}=1.)
         return new(commodity, quantity, taxes, price, nothing)
     end
 end
@@ -197,10 +197,10 @@ mutable struct Output
     commodity::CommodityRef
     quantity::Union{Float64,Expr}
     taxes::Vector{Tax}
-    price::Float64
+    price::Union{Float64,Expr}
     production_function::Any
 
-    function Output(commodity::CommodityRef, quantity::Union{Float64,Expr}, taxes::Vector{Tax}=Tax[], price::Float64=1.)
+    function Output(commodity::CommodityRef, quantity::Union{Float64,Expr}, taxes::Vector{Tax}=Tax[], price::Union{Float64,Expr}=1.)
         return new(commodity, quantity, taxes, price, nothing)
     end
 end
@@ -463,11 +463,11 @@ end
 
 # Outer constructors
 
-function Input(commodity, quantity::Number, taxes::Vector{Tax}=Tax[], price::Float64=1.)
+function Input(commodity, quantity::Number, taxes::Vector{Tax}=Tax[], price::Union{Float64,Expr}=1.)
     return Input(commodity, convert(Float64, quantity), taxes, price)
 end
 
-function Output(commodity::CommodityRef, quantity::Number, taxes::Vector{Tax}=Tax[], price::Float64=1.)
+function Output(commodity::CommodityRef, quantity::Number, taxes::Vector{Tax}=Tax[], price::Union{Float64,Expr}=1.)
     return Output(commodity, convert(Float64, quantity), taxes, price)
 end
 
