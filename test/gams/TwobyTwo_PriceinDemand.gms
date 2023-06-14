@@ -365,6 +365,7 @@ equilibrium("PK/PX","prUd.5,e.0") = PK.L/PX.L;
 
 equilibrium("RA/PX","prUd.5,e.0") = RA.L/PX.L;
 
+esub_ra=0.6;
 Itax = 0.1;
 $include twobytwo_wPriceDemand.GEN
 solve twobytwo_wPriceDemand using mcp;
