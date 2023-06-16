@@ -94,11 +94,12 @@ abstract type Commodity end;
 mutable struct ScalarCommodity <: Commodity
     name::Symbol
     benchmark::Float64
+    lower_bound::Float64
     description::String
     fixed::Bool
 
-    function ScalarCommodity(name::Symbol; description::AbstractString="", benchmark::Float64=1., fixed=false)
-        return new(name, benchmark, description, fixed)
+    function ScalarCommodity(name::Symbol; description::AbstractString="", lower_bound::Float64=0.001, benchmark::Float64=1., fixed=false)
+        return new(name, benchmark, lower_bound, description, fixed)
     end
 end
 
@@ -106,11 +107,12 @@ mutable struct IndexedCommodity <: Commodity
     name::Symbol
     indices::Any
     benchmark::DenseAxisArray
+    lower_bound::DenseAxisArray
     description::String
     fixed::DenseAxisArray
 
-    function IndexedCommodity(name::Symbol, indices; description::AbstractString="", benchmark::Float64=1., fixed=false)
-        return new(name, indices, DenseAxisArray(fill(benchmark, length.(indices)...), indices...), description, DenseAxisArray(fill(fixed, length.(indices)...), indices...))
+    function IndexedCommodity(name::Symbol, indices; benchmark::Float64=1., lower_bound::Float64=0.001, description::AbstractString="", fixed=false)
+        return new(name, indices, DenseAxisArray(fill(benchmark, length.(indices)...), indices...), DenseAxisArray(fill(lower_bound, length.(indices)...), indices...), description, DenseAxisArray(fill(fixed, length.(indices)...), indices...))
     end
 end
 
@@ -715,6 +717,7 @@ end
 function set_fixed!(consumer::ConsumerRef, new_value::Bool)    
     c = consumer.model._consumers[consumer.index]
     if c isa ScalarConsumer
+        println("Cons fixed", c, ": ",new_value)
         c.fixed = new_value
     else
         c.fixed[consumer.subindex] = new_value
@@ -748,4 +751,16 @@ function get_nested_commodity(x::SectorRef, name::Symbol)
             return CommodityRef(x.model, i, nothing, nothing)
         end
     end
+end
+
+function JuMP.set_lower_bound(commodity::CommodityRef, l_bound::Float64)
+    c = commodity.model._commodities[commodity.index]
+    if c isa ScalarCommodity
+        c.lower_bound = l_bound
+    else
+        c.lower_bound[commodity.subindex] = l_bound
+    end
+    return nothing
+
+    c.model._commodities[c.index].lower_bound = l_bound
 end

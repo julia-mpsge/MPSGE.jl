@@ -1,12 +1,12 @@
 module MPSGE
 
 import JuMP, Complementarity, MacroTools
-import JuMP: value, set_value, Containers
+import JuMP: value, set_value, Containers, set_lower_bound
 import JuMP.Containers: DenseAxisArray
 
 export add!, Model, solve!, algebraic_version
 export Sector, Commodity, Consumer, Aux, Production, DemandFunction, AuxConstraint, Endowment, Input, Output, Parameter, Demand, Tax, Nest
-export value, set_value, get_value, set_fixed!, get_nested_commodity
+export value, set_value, get_value, set_fixed!, get_nested_commodity, set_lower_bound
 export @parameter, @sector, @commodity, @consumer, @production, @demand
 
 include("model.jl")
