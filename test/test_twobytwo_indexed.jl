@@ -68,6 +68,23 @@ solve!(m)
     @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PC[y]†U")]) ≈ two_by_two_scalar_results["DY.L","RA=157"] # 49.68420864
 
 set_fixed!(C[:ra], false)
+# Just testing for bunctionality, not effecting the results
+#IndexedConsumer
+set_lower_bound(C[:ra], 10e100)
+set_lower_bound(C[:ra], 0.)
+set_upper_bound(C[:ra], 0.)
+set_upper_bound(C[:ra], 10e100)
+# Indexed Sector
+set_lower_bound(Y[:x], 1.)
+set_lower_bound(Y[:x], 0.)
+set_upper_bound(Y[:y], 1.)
+set_upper_bound(Y[:y], 10e100)
+# Indexed Commodity
+set_lower_bound(PC[:x], 1.)
+set_lower_bound(PC[:x], 0.)
+set_upper_bound(PC[:y], 1.)
+set_upper_bound(PC[:y], 10e100)
+
 set_fixed!(PC[:x], true)
 
     solve!(m)

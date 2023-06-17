@@ -83,7 +83,24 @@
 
     set_fixed!(RA, false)
     set_fixed!(PX, true)
-    solve!(m)
+    # Just testing for bunctionality, not effecting the results
+#Scalar Consumer
+set_lower_bound(RA, 10e100)
+set_lower_bound(RA, 0.)
+set_upper_bound(RA, 0.)
+set_upper_bound(RA, 10e100)
+# Scalar Sector
+set_lower_bound(Y, 1.)
+set_lower_bound(Y, 0.)
+set_upper_bound(Y, 1.)
+set_upper_bound(Y, 10e100)
+# Scalar Commodity
+set_lower_bound(PY, 1.)
+set_lower_bound(PY, 0.)
+set_upper_bound(PY, 1.)
+set_upper_bound(PY, 10e100)
+
+solve!(m)
 
     @test value(m, :X) ≈ two_by_two_CES["X.L","PX=1"] # 1.05050654
     @test MPSGE.Complementarity.result_value(m._jump_model[:Y]) ≈ two_by_two_CES["Y.L","PX=1"] # 1.03248042

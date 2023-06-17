@@ -87,6 +87,7 @@ function set_all_bounds(m)
                 end
 # TODONE: Allow user defined lower and upper bounds with defaults    
                 JuMP.set_lower_bound(jump_var, c.lower_bound)
+                JuMP.set_upper_bound(jump_var, c.upper_bound)
             end
         else
             for i in Iterators.product(c.indices...)
@@ -99,6 +100,7 @@ function set_all_bounds(m)
                         JuMP.unfix(jump_var)
                     end
                     JuMP.set_lower_bound(jump_var, c.lower_bound[i...])
+                    JuMP.set_upper_bound(jump_var, c.upper_bound[i...])
                 end
             end
         end
@@ -115,6 +117,7 @@ function set_all_bounds(m)
                     JuMP.unfix(jump_var)
                 end
                 JuMP.set_lower_bound(jump_var, cs.lower_bound)
+                    JuMP.set_upper_bound(jump_var, cs.upper_bound)
             end
         else
             for i in Iterators.product(cs.indices...)
@@ -127,6 +130,7 @@ function set_all_bounds(m)
                         JuMP.unfix(jump_var)
                     end
                     JuMP.set_lower_bound(jump_var, cs.lower_bound[i...])
+                    JuMP.set_upper_bound(jump_var, cs.upper_bound[i...])
                 end
             end
         end
@@ -144,6 +148,7 @@ function set_all_bounds(m)
                 end
 # TODONE: Allow user defined llower and upper bounds with defaults    
                 JuMP.set_lower_bound(jump_var, a.lower_bound)
+                    JuMP.set_upper_bound(jump_var, a.upper_bound)
             end
         else
             for i in Iterators.product(a.indices...)
@@ -157,6 +162,7 @@ function set_all_bounds(m)
                     end
         
                     JuMP.set_lower_bound(jump_var, a.lower_bound[i...])
+                    JuMP.set_upper_bound(jump_var, a.upper_bound[i...])
                 end
             end
         end
@@ -175,6 +181,7 @@ function set_all_bounds(m)
                 end
 # TODONE: Allow user defined llower and upper bounds with defaults    
                 JuMP.set_lower_bound(jump_var, s.lower_bound)
+                JuMP.set_upper_bound(jump_var, s.upper_bound)
             end
         else
             for i in Iterators.product(s.indices...)
@@ -186,8 +193,9 @@ function set_all_bounds(m)
                     if JuMP.is_fixed(jump_var)
                         JuMP.unfix(jump_var)
                     end
-        
+
                     JuMP.set_lower_bound(jump_var, s.lower_bound[i...])
+                    JuMP.set_upper_bound(jump_var, s.upper_bound[i...])
                 end
             end
         end

@@ -79,6 +79,7 @@ set_value(endow, 1.1)
 set_fixed!(HH, true)
 solve!(m)
 
+
 @test MPSGE.Complementarity.result_value(m._jump_model[:Y]) ≈ DNestTest["Y","endow=1.1"]#  1.04094672
 @test MPSGE.Complementarity.result_value(m._jump_model[:M]) ≈ DNestTest["M","endow=1.1"]#  1.04094672
 @test MPSGE.Complementarity.result_value(m._jump_model[:PC]) ≈ DNestTest["PC","endow=1.1"]#  0.96066397
