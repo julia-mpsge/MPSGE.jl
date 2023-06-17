@@ -65,11 +65,12 @@ abstract type Sector end;
 mutable struct ScalarSector <: Sector
     name::Symbol
     benchmark::Float64
+    lower_bound::Float64
     description::String
     fixed::Bool
 
-    function ScalarSector(name::Symbol; description::AbstractString="", benchmark::Float64=1., fixed=false)
-        return new(name, benchmark, description, fixed)
+    function ScalarSector(name::Symbol; description::AbstractString="", lower_bound::Float64=0.0, benchmark::Float64=1., fixed=false)
+        return new(name, benchmark, lower_bound, description, fixed)
     end
 end
 
@@ -77,11 +78,12 @@ mutable struct IndexedSector <: Sector
     name::Symbol
     indices::Any
     benchmark::DenseAxisArray
+    lower_bound::DenseAxisArray
     description::String
     fixed::DenseAxisArray
 
-    function IndexedSector(name::Symbol, indices; description::AbstractString="", benchmark::Float64=1., fixed=false)
-        return new(name, indices, DenseAxisArray(fill(benchmark, length.(indices)...), indices...), description, DenseAxisArray(fill(fixed, length.(indices)...), indices...))
+    function IndexedSector(name::Symbol, indices; benchmark::Float64=1., lower_bound::Float64=0.0, description::AbstractString="",  fixed=false)
+        return new(name, indices, DenseAxisArray(fill(benchmark, length.(indices)...), indices...), DenseAxisArray(fill(lower_bound, length.(indices)...), indices...), description, DenseAxisArray(fill(fixed, length.(indices)...), indices...))
     end
 end
 
@@ -160,7 +162,7 @@ mutable struct ScalarAux <: Aux
     description::String
     fixed::Bool
 
-    function ScalarAux(name::Symbol; description::AbstractString="", lower_bound::Float64=0.00, benchmark::Float64=1., fixed=false)
+    function ScalarAux(name::Symbol; description::AbstractString="", lower_bound::Float64=0.0, benchmark::Float64=1., fixed=false)
         return new(name, benchmark, lower_bound, description, fixed)
     end
 end
@@ -790,4 +792,16 @@ function JuMP.set_lower_bound(aux::AuxRef, l_bound::Float64)
     return nothing
 
     a.model._auxs[a.index].lower_bound = l_bound
+end
+
+function JuMP.set_lower_bound(sector::SectorRef, l_bound::Float64)
+    s = sector.model._sectors[sector.index]
+    if s isa ScalarSector
+        s.lower_bound = l_bound
+    else
+        s.lower_bound[sector.subindex] = l_bound
+    end
+    return nothing
+
+    s.model._sectors[s.index].lower_bound = l_bound
 end

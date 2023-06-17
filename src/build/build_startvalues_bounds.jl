@@ -78,14 +78,14 @@ function set_all_bounds(m)
     for c in m._commodities
         if c isa ScalarCommodity
             jump_var = jm[c.name]
-# TODONE: Allow user defined llower and upper bounds with defaults
+# TODONE: Allow user defined lower and upper bounds with defaults
             if c.fixed
                 JuMP.fix(jump_var, c.benchmark, force=true)
             else
                 if JuMP.is_fixed(jump_var)
                     JuMP.unfix(jump_var)
                 end
-# TODOMME: Allow user defined llower and upper bounds with defaults    
+# TODONE: Allow user defined lower and upper bounds with defaults    
                 JuMP.set_lower_bound(jump_var, c.lower_bound)
             end
         else
@@ -163,7 +163,36 @@ function set_all_bounds(m)
     
     end
 
+    for s in m._sectors
+        if s isa ScalarSector
+            jump_var = jm[s.name]
+# TODONE: Allow user defined llower and upper bounds with defaults
+            if s.fixed
+                JuMP.fix(jump_var, s.benchmark, force=true)
+            else
+                if JuMP.is_fixed(jump_var)
+                    JuMP.unfix(jump_var)
+                end
+# TODONE: Allow user defined llower and upper bounds with defaults    
+                JuMP.set_lower_bound(jump_var, s.lower_bound)
+            end
+        else
+            for i in Iterators.product(s.indices...)
+                jump_var = jm[s.name][i...]
 
+                if s.fixed[i...]
+                    JuMP.fix(jump_var, s.benchmark[i...], force=true)
+                else
+                    if JuMP.is_fixed(jump_var)
+                        JuMP.unfix(jump_var)
+                    end
+        
+                    JuMP.set_lower_bound(jump_var, s.lower_bound[i...])
+                end
+            end
+        end
+    
+    end
 
 end
 
