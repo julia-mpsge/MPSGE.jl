@@ -160,7 +160,7 @@ mutable struct ScalarAux <: Aux
     description::String
     fixed::Bool
 
-    function ScalarAux(name::Symbol; description::AbstractString="", lower_bound::Float64=0.0, benchmark::Float64=1., fixed=false)
+    function ScalarAux(name::Symbol; description::AbstractString="", lower_bound::Float64=0.00, benchmark::Float64=1., fixed=false)
         return new(name, benchmark, lower_bound, description, fixed)
     end
 end
