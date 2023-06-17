@@ -156,11 +156,12 @@ abstract type Aux end;
 mutable struct ScalarAux <: Aux
     name::Symbol
     benchmark::Float64
+    lower_bound::Float64
     description::String
     fixed::Bool
 
-    function ScalarAux(name::Symbol; description::AbstractString="", benchmark::Float64=1., fixed=false)
-        return new(name, benchmark, description, fixed)
+    function ScalarAux(name::Symbol; description::AbstractString="", lower_bound::Float64=0.0, benchmark::Float64=1., fixed=false)
+        return new(name, benchmark, lower_bound, description, fixed)
     end
 end
 
@@ -168,11 +169,12 @@ mutable struct IndexedAux <: Aux
     name::Symbol
     indices::Any
     benchmark::DenseAxisArray
+    lower_bound::DenseAxisArray
     description::String
     fixed::DenseAxisArray
 
-    function IndexedAux(name::Symbol, indices; description::AbstractString="", benchmark::Float64=1., fixed=false)
-        return new(name, indices, DenseAxisArray(fill(benchmark, length.(indices)...), indices...), description, DenseAxisArray(fill(fixed, length.(indices)...), indices...))
+    function IndexedAux(name::Symbol, indices; benchmark::Float64=1., lower_bound::Float64=0.0, description::AbstractString="", fixed=false)
+        return new(name, indices, DenseAxisArray(fill(benchmark, length.(indices)...), indices...), DenseAxisArray(fill(lower_bound, length.(indices)...), indices...), description, DenseAxisArray(fill(fixed, length.(indices)...), indices...))
     end
 end
 
@@ -776,4 +778,16 @@ function JuMP.set_lower_bound(consumer::ConsumerRef, l_bound::Float64)
     return nothing
 
     cs.model._consumers[cs.index].lower_bound = l_bound
+end
+
+function JuMP.set_lower_bound(aux::AuxRef, l_bound::Float64)
+    a = aux.model._auxs[aux.index]
+    if a isa ScalarAux
+        a.lower_bound = l_bound
+    else
+        a.lower_bound[aux.subindex] = l_bound
+    end
+    return nothing
+
+    a.model._auxs[a.index].lower_bound = l_bound
 end
