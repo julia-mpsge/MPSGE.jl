@@ -136,6 +136,7 @@ set_value(UR, 0.)
 set_fixed!(UR, true)
 set_value(TAU_TL, 0.)
 set_fixed!(TAU_TL, true)
+set_lower_bound(TAU_LS, 0.0)
 solve!(m)
 # Lump Sum Flexible
 @test MPSGE.Complementarity.result_value(m._jump_model[:PFX]) ≈ The123["PFX","Lump Sum F"]#  1.0755262
