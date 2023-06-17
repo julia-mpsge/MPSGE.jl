@@ -79,11 +79,15 @@ set_lower_bound(Y[:x], 1.)
 set_lower_bound(Y[:x], 0.)
 set_upper_bound(Y[:y], 1.)
 set_upper_bound(Y[:y], 10e100)
+set_fixed!(Y[:x], true)
+set_fixed!(Y[:x], false)
 # Indexed Commodity
 set_lower_bound(PC[:x], 1.)
 set_lower_bound(PC[:x], 0.)
 set_upper_bound(PC[:y], 1.)
 set_upper_bound(PC[:y], 10e100)
+set_value(PC[:x],25.)
+set_value(PC[:x], 1.)
 
 set_fixed!(PC[:x], true)
 

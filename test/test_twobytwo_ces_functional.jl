@@ -83,7 +83,8 @@
 
     set_fixed!(RA, false)
     set_fixed!(PX, true)
-    # Just testing for bunctionality, not effecting the results
+
+# Just testing for bunctionality, not effecting the results
 #Scalar Consumer
 set_lower_bound(RA, 10e100)
 set_lower_bound(RA, 0.)
@@ -94,6 +95,8 @@ set_lower_bound(Y, 1.)
 set_lower_bound(Y, 0.)
 set_upper_bound(Y, 1.)
 set_upper_bound(Y, 10e100)
+set_fixed!(Y, true)
+set_fixed!(Y, false)
 # Scalar Commodity
 set_lower_bound(PY, 1.)
 set_lower_bound(PY, 0.)
