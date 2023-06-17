@@ -1432,6 +1432,9 @@ add!(m, AuxConstraint(TAU, :($W*$PW*340 - $PL * 200 - $PK * 100  == 40 * ($PX + 
 set_fixed!(CONS, true)
 solve!(m, cumulative_iteration_limit=0)
 
+avm = algebraic_version(m)
+@test typeof(avm) == MPSGE.AlgebraicWrapper
+
 # benchmark
 @test MPSGE.Complementarity.result_value(m._jump_model[:X]) ≈ two_by_two_AuxinInput["X","benchmark"]#  1
 @test MPSGE.Complementarity.result_value(m._jump_model[:Y]) ≈ two_by_two_AuxinInput["Y","benchmark"]#  1

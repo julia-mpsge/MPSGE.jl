@@ -410,23 +410,23 @@ function get_consumer_benchmark(c::ConsumerRef)
     end
 end
 
-function get_consumer_total_endowment(jm, c::ConsumerRef)
-    m = c.model
+# function get_consumer_total_endowment(jm, c::ConsumerRef)
+#     m = c.model
 
-    endowments = []
-    for d in m._demands
-        if d.consumer == c
-            push!(endowments, :(
-                +($((:($(en.quantity) * 
-                $(en.commodity)) for en in d.endowments)...))
-            ))
-        end
-    end
-    total_end = :(+(0., $(get_tax_revenue_for_consumer(jm, m, c)),  $(endowments...)))
+#     endowments = []
+#     for d in m._demands
+#         if d.consumer == c
+#             push!(endowments, :(
+#                 +($((:($(en.quantity) * 
+#                 $(en.commodity)) for en in d.endowments)...))
+#             ))
+#         end
+#     end
+#     total_end = :(+(0., $(get_tax_revenue_for_consumer(jm, m, c)),  $(endowments...)))
 
-    return total_end
+#     return total_end
 
-end
+# end
 
 function get_consumer_total_endowment(jm, m, c::ScalarConsumer)
     endowments = []
@@ -699,7 +699,7 @@ function JuMP.set_value(commodity::CommodityRef, new_value::Float64)
     end
     return nothing
 
-    c.model._commodities[c.index].benchmark = new_value
+    # c.model._commodities[c.index].benchmark = new_value
 end
 
 function set_fixed!(commodity::CommodityRef, new_value::Bool)    
