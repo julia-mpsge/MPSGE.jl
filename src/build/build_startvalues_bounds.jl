@@ -114,7 +114,7 @@ function set_all_bounds(m)
                 if JuMP.is_fixed(jump_var)
                     JuMP.unfix(jump_var)
                 end
-                JuMP.set_lower_bound(jump_var, 0.00)
+                JuMP.set_lower_bound(jump_var, cs.lower_bound)
             end
         else
             for i in Iterators.product(cs.indices...)
@@ -126,8 +126,7 @@ function set_all_bounds(m)
                     if JuMP.is_fixed(jump_var)
                         JuMP.unfix(jump_var)
                     end
-        
-                    # JuMP.set_lower_bound(jump_var, 0.00)
+                    JuMP.set_lower_bound(jump_var, cs.lower_bound[i...])
                 end
             end
         end

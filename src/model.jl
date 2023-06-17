@@ -125,11 +125,12 @@ abstract type Consumer end;
 mutable struct ScalarConsumer <: Consumer
     name::Symbol
     benchmark::Float64
+    lower_bound::Float64
     description::String
     fixed::Bool
     
-    function ScalarConsumer(name::Symbol; description::AbstractString="", benchmark::Float64=1., fixed=false)
-        return new(name, benchmark, description, fixed)
+    function ScalarConsumer(name::Symbol; description::AbstractString="", lower_bound::Float64=0.0, benchmark::Float64=1., fixed=false)
+        return new(name, benchmark, lower_bound, description, fixed)
     end
 end
 
@@ -137,11 +138,12 @@ mutable struct IndexedConsumer <: Consumer
     name::Symbol
     indices::Any
     benchmark::DenseAxisArray
+    lower_bound::DenseAxisArray
     description::String
     fixed::DenseAxisArray
 
-    function IndexedConsumer(name::Symbol, indices; description::AbstractString="", benchmark::Float64=1., fixed=false)
-        return new(name, indices, DenseAxisArray(fill(benchmark, length.(indices)...), indices...), description, DenseAxisArray(fill(fixed, length.(indices)...), indices...))
+    function IndexedConsumer(name::Symbol, indices; benchmark::Float64=1., lower_bound::Float64=0.0, description::AbstractString="", fixed=false)
+        return new(name, indices, DenseAxisArray(fill(benchmark, length.(indices)...), indices...), DenseAxisArray(fill(lower_bound, length.(indices)...), indices...), description, DenseAxisArray(fill(fixed, length.(indices)...), indices...))
     end
 end
 
@@ -717,7 +719,6 @@ end
 function set_fixed!(consumer::ConsumerRef, new_value::Bool)    
     c = consumer.model._consumers[consumer.index]
     if c isa ScalarConsumer
-        println("Cons fixed", c, ": ",new_value)
         c.fixed = new_value
     else
         c.fixed[consumer.subindex] = new_value
@@ -763,4 +764,16 @@ function JuMP.set_lower_bound(commodity::CommodityRef, l_bound::Float64)
     return nothing
 
     c.model._commodities[c.index].lower_bound = l_bound
+end
+
+function JuMP.set_lower_bound(consumer::ConsumerRef, l_bound::Float64)
+    cs = consumer.model._consumers[consumer.index]
+    if cs isa ScalarConsumer
+        cs.lower_bound = l_bound
+    else
+        cs.lower_bound[consumer.subindex] = l_bound
+    end
+    return nothing
+
+    cs.model._consumers[cs.index].lower_bound = l_bound
 end

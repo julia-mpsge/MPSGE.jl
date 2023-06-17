@@ -367,7 +367,7 @@ solve!(m)
 
 #This fails for most variables. The GAMS results has gaps/undefined/no value for PL, HH, and CXHH. This suggests we are not handling results with /0 or 0 results in the same way
 # There's something not working about unfixing HH. Running without first fixing HH does match.  
-# esubkl=0
+set_lower_bound(HH, 0.0)
 set_lower_bound(PL,0.0)
 set_value(esubkl, 0.)
 solve!(m) 
@@ -387,11 +387,11 @@ solve!(m)
 @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PL†Y")]) ≈ DNestTest["DLY","esubkl=0"]#  80
 @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PFX†M")]) ≈ DNestTest["DFXM","esubkl=0"]#  23.52658546
 @test MPSGE.Complementarity.result_value(m._jump_model[:GOVT]) ≈ DNestTest["GOVT","esubkl=0"]#  110
-@test MPSGE.Complementarity.result_value(m._jump_model[:HH]) ≈  0 atol = 1e-10 # missing in GAMS DNestTest["HH","esubkl=0"]#  
+@test MPSGE.Complementarity.result_value(m._jump_model[:HH]) ≈  0 # missing in GAMS DNestTest["HH","esubkl=0"]#  
 @test MPSGE.Complementarity.result_value(m._jump_model[:C]) ≈ DNestTest["C","esubkl=0"]#  90
 @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PFXρC")]) ≈ DNestTest["CFXC","esubkl=0"]#  130.369
 @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PXρGOVT")]) ≈ DNestTest["CXG","esubkl=0"]#  49.25642749
-@test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PXρHH")]) ≈ 0 atol = 1e-9 # missing in GAMS DNestTest["CXHH","esubkl=0"]#  
+@test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PXρHH")]) ≈ 0 # missing in GAMS DNestTest["CXHH","esubkl=0"]#  
 
 
 # And now the Nested Version of the same model with the same results
@@ -755,7 +755,7 @@ solve!(m)
 
 
 #This fails for most variables. The GAMS results has gaps/undefined/no value for PL, HH, and CXHH. This suggests we are not handling results with /0 or 0 results in the same way
-# esubkl=0
+set_lower_bound(HH, 0.0)
 set_lower_bound(PL, 0.0)
 set_value(esubkl, 0.)
 solve!(m)
@@ -775,10 +775,10 @@ solve!(m)
 @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PL†Y")]) ≈ DNestTest["DLY","esubkl=0"]#  80
 @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PFX†M")]) ≈ DNestTest["DFXM","esubkl=0"]#  23.52658546
 @test MPSGE.Complementarity.result_value(m._jump_model[:GOVT]) ≈ DNestTest["GOVT","esubkl=0"]#  110
-@test MPSGE.Complementarity.result_value(m._jump_model[:HH]) ≈ 0 atol = 1e-10 # missing in GAMS DNestTest["HH","esubkl=0"]#  
+@test MPSGE.Complementarity.result_value(m._jump_model[:HH]) ≈ 0  # missing in GAMS DNestTest["HH","esubkl=0"]#  
 @test MPSGE.Complementarity.result_value(m._jump_model[:C]) ≈ DNestTest["C","esubkl=0"]#  90
 @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PFXρC")]) ≈ DNestTest["CFXC","esubkl=0"]#  130.369
 @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PXρGOVT")]) ≈ DNestTest["CXG","esubkl=0"]#  49.25642749
-@test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PXρHH")]) ≈ 0 atol = 1e-9 # missing in GAMS DNestTest["CXHH","esubkl=0"]#  
+@test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PXρHH")]) ≈ 0 # missing in GAMS DNestTest["CXHH","esubkl=0"]#  
 
 end
