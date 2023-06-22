@@ -65,11 +65,13 @@ abstract type Sector end;
 mutable struct ScalarSector <: Sector
     name::Symbol
     benchmark::Float64
+    lower_bound::Float64
+    upper_bound::Float64
     description::String
     fixed::Bool
 
-    function ScalarSector(name::Symbol; description::AbstractString="", benchmark::Float64=1., fixed=false)
-        return new(name, benchmark, description, fixed)
+    function ScalarSector(name::Symbol; description::AbstractString="", lower_bound::Float64=0.0, upper_bound=10e100, benchmark::Float64=1., fixed=false)
+        return new(name, benchmark, lower_bound, upper_bound, description, fixed)
     end
 end
 
@@ -77,11 +79,13 @@ mutable struct IndexedSector <: Sector
     name::Symbol
     indices::Any
     benchmark::DenseAxisArray
+    lower_bound::DenseAxisArray
+    upper_bound::DenseAxisArray
     description::String
     fixed::DenseAxisArray
 
-    function IndexedSector(name::Symbol, indices; description::AbstractString="", benchmark::Float64=1., fixed=false)
-        return new(name, indices, DenseAxisArray(fill(benchmark, length.(indices)...), indices...), description, DenseAxisArray(fill(fixed, length.(indices)...), indices...))
+    function IndexedSector(name::Symbol, indices; benchmark::Float64=1., lower_bound::Float64=0.0, upper_bound::Float64=10e100, description::AbstractString="",  fixed=false)
+        return new(name, indices, DenseAxisArray(fill(benchmark, length.(indices)...), indices...), DenseAxisArray(fill(lower_bound, length.(indices)...), indices...), DenseAxisArray(fill(upper_bound, length.(indices)...), indices...), description, DenseAxisArray(fill(fixed, length.(indices)...), indices...))
     end
 end
 
@@ -94,11 +98,13 @@ abstract type Commodity end;
 mutable struct ScalarCommodity <: Commodity
     name::Symbol
     benchmark::Float64
+    lower_bound::Float64
+    upper_bound::Float64
     description::String
     fixed::Bool
 
-    function ScalarCommodity(name::Symbol; description::AbstractString="", benchmark::Float64=1., fixed=false)
-        return new(name, benchmark, description, fixed)
+    function ScalarCommodity(name::Symbol; description::AbstractString="", lower_bound::Float64=0.001, upper_bound::Float64=10e100, benchmark::Float64=1., fixed=false)
+        return new(name, benchmark, lower_bound, upper_bound, description, fixed)
     end
 end
 
@@ -106,11 +112,13 @@ mutable struct IndexedCommodity <: Commodity
     name::Symbol
     indices::Any
     benchmark::DenseAxisArray
+    lower_bound::DenseAxisArray
+    upper_bound::DenseAxisArray
     description::String
     fixed::DenseAxisArray
 
-    function IndexedCommodity(name::Symbol, indices; description::AbstractString="", benchmark::Float64=1., fixed=false)
-        return new(name, indices, DenseAxisArray(fill(benchmark, length.(indices)...), indices...), description, DenseAxisArray(fill(fixed, length.(indices)...), indices...))
+    function IndexedCommodity(name::Symbol, indices; benchmark::Float64=1., lower_bound::Float64=0.001, upper_bound::Float64=10e100, description::AbstractString="", fixed=false)
+        return new(name, indices, DenseAxisArray(fill(benchmark, length.(indices)...), indices...), DenseAxisArray(fill(lower_bound, length.(indices)...), indices...), DenseAxisArray(fill(upper_bound, length.(indices)...), indices...), description, DenseAxisArray(fill(fixed, length.(indices)...), indices...))
     end
 end
 
@@ -123,11 +131,13 @@ abstract type Consumer end;
 mutable struct ScalarConsumer <: Consumer
     name::Symbol
     benchmark::Float64
+    lower_bound::Float64
+    upper_bound::Float64
     description::String
     fixed::Bool
     
-    function ScalarConsumer(name::Symbol; description::AbstractString="", benchmark::Float64=1., fixed=false)
-        return new(name, benchmark, description, fixed)
+    function ScalarConsumer(name::Symbol; description::AbstractString="", lower_bound::Float64=0.0, upper_bound::Float64=10e100, benchmark::Float64=1., fixed=false)
+        return new(name, benchmark, lower_bound, upper_bound, description, fixed)
     end
 end
 
@@ -135,11 +145,13 @@ mutable struct IndexedConsumer <: Consumer
     name::Symbol
     indices::Any
     benchmark::DenseAxisArray
+    lower_bound::DenseAxisArray
+    upper_bound::DenseAxisArray
     description::String
     fixed::DenseAxisArray
 
-    function IndexedConsumer(name::Symbol, indices; description::AbstractString="", benchmark::Float64=1., fixed=false)
-        return new(name, indices, DenseAxisArray(fill(benchmark, length.(indices)...), indices...), description, DenseAxisArray(fill(fixed, length.(indices)...), indices...))
+    function IndexedConsumer(name::Symbol, indices; benchmark::Float64=1., lower_bound::Float64=0.0, upper_bound::Float64=10e100, description::AbstractString="", fixed=false)
+        return new(name, indices, DenseAxisArray(fill(benchmark, length.(indices)...), indices...), DenseAxisArray(fill(lower_bound, length.(indices)...), indices...), DenseAxisArray(fill(upper_bound, length.(indices)...), indices...), description, DenseAxisArray(fill(fixed, length.(indices)...), indices...))
     end
 end
 
@@ -152,11 +164,13 @@ abstract type Aux end;
 mutable struct ScalarAux <: Aux
     name::Symbol
     benchmark::Float64
+    lower_bound::Float64
+    upper_bound::Float64
     description::String
     fixed::Bool
 
-    function ScalarAux(name::Symbol; description::AbstractString="", benchmark::Float64=1., fixed=false)
-        return new(name, benchmark, description, fixed)
+    function ScalarAux(name::Symbol; description::AbstractString="", lower_bound::Float64=0.0, upper_bound::Float64=10e100, benchmark::Float64=1., fixed=false)
+        return new(name, benchmark, lower_bound, upper_bound, description, fixed)
     end
 end
 
@@ -164,11 +178,13 @@ mutable struct IndexedAux <: Aux
     name::Symbol
     indices::Any
     benchmark::DenseAxisArray
+    lower_bound::DenseAxisArray
+    upper_bound::DenseAxisArray
     description::String
     fixed::DenseAxisArray
 
-    function IndexedAux(name::Symbol, indices; description::AbstractString="", benchmark::Float64=1., fixed=false)
-        return new(name, indices, DenseAxisArray(fill(benchmark, length.(indices)...), indices...), description, DenseAxisArray(fill(fixed, length.(indices)...), indices...))
+    function IndexedAux(name::Symbol, indices; benchmark::Float64=1., lower_bound::Float64=0.0, upper_bound::Float64=10e100, description::AbstractString="", fixed=false)
+        return new(name, indices, DenseAxisArray(fill(benchmark, length.(indices)...), indices...), DenseAxisArray(fill(lower_bound, length.(indices)...), indices...), DenseAxisArray(fill(upper_bound, length.(indices)...), indices...), description, DenseAxisArray(fill(fixed, length.(indices)...), indices...))
     end
 end
 
@@ -748,4 +764,100 @@ function get_nested_commodity(x::SectorRef, name::Symbol)
             return CommodityRef(x.model, i, nothing, nothing)
         end
     end
+end
+
+function set_lower_bound(commodity::CommodityRef, l_bound::Float64)
+    c = commodity.model._commodities[commodity.index]
+    if c isa ScalarCommodity
+        c.lower_bound = l_bound
+    else
+        c.lower_bound[commodity.subindex] = l_bound
+    end
+    return nothing
+
+    # c.model._commodities[c.index].lower_bound = l_bound
+end
+
+function set_lower_bound(consumer::ConsumerRef, l_bound::Float64)
+    cs = consumer.model._consumers[consumer.index]
+    if cs isa ScalarConsumer
+        cs.lower_bound = l_bound
+    else
+        cs.lower_bound[consumer.subindex] = l_bound
+    end
+    return nothing
+
+    # cs.model._consumers[cs.index].lower_bound = l_bound
+end
+
+function set_lower_bound(aux::AuxRef, l_bound::Float64)
+    a = aux.model._auxs[aux.index]
+    if a isa ScalarAux
+        a.lower_bound = l_bound
+    else
+        a.lower_bound[aux.subindex] = l_bound
+    end
+    return nothing
+
+    # a.model._auxs[a.index].lower_bound = l_bound
+end
+
+function set_lower_bound(sector::SectorRef, l_bound::Float64)
+    s = sector.model._sectors[sector.index]
+    if s isa ScalarSector
+        s.lower_bound = l_bound
+    else
+        s.lower_bound[sector.subindex] = l_bound
+    end
+    return nothing
+
+    # s.model._sectors[s.index].lower_bound = l_bound
+end
+
+function set_upper_bound(commodity::CommodityRef, u_bound::Float64)
+    c = commodity.model._commodities[commodity.index]
+    if c isa ScalarCommodity
+        c.upper_bound = u_bound
+    else
+        c.upper_bound[commodity.subindex] = u_bound
+    end
+    return nothing
+
+    # c.model._commodities[c.index].upper_bound = u_bound
+end
+
+function set_upper_bound(consumer::ConsumerRef, u_bound::Float64)
+    cs = consumer.model._consumers[consumer.index]
+    if cs isa ScalarConsumer
+        cs.upper_bound = u_bound
+    else
+        cs.upper_bound[consumer.subindex] = u_bound
+    end
+    return nothing
+
+    # cs.model._consumers[cs.index].upper_bound = u_bound
+end
+
+function set_upper_bound(aux::AuxRef, u_bound::Float64)
+    a = aux.model._auxs[aux.index]
+    if a isa ScalarAux
+        a.upper_bound = u_bound
+    else
+        a.upper_bound[aux.subindex] = u_bound
+    end
+    return nothing
+
+    # a.model._auxs[a.index].upper_bound = u_bound
+end
+
+function set_upper_bound(sector::SectorRef, u_bound::Float64)
+    s = sector.model._sectors[sector.index]
+    if s isa ScalarSector
+        s.upper_bound = u_bound
+    else
+        s.upper_bound[sector.subindex] = u_bound
+    end
+    return nothing
+
+    # s.model._sectors[s.index].upper_bound = u_bound
 end

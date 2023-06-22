@@ -78,15 +78,16 @@ function set_all_bounds(m)
     for c in m._commodities
         if c isa ScalarCommodity
             jump_var = jm[c.name]
-# TODO: Allow user defined llower and upper bounds with defaults
+# TODONE: Allow user defined lower and upper bounds with defaults
             if c.fixed
                 JuMP.fix(jump_var, c.benchmark, force=true)
             else
                 if JuMP.is_fixed(jump_var)
                     JuMP.unfix(jump_var)
                 end
-# TODO: Allow user defined llower and upper bounds with defaults    
-                JuMP.set_lower_bound(jump_var, 0.001)
+# TODONE: Allow user defined lower and upper bounds with defaults    
+                JuMP.set_lower_bound(jump_var, c.lower_bound)
+                JuMP.set_upper_bound(jump_var, c.upper_bound)
             end
         else
             for i in Iterators.product(c.indices...)
@@ -98,8 +99,8 @@ function set_all_bounds(m)
                     if JuMP.is_fixed(jump_var)
                         JuMP.unfix(jump_var)
                     end
-        
-                    JuMP.set_lower_bound(jump_var, 0.001)
+                    JuMP.set_lower_bound(jump_var, c.lower_bound[i...])
+                    JuMP.set_upper_bound(jump_var, c.upper_bound[i...])
                 end
             end
         end
@@ -115,6 +116,8 @@ function set_all_bounds(m)
                 if JuMP.is_fixed(jump_var)
                     JuMP.unfix(jump_var)
                 end
+                JuMP.set_lower_bound(jump_var, cs.lower_bound)
+                    JuMP.set_upper_bound(jump_var, cs.upper_bound)
             end
         else
             for i in Iterators.product(cs.indices...)
@@ -126,8 +129,8 @@ function set_all_bounds(m)
                     if JuMP.is_fixed(jump_var)
                         JuMP.unfix(jump_var)
                     end
-        
-                    JuMP.set_lower_bound(jump_var, 0.001)
+                    JuMP.set_lower_bound(jump_var, cs.lower_bound[i...])
+                    JuMP.set_upper_bound(jump_var, cs.upper_bound[i...])
                 end
             end
         end
@@ -136,15 +139,16 @@ function set_all_bounds(m)
     for a in m._auxs
         if a isa ScalarAux
             jump_var = jm[a.name]
-# TODO: Allow user defined llower and upper bounds with defaults
+# TODONE: Allow user defined llower and upper bounds with defaults
             if a.fixed
                 JuMP.fix(jump_var, a.benchmark, force=true)
             else
                 if JuMP.is_fixed(jump_var)
                     JuMP.unfix(jump_var)
                 end
-# TODO: Allow user defined llower and upper bounds with defaults    
-                JuMP.set_lower_bound(jump_var, 0.0)
+# TODONE: Allow user defined llower and upper bounds with defaults    
+                JuMP.set_lower_bound(jump_var, a.lower_bound)
+                    JuMP.set_upper_bound(jump_var, a.upper_bound)
             end
         else
             for i in Iterators.product(a.indices...)
@@ -157,14 +161,46 @@ function set_all_bounds(m)
                         JuMP.unfix(jump_var)
                     end
         
-                    JuMP.set_lower_bound(jump_var, 0.0)
+                    JuMP.set_lower_bound(jump_var, a.lower_bound[i...])
+                    JuMP.set_upper_bound(jump_var, a.upper_bound[i...])
                 end
             end
         end
     
     end
 
+    for s in m._sectors
+        if s isa ScalarSector
+            jump_var = jm[s.name]
+# TODONE: Allow user defined llower and upper bounds with defaults
+            if s.fixed
+                JuMP.fix(jump_var, s.benchmark, force=true)
+            else
+                if JuMP.is_fixed(jump_var)
+                    JuMP.unfix(jump_var)
+                end
+# TODONE: Allow user defined llower and upper bounds with defaults    
+                JuMP.set_lower_bound(jump_var, s.lower_bound)
+                JuMP.set_upper_bound(jump_var, s.upper_bound)
+            end
+        else
+            for i in Iterators.product(s.indices...)
+                jump_var = jm[s.name][i...]
 
+                if s.fixed[i...]
+                    JuMP.fix(jump_var, s.benchmark[i...], force=true)
+                else
+                    if JuMP.is_fixed(jump_var)
+                        JuMP.unfix(jump_var)
+                    end
+
+                    JuMP.set_lower_bound(jump_var, s.lower_bound[i...])
+                    JuMP.set_upper_bound(jump_var, s.upper_bound[i...])
+                end
+            end
+        end
+    
+    end
 
 end
 
