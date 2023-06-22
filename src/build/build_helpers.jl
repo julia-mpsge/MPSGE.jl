@@ -18,6 +18,8 @@ function swap_our_param_with_jump_param(jm, expr)
             get_jump_variable_for_aux(jm, x)
         elseif x isa SectorRef
             get_jump_variable_for_sector(jm, x)
+        elseif x isa ConsumerRef
+            get_jump_variable_for_consumer(jm, x)
         else
             return x
         end

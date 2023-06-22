@@ -133,7 +133,6 @@ function set_all_bounds(m)
         end
     end
 
-
     for a in m._auxs
         if a isa ScalarAux
             jump_var = jm[a.name]
@@ -145,7 +144,7 @@ function set_all_bounds(m)
                     JuMP.unfix(jump_var)
                 end
 # TODO: Allow user defined llower and upper bounds with defaults    
-                JuMP.set_lower_bound(jump_var, 0.001)
+                JuMP.set_lower_bound(jump_var, 0.0)
             end
         else
             for i in Iterators.product(a.indices...)
@@ -158,7 +157,7 @@ function set_all_bounds(m)
                         JuMP.unfix(jump_var)
                     end
         
-                    JuMP.set_lower_bound(jump_var, 0.001)
+                    JuMP.set_lower_bound(jump_var, 0.0)
                 end
             end
         end
