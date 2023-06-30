@@ -661,7 +661,8 @@ function solve!(m::Model; solver::Symbol=:PATH, kwargs...)
     set_all_start_values(m)
     set_all_parameters(m)
     set_all_bounds(m)
-
+    set_default_numeraire(m)
+    
     m._status = Complementarity.solveMCP(m._jump_model; solver=solver, kwargs...)
 
     return m

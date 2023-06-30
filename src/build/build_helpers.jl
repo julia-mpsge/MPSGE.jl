@@ -61,6 +61,8 @@ function swap_our_param_with_val(expr)
             else
                 return a.benchmark[x.subindex]
             end
+        elseif x isa JuMP.VariableRef
+            return MPSGE.Complementarity.result_value(x)
         else
             return x
         end

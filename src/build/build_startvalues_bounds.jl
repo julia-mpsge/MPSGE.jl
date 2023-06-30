@@ -217,3 +217,86 @@ function set_all_parameters(m)
         end
     end
 end
+
+# loop through all Sectors, commodities, and Consumers, 
+# if not fixed, calculate Consumer #1, with all Aux set to benchmark value
+function set_default_numeraire(m)
+    println("In it")
+    jm = m._jump_model
+    for s in m._sectors
+        if s isa ScalarSector
+            jump_var = jm[s.name]
+            if JuMP.is_fixed(jump_var)
+                println("A Scalar Sector IS fixed")
+                return                
+            end
+        else
+            for i in Iterators.product(s.indices...)
+                jump_var = jm[s.name][i...]
+                if JuMP.is_fixed(jump_var)
+                    return                
+                end
+            end
+        end
+    end
+    for c in m._commodities
+        if c isa ScalarCommodity
+            jump_var = jm[c.name]
+            if JuMP.is_fixed(jump_var)
+                println("A Scalar Commodity IS fixed")
+                return                
+            end
+        else
+            for i in Iterators.product(c.indices...)
+                jump_var = jm[c.name][i...]
+                if JuMP.is_fixed(jump_var)
+                    return                
+                end
+            end
+        end
+    end
+    for cs in m._consumers
+        if cs isa ScalarConsumer
+            jump_var = jm[cs.name]
+            if JuMP.is_fixed(jump_var)
+                println("A Scalar Consumer IS fixed")
+                return                
+            end
+        else
+            for i in Iterators.product(cs.indices...)
+                jump_var = jm[cs.name][i...]
+                if JuMP.is_fixed(jump_var)
+                    return                
+                end
+            end
+        end
+    end
+    println("What is m._demands[1].consumer? : ", typeof(get_full(m._demands[1].consumer)))
+    if get_full(m._demands[1].consumer) isa ScalarConsumer
+        jump_var = jm[get_full(m._demands[1].consumer).name]
+        println("Scalar Consumer is+>", jump_var)
+        # println("asdfasdf = ", :($(swap_our_param_with_val(get_tax_revenue_for_consumer(jm, m, get_full(m._demands[1].consumer))))))
+        # println("en.quant=",eval(:(+($((:($(en.quantity)) for en in m._demands[1].endowments)...)))))
+        if MPSGE.Complementarity.result_value(get_jump_variable_for_commodity(jm, m._demands[1].endowments[1].commodity)) === NaN
+        #    ConsValue = eval(:( +($((:($(swap_our_param_with_val(swap_our_param_with_jump_param(jm, en.quantity))) * $(get_full(en.commodity).benchmark)) for en in m._demands[1].endowments)...))  +  $(get_tax_revenue_for_consumer(jm, m, m._demands[1].consumer)) ))
+            # ConsValue =  eval(:(+($((:($(swap_our_param_with_val(en.quantity)) * $(get_full(en.commodity).benchmark)) for en in m._demands[1].endowments)...))  +  $(swap_our_param_with_val(get_tax_revenue_for_consumer(jm, m, m._demands[1].consumer)))))
+            # ConsValue =  eval(:(+($((:($(en.quantity) * 10.) for en in m._demands[1].endowments)...))  +  $(swap_our_param_with_val(get_tax_revenue_for_consumer(jm, m, m._demands[1].consumer)))))
+            ConsValue = get_full(m._demands[1].consumer).benchmark
+            println("It IS NaN")
+        else
+            ConsValue =  eval(:(+($((:($(swap_our_param_with_val(en.quantity)) * $(MPSGE.Complementarity.result_value(get_jump_variable_for_commodity(jm, en.commodity)))) for en in m._demands[1].endowments)...))  +  $(swap_our_param_with_val(get_tax_revenue_for_consumer(jm, m, m._demands[1].consumer)))))#.args
+            # ConsValue =  eval(:(+($((:($(swap_our_param_with_val(en.quantity)) * $(MPSGE.Complementarity.result_value(get_jump_variable_for_commodity(jm, en.commodity)))) for en in m._demands[1].endowments)...))  +  $(swap_our_param_with_val(get_tax_revenue_for_consumer(jm, m, m._demands[1].consumer)))))#.args
+
+            # ConsValue =  :(+($((:($(swap_our_param_with_val(en.quantity)) * $(MPSGE.Complementarity.result_value(get_jump_variable_for_commodity(jm, en.commodity)))) for en in m._demands[1].endowments)...))  +  $(swap_our_param_with_val(get_tax_revenue_for_consumer(jm, m, m._demands[1].consumer))))#.args
+        end
+        println("ConsVal= ",ConsValue)
+        JuMP.fix(jump_var, ConsValue, force=true)
+        return
+    else
+        for i in Iterators.product(m._demands[1].consumer.indices...)
+            jump_var = jm[m._demands[1].consumer.name][i...][1]
+            JuMP.fix(jump_var, ConsValue, force=true)
+            return
+        end
+    end
+end
