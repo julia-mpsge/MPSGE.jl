@@ -97,24 +97,25 @@ add!(m, Production(A, 0., :($sigmadm*1.0), [Output(PA, a0, [Tax(ta,GOVT)])], [In
 add!(m, Production(M, 0., 1.0, [Output(PM, m0)], [Input(PFX, :($pwm*$m0))] ))
 add!(m, Production(X, 0., 1.0, [Output(PFX, :($pwx*$x0))], [Input(PX, x0)] ))
 
-add!(m, DemandFunction(GOVT, 0.,
+ add!(m, DemandFunction(GOVT, 0.,
  [Demand(PA , 35.583)],
  [Endowment(PA, :($g0*$TAU_LS)), Endowment(PA, dtax), Endowment(PFX, bopdef)]))
 
-add!(m, AuxConstraint(UR, :($PL==$PA)))
-add!(m, AuxConstraint(TAU_LS, :($GOVT==$PA*$g0)))
-add!(m, AuxConstraint(TAU_TL, :($GOVT==$PA*$g0)))
-
-add!(m, DemandFunction(HH, :($sigma*1.0),
+ add!(m, DemandFunction(HH, :($sigma*1.0),
  [Demand(PA, c0), Demand(PL,l0)], 
  [Endowment(PA, :(-$g0*$TAU_LS)), Endowment(PA, -dtax), Endowment(RK, kd0), Endowment(PA, -i0), Endowment(PL, (ly0+l0)), Endowment(PL, :(-($ly0+$l0)*$UR))]))
 
- #Benchmark
-set_value(HH, 414.184)
-set_fixed!(HH, true)
+ add!(m, AuxConstraint(UR, :($PL==$PA)))
+add!(m, AuxConstraint(TAU_LS, :($GOVT==$PA*$g0)))
+add!(m, AuxConstraint(TAU_TL, :($GOVT==$PA*$g0)))
+
+#Benchmark
+# set_value(HH, 414.184)
+# set_fixed!(HH, true)
 solve!(m, cumulative_iteration_limit=0.)
 
-# *   Tariff reform:
+# Tariff reform:
+# Lump Sum F
 set_value(TM, 0.)
 set_value(UR, 0.)
 set_fixed!(UR, true)
@@ -122,22 +123,24 @@ set_value(TAU_TL, 0.)
 set_fixed!(TAU_TL, true)
 solve!(m)
 
+# Wage Tax F
+set_fixed!(TAU_TL, false)
+set_value(TAU_LS, 0.0)
+set_fixed!(TAU_LS, true)
+# set_value(HH, 427.4988518)
+solve!(m)
+
+# Lump Sum R
+set_lower_bound(UR, 0.)
 set_fixed!(UR, false)
 set_fixed!(TAU_LS, false)
 set_value(TAU_TL, 0.)
 set_fixed!(TAU_TL, true)
 solve!(m)
 
-
-set_fixed!(TAU_TL, false)
-set_value(TAU_LS, 0.0)
-set_fixed!(TAU_LS, true)
-set_value(HH, 427.4988518)
-solve!(m)
-
-
+# Wage Tax R
 set_fixed!(TAU_TL, false)
 set_value(TAU_LS, 0.)
 set_fixed!(TAU_LS, true)
-set_value(HH, 441.2417391)
+# set_value(HH, 441.2417391)
 solve!(m)
