@@ -184,7 +184,7 @@ solve!(m)
     @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PUρC[ra]")]) ≈ two_by_two_scalar_results["CWI.L","Itax=.1"] # 150
 end
 
-@testitem "TWOBYTWO (indexed w non-1 prices and input nesting)" begin 
+@testitem "TWOBYTWO (indexed w non-1 prices)" begin 
     using XLSX, MPSGE.JuMP.Containers
   
 
@@ -208,21 +208,7 @@ end
         for i in goods
             @production(m, Y[i], 0, 1, [Output(PC[i], supply[i])], [Input(PF[:l], factor[i,:l]), Input(PF[:k], factor[i,:k])])
         end
-        
         add!(m, Production(U, 0., 1.0, [Output(PU, 150)], [Input(PC[i], supply[i], [Tax(0.,C[:ra])], :($(pricepci[i])*1.)) for i in goods]))
-        # add!(m, Production(U, 0., 1.0, [Output(PU, 150)], [
-        #     Input(
-        #         Nest(
-        #             :PCi,
-        #              1.,
-        #               150.,
-        #               [
-        #                 Input(PC[i], supply[i], [Tax(0.,C[:ra])], :($(pricepci[i])*1.)) for i in goods
-        #                 ]
-        #                 ), 150
-        #                 )
-        #                                                 ]
-        # ))
     
         @demand(m, C[:ra], 1., [Demand(PU, 150)], [Endowment(PF[:l], :(70 * $(endow[:l]))), Endowment(PF[:k], :(80. * $(endow[:k])))])
     
@@ -343,6 +329,171 @@ solve!(m)
 @test MPSGE.Complementarity.result_value(m._jump_model[:PU]) ≈ TwoxTwowOTax_IndPrice_Nest["PU.L._","Pr.x=2"]#  0.9782941
 @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PC[x]†U")]) ≈ TwoxTwowOTax_IndPrice_Nest["DU.L.x","Pr.x=2"]#  114.9659562
 @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PC[y]†U")]) ≈ TwoxTwowOTax_IndPrice_Nest["DU.L.y","Pr.x=2"]#  28.6215389
+@test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PU‡U")]) ≈ TwoxTwowOTax_IndPrice_Nest["SU.L._","Pr.x=2"]#  150
+@test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PC[x]‡Y[x]")]) ≈ TwoxTwowOTax_IndPrice_Nest["SY.L(i).x","Pr.x=2"]#  100
+@test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PC[y]‡Y[y]")]) ≈ TwoxTwowOTax_IndPrice_Nest["SY.L(i).y","Pr.x=2"]#  50
+@test MPSGE.Complementarity.result_value(m._jump_model[:C][:ra]) ≈ TwoxTwowOTax_IndPrice_Nest["RA.L._","Pr.x=2"]#  160.4166664
+
+end
+
+@testitem "TWOBYTWO (indexed w non-1 prices and input nesting)" begin 
+    using XLSX, MPSGE.JuMP.Containers
+  
+
+    m = Model()
+        goods = [:x, :y]
+        factors = [:l, :k]
+        consumers = [:ra]
+        factor = DenseAxisArray(Float64[50 50; 20 30], goods, factors)
+        supply = DenseAxisArray(Float64[100, 50], goods)
+        # pricepci = DenseAxisArray(Float64[1., 1.], goods)
+        pricepci = add!(m, Parameter(:pricepci, indices=(goods,), value=1.))#value=DenseAxisArray(Float64[1., 1.])))
+        endow    = add!(m, Parameter(:endow, indices=(factors,), value=1.0)) 
+        
+        Y = add!(m, Sector(:Y, indices=(goods,)))
+        U = add!(m, Sector(:U))
+        PC = add!(m, Commodity(:PC, indices=(goods,)))
+        PU = add!(m, Commodity(:PU))
+        PF = add!(m, Commodity(:PF, indices=(factors,)))
+        C = add!(m, Consumer(:C, indices=(consumers,), benchmark=150.))
+    
+        for i in goods
+            @production(m, Y[i], 0, 1, [Output(PC[i], supply[i])], [Input(PF[:l], factor[i,:l]), Input(PF[:k], factor[i,:k])])
+        end
+        
+        add!(m, Production(U, 0., 1.0, [Output(PU, 150)], [
+            Input(
+                Nest(
+                    :PCi,
+                     1.,
+                      150.,
+                      [
+                        Input(PC[i], supply[i], [Tax(0.,C[:ra])], :($(pricepci[i])*1.)) for i in goods
+                        ]
+                        ), 150
+                        )
+                                                        ]
+        ))
+    
+        @demand(m, C[:ra], 1., [Demand(PU, 150)], [Endowment(PF[:l], :(70 * $(endow[:l]))), Endowment(PF[:k], :(80. * $(endow[:k])))])
+    
+solve!(m, cumulative_iteration_limit=0)
+
+gams_results = XLSX.readxlsx(joinpath(@__DIR__, "MPSGEresults.xlsx"))
+a_table = gams_results["TwoxTwowOTax_IndPrice_Nest"][:]  # Generated from TwoByTwo_Scalar_Algeb-MPSGE.gms
+TwoxTwowOTax_IndPrice_Nest = DenseAxisArray(a_table[2:end,2:end],string.(a_table[2:end,1],".",a_table[2:end,2]),a_table[1,2:end])
+
+# benchmark
+@test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PF[l]†Y[x]")]) ≈ TwoxTwowOTax_IndPrice_Nest["x.L","benchmark"]#  50
+@test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PF[k]†Y[x]")]) ≈ TwoxTwowOTax_IndPrice_Nest["x.K","benchmark"]#  50
+@test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PF[l]†Y[y]")]) ≈ TwoxTwowOTax_IndPrice_Nest["y.L","benchmark"]#  20
+@test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PF[k]†Y[y]")]) ≈ TwoxTwowOTax_IndPrice_Nest["y.K","benchmark"]#  30
+@test MPSGE.Complementarity.result_value(m._jump_model[:Y][:x]) ≈ TwoxTwowOTax_IndPrice_Nest["Y.L.x","benchmark"]#  1
+@test MPSGE.Complementarity.result_value(m._jump_model[:Y][:y]) ≈ TwoxTwowOTax_IndPrice_Nest["Y.L.y","benchmark"]#  1
+@test MPSGE.Complementarity.result_value(m._jump_model[:U]) ≈ TwoxTwowOTax_IndPrice_Nest["U.L._","benchmark"]#  1
+@test MPSGE.Complementarity.result_value(m._jump_model[:PC][:x]) ≈ TwoxTwowOTax_IndPrice_Nest["PC.L.x","benchmark"]#  1
+@test MPSGE.Complementarity.result_value(m._jump_model[:PC][:y]) ≈ TwoxTwowOTax_IndPrice_Nest["PC.L.y","benchmark"]#  1
+@test MPSGE.Complementarity.result_value(m._jump_model[:PF][:l]) ≈ TwoxTwowOTax_IndPrice_Nest["PF.L.L","benchmark"]#  1
+@test MPSGE.Complementarity.result_value(m._jump_model[:PF][:k]) ≈ TwoxTwowOTax_IndPrice_Nest["PF.L.K","benchmark"]#  1
+@test MPSGE.Complementarity.result_value(m._jump_model[:PU]) ≈ TwoxTwowOTax_IndPrice_Nest["PU.L._","benchmark"]#  1
+@test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PC[x]†U→PCi")]) ≈ TwoxTwowOTax_IndPrice_Nest["DU.L.x","benchmark"]#  100
+@test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PC[y]†U→PCi")]) ≈ TwoxTwowOTax_IndPrice_Nest["DU.L.y","benchmark"]#  50
+@test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PU‡U")]) ≈ TwoxTwowOTax_IndPrice_Nest["SU.L._","benchmark"]#  150
+@test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PC[x]‡Y[x]")]) ≈ TwoxTwowOTax_IndPrice_Nest["SY.L(i).x","benchmark"]#  100
+@test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PC[y]‡Y[y]")]) ≈ TwoxTwowOTax_IndPrice_Nest["SY.L(i).y","benchmark"]#  50
+@test MPSGE.Complementarity.result_value(m._jump_model[:C][:ra]) ≈ TwoxTwowOTax_IndPrice_Nest["RA.L._","benchmark"]#  150
+
+set_value(endow[:l], get_value(endow[:l])*1.1)
+set_value(C[:ra], 157.)
+set_fixed!(C[:ra], true)
+solve!(m)
+
+# RA=157
+@test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PF[l]†Y[x]")]) ≈ TwoxTwowOTax_IndPrice_Nest["x.L","RA=157"]#  52.4404424
+@test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PF[k]†Y[x]")]) ≈ TwoxTwowOTax_IndPrice_Nest["x.K","RA=157"]#  47.6731295
+@test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PF[l]†Y[y]")]) ≈ TwoxTwowOTax_IndPrice_Nest["y.L","RA=157"]#  21.1770571
+@test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PF[k]†Y[y]")]) ≈ TwoxTwowOTax_IndPrice_Nest["y.K","RA=157"]#  28.8778051
+@test MPSGE.Complementarity.result_value(m._jump_model[:Y][:x]) ≈ TwoxTwowOTax_IndPrice_Nest["Y.L.x","RA=157"]#  1.0488088
+@test MPSGE.Complementarity.result_value(m._jump_model[:Y][:y]) ≈ TwoxTwowOTax_IndPrice_Nest["Y.L.y","RA=157"]#  1.0388601
+@test MPSGE.Complementarity.result_value(m._jump_model[:U]) ≈ TwoxTwowOTax_IndPrice_Nest["U.L._","RA=157"]#  1.0454821
+@test MPSGE.Complementarity.result_value(m._jump_model[:PC][:x]) ≈ TwoxTwowOTax_IndPrice_Nest["PC.L.x","RA=157"]#  0.9979575
+@test MPSGE.Complementarity.result_value(m._jump_model[:PC][:y]) ≈ TwoxTwowOTax_IndPrice_Nest["PC.L.y","RA=157"]#  1.0075145
+@test MPSGE.Complementarity.result_value(m._jump_model[:PF][:l]) ≈ TwoxTwowOTax_IndPrice_Nest["PF.L.L","RA=157"]#  0.9515152
+@test MPSGE.Complementarity.result_value(m._jump_model[:PF][:k]) ≈ TwoxTwowOTax_IndPrice_Nest["PF.L.K","RA=157"]#  1.0466667
+@test MPSGE.Complementarity.result_value(m._jump_model[:PU]) ≈ TwoxTwowOTax_IndPrice_Nest["PU.L._","RA=157"]#  1.0011331
+@test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PC[x]†U→PCi")]) ≈ TwoxTwowOTax_IndPrice_Nest["DU.L.x","RA=157"]#  100.3182058
+@test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PC[y]†U→PCi")]) ≈ TwoxTwowOTax_IndPrice_Nest["DU.L.y","RA=157"]#  49.6833066
+@test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PU‡U")]) ≈ TwoxTwowOTax_IndPrice_Nest["SU.L._","RA=157"]#  150
+@test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PC[x]‡Y[x]")]) ≈ TwoxTwowOTax_IndPrice_Nest["SY.L(i).x","RA=157"]#  100
+@test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PC[y]‡Y[y]")]) ≈ TwoxTwowOTax_IndPrice_Nest["SY.L(i).y","RA=157"]#  50
+@test MPSGE.Complementarity.result_value(m._jump_model[:C][:ra]) ≈ TwoxTwowOTax_IndPrice_Nest["RA.L._","RA=157"]#  157
+
+set_fixed!(C[:ra], false)
+set_fixed!(PC[:x], true)
+solve!(m)
+
+# PC.x=1
+@test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PF[l]†Y[x]")]) ≈ TwoxTwowOTax_IndPrice_Nest["x.L","PC.x=1"]#  52.4404424
+@test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PF[k]†Y[x]")]) ≈ TwoxTwowOTax_IndPrice_Nest["x.K","PC.x=1"]#  47.6731295
+@test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PF[l]†Y[y]")]) ≈ TwoxTwowOTax_IndPrice_Nest["y.L","PC.x=1"]#  21.1770571
+@test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PF[k]†Y[y]")]) ≈ TwoxTwowOTax_IndPrice_Nest["y.K","PC.x=1"]#  28.8778051
+@test MPSGE.Complementarity.result_value(m._jump_model[:Y][:x]) ≈ TwoxTwowOTax_IndPrice_Nest["Y.L.x","PC.x=1"]#  1.0488088
+@test MPSGE.Complementarity.result_value(m._jump_model[:Y][:y]) ≈ TwoxTwowOTax_IndPrice_Nest["Y.L.y","PC.x=1"]#  1.0388601
+@test MPSGE.Complementarity.result_value(m._jump_model[:U]) ≈ TwoxTwowOTax_IndPrice_Nest["U.L._","PC.x=1"]#  1.0454821
+@test MPSGE.Complementarity.result_value(m._jump_model[:PC][:x]) ≈ TwoxTwowOTax_IndPrice_Nest["PC.L.x","PC.x=1"]#  1
+@test MPSGE.Complementarity.result_value(m._jump_model[:PC][:y]) ≈ TwoxTwowOTax_IndPrice_Nest["PC.L.y","PC.x=1"]#  1.0095766
+@test MPSGE.Complementarity.result_value(m._jump_model[:PF][:l]) ≈ TwoxTwowOTax_IndPrice_Nest["PF.L.L","PC.x=1"]#  0.9534626
+@test MPSGE.Complementarity.result_value(m._jump_model[:PF][:k]) ≈ TwoxTwowOTax_IndPrice_Nest["PF.L.K","PC.x=1"]#  1.0488088
+@test MPSGE.Complementarity.result_value(m._jump_model[:PU]) ≈ TwoxTwowOTax_IndPrice_Nest["PU.L._","PC.x=1"]#  1.0031821
+@test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PC[x]†U→PCi")]) ≈ TwoxTwowOTax_IndPrice_Nest["DU.L.x","PC.x=1"]#  100.3182058
+@test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PC[y]†U→PCi")]) ≈ TwoxTwowOTax_IndPrice_Nest["DU.L.y","PC.x=1"]#  49.6833066
+@test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PU‡U")]) ≈ TwoxTwowOTax_IndPrice_Nest["SU.L._","PC.x=1"]#  150
+@test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PC[x]‡Y[x]")]) ≈ TwoxTwowOTax_IndPrice_Nest["SY.L(i).x","PC.x=1"]#  100
+@test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PC[y]‡Y[y]")]) ≈ TwoxTwowOTax_IndPrice_Nest["SY.L(i).y","PC.x=1"]#  50
+@test MPSGE.Complementarity.result_value(m._jump_model[:C][:ra]) ≈ TwoxTwowOTax_IndPrice_Nest["RA.L._","PC.x=1"]#  157.3213272
+
+set_fixed!(PC[:x], false)
+set_fixed!(PF[:l], true)
+solve!(m)
+
+# PF.l=1
+@test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PF[l]†Y[x]")]) ≈ TwoxTwowOTax_IndPrice_Nest["x.L","PF.l=1"]#  52.4404424
+@test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PF[k]†Y[x]")]) ≈ TwoxTwowOTax_IndPrice_Nest["x.K","PF.l=1"]#  47.6731295
+@test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PF[l]†Y[y]")]) ≈ TwoxTwowOTax_IndPrice_Nest["y.L","PF.l=1"]#  21.1770571
+@test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PF[k]†Y[y]")]) ≈ TwoxTwowOTax_IndPrice_Nest["y.K","PF.l=1"]#  28.8778051
+@test MPSGE.Complementarity.result_value(m._jump_model[:Y][:x]) ≈ TwoxTwowOTax_IndPrice_Nest["Y.L.x","PF.l=1"]#  1.0488088
+@test MPSGE.Complementarity.result_value(m._jump_model[:Y][:y]) ≈ TwoxTwowOTax_IndPrice_Nest["Y.L.y","PF.l=1"]#  1.0388601
+@test MPSGE.Complementarity.result_value(m._jump_model[:U]) ≈ TwoxTwowOTax_IndPrice_Nest["U.L._","PF.l=1"]#  1.0454821
+@test MPSGE.Complementarity.result_value(m._jump_model[:PC][:x]) ≈ TwoxTwowOTax_IndPrice_Nest["PC.L.x","PF.l=1"]#  1.0488088
+@test MPSGE.Complementarity.result_value(m._jump_model[:PC][:y]) ≈ TwoxTwowOTax_IndPrice_Nest["PC.L.y","PF.l=1"]#  1.0588529
+@test MPSGE.Complementarity.result_value(m._jump_model[:PF][:l]) ≈ TwoxTwowOTax_IndPrice_Nest["PF.L.L","PF.l=1"]#  1
+@test MPSGE.Complementarity.result_value(m._jump_model[:PF][:k]) ≈ TwoxTwowOTax_IndPrice_Nest["PF.L.K","PF.l=1"]#  1.1
+@test MPSGE.Complementarity.result_value(m._jump_model[:PU]) ≈ TwoxTwowOTax_IndPrice_Nest["PU.L._","PF.l=1"]#  1.0521462
+@test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PC[x]†U→PCi")]) ≈ TwoxTwowOTax_IndPrice_Nest["DU.L.x","PF.l=1"]#  100.3182058
+@test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PC[y]†U→PCi")]) ≈ TwoxTwowOTax_IndPrice_Nest["DU.L.y","PF.l=1"]#  49.6833066
+@test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PU‡U")]) ≈ TwoxTwowOTax_IndPrice_Nest["SU.L._","PF.l=1"]#  150
+@test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PC[x]‡Y[x]")]) ≈ TwoxTwowOTax_IndPrice_Nest["SY.L(i).x","PF.l=1"]#  100
+@test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PC[y]‡Y[y]")]) ≈ TwoxTwowOTax_IndPrice_Nest["SY.L(i).y","PF.l=1"]#  50
+@test MPSGE.Complementarity.result_value(m._jump_model[:C][:ra]) ≈ TwoxTwowOTax_IndPrice_Nest["RA.L._","PF.l=1"]#  165
+
+set_value(pricepci[:x] , 2.)
+solve!(m)
+   
+# Pr.x=2
+@test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PF[l]†Y[x]")]) ≈ TwoxTwowOTax_IndPrice_Nest["x.L","Pr.x=2"]#  51.0565454
+@test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PF[k]†Y[x]")]) ≈ TwoxTwowOTax_IndPrice_Nest["x.K","Pr.x=2"]#  48.9653184
+@test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PF[l]†Y[y]")]) ≈ TwoxTwowOTax_IndPrice_Nest["y.L","Pr.x=2"]#  20.5082074
+@test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PF[k]†Y[y]")]) ≈ TwoxTwowOTax_IndPrice_Nest["y.K","Pr.x=2"]#  29.5023165
+@test MPSGE.Complementarity.result_value(m._jump_model[:Y][:x]) ≈ TwoxTwowOTax_IndPrice_Nest["Y.L.x","Pr.x=2"]#  1.2567765
+@test MPSGE.Complementarity.result_value(m._jump_model[:Y][:y]) ≈ TwoxTwowOTax_IndPrice_Nest["Y.L.y","Pr.x=2"]#  0.6257657
+@test MPSGE.Complementarity.result_value(m._jump_model[:U]) ≈ TwoxTwowOTax_IndPrice_Nest["U.L._","Pr.x=2"]#  1.0931727
+@test MPSGE.Complementarity.result_value(m._jump_model[:PC][:x]) ≈ TwoxTwowOTax_IndPrice_Nest["PC.L.x","Pr.x=2"]#  1.0211309
+@test MPSGE.Complementarity.result_value(m._jump_model[:PC][:y]) ≈ TwoxTwowOTax_IndPrice_Nest["PC.L.y","Pr.x=2"]#  1.0254104
+@test MPSGE.Complementarity.result_value(m._jump_model[:PF][:l]) ≈ TwoxTwowOTax_IndPrice_Nest["PF.L.L","Pr.x=2"]#  1
+@test MPSGE.Complementarity.result_value(m._jump_model[:PF][:k]) ≈ TwoxTwowOTax_IndPrice_Nest["PF.L.K","Pr.x=2"]#  1.0427083
+@test MPSGE.Complementarity.result_value(m._jump_model[:PU]) ≈ TwoxTwowOTax_IndPrice_Nest["PU.L._","Pr.x=2"]#  0.9782941
+@test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PC[x]†U→PCi")]) ≈ TwoxTwowOTax_IndPrice_Nest["DU.L.x","Pr.x=2"]#  114.9659562
+@test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PC[y]†U→PCi")]) ≈ TwoxTwowOTax_IndPrice_Nest["DU.L.y","Pr.x=2"]#  28.6215389
 @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PU‡U")]) ≈ TwoxTwowOTax_IndPrice_Nest["SU.L._","Pr.x=2"]#  150
 @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PC[x]‡Y[x]")]) ≈ TwoxTwowOTax_IndPrice_Nest["SY.L(i).x","Pr.x=2"]#  100
 @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PC[y]‡Y[y]")]) ≈ TwoxTwowOTax_IndPrice_Nest["SY.L(i).y","Pr.x=2"]#  50
