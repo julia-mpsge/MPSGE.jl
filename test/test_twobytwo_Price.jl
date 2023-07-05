@@ -436,7 +436,6 @@ solve!(m, cumulative_iteration_limit=0)
 @test MPSGE.Complementarity.result_value(m._jump_model[:RA]) ≈ two_by_two_PriceinDemand["RA","benchmark"]#  134
 @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PUρRA")]) ≈ two_by_two_PriceinDemand["DU","benchmark"]#  124
 @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PYρRA")]) ≈ two_by_two_PriceinDemand["DY","benchmark"]#  10
-# @test MPSGE.Complementarity.result_value(m._jump_model[:PYρRA]) ≈ two_by_two_PriceinDemand["DY","benchmark"]#  10
 
 set_value(endow,1.1)
 # # set_value(RA,172.2046917)
@@ -466,7 +465,6 @@ solve!(m)
 @test MPSGE.Complementarity.result_value(m._jump_model[:RA]) ≈ two_by_two_PriceinDemand["RA","RA=157"]#  139.2025004
 @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PUρRA")]) ≈ two_by_two_PriceinDemand["DU","RA=157"]#  128.8142541
 @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PYρRA")]) ≈ two_by_two_PriceinDemand["DY","RA=157"]#  10.4327007
-# @test MPSGE.Complementarity.result_value(m._jump_model[:PYρRA]) ≈ two_by_two_PriceinDemand["DY","RA=157"]#  10.4327007
 
 set_value(esub_ra, 0.6)
 solve!(m)
