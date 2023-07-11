@@ -288,6 +288,17 @@ struct AuxConstraint
     equation
 end
 
+"""
+   Model()
+
+The struct that stores all the elements of the model.
+
+# Example
+```julia-repl
+julia> foo = Model()
+```
+"""
+
 mutable struct Model
     _parameters::Vector{Parameter}
     _sectors::Vector{Sector}
