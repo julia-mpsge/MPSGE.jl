@@ -7,4 +7,5 @@
 
 ## Overview
 
-This package provides a [MPSGE](https://www.gams.com/solvers/mpsge/index.htm) implementation on Julia. At the moment it is very much work in progress and likely to change significantly quickly, but there are some working examples in the examples and test folder. Documentation is coming soon (writing this in July 2023). In the meantime, while the Julia syntax is obviously different than the GAMS version, the linked pages for the original MPSGE has great explanations of the structure, features, and theory. 
+This package provides a [MPSGE](https://www.gams.com/solvers/mpsge/index.htm) implementation in Julia.
+<p> (As of July 2023) the initital development is nearly complete and the package is ready for testing. Documentation is coming soon. In the meantime, while the Julia syntax is obviously different than the GAMS version, the linked page above for the original MPSGE has great explanations of the structure, features, and theory. The examples illustrate the Julia syntax as currently implemented.
