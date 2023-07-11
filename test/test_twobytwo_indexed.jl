@@ -850,6 +850,7 @@ solve!(m)
 @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PU[k]‡U")]) ≈ TwoxTwo_DemandIndPrice_Nest["SU.K","PF.l=1"]#  75
 @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PC[x]‡Y[x]")]) ≈ TwoxTwo_DemandIndPrice_Nest["SY.x","PF.l=1"]#  100
 @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PC[y]‡Y[y]")]) ≈ TwoxTwo_DemandIndPrice_Nest["SY.y","PF.l=1"]#  50
+# For the counterfacturals where there two nested final demands are equal, summing matches our results, but for this they are different and summing the two doesn't match
 # @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PC→CUρC[ra]")]) ≈ TwoxTwo_DemandIndPrice_Nest["FDRA.L","PF.l=1"]+TwoxTwo_DemandIndPrice_Nest["FDRA.K","PF.l=1"]#  84.0702388 +  71.6690945
 # @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PU[k]ρC[ra]")]) ≈ TwoxTwo_DemandIndPrice_Nest["FDRA.K","PF.l=1"]#  71.6690945
 
