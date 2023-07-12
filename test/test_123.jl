@@ -384,17 +384,17 @@ add!(m, Production(X, 0., 1.0, [Output(PFX, :($pwx*$x0))], [Input(PX, x0)] ))
 add!(m, Production(A, 0., :($sigmadm*1.0), [Output(PA, a0, [Tax(ta,GOVT)])], [Input(PD, (d0-cd0)), Input(PM, (m0-cm0))]))
 add!(m, Production(M, 0., 1.0, [Output(PM, m0)], [Input(PFX, :($pwm*$m0/$pm0), [Tax(:($TM*1.), GOVT)])]))
 
-add!(m, DemandFunction(GOVT, 0.,
+add!(m, DemandFunction(HH, :($sigma*1.0),
+ [Demand(PL,l0), Demand(Nest(:C, :($sigmac*1.), (cd0+cm0), [Input(PD, cd0), Input(PM, cm0)]),(cd0+cm0))], #Demand(PA, c0), ], 
+ [Endowment(PA, :(-$g0*$TAU_LS)), Endowment(PA, -dtax), Endowment(RK, kd0), Endowment(PA, -i0), Endowment(PL, (ly0+l0)), Endowment(PL, :(-($ly0+$l0)*$UR))]))
+
+ add!(m, DemandFunction(GOVT, 0.,
  [Demand(PA , 35.583)],
  [Endowment(PA, :($g0*$TAU_LS)), Endowment(PA, dtax), Endowment(PFX, bopdef)]))
 
 add!(m, AuxConstraint(UR, :($PL==$PA)))
 add!(m, AuxConstraint(TAU_LS, :($GOVT==$PA*$g0)))
 add!(m, AuxConstraint(TAU_TL, :($GOVT==$PA*$g0)))
-
-add!(m, DemandFunction(HH, :($sigma*1.0),
- [Demand(PL,l0), Demand(Nest(:C, :($sigmac*1.), (cd0+cm0), [Input(PD, cd0), Input(PM, cm0)]),(cd0+cm0))], #Demand(PA, c0), ], 
- [Endowment(PA, :(-$g0*$TAU_LS)), Endowment(PA, -dtax), Endowment(RK, kd0), Endowment(PA, -i0), Endowment(PL, (ly0+l0)), Endowment(PL, :(-($ly0+$l0)*$UR))]))
 
  #Benchmark
 set_value(HH, 414.184)
@@ -482,7 +482,8 @@ set_fixed!(UR, false)
 set_fixed!(TAU_LS, false)
 set_value(TAU_TL, 0.)
 set_fixed!(TAU_TL, true)
-set_value(HH, 428.4262913)
+set_fixed!(HH,false)
+# set_value(HH, 428.4262913)
 solve!(m)
 # Lump Sum R
 @test MPSGE.Complementarity.result_value(m._jump_model[:PFX]) ≈ The123Nested["PFX","Lump Sum R"]#  1.0938452
@@ -517,6 +518,7 @@ solve!(m)
 @test MPSGE.Complementarity.result_value(m._jump_model[:TAU_TL]) ≈ 0 # The123Nested["TAU_TL","Lump Sum R"]#  0
 @test MPSGE.Complementarity.result_value(m._jump_model[:UR]) ≈ 0 # The123Nested["UR","Lump Sum R"]#  0
 
+# set_fixed!(HH,true)
 set_fixed!(UR, true)
 set_fixed!(TAU_TL, false)
 set_value(TAU_LS, 0.0)
@@ -555,11 +557,12 @@ solve!(m)
 @test MPSGE.Complementarity.result_value(m._jump_model[:TAU_TL]) ≈ The123Nested["TAU_TL","Wage Tax F"]#  0.0958143
 @test MPSGE.Complementarity.result_value(m._jump_model[:UR]) ≈ 0 # The123Nested["UR","Wage Tax F"]#  0
 
+set_fixed!(HH,false)
 set_fixed!(UR, false)
 set_fixed!(TAU_TL, false)
 set_value(TAU_LS, 0.)
 set_fixed!(TAU_LS, true)
-set_value(HH, 443.1583236)
+# set_value(HH, 443.1583236)
 solve!(m)
 # Wage Tax R
 @test MPSGE.Complementarity.result_value(m._jump_model[:PFX]) ≈ The123Nested["PFX","Wage Tax R"]#  1.215978
