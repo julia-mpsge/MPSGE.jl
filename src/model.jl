@@ -288,6 +288,17 @@ struct AuxConstraint
     equation
 end
 
+"""
+   Model()
+
+The struct that stores all the elements of the model.
+
+# Example
+```julia-repl
+julia> foo = Model()
+```
+"""
+
 mutable struct Model
     _parameters::Vector{Parameter}
     _sectors::Vector{Sector}
@@ -507,6 +518,24 @@ function Demand(commodity, quantity::Number, price::Union{Float64,Expr}=1.)
     return Demand(commodity, convert(Float64, quantity), price)
 end
 
+"""
+   add!(m,bar)
+Function that adds an element to the model with a name assignment
+m::Model is always the first Argument
+
+# Options
+Parameter::ScalarParameter, ::IndexedParameter
+Commodity::ScalarCommodity, IndexedCommodity
+Sector::ScalarSector, IndexedSector
+Consumer::ScalarConsumer, IndexedConsumer
+AxxConstraint::ScalarAux, IndexedAux
+Production::Production
+Demand::DemandFunction
+# Example
+```julia-repl
+julia> S = add!(m, Sector())
+```
+"""
 function add!(m::Model, s::ScalarSector)
     m._jump_model = nothing
     push!(m._sectors, s)
