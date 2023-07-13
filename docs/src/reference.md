@@ -3,8 +3,10 @@
 ```@docs
 Model
 add!
-set_value
-set_fixed!
 Parameter
 Sector
+Input
+Output
+set_value
+set_fixed!
 ```

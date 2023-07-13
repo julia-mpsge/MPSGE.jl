@@ -221,6 +221,17 @@ struct Tax
     agent::ConsumerRef
 end
 
+"""
+   Input(inputname::Symbol, value::Float64; taxes=taxes::Vector{Tax}, price=price::Union{Float64,Expr}=1.)
+    The struct that stores all the elements of an Input.
+### Options
+        Taxes and price are optional, keyword must be used.
+
+### Example
+```julia-repl
+julia> Input(:PL, 50, taxes=[Tax(1., RA)], price=1.2)
+```
+"""
 mutable struct Input
     commodity::Any
     quantity::Union{Float64,Expr}
@@ -233,6 +244,17 @@ mutable struct Input
     end
 end
 
+"""
+   Output(outputname::Symbol, value::Float64; taxes=taxes::Vector{Tax}, price=price::Union{Float64,Expr}=1.)
+    The struct that stores all the elements of an Input.
+### Options
+        Taxes and price are optional, keyword must be used.
+
+### Example
+```julia-repl
+julia> Output(:PU, 50, taxes=[Tax(0.1, CONS)], price=.9)
+```
+"""
 mutable struct Output
     commodity::CommodityRef
     quantity::Union{Float64,Expr}
@@ -708,6 +730,7 @@ end
 function JuMP.value(m::Model, name::Symbol)
     Complementarity.result_value(m._jump_model[name])
 end
+
 """
     solve!(m::Model; solver=solvername, keywords)
     Function to solve the model. Triggers the build if the model hasn't been built yet.
@@ -807,7 +830,7 @@ end
     Aux::ScalarAux,             ::IndexedAux
 ### Example
 ```julia-repl
-julia> set_value(var, false)
+julia> set_fixed!(var, false)
 ```
 """
 function set_fixed!(commodity::CommodityRef, new_value::Bool)    
