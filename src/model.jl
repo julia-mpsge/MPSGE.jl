@@ -39,14 +39,7 @@ mutable struct ScalarParameter <: Parameter
     name::Symbol
     value::Float64
     description::String
-"""
-    Parameter(:symbol, value, string)
-Struct that holds the name, value, and optional description of a scalar parameter within the model.
-### Example
-```julia-repl
-julia> P = add!(Parameter(model, :P, 1.))
-```
-"""
+
     function ScalarParameter(name::Symbol; value::Float64=1., description::AbstractString="")
         return new(name, value, description)
     end
@@ -57,24 +50,16 @@ mutable struct IndexedParameter <: Parameter
     indices::Any
     value::DenseAxisArray
     description::String
-"""
-    Parameter(:symbol, indices, value, string)
-Struct that holds the name, indices, value, and optional description of an indexed parameter within the model.
-### Example
-```julia-repl
-julia> sectors = [:s1, :s2]
-julia> P = add!(Parameter(model, :P,, indices=(,sectors), value=1.))
-```
-"""
+
     function IndexedParameter(name::Symbol, indices; value::Float64=1., description::AbstractString="")
         return new(name, indices, DenseAxisArray(fill(value, length.(indices)...), indices...), description)
     end
 end
 """
     Parameter(:symbol; indices, value::Float64=1., string)
-Struct that holds the name, indices if IndexedParameter, value, and optional description of a parameter within the model.
+    Struct that holds the name, indices if IndexedParameter, value, and optional description of a parameter within the model.
 ### Options
-Parameter::ScalarParameter, IndexedParameter
+    Parameter::ScalarParameter, IndexedParameter
 ### Example
 ```julia-repl
 julia> P = add!(Parameter(model, :P, value=1., description="Elasticity"))
@@ -114,6 +99,18 @@ mutable struct IndexedSector <: Sector
         return new(name, indices, DenseAxisArray(fill(benchmark, length.(indices)...), indices...), DenseAxisArray(fill(lower_bound, length.(indices)...), indices...), DenseAxisArray(fill(upper_bound, length.(indices)...), indices...), description, DenseAxisArray(fill(fixed, length.(indices)...), indices...))
     end
 end
+"""
+    Sector(:symbol; indices, value::Float64=1., string)
+    Struct that holds the name, (indices if IndexedSector), value, and optional description of a sector within the model.
+### Options
+    Sector::ScalarSector, IndexedSector
+### Example
+```julia-repl
+julia> S = add!(Sector(model, :S, value=1., description="Sector S"))
+julia> sectors = [:s1, :s2]
+julia> P = add!(Sector(model, :S, indices=(,sectors), value=1., description="S[:s1] and S[:s2] Sectors"))
+```
+"""
 
 function Sector(name; indices=nothing, kwargs...)
     return indices===nothing ? ScalarSector(name; kwargs...) : IndexedSector(name, indices; kwargs...)

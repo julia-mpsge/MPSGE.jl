@@ -6,5 +6,5 @@ add!
 set_value
 set_fixed!
 Parameter
-IndexedParameter
+Sector
 ```
