@@ -3,4 +3,6 @@
 ```@docs
 Model
 add!
+ScalarParameter
+IndexedParameter
 ```
