@@ -4,7 +4,7 @@ m = Model()
 
 endow = add!(m, Parameter(:endow, value=1.0))
 # @parameter(m, endow, 1.0)
-@parameter(m, sub_elas_x, 1.5)
+@parameter(m, sub_elas_x, 1.5, description="Substituion Elasticity for Sector X")
 @parameter(m, sub_elas_y, 2.)
 @parameter(m, sub_elas_u, 0.5)
 @parameter(m, transf_elas_x, 0.)

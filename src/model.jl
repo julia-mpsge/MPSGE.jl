@@ -42,7 +42,7 @@ mutable struct ScalarParameter <: Parameter
 """
     Parameter(:symbol, value, string)
 Struct that holds the name, value, and optional description of a scalar parameter within the model.
-# Example
+### Example
 ```julia-repl
 julia> P = add!(Parameter(model, :P, 1.))
 ```
@@ -60,7 +60,7 @@ mutable struct IndexedParameter <: Parameter
 """
     Parameter(:symbol, indices, value, string)
 Struct that holds the name, indices, value, and optional description of an indexed parameter within the model.
-# Example
+### Example
 ```julia-repl
 julia> sectors = [:s1, :s2]
 julia> P = add!(Parameter(model, :P,, indices=(,sectors), value=1.))
@@ -70,7 +70,18 @@ julia> P = add!(Parameter(model, :P,, indices=(,sectors), value=1.))
         return new(name, indices, DenseAxisArray(fill(value, length.(indices)...), indices...), description)
     end
 end
-
+"""
+    Parameter(:symbol; indices, value::Float64=1., string)
+Struct that holds the name, indices if IndexedParameter, value, and optional description of a parameter within the model.
+### Options
+Parameter::ScalarParameter, IndexedParameter
+### Example
+```julia-repl
+julia> P = add!(Parameter(model, :P, value=1., description="Elasticity"))
+julia> sectors = [:s1, :s2]
+julia> P = add!(Parameter(model, :P, indices=(,sectors), value=1., description="Elasticity parameters for X Sector "))
+```
+"""
 function Parameter(name; indices=nothing, kwargs...)
     return indices===nothing ? ScalarParameter(name; kwargs...) : IndexedParameter(name, indices; kwargs...)
 end
@@ -322,9 +333,9 @@ mutable struct Model
 """
    Model()
 
-The struct that stores all the elements of the model.
+    The struct that stores all the elements of the model.
 
-# Example
+### Example
 ```julia-repl
 julia> foo = Model()
 ```
@@ -543,14 +554,14 @@ end
     Sector::ScalarSector,       ::IndexedSector
     Consumer::ScalarConsumer,   ::IndexedConsumer
     Aux::ScalarAux,             ::IndexedAux
-# Example
+### Example
 ```julia-repl
 julia> S = add!(m, Sector())
-````
+```
     Production::Production
     Demand::DemandFunction
     AuxConstraint::AuxConstraint
-# Example
+### Example
 ```julia-repl
 julia> add!(m, Production()) 
 ```
@@ -700,7 +711,16 @@ end
 function JuMP.value(m::Model, name::Symbol)
     Complementarity.result_value(m._jump_model[name])
 end
-
+"""
+    solve!(m::Model; solver=solvername, keywords)
+    Function to solve the model. Triggers the build if the model hasn't been built yet.
+### Argumenents
+    See @Complementarity.solveMCP() for full list of argument Options
+### Example
+```julia-repl
+julia> solve!(m, cumulative_iteration_limit=0)
+```
+"""
 function solve!(m::Model; solver::Symbol=:PATH, kwargs...)
     if m._jump_model===nothing
         m._jump_model = build(m)
@@ -717,13 +737,13 @@ end
 """
     set_value(P, value::Float64)
     Function that allows users to set a specific value for a variable, updating the benchmark field.
-# Options
+### Options
     Parameter::ScalarParameter, ::IndexedParameter
     Commodity::ScalarCommodity, ::IndexedCommodity
     Sector::ScalarSector,       ::IndexedSector
     Consumer::ScalarConsumer,   ::IndexedConsumer
     Aux::ScalarAux,             ::IndexedAux
-# Example
+### Example
 ```julia-repl
 julia> set_value(var, 1.3)
 ```
@@ -782,13 +802,13 @@ end
 """
     set_fixed!(P, true::Boolean)
     Function that allows users to fix a value for a variable, the benchmark, the value from set_value, or the previous value.
-# Options
+### Options
     Parameter::ScalarParameter, ::IndexedParameter
     Commodity::ScalarCommodity, ::IndexedCommodity
     Sector::ScalarSector,       ::IndexedSector
     Consumer::ScalarConsumer,   ::IndexedConsumer
     Aux::ScalarAux,             ::IndexedAux
-# Example
+### Example
 ```julia-repl
 julia> set_value(var, false)
 ```

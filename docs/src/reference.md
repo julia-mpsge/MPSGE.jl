@@ -4,7 +4,7 @@
 Model
 add!
 set_value
-set_fixed
+set_fixed!
 Parameter
 IndexedParameter
 ```
