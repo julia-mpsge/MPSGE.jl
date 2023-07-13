@@ -89,11 +89,11 @@ TAU_TL = add!(m,Aux(:TAU_TL, benchmark=0.)) # Labor tax replacement
 UR = add!(m,Aux(:UR, benchmark=0.)) # Unemployment rate
 
 add!(m, Production(Y, :($etadx*1.0), :($esubkl*1.0),
- [Output(PD, d0), Output(PX, x0, [Tax(tx,GOVT)], px0)],
- [Input(RK, kd0, [Tax(tk, GOVT)], rr0), Input(PL, ly0, [Tax(:($tl+$TAU_TL),GOVT)], pl0)] ))
+ [Output(PD, d0), Output(PX, x0, taxes=[Tax(tx,GOVT)], price=px0)],
+ [Input(RK, kd0, taxes=[Tax(tk, GOVT)], price=rr0), Input(PL, ly0, taxes=[Tax(:($tl+$TAU_TL),GOVT)], price=pl0)] ))
 # add!(m, Production(Y, :($etadx*1.0), :($esubkl*1.0), [Output(PD, d0), Output(PX, x0, [Tax(tx,GOVT)], px0)], [Input(RK, kd0, [Tax(tk, GOVT)], rr0), Input(PL, ly0, [Tax(tl,GOVT), Tax(:($TAU_TL*1),GOVT)], pl0)] ))
 
-add!(m, Production(A, 0., :($sigmadm*1.0), [Output(PA, a0, [Tax(ta,GOVT)])], [Input(PD, d0), Input(PM, m0, [Tax(:($TM*1.),GOVT)], pm0)] ))
+add!(m, Production(A, 0., :($sigmadm*1.0), [Output(PA, a0, taxes=[Tax(ta,GOVT)])], [Input(PD, d0), Input(PM, m0, taxes=[Tax(:($TM*1.),GOVT)], price=pm0)] ))
 add!(m, Production(M, 0., 1.0, [Output(PM, m0)], [Input(PFX, :($pwm*$m0))] ))
 add!(m, Production(X, 0., 1.0, [Output(PFX, :($pwx*$x0))], [Input(PX, x0)] ))
 
