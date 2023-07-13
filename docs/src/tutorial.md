@@ -9,7 +9,7 @@ m = Model()
 ```
 ## Store the model elements ready for build by adding them
 !!! note
-    Scalars and arrays can be used to provide values, inlcuding for model parameters like elasticities, but can not be changed within the model in counterfactuals, so any value that needs to be updated should be added as a model Parameter.\  
+    Scalars and arrays can be used to provide values, inlcuding for model parameters like elasticities, but can not be changed within the model in counterfactuals, so any value that needs to be updated should be added as a model Parameter.\ 
     To access model Parameters in model functions, at this point they must be part of expressions, so for referencing the value of `elast`, it must be within an evaluated expression :(1 * $elast).\  
     The model can be built in any order, so long as all elements referred to have been previously defined. For that reason a standard structure is: load the data, scalars, indexes; add model parameters, sectors, commodities, auxiliary variables, and consumers; add production and demand functions, and auxilliary constraint equations.
 
