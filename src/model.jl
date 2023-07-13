@@ -39,7 +39,14 @@ mutable struct ScalarParameter <: Parameter
     name::Symbol
     value::Float64
     description::String
-
+"""
+    Parameter(:symbol, value, string)
+Struct that holds the name, value, and optional description of a scalar parameter within the model.
+# Example
+```julia-repl
+julia> P = add!(Parameter(model, :P, 1.))
+```
+"""
     function ScalarParameter(name::Symbol; value::Float64=1., description::AbstractString="")
         return new(name, value, description)
     end
@@ -50,7 +57,15 @@ mutable struct IndexedParameter <: Parameter
     indices::Any
     value::DenseAxisArray
     description::String
-
+"""
+    Parameter(:symbol, indices, value, string)
+Struct that holds the name, indices, value, and optional description of an indexed parameter within the model.
+# Example
+```julia-repl
+julia> sectors = [:s1, :s2]
+julia> P = add!(Parameter(model, :P,, indices=(,sectors), value=1.))
+```
+"""
     function IndexedParameter(name::Symbol, indices; value::Float64=1., description::AbstractString="")
         return new(name, indices, DenseAxisArray(fill(value, length.(indices)...), indices...), description)
     end
@@ -288,17 +303,6 @@ struct AuxConstraint
     equation
 end
 
-"""
-   Model()
-
-The struct that stores all the elements of the model.
-
-# Example
-```julia-repl
-julia> foo = Model()
-```
-"""
-
 mutable struct Model
     _parameters::Vector{Parameter}
     _sectors::Vector{Sector}
@@ -315,6 +319,16 @@ mutable struct Model
 
     _nlexpressions::Vector{Any}
 
+"""
+   Model()
+
+The struct that stores all the elements of the model.
+
+# Example
+```julia-repl
+julia> foo = Model()
+```
+"""
     function Model()
         return new(
             Parameter[],
@@ -519,21 +533,26 @@ function Demand(commodity, quantity::Number, price::Union{Float64,Expr}=1.)
 end
 
 """
-   add!(m,bar)
-Function that adds an element to the model with a name assignment
-m::Model is always the first Argument
+    add!(m,bar)
+    Function that adds an element to the model with a name assignment
+    m::Model is always the first Argument
 
-# Options
-Parameter::ScalarParameter, ::IndexedParameter
-Commodity::ScalarCommodity, IndexedCommodity
-Sector::ScalarSector, IndexedSector
-Consumer::ScalarConsumer, IndexedConsumer
-AxxConstraint::ScalarAux, IndexedAux
-Production::Production
-Demand::DemandFunction
+    # Options
+    Parameter::ScalarParameter, ::IndexedParameter
+    Commodity::ScalarCommodity, ::IndexedCommodity
+    Sector::ScalarSector,       ::IndexedSector
+    Consumer::ScalarConsumer,   ::IndexedConsumer
+    Aux::ScalarAux,             ::IndexedAux
 # Example
 ```julia-repl
 julia> S = add!(m, Sector())
+````
+    Production::Production
+    Demand::DemandFunction
+    AuxConstraint::AuxConstraint
+# Example
+```julia-repl
+julia> add!(m, Production()) 
 ```
 """
 function add!(m::Model, s::ScalarSector)
@@ -695,7 +714,20 @@ function solve!(m::Model; solver::Symbol=:PATH, kwargs...)
 
     return m
 end
-
+"""
+    set_value(P, value::Float64)
+    Function that allows users to set a specific value for a variable, updating the benchmark field.
+# Options
+    Parameter::ScalarParameter, ::IndexedParameter
+    Commodity::ScalarCommodity, ::IndexedCommodity
+    Sector::ScalarSector,       ::IndexedSector
+    Consumer::ScalarConsumer,   ::IndexedConsumer
+    Aux::ScalarAux,             ::IndexedAux
+# Example
+```julia-repl
+julia> set_value(var, 1.3)
+```
+"""
 function JuMP.set_value(parameter::ParameterRef, new_value::Float64)
     p = parameter.model._parameters[parameter.index]
     if p isa ScalarParameter
@@ -747,6 +779,20 @@ function JuMP.set_value(commodity::CommodityRef, new_value::Float64)
     # c.model._commodities[c.index].benchmark = new_value
 end
 
+"""
+    set_fixed!(P, true::Boolean)
+    Function that allows users to fix a value for a variable, the benchmark, the value from set_value, or the previous value.
+# Options
+    Parameter::ScalarParameter, ::IndexedParameter
+    Commodity::ScalarCommodity, ::IndexedCommodity
+    Sector::ScalarSector,       ::IndexedSector
+    Consumer::ScalarConsumer,   ::IndexedConsumer
+    Aux::ScalarAux,             ::IndexedAux
+# Example
+```julia-repl
+julia> set_value(var, false)
+```
+"""
 function set_fixed!(commodity::CommodityRef, new_value::Bool)    
     c = commodity.model._commodities[commodity.index]
     if c isa ScalarCommodity
