@@ -99,6 +99,7 @@ mutable struct IndexedSector <: Sector
         return new(name, indices, DenseAxisArray(fill(benchmark, length.(indices)...), indices...), DenseAxisArray(fill(lower_bound, length.(indices)...), indices...), DenseAxisArray(fill(upper_bound, length.(indices)...), indices...), description, DenseAxisArray(fill(fixed, length.(indices)...), indices...))
     end
 end
+
 """
     Sector(:symbol; indices, value::Float64=1., string)
     Struct that holds the name, (indices if IndexedSector), value, and optional description of a sector within the model.
@@ -111,7 +112,6 @@ julia> sectors = [:s1, :s2]
 julia> P = add!(Sector(model, :S, indices=(,sectors), value=1., description="S[:s1] and S[:s2] Sectors"))
 ```
 """
-
 function Sector(name; indices=nothing, kwargs...)
     return indices===nothing ? ScalarSector(name; kwargs...) : IndexedSector(name, indices; kwargs...)
 end
@@ -311,6 +311,15 @@ struct AuxConstraint
     equation
 end
 
+"""
+   Model()
+    The struct that stores all the elements of the model.
+
+### Example
+```julia-repl
+julia> foo = Model()
+```
+"""
 mutable struct Model
     _parameters::Vector{Parameter}
     _sectors::Vector{Sector}
@@ -329,7 +338,6 @@ mutable struct Model
 
 """
    Model()
-
     The struct that stores all the elements of the model.
 
 ### Example
