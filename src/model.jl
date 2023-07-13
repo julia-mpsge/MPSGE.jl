@@ -33,6 +33,18 @@ struct AuxRef
     subindex_names::Any
 end
 
+"""
+    Parameter(:symbol; indices, value::Float64=1., string)
+    Struct that holds the name, indices if IndexedParameter, value, and optional description of a parameter within the model.
+### Options
+    Parameter::ScalarParameter, IndexedParameter
+### Example
+```julia-repl
+julia> P = add!(Parameter(model, :P, value=1., description="Elasticity"))
+julia> sectors = [:s1, :s2]
+julia> P = add!(Parameter(model, :P, indices=(,sectors), value=1., description="Elasticity parameters for X Sector "))
+```
+"""
 abstract type Parameter end;
 
 mutable struct ScalarParameter <: Parameter
@@ -55,18 +67,7 @@ mutable struct IndexedParameter <: Parameter
         return new(name, indices, DenseAxisArray(fill(value, length.(indices)...), indices...), description)
     end
 end
-"""
-    Parameter(:symbol; indices, value::Float64=1., string)
-    Struct that holds the name, indices if IndexedParameter, value, and optional description of a parameter within the model.
-### Options
-    Parameter::ScalarParameter, IndexedParameter
-### Example
-```julia-repl
-julia> P = add!(Parameter(model, :P, value=1., description="Elasticity"))
-julia> sectors = [:s1, :s2]
-julia> P = add!(Parameter(model, :P, indices=(,sectors), value=1., description="Elasticity parameters for X Sector "))
-```
-"""
+
 function Parameter(name; indices=nothing, kwargs...)
     return indices===nothing ? ScalarParameter(name; kwargs...) : IndexedParameter(name, indices; kwargs...)
 end
@@ -336,15 +337,6 @@ mutable struct Model
 
     _nlexpressions::Vector{Any}
 
-"""
-   Model()
-    The struct that stores all the elements of the model.
-
-### Example
-```julia-repl
-julia> foo = Model()
-```
-"""
     function Model()
         return new(
             Parameter[],
