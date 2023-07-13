@@ -97,11 +97,11 @@ add!(m, Production(A, 0., :($sigmadm*1.0), [Output(PA, a0, [Tax(ta,GOVT)])], [In
 add!(m, Production(M, 0., 1.0, [Output(PM, m0)], [Input(PFX, :($pwm*$m0))] ))
 add!(m, Production(X, 0., 1.0, [Output(PFX, :($pwx*$x0))], [Input(PX, x0)] ))
 
- add!(m, DemandFunction(GOVT, 0.,
+add!(m, DemandFunction(GOVT, 0.,
  [Demand(PA , 35.583)],
  [Endowment(PA, :($g0*$TAU_LS)), Endowment(PA, dtax), Endowment(PFX, bopdef)]))
 
- add!(m, DemandFunction(HH, :($sigma*1.0),
+add!(m, DemandFunction(HH, :($sigma*1.0),
  [Demand(PA, c0), Demand(PL,l0)], 
  [Endowment(PA, :(-$g0*$TAU_LS)), Endowment(PA, -dtax), Endowment(RK, kd0), Endowment(PA, -i0), Endowment(PL, (ly0+l0)), Endowment(PL, :(-($ly0+$l0)*$UR))]))
 

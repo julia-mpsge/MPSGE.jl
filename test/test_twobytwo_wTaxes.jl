@@ -1251,7 +1251,7 @@ end
     avm = algebraic_version(m)
     @test typeof(avm) == MPSGE.AlgebraicWrapper
 
-    solve!(m)
+    # solve!(m)
 
     gams_results = XLSX.readxlsx(joinpath(@__DIR__, "MPSGEresults.xlsx"))
     a_table = gams_results["TwoxTwowAuxDem"][:]  # Generated from TwoByTwo_Scalar_Algeb-MPSGE.gms
@@ -1282,8 +1282,8 @@ end
 @test MPSGE.Complementarity.result_value(m._jump_model[Symbol("PWρCONS")]) ≈ two_by_two_AuxinDemand["CWCONS.L","benchmark"]#  200
 
 set_value(U, .1)
-    set_value(CONS,210.)
-    set_fixed!(CONS,true)
+    # set_value(CONS,210.)
+    # set_fixed!(CONS,true)
     solve!(m)
 
 # UnEmp=.1

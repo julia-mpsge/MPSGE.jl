@@ -397,8 +397,8 @@ add!(m, AuxConstraint(TAU_LS, :($GOVT==$PA*$g0)))
 add!(m, AuxConstraint(TAU_TL, :($GOVT==$PA*$g0)))
 
  #Benchmark
-set_value(HH, 414.184)
-set_fixed!(HH, true)
+# set_value(HH, 414.184)
+# set_fixed!(HH, true)
 solve!(m, cumulative_iteration_limit=0.)
 
 gams_results = XLSX.readxlsx(joinpath(@__DIR__, "MPSGEresults.xlsx"))

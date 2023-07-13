@@ -267,22 +267,15 @@ function set_default_numeraire(m)
             end
         end
     end
-                                println("What is m._demands[1].consumer? : ", typeof(get_full(m._demands[1].consumer)))
+                                # println("What is m._demands[1].consumer? : ", typeof(get_full(m._demands[1].consumer)))
     if get_full(m._demands[1].consumer) isa ScalarConsumer
         jump_var = jm[get_full(m._demands[1].consumer).name]
-                                println("Scalar Consumer is+>", jump_var)
         if MPSGE.Complementarity.result_value(get_jump_variable_for_commodity(jm, m._demands[1].endowments[1].commodity)) === NaN
             ConsValue = get_full(m._demands[1].consumer).benchmark
         else
             ConsValue =  eval(:(+($((:($(swap_our_param_with_val(en.quantity)) * $(MPSGE.Complementarity.result_value(get_jump_variable_for_commodity(jm, en.commodity)))) for en in m._demands[1].endowments)...))  +  $(swap_our_param_with_val(get_tax_revenue_for_consumer(jm, m, m._demands[1].consumer)))))#.args
- 
-                                # ConsValue =  eval(:(+($((:($(swap_our_param_with_val(en.quantity)) * $(MPSGE.Complementarity.result_value(get_jump_variable_for_commodity(jm, en.commodity)))) for en in m._demands[1].endowments)...))  +  $(swap_our_param_with_val(get_tax_revenue_for_consumer(m, m._demands[1].consumer)))))#.args
-                                # ConsValue =  :(+($((:($(swap_our_param_with_val(en.quantity)) * $(MPSGE.Complementarity.result_value(get_jump_variable_for_commodity(jm, en.commodity)))) for en in m._demands[1].endowments)...))  +  $(swap_our_param_with_val(get_tax_revenue_for_consumer(jm, m, m._demands[1].consumer))))#.args
 
         end
-                                println("Endowments are: ", eval(:(+($((:($(swap_our_param_with_val(en.quantity)) * $(MPSGE.Complementarity.result_value(get_jump_variable_for_commodity(jm, en.commodity)))) for en in m._demands[1].endowments)...)))))
-                                println("Taxes are: ",  (:($(swap_our_param_with_val(get_tax_revenue_for_consumer(jm, m, m._demands[1].consumer))))))
-                                println("ConsVal= ",ConsValue)
         JuMP.fix(jump_var, ConsValue, force=true)
         return
     else
