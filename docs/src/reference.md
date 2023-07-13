@@ -3,6 +3,8 @@
 ```@docs
 Model
 add!
-ScalarParameter
+set_value
+set_fixed
+Parameter
 IndexedParameter
 ```

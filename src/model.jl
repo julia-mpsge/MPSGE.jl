@@ -540,15 +540,17 @@ end
     # Options
     Parameter::ScalarParameter, ::IndexedParameter
     Commodity::ScalarCommodity, ::IndexedCommodity
-    Sector::ScalarSector, ::IndexedSector
-    Consumer::ScalarConsumer, ::IndexedConsumer
-    AxxConstraint::ScalarAux, ::IndexedAux
+    Sector::ScalarSector,       ::IndexedSector
+    Consumer::ScalarConsumer,   ::IndexedConsumer
+    Aux::ScalarAux,             ::IndexedAux
+# Example
 ```julia-repl
 julia> S = add!(m, Sector())
-````    
+````
     Production::Production
     Demand::DemandFunction
-    # Example
+    AuxConstraint::AuxConstraint
+# Example
 ```julia-repl
 julia> add!(m, Production()) 
 ```
@@ -712,7 +714,20 @@ function solve!(m::Model; solver::Symbol=:PATH, kwargs...)
 
     return m
 end
-
+"""
+    set_value(P, value::Float64)
+    Function that allows users to set a specific value for a variable, updating the benchmark field.
+# Options
+    Parameter::ScalarParameter, ::IndexedParameter
+    Commodity::ScalarCommodity, ::IndexedCommodity
+    Sector::ScalarSector,       ::IndexedSector
+    Consumer::ScalarConsumer,   ::IndexedConsumer
+    Aux::ScalarAux,             ::IndexedAux
+# Example
+```julia-repl
+julia> set_value(var, 1.3)
+```
+"""
 function JuMP.set_value(parameter::ParameterRef, new_value::Float64)
     p = parameter.model._parameters[parameter.index]
     if p isa ScalarParameter
@@ -764,6 +779,20 @@ function JuMP.set_value(commodity::CommodityRef, new_value::Float64)
     # c.model._commodities[c.index].benchmark = new_value
 end
 
+"""
+    set_fixed!(P, true::Boolean)
+    Function that allows users to fix a value for a variable, the benchmark, the value from set_value, or the previous value.
+# Options
+    Parameter::ScalarParameter, ::IndexedParameter
+    Commodity::ScalarCommodity, ::IndexedCommodity
+    Sector::ScalarSector,       ::IndexedSector
+    Consumer::ScalarConsumer,   ::IndexedConsumer
+    Aux::ScalarAux,             ::IndexedAux
+# Example
+```julia-repl
+julia> set_value(var, false)
+```
+"""
 function set_fixed!(commodity::CommodityRef, new_value::Bool)    
     c = commodity.model._commodities[commodity.index]
     if c isa ScalarCommodity
