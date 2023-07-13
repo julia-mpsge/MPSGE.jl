@@ -21,7 +21,7 @@ PK = add!(m, Commodity(:PK))
 
 RA = add!(m, Consumer(:RA, benchmark = 150.))
 
-@production(m, X, 0, :($esub_x*1.0), [Output(PX, 100., [Tax(:($otax*1.0), RA)])], [Input(PL, 50.), Input(PK,50.)])
+@production(m, X, 0, :($esub_x*1.0), [Output(PX, 100., taxes=[Tax(:($otax*1.0), RA)])], [Input(PL, 50.), Input(PK,50.)])
 @production(m, Y, 0, :($esub_y*1.0), [Output(PY, 50.)], [Input(PL, 20.), Input(PK,30.)])
 @production(m, U, 0, 1.0, [Output(PU, 150.)], [Input(PX, 100.), Input(PY,50.)])
 
@@ -260,8 +260,8 @@ end
     
     RA = add!(m, Consumer(:RA, indices=(consumers,), benchmark=75.))#(consumption)))
  
-    @production(m, X, 0, :($esub_x*1.0), [Output(PX, 100., [Tax(:($otaxa*1.0), RA[:a])])], [Input(PL, 50.), Input(PK,50.)])
-    @production(m, Y, 0, :($esub_y*1.0), [Output(PY, 50.,  [Tax(:($otaxb*1.0), RA[:b])])], [Input(PL, 20.), Input(PK,30.)])
+    @production(m, X, 0, :($esub_x*1.0), [Output(PX, 100., taxes=[Tax(:($otaxa*1.0), RA[:a])])], [Input(PL, 50.), Input(PK,50.)])
+    @production(m, Y, 0, :($esub_y*1.0), [Output(PY, 50.,  taxes=[Tax(:($otaxb*1.0), RA[:b])])], [Input(PL, 20.), Input(PK,30.)])
     @production(m, U, 0, 1.0, [Output(PU, 150.)], [Input(PX, 100.), Input(PY,50.)])
 
     for r in consumers
@@ -631,8 +631,8 @@ end
     
     @consumer(m, CONS, benchmark=200.0)
     
-    @production(m, A, :($t_elas_a*1.), :($sub_elas_a*1.), [Output(PX, 80, [Tax(:($otax1*1.0), CONS)]), Output(PY, 20, [Tax(:($otax2*1.0), CONS)])], [Input(PL, 40, [Tax(:($itax*1.0), CONS)]), Input(PK, 60, [Tax(:($itax*1.0), CONS)])])
-    @production(m, B, :($t_elas_b*1.), :($sub_elas_b*1.), [Output(PX, 20, [Tax(:($otax3*1.0), CONS)]), Output(PY, 80, [Tax(:($otax4*1.0), CONS)])], [Input(PL, 60), Input(PK, 40)])
+    @production(m, A, :($t_elas_a*1.), :($sub_elas_a*1.), [Output(PX, 80, taxes=[Tax(:($otax1*1.0), CONS)]), Output(PY, 20, taxes=[Tax(:($otax2*1.0), CONS)])], [Input(PL, 40, taxes=[Tax(:($itax*1.0), CONS)]), Input(PK, 60, taxes=[Tax(:($itax*1.0), CONS)])])
+    @production(m, B, :($t_elas_b*1.), :($sub_elas_b*1.), [Output(PX, 20, taxes=[Tax(:($otax3*1.0), CONS)]), Output(PY, 80, taxes=[Tax(:($otax4*1.0), CONS)])], [Input(PL, 60), Input(PK, 40)])
     @production(m, W, 0, :($sub_elas_w*1.), [Output(PW, 200.0)],[Input(PX, 100.0), Input(PY, 100.0)])
     
     @demand(m, CONS, 1., [Demand(PW, 200.)], [Endowment(PL, 100.0), Endowment(PK, 100.0)])
@@ -1241,8 +1241,8 @@ end
     CONS = add!(m, Consumer(:CONS, benchmark=200.))
     
     U = add!(m, Aux(:U, benchmark=0.2))
-    add!(m, Production(X, 0, 1.0, [Output(PX, 100, [Tax(:(1.0*$tx),CONS)])], [Input(PK, 50, [Tax(:($tkx*1.),CONS)]), Input(PL, 40)]))
-    add!(m, Production(Y, 0, 1.0, [Output(PY, 100, [Tax(:(1.0*$ty),CONS)])], [Input(PL, 60), Input(PK, 40)]))
+    add!(m, Production(X, 0, 1.0, [Output(PX, 100, taxes=[Tax(:(1.0*$tx),CONS)])], [Input(PK, 50, taxes=[Tax(:($tkx*1.),CONS)]), Input(PL, 40)]))
+    add!(m, Production(Y, 0, 1.0, [Output(PY, 100, taxes=[Tax(:(1.0*$ty),CONS)])], [Input(PL, 60), Input(PK, 40)]))
     add!(m, Production(W, 0, 1.0, [Output(PW, 200.)], [Input(PX, 100), Input(PY, 100)]))
     
     add!(m, DemandFunction(CONS, 1., [Demand(PW,200.)], [Endowment(PL, 120.), Endowment(PL, :(-80/(1-$uo)*$U)), Endowment(PK, 90)]))
@@ -1423,8 +1423,8 @@ add!(m, Production(X, 0, 1.0, [Output(PX, 120.)], [Input(PLS, 48), Input(PKS, 72
 add!(m, Production(Y, 0, 1.0, [Output(PY, 120.)], [Input(PLS, 72), Input(PKS, 48)]))
 add!(m, Production(W, 0, 0.7, [Output(PW, 340.)], [Input(Nest(:AW,1.0,240.,[Input(PX, 120), Input(PY, 120)]),240.), Input(PL,100.)]))
 
-add!(m, Production(TL, 0., 1.0, [Output(PLS, 120.)], [Input(PL, 100., [Tax(:(1.0*$txl*$TAU),CONS)])]))
-add!(m, Production(TK, 0., 1.0, [Output(PKS, 120.)], [Input(PK, 100., [Tax(:(1.0*$txk*$TAU),CONS)])]))
+add!(m, Production(TL, 0., 1.0, [Output(PLS, 120.)], [Input(PL, 100., taxes=[Tax(:(1.0*$txl*$TAU),CONS)])]))
+add!(m, Production(TK, 0., 1.0, [Output(PKS, 120.)], [Input(PK, 100., taxes=[Tax(:(1.0*$txk*$TAU),CONS)])]))
 
 add!(m, DemandFunction(CONS, 1., [Demand(PW,340.)], [Endowment(PL, 200.), Endowment(PK, 100)]))
 add!(m, AuxConstraint(TAU, :($W*$PW*340 - $PL * 200 - $PK * 100  == 40 * ($PX + $PY)/2)))
@@ -1667,7 +1667,7 @@ CONS = add!(m, Consumer(:CONS, benchmark=180.))
 SHAREX = add!(m, Aux(:SHAREX, benchmark=0.5))
 MARKUP = add!(m, Aux(:MARKUP, indices=(muindex,), benchmark=0.2))
 
-add!(m, Production(X, 0, 1.0, [Output(PX, 80., [Tax(:(1.0*$(MARKUP[:a])), CONS)])], [Input(PL, 14), Input(PK, 50)]))
+add!(m, Production(X, 0, 1.0, [Output(PX, 80., taxes=[Tax(:(1.0*$(MARKUP[:a])), CONS)])], [Input(PL, 14), Input(PK, 50)]))
 add!(m, Production(Y, 0, 1.0, [Output(PY, 100.)],                             [Input(PL, 60), Input(PK, 40)]))
 add!(m, Production(W, 0, 9.0, [Output(PW, 180.)], [Input(PX,80), Input(PY,100.)]))
 

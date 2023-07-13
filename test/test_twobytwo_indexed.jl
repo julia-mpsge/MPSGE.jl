@@ -19,7 +19,7 @@
     C = add!(m, Consumer(:C, indices=(consumers,), benchmark=150.))
 
     for i in goods
-        @production(m, Y[i], 0, 1, [Output(PC[i], supply[i], [Tax(:(1 * $(outax[i])), C[:ra])])], [Input(PF[:l], factor[i,:l], [Tax(:(1 * $(intax[i])), C[:ra])]), Input(PF[:k], factor[i,:k])])
+        @production(m, Y[i], 0, 1, [Output(PC[i], supply[i], taxes=[Tax(:(1 * $(outax[i])), C[:ra])])], [Input(PF[:l], factor[i,:l], taxes=[Tax(:(1 * $(intax[i])), C[:ra])]), Input(PF[:k], factor[i,:k])])
     end
     @production(m, U, 0, 1, [Output(PU, 150)], [Input(PC[:x], 100), Input(PC[:y], 50)])
     @demand(m, C[:ra], 1., [Demand(PU, 150)], [Endowment(PF[:l], :(70 * $(endow[:l]))), Endowment(PF[:k], :(80. * $(endow[:k])))])
@@ -208,7 +208,7 @@ end
         for i in goods
             @production(m, Y[i], 0, 1, [Output(PC[i], supply[i])], [Input(PF[:l], factor[i,:l]), Input(PF[:k], factor[i,:k])])
         end
-        add!(m, Production(U, 0., 1.0, [Output(PU, 150)], [Input(PC[i], supply[i], [Tax(0.,C[:ra])], :($(pricepci[i])*1.)) for i in goods]))
+        add!(m, Production(U, 0., 1.0, [Output(PU, 150)], [Input(PC[i], supply[i], price=:($(pricepci[i])*1.)) for i in goods]))
     
         @demand(m, C[:ra], 1., [Demand(PU, 150)], [Endowment(PF[:l], :(70 * $(endow[:l]))), Endowment(PF[:k], :(80. * $(endow[:k])))])
     
@@ -368,7 +368,7 @@ end
                      1.,
                       150.,
                       [
-                        Input(PC[i], supply[i], [Tax(0.,C[:ra])], :($(pricepci[i])*1.)) for i in goods
+                        Input(PC[i], supply[i], price=:($(pricepci[i])*1.)) for i in goods
                         ]
                         ), 150
                         )
