@@ -28,7 +28,7 @@ PK = add!(m, Commodity(:PK))
 
 RA = add!(m, Consumer(:RA, benchmark=164.))
 
-add!(m, Production(X, 0, :(1.0 * $esub_x), [Output(PX, 110, [Tax(:($otax*1.),RA)])], [Input(PL, 50, [Tax(:($itax*1.),RA)], 1.2), Input(PK, 50)]))
+add!(m, Production(X, 0, :(1.0 * $esub_x), [Output(PX, 110, taxes=[Tax(:($otax*1.),RA)])], [Input(PL, 50, taxes=[Tax(:($itax*1.),RA)], price=1.2), Input(PK, 50)]))
 add!(m, Production(Y, 0, :(1.0 * $esub_y), [Output(PY, 54)], [Input(PL, 24,), Input(PK, 30)]))
 add!(m, Production(U, 0, :(1.0 * $esub_u), [Output(PU, 164.)], [Input(PX, 110), Input(PY, 54)]))
 
@@ -217,7 +217,7 @@ PK = add!(m, Commodity(:PK))
 
 RA = add!(m, Consumer(:RA, benchmark=154.))
 
-add!(m, Production(X, 0, :(1.0 * $esub_x), [Output(PX, 100, [Tax(:($otax*1.),RA)], 1.2)], [Input(PL, 30, [Tax(:($itax*1.),RA)]), Input(PK, 50)]))
+add!(m, Production(X, 0, :(1.0 * $esub_x), [Output(PX, 100, taxes=[Tax(:($otax*1.),RA)], price=1.2)], [Input(PL, 30, taxes=[Tax(:($itax*1.),RA)]), Input(PK, 50)]))
 add!(m, Production(Y, 0, :(1.0 * $esub_y), [Output(PY, 54)], [Input(PL, 24,), Input(PK, 30)]))
 add!(m, Production(U, 0, :(1.0 * $esub_u), [Output(PU, 154.)], [Input(PX, 100), Input(PY, 54)]))
 
@@ -405,11 +405,11 @@ PK = add!(m, Commodity(:PK))
 
 RA = add!(m, Consumer(:RA, benchmark=134.))
 
-add!(m, Production(X, 0, :(1.0 * $esub_x), [Output(PX, 80, [Tax(:($otax*1.),RA)])], [Input(PL, 30, [Tax(:($itax*1.),RA)]), Input(PK, 50)]))
+add!(m, Production(X, 0, :(1.0 * $esub_x), [Output(PX, 80, taxes=[Tax(:($otax*1.),RA)])], [Input(PL, 30, taxes=[Tax(:($itax*1.),RA)]), Input(PK, 50)]))
 # add!(m, Production(Y, 0, :(1.0 * $esub_y), [Output(PY, 54)], [Input(PL, 20), Input(PK, 30)]))
 # add!(m, Production(Y, 0, :(1.0 * $esub_y), [Output(PY, 54)],                         [Input(PL, 20, [Tax(:($itax*1.),RA)], 1.2), Input(PK, 30)]))
 add!(m, Production(Y, 0, :(1.0 * $esub_y), [Output(PY, 54)], [Input(PL, 24,), Input(PK, 30)]))
-add!(m, Production(U, 0, :(1.0 * $esub_u), [Output(PU, 124., [Tax(0.,RA)], 1.)], [Input(PX, 80), Input(PY, 44)]))
+add!(m, Production(U, 0, :(1.0 * $esub_u), [Output(PU, 124., price=1.)], [Input(PX, 80), Input(PY, 44)]))
 
 add!(m, DemandFunction(RA, :($esub_ra*1.), [Demand(PU,124., :($pr_Ud*1.)), Demand(PY,10, 1.0)], [Endowment(PL, :(54. *$endow)), Endowment(PK, 80)]))
 

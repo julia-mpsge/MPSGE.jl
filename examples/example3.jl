@@ -22,7 +22,7 @@ PF = add!(m, Commodity(:PF, indices=(factors,)))
 RA = add!(m, Consumer(:RA, benchmark = 150.))
 
 for i in goods
-    @production(m, Y[i], 0, 1, [Output(PC[i], supply[i], [Tax(:(1 * $(outtax[i])), RA)])], [Input(PF[:l], factor[i,:l], [Tax(:(1 * $(intax[i])), RA)]), Input(PF[:k], factor[i,:k])])
+    @production(m, Y[i], 0, 1, [Output(PC[i], supply[i], taxes=[Tax(:(1 * $(outtax[i])), RA)])], [Input(PF[:l], factor[i,:l], taxes=[Tax(:(1 * $(intax[i])), RA)]), Input(PF[:k], factor[i,:k])])
 end
 # @production(m, [i in goods], Y[i], 1, PC[i], supply[i],  [Input(PF[f], factor[i,f]) for f in factors])
 
