@@ -709,7 +709,7 @@ using MPSGE
 
             add!(m,DemandFunction(C[:ra], 1., [Demand(Nest(:CU, 1., 150.,
             [
-                Input(PU[f], cons[f], [Tax(0.,C[:ra])] ,:($(pricepu[f])*1.)) for f in factors
+                Input(PU[f], cons[f],  price=:($(pricepu[f])*1.)) for f in factors
             ]
             ),150. )],
                 # PU[f], cons[f], :($(pricepu[f])*1.)) for f in factors], 
