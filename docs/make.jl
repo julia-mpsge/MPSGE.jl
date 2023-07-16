@@ -5,7 +5,7 @@ makedocs(modules=[MPSGE],
     pages=[
         "Home" => "index.md",
         "Tutorial" => "tutorial.md",
-        "User Guide" => "userguide.md",
+        "How-to Guides" => "howtoguides.md",
         "Reference" => "reference.md"
     ])
 
