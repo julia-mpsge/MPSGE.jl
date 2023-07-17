@@ -7,7 +7,8 @@
     - have a basic understanding of [Julia syntax](https://docs.julialang.org/en/v1/manual/getting-started/), and
     - have a [general understanding of CGE and the MPSGE structure](./explanation.md).
 This first tutorial follows the first section in [example 1](https://github.com/anthofflab/MPSGE.jl/blob/main/examples/example1.jl) from our code repository, which is an edited translation of the [simple 2x2 example model](https://www.gams.com/latest/docs/UG_MPSGE_Intro.html#UG_MPSGE_Intro_Appendix_twobytwo) from the GAMS MPSGE documentation.
-###### You can run the commands line-by-line wherever you run Julia code, or all together as a .jl script, either transcribing, or copying and pasting from here, or [example 1](https://github.com/anthofflab/MPSGE.jl/blob/main/examples/example1.jl).  
+######
+You can run the commands line-by-line wherever you run Julia code, or all together as a .jl script, either transcribing, or copying and pasting from here, or [example 1](https://github.com/anthofflab/MPSGE.jl/blob/main/examples/example1.jl).  
 
 ##### Activate the package with 
 ```julia-repl
@@ -28,7 +29,7 @@ in the named model, and then we can test, solve, alter, print, re-solve e.t.c.
         ```
         including being multiplied by a scalar, or in some other equation, rather than just `sub_elas_x` 
        - The model can be built in any order, so long as all elements referred to have been previously defined. For that reason a standard structure is: load the data, scalars, indexes; add model parameters, sectors, commodities, auxiliary variables, and consumers; add production and demand functions, and auxilliary constraint equations.
-       - Extra spaces aren't a problem in Julia, so can we align parallel elements - for instance the elements of the 3 Parameters immediately below - to help readability.
+       - Extra spaces after commas or opening parenthesis aren't a problem in Julia, so can we align parallel elements - for instance the elements of the 3 Parameters immediately below - to help readability.
 ### Add Parameters
 We'll start by defining 6 Paramters, and giving them a value. Each is just a name with a number attached, but defining them within the model as Parameters, instead of just using the numbers, or a Julia variables, allows us to update those values for future runs/solves or the model.
 ```julia
@@ -54,15 +55,15 @@ PX = add!(m, Commodity(:PX))
 PY = add!(m, Commodity(:PY, benchmark=1.))
 PU = add!(m, Commodity(:PU, description="The Utility Commodity"))
 # The macro version
-@commodity(m, PL, description="wage: the price of labour")
-@commodity(m, PK, benchmark=1.)
+@commodity(m,           PL, description="wage: the price of labour")
+@commodity(m,           PK, benchmark=1.)
 ```
 ### Add Sectors
 Sectors use commodities (Inputs), and generate commodities (Outputs).
 ```julia
 X = add!(m, Sector(:X))
-@sector(m, Y)
-@sector(m, U, description="Sector U: This 'sector' uses the two produced goods to generate utility")
+@sector(m,  Y)
+@sector(m,  U, description="Sector U: This 'sector' uses the two produced goods to generate utility")
 ```
 ### Add a Consumer
 For Consumers in the model the benchmark value is important. In the benchmark callibration of the model, this value will be the sum of endowments, plus the value of any taxes transferred to the consumer.
@@ -79,7 +80,7 @@ Here we define a production function for every sector/firm. That is:
 - what price per unit of each commodity (default is 1. for all commodities as is standard the convention for CGE models)
 !!! note
     Outputs and Inputs are within `[]` Arrays, even if there is only one.  Outputs must always be first.
-    * Production Functions don't need names assigned (that is we don't have **X =** `add!(m, Production(...))`) bc they are named by the sector.
+    * Production Functions don't need names assigned (that is, we don't have **X =** `add!(m, Production(...))`, just `add!(m, Production(...))`) bc they are named by the sector.
 ```julia
 add!(m, Production(X, :($transf_elas_x*1.), :($sub_elas_x*1.), [Output(PX, 100)], [Input(PL, 50),  Input(PK, 50)]))
 @production(m,     Y, :($transf_elas_y*1.), :($sub_elas_y*1.), [Output(PY, 50)],  [Input(PL, 20),  Input(PK, 30)])
