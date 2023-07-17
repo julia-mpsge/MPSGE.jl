@@ -35,7 +35,7 @@ function build_marketclearance!(m, jm)
         for production_function in m._productions
             for output in production_function.outputs
                 if output.commodity==commodity
-                    push!(comp_supplies, :($(get_jump_variable_for_sector(jm, production_function.sector)) * $(get_jump_variable_for_intermediate_supply(jm, output))))
+                    push!(comp_supplies, :($(production_function.sector) * $(jm[get_comp_supply_name(output)])))#$(jm[get_comp_supply_name(output)])))#$(get_jump_variable_for_intermediate_supply(jm, output))))
                 end
             end
         end
@@ -45,7 +45,7 @@ function build_marketclearance!(m, jm)
         for demand_function in m._demands
             for demand in demand_function.demands
                 if demand.commodity == commodity
-                    push!(final_demand, :($(get_jump_variable_for_final_demand(jm, demand))))
+                    push!(final_demand, :($(jm[get_final_demand_name(demand)])))#$(get_jump_variable_for_final_demand(jm, demand))))
                 end
             end
         end
@@ -55,7 +55,7 @@ function build_marketclearance!(m, jm)
         for production_function in m._productions
             for input in production_function.inputs
                 if input.commodity==commodity
-                    push!(comp_demands, :($(get_jump_variable_for_sector(jm, production_function.sector)) * $(get_jump_variable_for_intermediate_demand(jm, input))))
+                    push!(comp_demands, :($(production_function.sector) * $(jm[get_comp_demand_name(input)])))#$(get_jump_variable_for_intermediate_demand(jm, input))))
                 end
             end
         end
@@ -66,7 +66,7 @@ function build_marketclearance!(m, jm)
                 +(0., $(endows...), $(comp_supplies...)) - +(0., $(final_demand...), $(comp_demands...))
             )
         )
-        exb = eval(swap_our_param_with_jump_param(jm, exa))
+        exb = eval(swap_our_Ref_with_jump_var(jm, exa))
 
         Complementarity.add_complementarity(jm, get_jump_variable_for_commodity(jm, commodity), exb, string("F_", get_name(commodity, true)))
         push!(m._nlexpressions, exb)
