@@ -6,6 +6,7 @@ makedocs(modules=[MPSGE],
         "Home" => "index.md",
         "Tutorial" => "tutorial.md",
         "How-to Guides" => "howtoguides.md",
+        "Explanation and Discussion" => "explanation.md"
         "Reference" => "reference.md"
     ])
 
