@@ -3,6 +3,8 @@ function build(m::Model)
     jm = Complementarity.MCPModel()
 
     build_variables!(m, jm)
+
+    add_implicitvars!(m)
     
     build_implicitconstraints!(m, jm)
 

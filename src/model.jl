@@ -33,6 +33,13 @@ struct AuxRef
     subindex_names::Any
 end
 
+struct ImplicitvarRef
+    model
+    index::Int
+    subindex::Any
+    subindex_names::Any
+end
+
 """
     Parameter(:symbol; indices, value::Float64=1., string)
     Struct that holds the name, indices if IndexedParameter, value, and optional description of a parameter within the model.
@@ -301,6 +308,11 @@ struct Endowment
     quantity::Union{Float64,Expr}
 end
 
+struct Implicitvar
+    name::Symbol
+    type::Any
+end
+
 mutable struct Demand
     commodity::Any
     quantity::Union{Float64,Expr}
@@ -349,6 +361,7 @@ mutable struct Model
     _commodities::Vector{Commodity}
     _consumers::Vector{Consumer}
     _auxs::Vector{Aux}
+    _implicitvars::Vector{Implicitvar}
 
     _productions::Vector{Production}
     _demands::Vector{DemandFunction}
@@ -366,6 +379,7 @@ mutable struct Model
             Commodity[],
             Consumer[],
             Aux[],
+            Implicitvar[],
             Production[],
             DemandFunction[],
             AuxConstraint[],
@@ -726,6 +740,13 @@ function add!(m::Model, p::IndexedParameter)
     end
     return JuMP.Containers.DenseAxisArray(temp_array, p.indices...)
 end
+
+function add!(m::Model, im::Implicitvar)
+    m._jump_model = nothing
+    push!(m._implicitvars, im)
+    return ImplicitvarRef(m, length(m._implicitvars), nothing, nothing)
+end
+
 
 function JuMP.value(m::Model, name::Symbol)
     Complementarity.result_value(m._jump_model[name])

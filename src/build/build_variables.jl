@@ -49,6 +49,29 @@ function add_aux_to_jump!(jm, aux::IndexedAux)
     jm[aux.name] = @eval(JuMP.@variable($jm, [$( ( :($(gensym())=$i) for i in aux.indices)... )], base_name=string($(QuoteNode(aux.name))), lower_bound=0.))
 end
 
+function add_implicitvars!(m)
+    # Add compensated supply variable Refs to model
+    for s in m._productions
+        for o in s.outputs
+            # global m
+            # global get_comp_supply_name(o) = add!(m, (Implicitvar(get_comp_supply_name(o), typeof(o))))
+            addimp = :($(get_comp_supply_name(o)) = add!($m, (Implicitvar(get_comp_supply_name($o), typeof($o)))))
+             return eval(addimp)
+        end
+    end
+    # Add compensated demand variables
+    for s in m._productions
+        for i in s.inputs
+            add!(m, Implicitvar(get_comp_demand_name(i), typeof(i)))
+        end
+    end
+   # Add final demand variables
+   for demand_function in m._demands
+        for demand in demand_function.demands
+            add!(m, Implicitvar(get_final_demand_name(demand), typeof(demand)))
+        end
+    end
+end
 
 function build_variables!(m, jm)
     # Add all parameters
