@@ -45,7 +45,8 @@ function build_marketclearance!(m, jm)
         for demand_function in m._demands
             for demand in demand_function.demands
                 if demand.commodity == commodity
-                    push!(final_demand, :($(jm[get_final_demand_name(demand)])))#$(get_jump_variable_for_final_demand(jm, demand))))
+                    # push!(final_demand, :($(m._implicitvarsDict[get_final_demand_name(demand)])))
+                    push!(final_demand, :($(jm[get_final_demand_name(demand)])))
                 end
             end
         end

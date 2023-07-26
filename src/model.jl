@@ -38,6 +38,7 @@ struct ImplicitvarRef
     index::Int
     subindex::Any
     subindex_names::Any
+    # type::Any
 end
 
 """
@@ -362,6 +363,7 @@ mutable struct Model
     _consumers::Vector{Consumer}
     _auxs::Vector{Aux}
     _implicitvars::Vector{Implicitvar}
+    _implicitvarsDict::Dict{Symbol, ImplicitvarRef}
 
     _productions::Vector{Production}
     _demands::Vector{DemandFunction}
@@ -380,6 +382,8 @@ mutable struct Model
             Consumer[],
             Aux[],
             Implicitvar[],
+            Dict{Symbol, ImplicitvarRef}(),
+
             Production[],
             DemandFunction[],
             AuxConstraint[],
@@ -744,7 +748,8 @@ end
 function add!(m::Model, im::Implicitvar)
     m._jump_model = nothing
     push!(m._implicitvars, im)
-    return ImplicitvarRef(m, length(m._implicitvars), nothing, nothing)
+    push!(m._implicitvarsDict,im.name=>ImplicitvarRef(m, length(m._implicitvars), nothing, nothing))
+    # return ImplicitvarRef(m, length(m._implicitvars), nothing, nothing)
 end
 
 

@@ -253,14 +253,14 @@ function get_jump_variable_for_aux(jm, a::IndexedAux)
     return jm[get_name(a)][a.subindex]
 end
 
-function get_jump_variable_for_implicitvar(jm, im::Implicitvar)
-    if im.type isa Output
-        return jm[get_comp_supply_name(im.type)]
-    elseif im.type isa Input
-        return jm[get_comp_demand_name(im.type)]
-    elseif im.type isa Demand
+function get_jump_variable_for_implicitvar(jm, im::ImplicitvarRef)
+    # if im.type isa Output
+    #     return jm[get_comp_supply_name(im.type)]
+    # elseif im.type isa Input
+    #     return jm[get_comp_demand_name(im.type)]
+    # elseif im.type isa Demand
         return jm[get_final_demand_name(im.type)]
-    end
+    # end
 end
 
 # function get_jump_variable_for_intermediate_supply(jm, output)
