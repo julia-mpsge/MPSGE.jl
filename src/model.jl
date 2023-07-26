@@ -33,12 +33,25 @@ struct AuxRef
     subindex_names::Any
 end
 
-struct ImplicitvarRef
+struct ImplicitsupRef
     model
     index::Int
     subindex::Any
     subindex_names::Any
-    # type::Any
+end
+
+struct ImplicitdemRef
+    model
+    index::Int
+    subindex::Any
+    subindex_names::Any
+end
+
+struct ImplicitfinaldemRef
+    model
+    index::Int
+    subindex::Any
+    subindex_names::Any
 end
 
 """
@@ -363,7 +376,7 @@ mutable struct Model
     _consumers::Vector{Consumer}
     _auxs::Vector{Aux}
     _implicitvars::Vector{Implicitvar}
-    _implicitvarsDict::Dict{Symbol, ImplicitvarRef}
+    _implicitvarsDict::Dict{Symbol, Union{ImplicitsupRef, ImplicitdemRef, ImplicitfinaldemRef}}
 
     _productions::Vector{Production}
     _demands::Vector{DemandFunction}
@@ -382,7 +395,7 @@ mutable struct Model
             Consumer[],
             Aux[],
             Implicitvar[],
-            Dict{Symbol, ImplicitvarRef}(),
+            Dict{Symbol, Union{ImplicitsupRef, ImplicitdemRef, ImplicitfinaldemRef}}(),
 
             Production[],
             DemandFunction[],
@@ -467,6 +480,30 @@ function get_name(aux::AuxRef, include_subindex=false)
     end 
 end
 
+function get_name(im::ImplicitdemRef, include_subindex=false)
+    if im.subindex===nothing || include_subindex===false
+        return im.model._implicitvars[im.index].name
+    else
+        return Symbol("$(im.model._implicitvars[im.index].name )[$(join(string.(im.subindex_names), ", "))]") 
+    end 
+end
+
+function get_name(im::ImplicitsupRef, include_subindex=false)
+    if im.subindex===nothing || include_subindex===false
+        return im.model._implicitvars[im.index].name
+    else
+        return Symbol("$(im.model._implicitvars[im.index].name )[$(join(string.(im.subindex_names), ", "))]") 
+    end 
+end
+
+function get_name(im::ImplicitfinaldemRef, include_subindex=false)
+    if im.subindex===nothing || include_subindex===false
+        return im.model._implicitvars[im.index].name
+    else
+        return Symbol("$(im.model._implicitvars[im.index].name )[$(join(string.(im.subindex_names), ", "))]") 
+    end 
+end
+
 function get_full(s::SectorRef)
     return s.model._sectors[s.index]
 end
@@ -498,24 +535,6 @@ function get_consumer_benchmark(c::ConsumerRef)
         return get_full(c).benchmark[c.subindex]
     end
 end
-
-# function get_consumer_total_endowment(jm, c::ConsumerRef)
-#     m = c.model
-
-#     endowments = []
-#     for d in m._demands
-#         if d.consumer == c
-#             push!(endowments, :(
-#                 +($((:($(en.quantity) * 
-#                 $(en.commodity)) for en in d.endowments)...))
-#             ))
-#         end
-#     end
-#     total_end = :(+(0., $(get_tax_revenue_for_consumer(jm, m, c)),  $(endowments...)))
-
-#     return total_end
-
-# end
 
 function get_consumer_total_endowment(jm, m, c::ScalarConsumer)
     endowments = []
@@ -748,8 +767,13 @@ end
 function add!(m::Model, im::Implicitvar)
     m._jump_model = nothing
     push!(m._implicitvars, im)
-    push!(m._implicitvarsDict,im.name=>ImplicitvarRef(m, length(m._implicitvars), nothing, nothing))
-    # return ImplicitvarRef(m, length(m._implicitvars), nothing, nothing)
+    if im.type isa Output
+        push!(m._implicitvarsDict,im.name=>ImplicitsupRef(m, length(m._implicitvars), nothing, nothing))
+    elseif im.type isa Input
+        push!(m._implicitvarsDict,im.name=>ImplicitdemRef(m, length(m._implicitvars), nothing, nothing))
+    else
+        push!(m._implicitvarsDict,im.name=>ImplicitfinaldemRef(m, length(m._implicitvars), nothing, nothing))
+    end
 end
 
 

@@ -8,14 +8,14 @@ function build_zeroprofit!(m, jm)
                 +(
                     $(
                         (:(
-                            $(get_jump_expression_for_commodity_consumer_price(m, jm, s, input.commodity)) * $(jm[get_comp_demand_name(input)]) 
+                            $(get_expression_for_commodity_consumer_price(s, input.commodity)) * $(m._implicitvarsDict[get_comp_demand_name(input)]) 
                         ) for input in s.inputs)...
                 )
                 ) -
                 +(
                     $(
                         (:(
-                            $(get_jump_expression_for_commodity_producer_price(m, jm, s, output.commodity)) * $(jm[get_comp_supply_name(output)])
+                            $(get_expression_for_commodity_producer_price(s, output.commodity)) * $(m._implicitvarsDict[get_comp_supply_name(output)])
                         ) for output in s.outputs)...
                     )
                 )

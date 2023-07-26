@@ -16,7 +16,7 @@ function swap_our_Ref_with_jump_var(jm, expr)
             get_jump_variable_for_sector(jm, x)
         elseif x isa ConsumerRef
             get_jump_variable_for_consumer(jm, x)
-        elseif x isa ImplicitvarRef
+        elseif x isa ImplicitsupRef || x isa ImplicitdemRef || x isa ImplicitfinaldemRef
             get_jump_variable_for_implicitvar(jm, x)
         else
             return x
@@ -129,7 +129,7 @@ function get_jump_variable_for_commodity(jm, commodity::IndexedCommodity)
     return jm[get_name(commodity)][commodity.subindex]
 end
 
-function get_jump_expression_for_commodity_producer_price(m::Model, jm, pf, commodity::CommodityRef)
+function get_expression_for_commodity_producer_price(pf, commodity::CommodityRef)
 
     taxes = []
         for output in pf.outputs
@@ -145,7 +145,7 @@ function get_jump_expression_for_commodity_producer_price(m::Model, jm, pf, comm
     return :($commodity * (1. - $tax))
 end
 
-function get_jump_expression_for_commodity_consumer_price(m::Model, jm, pf, commodity::CommodityRef)
+function get_expression_for_commodity_consumer_price(pf, commodity::CommodityRef)
 
     taxes = []
     for input in pf.inputs
@@ -245,35 +245,29 @@ function get_jump_variable_for_aux(jm, aux::AuxRef)
     end
 end
 
-function get_jump_variable_for_aux(jm, a::ScalarAux)
-    return jm[get_name(a)]
+function get_jump_variable_for_implicitvar(jm, im::ImplicitsupRef)
+    if im.subindex===nothing    
+        return jm[get_name(im)]
+    else
+        return jm[get_name(im)][im.subindex]
+    end
 end
 
-function get_jump_variable_for_aux(jm, a::IndexedAux)
-    return jm[get_name(a)][a.subindex]
+function get_jump_variable_for_implicitvar(jm, im::ImplicitdemRef)
+    if im.subindex===nothing    
+        return jm[get_name(im)]
+    else
+        return jm[get_name(im)][im.subindex]
+    end
 end
 
-function get_jump_variable_for_implicitvar(jm, im::ImplicitvarRef)
-    # if im.type isa Output
-    #     return jm[get_comp_supply_name(im.type)]
-    # elseif im.type isa Input
-    #     return jm[get_comp_demand_name(im.type)]
-    # elseif im.type isa Demand
-        return jm[get_final_demand_name(im.type)]
-    # end
+function get_jump_variable_for_implicitvar(jm, im::ImplicitfinaldemRef)
+    if im.subindex===nothing    
+        return jm[get_name(im)]
+    else
+        return jm[get_name(im)][im.subindex]
+    end
 end
-
-# function get_jump_variable_for_intermediate_supply(jm, output)
-#     return jm[get_comp_supply_name(output)]
-# end
-
-# function get_jump_variable_for_intermediate_demand(jm, input)
-#     return jm[get_comp_demand_name(input)]
-# end
-
-# function get_jump_variable_for_final_demand(jm, demand)
-#     return jm[get_final_demand_name(demand)]
-# end
 
 function get_prod_func_name(x::Production)
     return Symbol("$(get_name(x.sector, true))")

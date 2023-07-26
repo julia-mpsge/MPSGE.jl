@@ -35,7 +35,7 @@ function build_marketclearance!(m, jm)
         for production_function in m._productions
             for output in production_function.outputs
                 if output.commodity==commodity
-                    push!(comp_supplies, :($(production_function.sector) * $(jm[get_comp_supply_name(output)])))#$(jm[get_comp_supply_name(output)])))#$(get_jump_variable_for_intermediate_supply(jm, output))))
+                    push!(comp_supplies, :($(production_function.sector) * $(m._implicitvarsDict[get_comp_supply_name(output)])))
                 end
             end
         end
@@ -45,8 +45,7 @@ function build_marketclearance!(m, jm)
         for demand_function in m._demands
             for demand in demand_function.demands
                 if demand.commodity == commodity
-                    # push!(final_demand, :($(m._implicitvarsDict[get_final_demand_name(demand)])))
-                    push!(final_demand, :($(jm[get_final_demand_name(demand)])))
+                    push!(final_demand, :($(m._implicitvarsDict[get_final_demand_name(demand)])))
                 end
             end
         end
@@ -56,7 +55,7 @@ function build_marketclearance!(m, jm)
         for production_function in m._productions
             for input in production_function.inputs
                 if input.commodity==commodity
-                    push!(comp_demands, :($(production_function.sector) * $(jm[get_comp_demand_name(input)])))#$(get_jump_variable_for_intermediate_demand(jm, input))))
+                    push!(comp_demands, :($(production_function.sector) * $(m._implicitvarsDict[get_comp_demand_name(input)])))
                 end
             end
         end
