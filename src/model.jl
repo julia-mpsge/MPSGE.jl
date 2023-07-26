@@ -481,27 +481,27 @@ function get_name(aux::AuxRef, include_subindex=false)
 end
 
 function get_name(im::ImplicitdemRef, include_subindex=false)
-    if im.subindex===nothing || include_subindex===false
+    # if im.subindex===nothing || include_subindex===false
         return im.model._implicitvars[im.index].name
-    else
-        return Symbol("$(im.model._implicitvars[im.index].name )[$(join(string.(im.subindex_names), ", "))]") 
-    end 
+    # else
+        # return Symbol("$(im.model._implicitvars[im.index].name )[$(join(string.(im.subindex_names), ", "))]") 
+    # end 
 end
 
 function get_name(im::ImplicitsupRef, include_subindex=false)
-    if im.subindex===nothing || include_subindex===false
+    # if im.subindex===nothing || include_subindex===false
         return im.model._implicitvars[im.index].name
-    else
-        return Symbol("$(im.model._implicitvars[im.index].name )[$(join(string.(im.subindex_names), ", "))]") 
-    end 
+    # else
+        # return Symbol("$(im.model._implicitvars[im.index].name )[$(join(string.(im.subindex_names), ", "))]") 
+    # end 
 end
 
 function get_name(im::ImplicitfinaldemRef, include_subindex=false)
-    if im.subindex===nothing || include_subindex===false
+    # if im.subindex===nothing || include_subindex===false
         return im.model._implicitvars[im.index].name
-    else
-        return Symbol("$(im.model._implicitvars[im.index].name )[$(join(string.(im.subindex_names), ", "))]") 
-    end 
+    # else
+    #     return Symbol("$(im.model._implicitvars[im.index].name )[$(join(string.(im.subindex_names), ", "))]") 
+    # end 
 end
 
 function get_full(s::SectorRef)

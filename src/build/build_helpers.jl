@@ -246,27 +246,27 @@ function get_jump_variable_for_aux(jm, aux::AuxRef)
 end
 
 function get_jump_variable_for_implicitvar(jm, im::ImplicitsupRef)
-    if im.subindex===nothing    
+    # if im.subindex===nothing    
         return jm[get_name(im)]
-    else
-        return jm[get_name(im)][im.subindex]
-    end
+    # else
+        # return jm[get_name(im)][im.subindex]
+    # end
 end
 
 function get_jump_variable_for_implicitvar(jm, im::ImplicitdemRef)
-    if im.subindex===nothing    
+    # if im.subindex===nothing    
         return jm[get_name(im)]
-    else
-        return jm[get_name(im)][im.subindex]
-    end
+    # else
+        # return jm[get_name(im)][im.subindex]
+    # end
 end
 
 function get_jump_variable_for_implicitvar(jm, im::ImplicitfinaldemRef)
-    if im.subindex===nothing    
+    # if im.subindex===nothing    
         return jm[get_name(im)]
-    else
-        return jm[get_name(im)][im.subindex]
-    end
+    # else
+        # return jm[get_name(im)][im.subindex]
+    # end
 end
 
 function get_prod_func_name(x::Production)
