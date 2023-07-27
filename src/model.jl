@@ -39,26 +39,6 @@ struct ImplicitvarRef
     subindex::Any
     subindex_names::Any
 end
-# struct ImplicitsupRef
-#     model
-#     index::Int
-#     subindex::Any
-#     subindex_names::Any
-# end
-
-# struct ImplicitdemRef
-#     model
-#     index::Int
-#     subindex::Any
-#     subindex_names::Any
-# end
-
-# struct ImplicitfinaldemRef
-#     model
-#     index::Int
-#     subindex::Any
-#     subindex_names::Any
-# end
 
 """
     Parameter(:symbol; indices, value::Float64=1., string)
@@ -382,7 +362,7 @@ mutable struct Model
     _consumers::Vector{Consumer}
     _auxs::Vector{Aux}
     _implicitvars::Vector{Implicitvar}
-    _implicitvarsDict::Dict{Symbol, ImplicitvarRef}#Union{ImplicitsupRef, ImplicitdemRef, ImplicitfinaldemRef}}
+    _implicitvarsDict::Dict{Symbol, ImplicitvarRef}
 
     _productions::Vector{Production}
     _demands::Vector{DemandFunction}
@@ -401,7 +381,7 @@ mutable struct Model
             Consumer[],
             Aux[],
             Implicitvar[],
-            Dict{Symbol, ImplicitvarRef}(),#Union{ImplicitsupRef, ImplicitdemRef, ImplicitfinaldemRef}}(),
+            Dict{Symbol, ImplicitvarRef}(),
 
             Production[],
             DemandFunction[],
@@ -485,14 +465,6 @@ function get_name(aux::AuxRef, include_subindex=false)
         return Symbol("$(aux.model._auxs[aux.index].name )[$(join(string.(aux.subindex_names), ", "))]") 
     end 
 end
-
-# function get_name(im::ImplicitdemRef, include_subindex=false)
-    # if im.subindex===nothing || include_subindex===false
-        # return im.model._implicitvars[im.index].name
-    # else
-        # return Symbol("$(im.model._implicitvars[im.index].name )[$(join(string.(im.subindex_names), ", "))]") 
-    # end 
-# end
 
 function get_name(im::ImplicitvarRef, include_subindex=false)
     # if im.subindex===nothing || include_subindex===false
@@ -765,13 +737,7 @@ end
 function add!(m::Model, im::Implicitvar)
     m._jump_model = nothing
     push!(m._implicitvars, im)
-    # if im.type isa Output
-    #     push!(m._implicitvarsDict,im.name=>ImplicitsupRef(m, length(m._implicitvars), nothing, nothing))
-    # elseif im.type isa Input
-    #     push!(m._implicitvarsDict,im.name=>ImplicitdemRef(m, length(m._implicitvars), nothing, nothing))
-    # else
-        push!(m._implicitvarsDict,im.name=>ImplicitvarRef(m, length(m._implicitvars), nothing, nothing))
-    # end
+    push!(m._implicitvarsDict,im.name=>ImplicitvarRef(m, length(m._implicitvars), nothing, nothing))
 end
 
 

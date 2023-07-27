@@ -54,10 +54,6 @@ function add_implicitvars!(m)
     for s in m._productions
         for o in s.outputs
             add!(m, Implicitvar(get_comp_supply_name(o), typeof(o)))
-            # global m
-            # global get_comp_supply_name(o) = add!(m, (Implicitvar(get_comp_supply_name(o), typeof(o))))
-            # addimp = :($(get_comp_supply_name(o)) = add!($m, (Implicitvar(get_comp_supply_name($o), typeof($o)))))
-            #  return eval(addimp)
         end
     end
     # Add compensated demand variables
