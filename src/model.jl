@@ -494,14 +494,6 @@ end
     # end 
 # end
 
-# function get_name(im::ImplicitsupRef, include_subindex=false)
-    # if im.subindex===nothing || include_subindex===false
-        # return im.model._implicitvars[im.index].name
-    # else
-        # return Symbol("$(im.model._implicitvars[im.index].name )[$(join(string.(im.subindex_names), ", "))]") 
-    # end 
-# end
-
 function get_name(im::ImplicitvarRef, include_subindex=false)
     # if im.subindex===nothing || include_subindex===false
         return im.model._implicitvars[im.index].name
