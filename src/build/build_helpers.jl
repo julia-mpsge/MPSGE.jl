@@ -16,7 +16,8 @@ function swap_our_Ref_with_jump_var(jm, expr)
             get_jump_variable_for_sector(jm, x)
         elseif x isa ConsumerRef
             get_jump_variable_for_consumer(jm, x)
-        elseif x isa ImplicitsupRef || x isa ImplicitdemRef || x isa ImplicitfinaldemRef
+        elseif x isa ImplicitvarRef
+        # elseif x isa ImplicitsupRef || x isa ImplicitdemRef || x isa ImplicitfinaldemRef
             get_jump_variable_for_implicitvar(jm, x)
         else
             return x
@@ -245,7 +246,7 @@ function get_jump_variable_for_aux(jm, aux::AuxRef)
     end
 end
 
-function get_jump_variable_for_implicitvar(jm, im::ImplicitsupRef)
+function get_jump_variable_for_implicitvar(jm, im::ImplicitvarRef)
     # if im.subindex===nothing    
         return jm[get_name(im)]
     # else
@@ -253,21 +254,21 @@ function get_jump_variable_for_implicitvar(jm, im::ImplicitsupRef)
     # end
 end
 
-function get_jump_variable_for_implicitvar(jm, im::ImplicitdemRef)
-    # if im.subindex===nothing    
-        return jm[get_name(im)]
-    # else
-        # return jm[get_name(im)][im.subindex]
-    # end
-end
+# function get_jump_variable_for_implicitvar(jm, im::ImplicitdemRef)
+#     # if im.subindex===nothing    
+#         return jm[get_name(im)]
+#     # else
+#         # return jm[get_name(im)][im.subindex]
+#     # end
+# end
 
-function get_jump_variable_for_implicitvar(jm, im::ImplicitfinaldemRef)
-    # if im.subindex===nothing    
-        return jm[get_name(im)]
-    # else
-        # return jm[get_name(im)][im.subindex]
-    # end
-end
+# function get_jump_variable_for_implicitvar(jm, im::ImplicitfinaldemRef)
+#     # if im.subindex===nothing    
+#         return jm[get_name(im)]
+#     # else
+#         # return jm[get_name(im)][im.subindex]
+#     # end
+# end
 
 function get_prod_func_name(x::Production)
     return Symbol("$(get_name(x.sector, true))")
