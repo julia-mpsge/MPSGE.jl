@@ -7,9 +7,9 @@
     consumers = [:ra]
     factor = DenseAxisArray(Float64[50 50; 20 30], goods, factors)
     supply = DenseAxisArray(Float64[100, 50], goods)
-    endow = add!(m, Parameter(:endow, indices=(factors,), value=1.0)) 
-    outax = add!(m, Parameter(:outax, indices=(goods,), value=0.))
-    intax = add!(m, Parameter(:intax, indices=(goods,), value=0.))
+    endow = add!(m, Parameter(:endow, indices=(factors,), value=[1.,1.0])) 
+    outax = add!(m, Parameter(:outax, indices=(goods,), value=[0.,0]))
+    intax = add!(m, Parameter(:intax, indices=(goods,), value=[0.,0.]))
 
     Y = add!(m, Sector(:Y, indices=(goods,)))
     U = add!(m, Sector(:U))
@@ -194,9 +194,8 @@ end
         consumers = [:ra]
         factor = DenseAxisArray(Float64[50 50; 20 30], goods, factors)
         supply = DenseAxisArray(Float64[100, 50], goods)
-        # pricepci = DenseAxisArray(Float64[1., 1.], goods)
-        pricepci = add!(m, Parameter(:pricepci, indices=(goods,), value=1.))#value=DenseAxisArray(Float64[1., 1.])))
-        endow    = add!(m, Parameter(:endow, indices=(factors,), value=1.0)) 
+        pricepci = add!(m, Parameter(:pricepci, indices=(goods,), value=[1.,1]))
+        endow    = add!(m, Parameter(:endow, indices=(factors,), value=[1,1.0])) 
         
         Y = add!(m, Sector(:Y, indices=(goods,)))
         U = add!(m, Sector(:U))
@@ -351,9 +350,8 @@ end
         consumers = [:ra]
         factor = DenseAxisArray(Float64[50 50; 20 30], goods, factors)
         supply = DenseAxisArray(Float64[100, 50], goods)
-        # pricepci = DenseAxisArray(Float64[1., 1.], goods)
-        pricepci = add!(m, Parameter(:pricepci, indices=(goods,), value=1.))#value=DenseAxisArray(Float64[1., 1.])))
-        endow    = add!(m, Parameter(:endow, indices=(factors,), value=1.0)) 
+        pricepci = add!(m, Parameter(:pricepci, indices=(goods,), value=[1.,1]))
+        endow    = add!(m, Parameter(:endow, indices=(factors,), value=[1,1.0])) 
         
         Y = add!(m, Sector(:Y, indices=(goods,)))
         U = add!(m, Sector(:U))
@@ -523,8 +521,8 @@ using MPSGE
         factor = DenseAxisArray(Float64[50 50; 20 30], goods, factors)
         supply = DenseAxisArray(Float64[100, 50], goods)
         cons   = DenseAxisArray(Float64[75, 75], factors)
-        pricepu = add!(m, Parameter(:pricepu, indices=(factors,), value=1.))#value=DenseAxisArray(Float64[1., 1.])))
-        endow    = add!(m, Parameter(:endow, indices=(factors,), value=1.0)) 
+        pricepu = add!(m, Parameter(:pricepu, indices=(factors,), value=[1.,1]))
+        endow    = add!(m, Parameter(:endow, indices=(factors,), value=[1,1.0])) 
         
         Y = add!(m, Sector(:Y, indices=(goods,)))
         U = add!(m, Sector(:U))
@@ -691,8 +689,8 @@ using MPSGE
         factor = DenseAxisArray(Float64[50 50; 20 30], goods, factors)
         supply = DenseAxisArray(Float64[100, 50], goods)
         cons   = DenseAxisArray(Float64[75, 75], factors)
-        pricepu = add!(m, Parameter(:pricepu, indices=(factors,), value=1.))#value=DenseAxisArray(Float64[1., 1.])))
-        endow    = add!(m, Parameter(:endow, indices=(factors,), value=1.0)) 
+        pricepu = add!(m, Parameter(:pricepu, indices=(factors,), value=[1.,1]))
+        endow    = add!(m, Parameter(:endow, indices=(factors,), value=[1,1.0])) 
         
         Y = add!(m, Sector(:Y, indices=(goods,)))
         U = add!(m, Sector(:U))
