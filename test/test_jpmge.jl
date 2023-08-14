@@ -11,7 +11,7 @@
     fd0 = DenseAxisArray(Float64[1 3; 1 1], factors, sectors)
     c0 = DenseAxisArray(Float64[2, 4], goods)
     e0 = DenseAxisArray(Float64[sum(fd0[f,:]) for f in factors], factors)
-    endow = add!(m, Parameter(:endow, indices=(factors,), value=1.0)) 
+    endow = add!(m, Parameter(:endow, indices=(factors,), value=[1.0, 1.0])) 
     X = add!(m, Sector(:X, indices=(sectors,)))
     P = add!(m, Commodity(:P, indices=(goods,)))
     PF = add!(m, Commodity(:PF, indices=(factors,)))
@@ -161,7 +161,7 @@ using XLSX, MPSGE.JuMP.Containers
     c0 = DenseAxisArray(Float64[2, 4], goods)
     e0 = DenseAxisArray(Float64[sum(fd0[f,:]) for f in factors], factors)
 
-    endow = add!(m, Parameter(:endow, indices=(factors,), value=1.0)) 
+    endow = add!(m, Parameter(:endow, indices=(factors,), value=[1.0,1.])) 
     X = add!(m, Sector(:X, indices=(sectors,)))
     P = add!(m, Commodity(:P, indices=(goods,)))
     PF = add!(m, Commodity(:PF, indices=(factors,)))
@@ -306,7 +306,7 @@ using XLSX, MPSGE.JuMP.Containers
     c0 = DenseAxisArray(Float64[2, 4], goods)
     e0 = DenseAxisArray(Float64[sum(fd0[f,:]) for f in factors], factors)
 # All indices and data as above
-    endow = add!(m, Parameter(:endow, indices=(factors,), value=1.0)) 
+    endow = add!(m, Parameter(:endow, indices=(factors,), value=[1.0,1.])) 
     X = add!(m, Sector(:X, indices=(sectors,)))
     P = add!(m, Commodity(:P, indices=(goods,)))
     PF = add!(m, Commodity(:PF, indices=(factors,)))
