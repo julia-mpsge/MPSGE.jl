@@ -33,6 +33,13 @@ struct AuxRef
     subindex_names::Any
 end
 
+struct ImplicitvarRef
+    model
+    index::Int
+    subindex::Any
+    subindex_names::Any
+end
+
 """
     Parameter(:symbol; indices, value::Float64=1., string)
     Struct that holds the name, indices if IndexedParameter, value, and optional description of a parameter within the model.
@@ -301,6 +308,11 @@ struct Endowment
     quantity::Union{Float64,Expr}
 end
 
+struct Implicitvar
+    name::Symbol
+    type::Any
+end
+
 mutable struct Demand
     commodity::Any
     quantity::Union{Float64,Expr}
@@ -349,6 +361,8 @@ mutable struct Model
     _commodities::Vector{Commodity}
     _consumers::Vector{Consumer}
     _auxs::Vector{Aux}
+    _implicitvars::Vector{Implicitvar}
+    _implicitvarsDict::Dict{Symbol, ImplicitvarRef}
 
     _productions::Vector{Production}
     _demands::Vector{DemandFunction}
@@ -366,6 +380,9 @@ mutable struct Model
             Commodity[],
             Consumer[],
             Aux[],
+            Implicitvar[],
+            Dict{Symbol, ImplicitvarRef}(),
+
             Production[],
             DemandFunction[],
             AuxConstraint[],
@@ -449,6 +466,14 @@ function get_name(aux::AuxRef, include_subindex=false)
     end 
 end
 
+function get_name(im::ImplicitvarRef, include_subindex=false)
+    # if im.subindex===nothing || include_subindex===false
+        return im.model._implicitvars[im.index].name
+    # else
+    #     return Symbol("$(im.model._implicitvars[im.index].name )[$(join(string.(im.subindex_names), ", "))]") 
+    # end 
+end
+
 function get_full(s::SectorRef)
     return s.model._sectors[s.index]
 end
@@ -480,24 +505,6 @@ function get_consumer_benchmark(c::ConsumerRef)
         return get_full(c).benchmark[c.subindex]
     end
 end
-
-# function get_consumer_total_endowment(jm, c::ConsumerRef)
-#     m = c.model
-
-#     endowments = []
-#     for d in m._demands
-#         if d.consumer == c
-#             push!(endowments, :(
-#                 +($((:($(en.quantity) * 
-#                 $(en.commodity)) for en in d.endowments)...))
-#             ))
-#         end
-#     end
-#     total_end = :(+(0., $(get_tax_revenue_for_consumer(jm, m, c)),  $(endowments...)))
-
-#     return total_end
-
-# end
 
 function get_consumer_total_endowment(jm, m, c::ScalarConsumer)
     endowments = []
@@ -726,6 +733,13 @@ function add!(m::Model, p::IndexedParameter)
     end
     return JuMP.Containers.DenseAxisArray(temp_array, p.indices...)
 end
+
+function add!(m::Model, im::Implicitvar)
+    m._jump_model = nothing
+    push!(m._implicitvars, im)
+    push!(m._implicitvarsDict,im.name=>ImplicitvarRef(m, length(m._implicitvars), nothing, nothing))
+end
+
 
 function JuMP.value(m::Model, name::Symbol)
     Complementarity.result_value(m._jump_model[name])

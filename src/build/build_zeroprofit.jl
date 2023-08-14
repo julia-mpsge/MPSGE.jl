@@ -8,21 +8,21 @@ function build_zeroprofit!(m, jm)
                 +(
                     $(
                         (:(
-                            $(get_jump_expression_for_commodity_consumer_price(m, jm, s, input.commodity)) * $(jm[get_comp_demand_name(input)]) 
+                            $(get_expression_for_commodity_consumer_price(s, input.commodity)) * $(m._implicitvarsDict[get_comp_demand_name(input)]) 
                         ) for input in s.inputs)...
                 )
                 ) -
                 +(
                     $(
                         (:(
-                            $(get_jump_expression_for_commodity_producer_price(m, jm, s, output.commodity)) * $(jm[get_comp_supply_name(output)])
+                            $(get_expression_for_commodity_producer_price(s, output.commodity)) * $(m._implicitvarsDict[get_comp_supply_name(output)])
                         ) for output in s.outputs)...
                     )
                 )
             )
         )
 
-        exb = eval(swap_our_param_with_jump_param(jm, exa))
+        exb = eval(swap_our_Ref_with_jump_var(jm, exa))
 
         Complementarity.add_complementarity(jm, get_jump_variable_for_sector(jm, s.sector), exb, string("F_", get_name(s.sector), s.sector.subindex!==nothing ? s.sector.subindex : ""))
         push!(m._nlexpressions, exb)
