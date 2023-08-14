@@ -70,8 +70,8 @@ mutable struct IndexedParameter <: Parameter
     value::DenseAxisArray
     description::String
 
-    function IndexedParameter(name::Symbol, indices; value::Array, description::AbstractString="")
-            return new(name, indices, DenseAxisArray(value, indices...), description)
+    function IndexedParameter(name::Symbol, indices; value::Union{Array{Float64},Array{Int}}, description::AbstractString="")
+            return new(name, indices, DenseAxisArray(Float64.(value), indices...), description)
 
     end
 end
