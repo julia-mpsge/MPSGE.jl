@@ -8,9 +8,9 @@ factors = [:l, :k]
 
 factor = DenseAxisArray(Float64[50 50; 20 30], goods, factors)
 supply = DenseAxisArray(Float64[100, 50], goods)
-outtax = add!(m, Parameter(:outtax, indices=(goods,), value=0.))
-intax  = add!(m, Parameter(:intax,  indices=(goods,), value=0.))
-endow  = add!(m, Parameter(:endow,  indices=(factors,), value=1.0))
+outtax = add!(m, Parameter(:outtax, indices=(goods,), value=[0.,0.]))
+intax  = add!(m, Parameter(:intax,  indices=(goods,), value=[0.,0.]))
+endow  = add!(m, Parameter(:endow,  indices=(factors,), value=[1.,1.]))
 
 Y = add!(m, Sector(:Y, indices=(goods,)))
 U = add!(m, Sector(:U))
