@@ -1,6 +1,6 @@
 function build(m::Model)
     m._nlexpressions = []
-    jm = Complementarity.MCPModel()
+    jm = JuMP.Model(PATHSolver.Optimizer)
 
     build_variables!(m, jm)
 

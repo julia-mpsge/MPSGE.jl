@@ -7,14 +7,15 @@ function add_variable!(jm::JuMP.Model, name::Symbol, lower_bound::Union{Float64,
 end
 
 function add_parameter_to_jump!(jm, parameter::ScalarParameter)
-    jmp_p = @eval(JuMP.@NLparameter($jm, $(parameter.name) == $(parameter.value)))
+    jmp_p = @eval(JuMP.@variable($jm, $(parameter.name) in JuMP.Parameter($(parameter.value))))
+    # jmp_p = @variable(jm, set = Parameter(parameter.value))
     jm[parameter.name] = jmp_p
 end
 
 function add_parameter_to_jump!(jm, parameter::IndexedParameter)
     # We set the parameter value to 1.0 here, but in a later model building phase that gets replaced
     # with the actual values
-    jm[parameter.name] = @eval(JuMP.@NLparameter($jm, [$( ( :($(gensym())=$i) for i in parameter.indices)... )] == 1.0))
+    jm[parameter.name] = @eval(JuMP.@variable($jm, [$( ( :($(gensym())=$i) for i in parameter.indices)... )] in JuMP.Parameter(1.0)))
 end
 
 function add_sector_to_jump!(jm, sector::ScalarSector)

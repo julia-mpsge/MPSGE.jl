@@ -2,20 +2,20 @@ function set_all_start_values(m)
     jm = m._jump_model
     for s in m._sectors
         if s isa ScalarSector
-            Complementarity.set_start_value(jm[s.name], s.benchmark)
+            JuMP.set_start_value(jm[s.name], s.benchmark)
         else
             for i in Iterators.product(s.indices...)
-                Complementarity.set_start_value(jm[s.name][i...], s.benchmark[i...])
+                JuMP.set_start_value(jm[s.name][i...], s.benchmark[i...])
             end
         end
     end
 
     for c in m._commodities
         if c isa ScalarCommodity
-            Complementarity.set_start_value(jm[c.name], c.benchmark)
+            JuMP.set_start_value(jm[c.name], c.benchmark)
         else
             for i in Iterators.product(c.indices...)
-                Complementarity.set_start_value(jm[c.name][i...], c.benchmark[i...])
+                JuMP.set_start_value(jm[c.name][i...], c.benchmark[i...])
             end
         end
     end
@@ -23,7 +23,7 @@ function set_all_start_values(m)
     for s in m._productions
         for i in s.inputs
             compensated_input1_demand_name = get_comp_demand_name(i)
-            Complementarity.set_start_value(jm[compensated_input1_demand_name], eval(swap_our_param_with_val(i.quantity)))
+            JuMP.set_start_value(jm[compensated_input1_demand_name], eval(swap_our_param_with_val(i.quantity)))
         end
     end
 
@@ -34,7 +34,7 @@ function set_all_start_values(m)
             else
             start_val = eval(swap_our_param_with_val(get_consumer_total_endowment(jm, m, c)))
             end 
-            Complementarity.set_start_value(jm[c.name], start_val)
+            JuMP.set_start_value(jm[c.name], start_val)
         else
             for i in Iterators.product(c.indices...)
                 if c.fixed[i[1]] 
@@ -42,17 +42,17 @@ function set_all_start_values(m)
                 else
                 start_val = eval(swap_our_param_with_val(get_consumer_total_endowment(jm, m, c, i)))
                 end
-                Complementarity.set_start_value(jm[c.name][i...], start_val)
+                JuMP.set_start_value(jm[c.name][i...], start_val)
             end
         end
     end
 
     for aux in m._auxs
         if aux isa ScalarAux
-            Complementarity.set_start_value(jm[aux.name], aux.benchmark)
+            JuMP.set_start_value(jm[aux.name], aux.benchmark)
         else
             for i in Iterators.product(aux.indices...)
-                Complementarity.set_start_value(jm[aux.name][i...], aux.benchmark[i...])
+                JuMP.set_start_value(jm[aux.name][i...], aux.benchmark[i...])
             end
         end
     end
@@ -60,14 +60,14 @@ function set_all_start_values(m)
     # Add compensated supply variables
     for s in m._productions
         for o in s.outputs
-            Complementarity.set_start_value(jm[get_comp_supply_name(o)], eval(swap_our_param_with_val(o.quantity)))
+            JuMP.set_start_value(jm[get_comp_supply_name(o)], eval(swap_our_param_with_val(o.quantity)))
         end
     end
 
     # Add final demand variables
     for demand_function in m._demands
         for demand in demand_function.demands
-            Complementarity.set_start_value(jm[get_final_demand_name(demand)], eval(swap_our_param_with_val(demand.quantity)))
+            JuMP.set_start_value(jm[get_final_demand_name(demand)], eval(swap_our_param_with_val(demand.quantity)))
         end
     end
 end
@@ -209,10 +209,10 @@ function set_all_parameters(m)
 
     for p in m._parameters
         if p isa ScalarParameter
-            JuMP.set_value(jm[p.name], p.value)
+            JuMP.set_parameter_value(jm[p.name], p.value)
         else
             for pp in Iterators.product(p.indices...)
-                JuMP.set_value(jm[p.name][pp...], p.value[pp...])
+                JuMP.set_parameter_value(jm[p.name][pp...], p.value[pp...])
             end
         end
     end

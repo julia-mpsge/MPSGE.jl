@@ -743,7 +743,7 @@ end
 
 
 function JuMP.value(m::Model, name::Symbol)
-    Complementarity.result_value(m._jump_model[name])
+    JuMP.value(m._jump_model[name])
 end
 
 """
@@ -765,7 +765,8 @@ function solve!(m::Model; solver::Symbol=:PATH, kwargs...)
     set_all_parameters(m)
     set_all_bounds(m)
 
-    m._status = Complementarity.solveMCP(m._jump_model; solver=solver, kwargs...)
+    # TODO Reenable the kwargs and solver option
+    m._status = JuMP.optimize!(m._jump_model)
 
     return m
 end

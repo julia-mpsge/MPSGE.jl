@@ -198,7 +198,7 @@ function get_tax_revenue_for_consumer(jm, m, consumer::ScalarConsumer)
 
     tax = :(+(0., $(taxes...)))
 
-    return :($tax)
+    return tax
 end
 
 function get_tax_revenue_for_consumer(jm, m, cr::ConsumerRef)
@@ -221,11 +221,11 @@ function get_tax_revenue_for_consumer(jm, m, cr::ConsumerRef)
             for tax in input.taxes
                 if cr.subindex === nothing
                     if get_full(tax.agent) == get_full(cr)    
-                        push!(taxes, :($(tax.rate) * $jm[get_comp_demand_name($input)] * $(input.commodity) * $(pf.sector)))
+                        push!(taxes, :($(tax.rate) * $(jm[get_comp_demand_name(input)]) * $(input.commodity) * $(pf.sector)))
                     end
                 else
                     if jm[get_full(cr).name][tax.agent.subindex] ==  jm[get_full(cr).name][cr.subindex]
-                        push!(taxes, :($(tax.rate) * $jm[get_comp_demand_name($input)] * $(input.commodity) * $(pf.sector)))
+                        push!(taxes, :($(tax.rate) * $(jm[get_comp_demand_name(input)]) * $(input.commodity) * $(pf.sector)))
                     end
                 end    
             end
@@ -234,7 +234,7 @@ function get_tax_revenue_for_consumer(jm, m, cr::ConsumerRef)
 
     tax = :(+(0., $(taxes...)))
 
-    return :($tax)
+    return tax
 end
 
 function get_jump_variable_for_aux(jm, aux::AuxRef)
