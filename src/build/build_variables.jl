@@ -15,7 +15,16 @@ end
 function add_parameter_to_jump!(jm, parameter::IndexedParameter)
     # We set the parameter value to 1.0 here, but in a later model building phase that gets replaced
     # with the actual values
-    jm[parameter.name] = @eval(JuMP.@variable($jm, [$( ( :($(gensym())=$i) for i in parameter.indices)... )] in JuMP.Parameter(1.0)))
+    dim = length.(parameter.indices)
+    x = JuMP.@variable(jm, [i=1:prod(dim)], set = JuMP.Parameter(i))
+
+    for (i, index) in enumerate(Iterators.product(parameter.indices...))
+        JuMP.set_name(x[i], "$(parameter.name)[$index]")
+    end
+
+    output = JuMP.Containers.DenseAxisArray(reshape(x, dim), parameter.indices...)
+    jm[parameter.name] = output
+    return output
 end
 
 function add_sector_to_jump!(jm, sector::ScalarSector)
