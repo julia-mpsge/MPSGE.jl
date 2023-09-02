@@ -167,7 +167,7 @@ function build_implicitconstraints!(m, jm)
 
             @constraint(jm, exb ⟂ var)
 
-            push!(m._nlexpressions, exb)
+            push!(m._nlexpressions.comp_demand, (expr=exb, var=var))
         end
     end
 
@@ -190,7 +190,7 @@ function build_implicitconstraints!(m, jm)
             var = jm[get_comp_supply_name(output)]
 
             @constraint(jm, exb ⟂ var)
-            push!(m._nlexpressions, exb)
+            push!(m._nlexpressions.comp_supply, (expr=exb, var=var))
         end
     end
 
@@ -217,7 +217,7 @@ function build_implicitconstraints!(m, jm)
                 var = jm[get_final_demand_name(demand)]
 
                 @constraint(jm, exb ⟂ var)
-                push!(m._nlexpressions, exb)
+                push!(m._nlexpressions.final_demand, (expr=exb, var=var))
             end
     end
 end

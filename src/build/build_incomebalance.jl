@@ -15,6 +15,6 @@ function build_incomebalance!(m, jm)
 
         @constraint(jm, complements(ex6b, var))
 
-        push!(m._nlexpressions, ex6b)
+        push!(m._nlexpressions.income_balance, (expr=ex6b, var=var))
     end
 end

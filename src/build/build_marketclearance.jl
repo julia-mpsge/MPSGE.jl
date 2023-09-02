@@ -69,6 +69,6 @@ function build_marketclearance!(m, jm)
 
         @constraint(jm, complements(exb, var))
 
-        push!(m._nlexpressions, exb)
+        push!(m._nlexpressions.market_clearance, (expr=exb, var=var))
     end
 end

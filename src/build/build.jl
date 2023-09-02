@@ -1,5 +1,13 @@
 function build(m::Model)
-    m._nlexpressions = []
+    m._nlexpressions = (
+        comp_demand=[],
+        comp_supply=[],
+        final_demand=[],
+        zero_profit=[],
+        market_clearance=[],
+        income_balance=[],
+        aux=[]
+    )
     jm = JuMP.Model(PATHSolver.Optimizer)
 
     build_variables!(m, jm)

@@ -372,7 +372,7 @@ mutable struct Model
     _jump_model::Union{Nothing,JuMP.Model}
     _status
 
-    _nlexpressions::Vector{Any}
+    _nlexpressions::Any
 
     function Model()
         return new(
@@ -389,7 +389,15 @@ mutable struct Model
             AuxConstraint[],
             nothing,
             nothing,
-            []
+            (
+                comp_demand=[],
+                comp_supply=[],
+                final_demand=[],
+                zero_profit=[],
+                market_clearance=[],
+                income_balance=[],
+                aux=[]
+            )
         )
     end
 end

@@ -25,6 +25,6 @@ function build_zeroprofit!(m, jm)
 
         @constraint(jm, complements(exb,var))
 
-        push!(m._nlexpressions, exb)
+        push!(m._nlexpressions.zero_profit, (expr=exb, var=var))
     end
 end

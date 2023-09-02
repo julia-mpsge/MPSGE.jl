@@ -1,5 +1,6 @@
 struct AlgebraicWrapper
     _source
+    _jmpsource
     n_comp_dem::Int
     n_comp_supply::Int
     n_final_demand::Int
@@ -12,6 +13,7 @@ function algebraic_version(m::Model)
     jump_model = m._jump_model===nothing ? build(m) : m._jump_model
 
     return AlgebraicWrapper(
+        m,
         jump_model,
         sum(length(s.inputs) for s in m._productions),
         sum(length(s.outputs) for s in m._productions),
@@ -38,36 +40,119 @@ function constraint_values(m::Model)
 end
 
 function Base.show(io::IO, m::AlgebraicWrapper)
-    println(io, "Mixed complementarity problem with $(length(m._source.ext[:MCP])) constraints:")
-    constraint_strings = [JuMP.nonlinear_expr_string(m._source, MIME("text/plain"), m._source.nlp_model.expressions[c.F.index]) for c in m._source.ext[:MCP]]
+    constraint_strings = [sprint(show, c.expr) for c in Iterators.flatten(m._source._nlexpressions)]
     
     column1_width = maximum(textwidth.(constraint_strings))
 
-    for (i, (constraint_string, c)) in enumerate(zip(constraint_strings, m._source.ext[:MCP]))
-        if i==1
-            println(io, "  Compensated Demand")
-        elseif i==m.n_comp_dem + 1
-            println(io, "  Compensated Supply")
-        elseif i==m.n_comp_dem + m.n_comp_supply + 1
-            println(io, "  Final Demand")
-        elseif i==m.n_comp_dem + m.n_comp_supply + m.n_final_demand + 1
-            println(io, "  Zero Profit")
-        elseif i==m.n_comp_dem + m.n_comp_supply + m.n_final_demand + m.n_zero_profits + 1
-            println(io, "  Market clearance")
-        elseif i==m.n_comp_dem + m.n_comp_supply + m.n_final_demand + m.n_zero_profits + m.n_market_clearance + 1
-            println(io, "  Income balance")
-        end
-
+    println(io, "  Compensated Demand")
+    for i in m._source._nlexpressions.comp_demand
         print(io, "    ")
 
-        print(io, rpad(constraint_string, column1_width))
+        print(io, rpad(sprint(show, i.expr), column1_width))
 
         print(io, "  ┴  ")
 
-        if !isinf(c.lb) && c.lb==c.ub
-            print(io, c.var_name, " = $(c.ub)")
+        c = i.var
+
+        if JuMP.is_fixed(c)
+            print(io, JuMP.name(c), " = $(JuMP.fix_value(c))")
         else
-            print(io, isinf(c.lb) ? "" : "$(c.lb) < ", c.var_name, isinf(c.ub) ? "" : " < $(c.ub)")
+            print(io, !JuMP.has_lower_bound(c) ? "" : "$(JuMP.lower_bound(c)) < ", JuMP.name(c), !JuMP.has_upper_bound(c) ? "" : " < $(JuMP.upper_bound(c))")
+        end
+
+        println(io)
+    end
+
+    println(io, "  Compensated Supply")
+    for i in m._source._nlexpressions.comp_supply
+        print(io, "    ")
+
+        print(io, rpad(sprint(show, i.expr), column1_width))
+
+        print(io, "  ┴  ")
+
+        c = i.var
+
+        if JuMP.is_fixed(c)
+            print(io, JuMP.name(c), " = $(JuMP.fix_value(c))")
+        else
+            print(io, !JuMP.has_lower_bound(c) ? "" : "$(JuMP.lower_bound(c)) < ", JuMP.name(c), !JuMP.has_upper_bound(c) ? "" : " < $(JuMP.upper_bound(c))")
+        end
+
+        println(io)
+    end
+
+    println(io, "  Final Demand")
+    for i in m._source._nlexpressions.final_demand
+        print(io, "    ")
+
+        print(io, rpad(sprint(show, i.expr), column1_width))
+
+        print(io, "  ┴  ")
+
+        c = i.var
+
+        if JuMP.is_fixed(c)
+            print(io, JuMP.name(c), " = $(JuMP.fix_value(c))")
+        else
+            print(io, !JuMP.has_lower_bound(c) ? "" : "$(JuMP.lower_bound(c)) < ", JuMP.name(c), !JuMP.has_upper_bound(c) ? "" : " < $(JuMP.upper_bound(c))")
+        end
+
+        println(io)
+    end
+
+    println(io, "  Zero Profit")
+    for i in m._source._nlexpressions.zero_profit
+        print(io, "    ")
+
+        print(io, rpad(sprint(show, i.expr), column1_width))
+
+        print(io, "  ┴  ")
+
+        c = i.var
+
+        if JuMP.is_fixed(c)
+            print(io, JuMP.name(c), " = $(JuMP.fix_value(c))")
+        else
+            print(io, !JuMP.has_lower_bound(c) ? "" : "$(JuMP.lower_bound(c)) < ", JuMP.name(c), !JuMP.has_upper_bound(c) ? "" : " < $(JuMP.upper_bound(c))")
+        end
+
+        println(io)
+    end
+
+    println(io, "  Market clearance")
+    for i in m._source._nlexpressions.market_clearance
+        print(io, "    ")
+
+        print(io, rpad(sprint(show, i.expr), column1_width))
+
+        print(io, "  ┴  ")
+
+        c = i.var
+
+        if JuMP.is_fixed(c)
+            print(io, JuMP.name(c), " = $(JuMP.fix_value(c))")
+        else
+            print(io, !JuMP.has_lower_bound(c) ? "" : "$(JuMP.lower_bound(c)) < ", JuMP.name(c), !JuMP.has_upper_bound(c) ? "" : " < $(JuMP.upper_bound(c))")
+        end
+
+        println(io)
+    end
+
+    println(io, "  Income balance")
+    for i in m._source._nlexpressions.income_balance
+        print(io, "    ")
+
+        print(io, rpad(sprint(show, i.expr), column1_width))
+
+        print(io, "  ┴  ")
+
+        c = i.var
+
+        if JuMP.is_fixed(c)
+            print(io, JuMP.name(c), " = $(JuMP.fix_value(c))")
+        else
+            print(io, !JuMP.has_lower_bound(c) ? "" : "$(JuMP.lower_bound(c)) < ", JuMP.name(c), !JuMP.has_upper_bound(c) ? "" : " < $(JuMP.upper_bound(c))")
         end
 
         println(io)
@@ -76,35 +161,127 @@ end
 
 function Base.show(io::IO, ::MIME"text/latex", m::AlgebraicWrapper)
     println(io, raw"$$ \begin{alignat*}{3}\\")
-    for (i, c) in enumerate(m._source.ext[:MCP])
-        if i==1
-            println(io, raw"& \text{Compensated Demand} \quad && \quad && \\\\")
-        elseif i==m.n_comp_dem + 1
-            println(io, raw"& \text{Compensated Supply} \quad && \quad && \\\\")
-        elseif i==m.n_comp_dem + m.n_comp_supply + 1
-            println(io, raw"& \text{Final Demand} \quad && \quad && \\\\")
-        elseif i==m.n_comp_dem + m.n_comp_supply + m.n_final_demand + 1
-            println(io, raw"& \text{Zero Profit} \quad && \quad && \\\\")
-        elseif i==m.n_comp_dem + m.n_comp_supply + m.n_final_demand + m.n_zero_profits + 1
-            println(io, raw"& \text{Market clearance} \quad && \quad && \\\\")
-        elseif i==m.n_comp_dem + m.n_comp_supply + m.n_final_demand + m.n_zero_profits + m.n_market_clearance + 1
-            println(io, raw"& \text{Income balance} \quad && \quad && \\\\")
-        end
 
+    println(io, raw"& \text{Compensated Demand} \quad && \quad && \\\\")
+    for i in m._source._nlexpressions.comp_demand
         print(io, "& \\quad ")
 
-        print(io, JuMP.nonlinear_expr_string(m._source, MIME("text/latex"), m._source.nlp_model.expressions[c.F.index]))
+        s = sprint((io, val) -> show(io, "text/latex", val), i.expr)
+        print(io, s[3:end-2])
 
         print(io, raw"\quad && \perp \quad && ")
 
-        if !isinf(c.lb) && c.lb==c.ub
-            print(io, c.var_name, " = $(c.ub)")
+        c = i.var
+
+        if JuMP.is_fixed(c)
+            print(io, JuMP.name(c), " = $(JuMP.fix_value(c))")
         else
-            print(io, isinf(c.lb) ? "" : "$(c.lb) <", c.var_name, isinf(c.ub) ? "" : " < $(c.ub)")
+            print(io, !JuMP.has_lower_bound(c) ? "" : "$(JuMP.lower_bound(c)) <", JuMP.name(c), !JuMP.has_upper_bound(c) ? "" : " < $(JuMP.upper_bound(c))")
         end
 
         println(io, "\\\\")
     end
+
+    println(io, raw"& \text{Compensated Supply} \quad && \quad && \\\\")
+    for i in m._source._nlexpressions.comp_supply
+        print(io, "& \\quad ")
+
+        s = sprint((io, val) -> show(io, "text/latex", val), i.expr)
+        print(io, s[3:end-2])
+
+        print(io, raw"\quad && \perp \quad && ")
+
+        c = i.var
+
+        if JuMP.is_fixed(c)
+            print(io, JuMP.name(c), " = $(JuMP.fix_value(c))")
+        else
+            print(io, !JuMP.has_lower_bound(c) ? "" : "$(JuMP.lower_bound(c)) <", JuMP.name(c), !JuMP.has_upper_bound(c) ? "" : " < $(JuMP.upper_bound(c))")
+        end
+
+        println(io, "\\\\")
+    end
+    
+    println(io, raw"& \text{Final Demand} \quad && \quad && \\\\")
+    for i in m._source._nlexpressions.final_demand
+        print(io, "& \\quad ")
+
+        s = sprint((io, val) -> show(io, "text/latex", val), i.expr)
+        print(io, s[3:end-2])
+
+        print(io, raw"\quad && \perp \quad && ")
+
+        c = i.var
+
+        if JuMP.is_fixed(c)
+            print(io, JuMP.name(c), " = $(JuMP.fix_value(c))")
+        else
+            print(io, !JuMP.has_lower_bound(c) ? "" : "$(JuMP.lower_bound(c)) <", JuMP.name(c), !JuMP.has_upper_bound(c) ? "" : " < $(JuMP.upper_bound(c))")
+        end
+
+        println(io, "\\\\")
+    end
+
+    println(io, raw"& \text{Zero Profit} \quad && \quad && \\\\")
+    for i in m._source._nlexpressions.zero_profit
+        print(io, "& \\quad ")
+
+        s = sprint((io, val) -> show(io, "text/latex", val), i.expr)
+        print(io, s[3:end-2])
+
+        print(io, raw"\quad && \perp \quad && ")
+
+        c = i.var
+
+        if JuMP.is_fixed(c)
+            print(io, JuMP.name(c), " = $(JuMP.fix_value(c))")
+        else
+            print(io, !JuMP.has_lower_bound(c) ? "" : "$(JuMP.lower_bound(c)) <", JuMP.name(c), !JuMP.has_upper_bound(c) ? "" : " < $(JuMP.upper_bound(c))")
+        end
+
+        println(io, "\\\\")
+    end
+
+    println(io, raw"& \text{Market clearance} \quad && \quad && \\\\")
+    for i in m._source._nlexpressions.market_clearance
+        print(io, "& \\quad ")
+
+        s = sprint((io, val) -> show(io, "text/latex", val), i.expr)
+        print(io, s[3:end-2])
+
+        print(io, raw"\quad && \perp \quad && ")
+
+        c = i.var
+
+        if JuMP.is_fixed(c)
+            print(io, JuMP.name(c), " = $(JuMP.fix_value(c))")
+        else
+            print(io, !JuMP.has_lower_bound(c) ? "" : "$(JuMP.lower_bound(c)) <", JuMP.name(c), !JuMP.has_upper_bound(c) ? "" : " < $(JuMP.upper_bound(c))")
+        end
+
+        println(io, "\\\\")
+    end
+
+    println(io, raw"& \text{Income balance} \quad && \quad && \\\\")
+    for i in m._source._nlexpressions.income_balance
+        print(io, "& \\quad ")
+
+        s = sprint((io, val) -> show(io, "text/latex", val), i.expr)
+        print(io, s[3:end-2])
+
+        print(io, raw"\quad && \perp \quad && ")
+
+        c = i.var
+
+        if JuMP.is_fixed(c)
+            print(io, JuMP.name(c), " = $(JuMP.fix_value(c))")
+        else
+            print(io, !JuMP.has_lower_bound(c) ? "" : "$(JuMP.lower_bound(c)) <", JuMP.name(c), !JuMP.has_upper_bound(c) ? "" : " < $(JuMP.upper_bound(c))")
+        end
+
+        println(io, "\\\\")
+    end
+
     println(io, raw"\end{alignat*}")
     println(io, raw" $$")
 end

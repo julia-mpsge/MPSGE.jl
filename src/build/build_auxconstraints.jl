@@ -9,6 +9,6 @@ function build_auxconstraints!(m::Model, jm)
         var = get_jump_variable_for_aux(jm, ac.aux)
 
         @constraint(jm, complements(ex6b, var))
-        push!(m._nlexpressions, ex6b)
+        push!(m._nlexpressions.aux, (expr=ex6b, var=var))
     end
 end
