@@ -435,7 +435,8 @@ function Base.show(io::IO, m::Model)
             println(io, "Solution:")
 
             for n in JuMP.all_variables(m._jump_model)
-                println(io, "  $n:\t$(Complementarity.result_value(n))")
+                var_value = JuMP.is_parameter(n) ? JuMP.parameter_value(n) : JuMP.value(n)
+                println(io, "  $n:\t$var_value")
             end        
         else
             println(io, "Did not solve with error: $(m._status).")
@@ -783,10 +784,12 @@ function solve!(m::Model; kwargs...)
     JuMP.optimize!(m._jump_model)
 
     if JuMP.termination_status(m._jump_model) != JuMP.LOCALLY_SOLVED
-        error("Couldn't solve the model, solver terminated with status $(JuMP.termination_status(m._jump_model)).")
+        m._status = JuMP.termination_status(m._jump_model)
+    else
+        m._status = :Solved
     end
 
-    return JuMP.solution_summary(m._jump_model)
+    return m
 end
 """
     set_value(P, value::Float64)
