@@ -8,7 +8,7 @@ function build(m::Model)
         income_balance=[],
         aux=[]
     )
-    jm = JuMP.Model(PATHSolver.Optimizer)
+    jm = JuMP.Model()
 
     build_variables!(m, jm)
 

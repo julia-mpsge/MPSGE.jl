@@ -764,19 +764,29 @@ end
 julia> solve!(m, cumulative_iteration_limit=0)
 ```
 """
-function solve!(m::Model; solver::Symbol=:PATH, kwargs...)
+function solve!(m::Model; kwargs...)
     if m._jump_model===nothing
         m._jump_model = build(m)
     end
+
+    JuMP.set_optimizer(m._jump_model, PATHSolver.Optimizer)
+
+    for (k,v) in kwargs
+        JuMP.set_attribute(m._jump_model, string(k), v)
+    end
+
 
     set_all_start_values(m)
     set_all_parameters(m)
     set_all_bounds(m)
 
-    # TODO Reenable the kwargs and solver option
-    m._status = JuMP.optimize!(m._jump_model)
+    JuMP.optimize!(m._jump_model)
 
-    return m
+    if JuMP.termination_status(m._jump_model) != JuMP.LOCALLY_SOLVED
+        error("Couldn't solve the model, solver terminated with status $(JuMP.termination_status(m._jump_model)).")
+    end
+
+    return nothing
 end
 """
     set_value(P, value::Float64)
