@@ -25,13 +25,19 @@ function algebraic_version(m::Model)
 end
 
 function constraint_values(m::Model)
-    for j=1:length(m._nlexpressions)
+    for (i,c)=enumerate(Iterators.flatten(m._nlexpressions))
         var_values = []
-        println("Constraint $j: ", value(m._nlexpressions[j],i->begin
-            val = MPSGE.Complementarity.result_value(i)
-            push!(var_values, "  $i = $val")
-            return val
-        end))            
+        println("Constraint $i $(JuMP.name(c.var)): ", value(c.expr) do j
+                val = if JuMP.is_parameter(j)
+                    JuMP.parameter_value(j)
+                else
+                    JuMP.value(j)
+                end
+
+                push!(var_values, "  $(JuMP.name(j)) = $val")
+                return val
+            end
+        )
 
         for s in var_values
             println(s)
