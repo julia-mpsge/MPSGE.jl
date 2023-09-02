@@ -161,13 +161,11 @@ function build_implicitconstraints!(m, jm)
                         $(m._implicitvarsDict[get_comp_demand_name(input)])
             )
 
-            exb = JuMP.NonlinearExpr(swap_our_Ref_with_jump_var(jm, ex))
+            jump_ex = convert_mpsge_expr_to_jump_nonlinearexpr(jm, ex)
+            jump_var = jm[get_comp_demand_name(input)]
 
-            var = jm[get_comp_demand_name(input)]
-
-            @constraint(jm, exb ⟂ var)
-
-            push!(m._nlexpressions.comp_demand, (expr=exb, var=var))
+            @constraint(jm, jump_ex ⟂ jump_var)
+            push!(m._nlexpressions.comp_demand, (expr=jump_ex, var=jump_var))
         end
     end
 
@@ -186,11 +184,11 @@ function build_implicitconstraints!(m, jm)
                 
             )
 
-            exb = JuMP.NonlinearExpr( swap_our_Ref_with_jump_var(jm, ex) )
-            var = jm[get_comp_supply_name(output)]
+            jump_ex = convert_mpsge_expr_to_jump_nonlinearexpr(jm, ex)
+            jump_var = jm[get_comp_supply_name(output)]
 
-            @constraint(jm, exb ⟂ var)
-            push!(m._nlexpressions.comp_supply, (expr=exb, var=var))
+            @constraint(jm, jump_ex ⟂ jump_var)
+            push!(m._nlexpressions.comp_supply, (expr=jump_ex, var=jump_var))
         end
     end
 
@@ -212,12 +210,12 @@ function build_implicitconstraints!(m, jm)
                         )^$(demand_function.elasticity) - # p_i
                         $(m._implicitvarsDict[get_final_demand_name(demand)])
                 )
-                exb = JuMP.NonlinearExpr(swap_our_Ref_with_jump_var(jm, ex))
 
-                var = jm[get_final_demand_name(demand)]
+                jump_ex = convert_mpsge_expr_to_jump_nonlinearexpr(jm, ex)
+                jump_var = jm[get_final_demand_name(demand)]
 
-                @constraint(jm, exb ⟂ var)
-                push!(m._nlexpressions.final_demand, (expr=exb, var=var))
+                @constraint(jm, jump_ex ⟂ jump_var)
+                push!(m._nlexpressions.final_demand, (expr=jump_ex, var=jump_var))
             end
     end
 end

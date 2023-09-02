@@ -9,20 +9,6 @@ export Sector, Commodity, Consumer, Aux, Production, DemandFunction, AuxConstrai
 export value, set_value, get_value, set_fixed!, get_nested_commodity, set_lower_bound, set_upper_bound
 export @parameter, @sector, @commodity, @consumer, @production, @demand
 
-function JuMP.NonlinearExpr(exp::Expr)
-    MacroTools.postwalk(exp) do x
-        if x isa Expr
-            if x.head==:call
-                JuMP.NonlinearExpr(x.args[1], x.args[2:end])
-            else
-                error("We got a problem $(x.head), $(length(x.args)), $(x.args[2])")
-            end
-        else
-            return x
-        end
-    end
-end
-
 include("model.jl")
 include("macros.jl")
 include("build/build_helpers.jl")
