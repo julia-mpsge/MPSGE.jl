@@ -786,7 +786,7 @@ function solve!(m::Model; kwargs...)
         error("Couldn't solve the model, solver terminated with status $(JuMP.termination_status(m._jump_model)).")
     end
 
-    return nothing
+    return JuMP.solution_summary(m._jump_model)
 end
 """
     set_value(P, value::Float64)
