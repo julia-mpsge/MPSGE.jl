@@ -6,9 +6,26 @@ function add_variable!(jm::JuMP.Model, name::Symbol, lower_bound::Union{Float64,
     end
 end
 
+function add_variable!(jm::JuMP.Model, name::Symbol, indices, lower_bound::Union{Float64,Nothing}=nothing)
+    dim = length.(indices)
+    
+    x = if lower_bound===nothing
+        JuMP.@variable(jm, [1:prod(dim)])
+    else    
+        JuMP.@variable(jm, [1:prod(dim)], lower_bound=lower_bound)
+    end
+
+    for (i, index) in enumerate(Iterators.product(indices...))
+        JuMP.set_name(x[i], "$(name)[$index]")
+    end
+
+    output = JuMP.Containers.DenseAxisArray(reshape(x, dim), indices...)
+    jm[name] = output
+    return output
+end
+
 function add_parameter_to_jump!(jm, parameter::ScalarParameter)
-    jmp_p = @eval(JuMP.@variable($jm, $(parameter.name) in JuMP.Parameter($(parameter.value))))
-    # jmp_p = @variable(jm, set = Parameter(parameter.value))
+    jmp_p = JuMP.@variable(jm, set = JuMP.Parameter(parameter.value))
     jm[parameter.name] = jmp_p
 end
 
@@ -32,7 +49,7 @@ function add_sector_to_jump!(jm, sector::ScalarSector)
 end
 
 function add_sector_to_jump!(jm, sector::IndexedSector)        
-        jm[sector.name] = @eval(JuMP.@variable($jm, [$( ( :($(gensym())=$i) for i in sector.indices)... )], base_name=string($(QuoteNode(sector.name))), lower_bound=0.))
+    add_variable!(jm, sector.name, sector.indices, 0.)
 end
 
 function add_commodity_to_jump!(jm, commodity::ScalarCommodity)
@@ -40,7 +57,7 @@ function add_commodity_to_jump!(jm, commodity::ScalarCommodity)
 end
 
 function add_commodity_to_jump!(jm, commodity::IndexedCommodity)
-    jm[commodity.name] = @eval(JuMP.@variable($jm, [$( ( :($(gensym())=$i) for i in commodity.indices)... )], base_name=string($(QuoteNode(commodity.name))), lower_bound=0.))
+    add_variable!(jm, commodity.name, commodity.indices, 0.)
 end
 
 function add_consumer_to_jump!(jm, consumer::ScalarConsumer)
@@ -48,7 +65,7 @@ function add_consumer_to_jump!(jm, consumer::ScalarConsumer)
 end
 
 function add_consumer_to_jump!(jm, consumer::IndexedConsumer)
-    jm[consumer.name] = @eval(JuMP.@variable($jm, [$( ( :($(gensym())=$i) for i in consumer.indices)... )], base_name=string($(QuoteNode(consumer.name))), lower_bound=0.))
+    add_variable!(jm, consumer.name, consumer.indices, 0.)
 end
 
 function add_aux_to_jump!(jm, aux::ScalarAux)
@@ -56,7 +73,7 @@ function add_aux_to_jump!(jm, aux::ScalarAux)
 end
 
 function add_aux_to_jump!(jm, aux::IndexedAux)
-    jm[aux.name] = @eval(JuMP.@variable($jm, [$( ( :($(gensym())=$i) for i in aux.indices)... )], base_name=string($(QuoteNode(aux.name))), lower_bound=0.))
+    add_variable!(jm, aux.name, aux.indices, 0.)
 end
 
 function add_implicitvars!(m)
@@ -85,8 +102,6 @@ function build_variables!(m, jm)
 
     for p in m._parameters
         add_parameter_to_jump!(jm, p)
-        # jmp_p = @eval(JuMP.@NLparameter($jm, $(p.name) == $(p.value)))
-        # jm[p.name] = jmp_p
     end
 
     # Add all required variables
