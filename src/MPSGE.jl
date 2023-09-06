@@ -1,6 +1,6 @@
 module MPSGE
 
-import JuMP, Complementarity, MacroTools
+import JuMP, Complementarity, MacroTools, PrettyTables
 import JuMP: value, set_value, Containers, set_lower_bound, set_upper_bound
 import JuMP.Containers: DenseAxisArray
 
