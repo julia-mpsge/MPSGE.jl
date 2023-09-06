@@ -21,5 +21,6 @@ include("build/build_auxconstraints.jl")
 include("build/build_startvalues_bounds.jl")
 include("build/build.jl")
 include("algebraic_wrapper.jl")
+include("show.jl")
 
 end
