@@ -991,3 +991,114 @@ function set_upper_bound(sector::SectorRef, u_bound::Float64)
 
     # s.model._sectors[s.index].upper_bound = u_bound
 end
+
+
+
+#Parameter::ScalarParameter, ::IndexedParameter
+
+#Commodity::ScalarCommodity, ::IndexedCommodity
+#Sector::ScalarSector,       ::IndexedSector
+#Consumer::ScalarConsumer,   ::IndexedConsumer
+#Aux::ScalarAux,             ::IndexedAux
+
+
+function Base.show(io::IO,S::Union{SectorRef,CommodityRef,ConsumerRef,AuxRef,ParameterRef})
+    print(io,get_full(S))
+end
+
+
+function _show_scalar(io::IO, S::Union{ScalarSector,ScalarCommodity,ScalarConsumer,ScalarAux},type_name::String)
+    println(io,"$type_name: $(S.name)")
+    desc = S.description
+    if desc != ""
+        println(io, "Description: $desc")
+    end
+
+    fixed = S.fixed == 0 ? "false" : "true"
+
+    PrettyTables.pretty_table(io,hcat(S.lower_bound,S.benchmark,S.upper_bound,fixed),
+                header = ["Lower Bound","Benchmark","Upper Bound","Fixed"])  
+end
+
+function Base.show(io::IO, S::ScalarSector)
+    _show_scalar(io,S,"Sector")
+end
+
+function Base.show(io::IO, S::ScalarCommodity)
+    _show_scalar(io,S,"Commodity")
+end
+
+function Base.show(io::IO, S::ScalarConsumer)
+    _show_scalar(io,S,"Consumer")
+end
+
+function Base.show(io::IO, S::ScalarAux)
+    _show_scalar(io,S,"Aux")
+end
+
+
+function _show_indexed(io::IO, S::Union{IndexedSector,IndexedCommodity,IndexedConsumer,IndexedAux},type_name::String)
+    println(io,"type_name: $(S.name)")
+    desc = S.description
+    if desc != ""
+        println(io, "Description: $desc")
+    end
+
+    index = vec(collect(Iterators.product(S.indices...)))
+
+    data = hcat(index,
+                vec(S.lower_bound.data),
+                vec(S.benchmark.data),
+                vec(S.upper_bound.data),
+                vec(S.fixed.data)
+                )
+
+    PrettyTables.pretty_table(io,data,
+        header = ["Index","Lower Bound","Benchmark","Upper Bound","Fixed"]
+    )
+end
+
+function Base.show(io::IO,S::IndexedSector)
+    _show_indexed(io,S,"Sector")
+end
+
+function Base.show(io::IO,S::IndexedCommodity)
+    _show_indexed(io,S,"Commodity")
+end
+
+function Base.show(io::IO,S::IndexedConsumer)
+    _show_indexed(io,S,"Consumer")
+end
+
+function Base.show(io::IO,S::IndexedAux)
+    _show_indexed(io,S,"Aux")
+end
+
+
+function Base.show(io::IO, P::ScalarParameter)
+    println(io,"Parameter: $(P.name)")
+    desc = P.description
+    if desc != ""
+        println(io, "Description: $desc")
+    end
+
+    println(io,"Value: $(P.value)")
+end
+
+function Base.show(io::IO, P::IndexedParameter)
+    println(io,"Parameter: $(P.name)")
+    desc = P.description
+    if desc != ""
+        println(io, "Description: $desc")
+    end
+
+    index = vec(collect(Iterators.product(P.indices...)))
+
+    data = hcat(index,
+                vec(P.value.data),
+                )
+
+    PrettyTables.pretty_table(io,data,
+        header = ["Index","Value"]
+    )
+end
