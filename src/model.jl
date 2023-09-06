@@ -1038,7 +1038,7 @@ end
 
 
 function _show_indexed(io::IO, S::Union{IndexedSector,IndexedCommodity,IndexedConsumer,IndexedAux},type_name::String)
-    println(io,"type_name: $(S.name)")
+    println(io,"$type_name: $(S.name)")
     desc = S.description
     if desc != ""
         println(io, "Description: $desc")
