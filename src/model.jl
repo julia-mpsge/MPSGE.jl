@@ -1102,3 +1102,77 @@ function Base.show(io::IO, P::IndexedParameter)
         header = ["Index","Value"]
     )
 end
+
+
+
+function Base.show(io::IO,P::Production)
+    print(io, "Production: $(get_name(P.sector))\t")
+
+    if P.elasticity != 0
+        print(io,"s: $(P.elasticity)")
+    end
+
+    print(io,"\n\n")
+
+    for output in P.outputs
+        println(io,output)
+    end
+
+    for input in P.inputs
+        println(io,input)
+    end
+end
+
+function Base.show(io::IO,O::Output)
+    print(io,"O: $(get_name(O.commodity))\tQ: $(O.quantity)\t")
+    if O.price!=1
+        print(io,"P: $(O.price)\t")
+    end
+
+    for tax in O.taxes
+        print(io,tax)
+    end
+end
+
+
+function Base.show(io::IO,I::Input)
+    print(io,"I: $(get_name(I.commodity))\tQ: $(I.quantity)\t")
+    if I.price!=1
+        print(io,"P: $(I.price)\t")
+    end
+
+    for tax in I.taxes
+        print(io,tax)
+    end
+end
+
+
+function Base.show(io::IO,T::Tax)
+    print(io,"A: $(get_name(T.agent))\tT: $(T.rate)")
+end
+
+
+
+
+function Base.show(io::IO,D::DemandFunction)
+    print(io,"Demand: $(get_name(D.consumer))\n\n")
+
+    for demand in D.demands
+        println(io,demand)
+    end
+
+    for endowment in D.endowments
+        println(io,endowment)
+    end
+end
+
+function Base.show(io::IO, D::Demand)
+    print(io,"D: $(get_name(D.commodity))\tQ: $(D.quantity)\t")
+    if D.price !=1
+        print(io,"P: $(D.price)")
+    end
+end
+
+function Base.show(io::IO, E::Endowment)
+    print(io,"E: $(get_name(E.commodity))\tQ: $(E.quantity)")
+end
