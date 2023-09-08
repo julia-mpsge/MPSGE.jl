@@ -3,39 +3,39 @@ function Base.show(io::IO, m::Model)
 
     if length(m._sectors) > 0
         print(io, "  Sectors: ")
-        print(io, join(["$(s.name) (bm=$(s.benchmark))" for s in m._sectors], ", "))
+        print(io, join(["$(s.name)" for s in m._sectors], ", "))
         println(io)
     end
 
     if length(m._commodities) > 0
         print(io, "  Commodities: ")
-        print(io, join(["$(c.name) (bm=$(c.benchmark))" for c in m._commodities], ", "))
+        print(io, join(["$(c.name)" for c in m._commodities], ", "))
         println(io)
     end
 
     if length(m._consumers) > 0
         print(io, "  Consumers: ")
-        print(io, join(["$(c.name) (bm=$(c.benchmark))" for c in m._consumers], ", "))
+        print(io, join(["$(c.name)" for c in m._consumers], ", "))
         println(io)
     end
 
     if length(m._auxs) > 0
         print(io, "  Auxs: ")
-        print(io, join(["$(a.name) (bm=$(a.benchmark))" for a in m._auxs], ", "))
+        print(io, join(["$(a.name)" for a in m._auxs], ", "))
         println(io)
     end
 
-    if m._jump_model!==nothing
-        if m._status==:Solved
-            println(io, "Solution:")
+    #if m._jump_model!==nothing
+    #    if m._status==:Solved
+    #        println(io, "Solution:")
 
-            for n in JuMP.all_variables(m._jump_model)
-                println(io, "  $n:\t$(Complementarity.result_value(n))")
-            end        
-        else
-            println(io, "Did not solve with error: $(m._status).")
-        end
-    end
+    #        for n in JuMP.all_variables(m._jump_model)
+    #            println(io, "  $n:\t$(Complementarity.result_value(n))")
+    #        end        
+    #    else
+    #        println(io, "Did not solve with error: $(m._status).")
+    #    end
+    #end
 end
 
 
