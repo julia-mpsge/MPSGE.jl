@@ -25,17 +25,6 @@ function Base.show(io::IO, m::Model)
         println(io)
     end
 
-    #if m._jump_model!==nothing
-    #    if m._status==:Solved
-    #        println(io, "Solution:")
-
-    #        for n in JuMP.all_variables(m._jump_model)
-    #            println(io, "  $n:\t$(Complementarity.result_value(n))")
-    #        end        
-    #    else
-    #        println(io, "Did not solve with error: $(m._status).")
-    #    end
-    #end
 end
 
 
