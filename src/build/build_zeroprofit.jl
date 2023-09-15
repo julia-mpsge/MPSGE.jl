@@ -2,9 +2,7 @@ function build_zeroprofit!(m, jm)
 
     # Add zero profit constraints
     for s in m._productions
-        exa = :(
-            JuMP.@NLexpression(
-                $jm,
+        ex = :(
                 +(
                     $(
                         (:(
@@ -19,12 +17,12 @@ function build_zeroprofit!(m, jm)
                         ) for output in s.outputs)...
                     )
                 )
-            )
         )
 
-        exb = eval(swap_our_Ref_with_jump_var(jm, exa))
+        jump_ex = convert_mpsge_expr_to_jump_nonlinearexpr(jm, ex)
+        jump_var = get_jump_variable_for_sector(jm, s.sector)
 
-        Complementarity.add_complementarity(jm, get_jump_variable_for_sector(jm, s.sector), exb, string("F_", get_name(s.sector), s.sector.subindex!==nothing ? s.sector.subindex : ""))
-        push!(m._nlexpressions, exb)
+        @constraint(jm, jump_ex ⟂ jump_var)
+        push!(m._nlexpressions.zero_profit, (expr=jump_ex, var=jump_var))
     end
 end

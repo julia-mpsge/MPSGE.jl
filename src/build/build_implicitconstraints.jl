@@ -152,8 +152,6 @@ function build_implicitconstraints!(m, jm)
         for input in s.inputs
 
             ex = :(
-                JuMP.@NLexpression(
-                    $(jm),
                     $(input.quantity) *
                     $(y_over_y_bar(jm, s)) *
                  (       
@@ -161,13 +159,13 @@ function build_implicitconstraints!(m, jm)
                             $(get_expression_for_commodity_consumer_price(s, input.commodity))
                 )^$(s.elasticity) - 
                         $(m._implicitvarsDict[get_comp_demand_name(input)])
-                )
             )
 
-            exb = eval( swap_our_Ref_with_jump_var(jm, ex) )
+            jump_ex = convert_mpsge_expr_to_jump_nonlinearexpr(jm, ex)
+            jump_var = jm[get_comp_demand_name(input)]
 
-            Complementarity.add_complementarity(jm, jm[get_comp_demand_name(input)], exb, string("F_", get_comp_demand_name(input)))    
-            push!(m._nlexpressions, exb)
+            @constraint(jm, jump_ex ⟂ jump_var)
+            push!(m._nlexpressions.comp_demand, (expr=jump_ex, var=jump_var))
         end
     end
 
@@ -175,8 +173,6 @@ function build_implicitconstraints!(m, jm)
     for s in m._productions
         for output in s.outputs
             ex = :(
-                JuMP.@NLexpression(
-                    $(jm),
                     $(output.quantity) *
                     $(y_over_y_bar(jm, s)) *
                         (
@@ -185,13 +181,14 @@ function build_implicitconstraints!(m, jm)
                             $(get_commodity_benchmark(output.commodity))*$(output.price))
                         )^$(s.tr_elasticity) -
                         $(m._implicitvarsDict[get_comp_supply_name(output)])
-                )
+                
             )
 
-            exb = eval( swap_our_Ref_with_jump_var(jm, ex) )
+            jump_ex = convert_mpsge_expr_to_jump_nonlinearexpr(jm, ex)
+            jump_var = jm[get_comp_supply_name(output)]
 
-            Complementarity.add_complementarity(jm, jm[get_comp_supply_name(output)], exb, string("F_", get_comp_supply_name(output)))
-            push!(m._nlexpressions, exb)
+            @constraint(jm, jump_ex ⟂ jump_var)
+            push!(m._nlexpressions.comp_supply, (expr=jump_ex, var=jump_var))
         end
     end
 
@@ -199,8 +196,6 @@ function build_implicitconstraints!(m, jm)
     for demand_function in m._demands
             for demand in demand_function.demands
                 ex = :(
-                    JuMP.@NLexpression(
-                        $(jm),
                         $(demand.quantity) * 
                         (
                             $(demand_function.consumer) / # (consumer's) income
@@ -214,12 +209,13 @@ function build_implicitconstraints!(m, jm)
                             $(demand.commodity)
                         )^$(demand_function.elasticity) - # p_i
                         $(m._implicitvarsDict[get_final_demand_name(demand)])
-                    )
                 )
-                exb = eval( swap_our_Ref_with_jump_var(jm, ex) )
 
-                Complementarity.add_complementarity(jm, jm[get_final_demand_name(demand)], exb, string("F_", get_final_demand_name(demand)))
-                push!(m._nlexpressions, exb)
+                jump_ex = convert_mpsge_expr_to_jump_nonlinearexpr(jm, ex)
+                jump_var = jm[get_final_demand_name(demand)]
+
+                @constraint(jm, jump_ex ⟂ jump_var)
+                push!(m._nlexpressions.final_demand, (expr=jump_ex, var=jump_var))
             end
     end
 end

@@ -1,12 +1,19 @@
 """
-    swap_our_Ref_with_jump_var(jm, expr)
+    convert_mpsge_expr_to_jump_nonlinearexpr(jm, expr)
 
 This function takes an expression tree and replaces all instances of
-`ParameterRef` with the corresponding `JuMP.NLParameter`.
+MPSGE types with corresponding JuMP types and converts `Expr`s into
+`JuMP.NonlinearExpr`.
 """
-function swap_our_Ref_with_jump_var(jm, expr)
+function convert_mpsge_expr_to_jump_nonlinearexpr(jm, expr)
     return MacroTools.postwalk(expr) do x
-        if x isa ParameterRef
+        if x isa Expr
+            if x.head==:call
+                JuMP.NonlinearExpr(x.args[1], x.args[2:end])
+            else
+                error("Found illegal Expr in tree: $x.")
+            end
+        elseif x isa ParameterRef
             get_jump_variable_for_param(jm, x)
         elseif x isa CommodityRef
             get_jump_variable_for_commodity(jm, x)
@@ -19,7 +26,7 @@ function swap_our_Ref_with_jump_var(jm, expr)
         elseif x isa ImplicitvarRef
             get_jump_variable_for_implicitvar(jm, x)
         else
-            return x
+            x
         end
     end
 end
@@ -198,7 +205,7 @@ function get_tax_revenue_for_consumer(jm, m, consumer::ScalarConsumer)
 
     tax = :(+(0., $(taxes...)))
 
-    return :($tax)
+    return tax
 end
 
 function get_tax_revenue_for_consumer(jm, m, cr::ConsumerRef)
@@ -221,11 +228,11 @@ function get_tax_revenue_for_consumer(jm, m, cr::ConsumerRef)
             for tax in input.taxes
                 if cr.subindex === nothing
                     if get_full(tax.agent) == get_full(cr)    
-                        push!(taxes, :($(tax.rate) * $jm[get_comp_demand_name($input)] * $(input.commodity) * $(pf.sector)))
+                        push!(taxes, :($(tax.rate) * $(jm[get_comp_demand_name(input)]) * $(input.commodity) * $(pf.sector)))
                     end
                 else
                     if jm[get_full(cr).name][tax.agent.subindex] ==  jm[get_full(cr).name][cr.subindex]
-                        push!(taxes, :($(tax.rate) * $jm[get_comp_demand_name($input)] * $(input.commodity) * $(pf.sector)))
+                        push!(taxes, :($(tax.rate) * $(jm[get_comp_demand_name(input)]) * $(input.commodity) * $(pf.sector)))
                     end
                 end    
             end
@@ -234,7 +241,7 @@ function get_tax_revenue_for_consumer(jm, m, cr::ConsumerRef)
 
     tax = :(+(0., $(taxes...)))
 
-    return :($tax)
+    return tax
 end
 
 function get_jump_variable_for_aux(jm, aux::AuxRef)

@@ -60,15 +60,14 @@ function build_marketclearance!(m, jm)
             end
         end
 
-        exa = :(
-            JuMP.@NLexpression(
-                $jm,
+        ex = :(
                 +(0., $(endows...), $(comp_supplies...)) - +(0., $(final_demand...), $(comp_demands...))
-            )
         )
-        exb = eval(swap_our_Ref_with_jump_var(jm, exa))
 
-        Complementarity.add_complementarity(jm, get_jump_variable_for_commodity(jm, commodity), exb, string("F_", get_name(commodity, true)))
-        push!(m._nlexpressions, exb)
+        jump_ex = convert_mpsge_expr_to_jump_nonlinearexpr(jm, ex)
+        jump_var = get_jump_variable_for_commodity(jm, commodity)
+
+        @constraint(jm, jump_ex ⟂ jump_var)
+        push!(m._nlexpressions.market_clearance, (expr=jump_ex, var=jump_var))
     end
 end
