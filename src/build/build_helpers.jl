@@ -136,7 +136,7 @@ function get_jump_variable_for_commodity(jm, commodity::IndexedCommodity)
     return jm[get_name(commodity)][commodity.subindex]
 end
 
-function get_expression_for_commodity_producer_price(pf, commodity::CommodityRef)
+function get_expression_for_commodity_producer_price(jm, pf, commodity::CommodityRef)
 
     taxes = []
         for output in pf.outputs
@@ -147,12 +147,10 @@ function get_expression_for_commodity_producer_price(pf, commodity::CommodityRef
             end
         end
 
-    tax = :(+(0., $(taxes...)))
-
-    return :($commodity * (1. - $tax))
+    return tojump(jm, commodity) * -(1., taxes...)
 end
 
-function get_expression_for_commodity_consumer_price(pf, commodity::CommodityRef)
+function get_expression_for_commodity_consumer_price(jm, pf, commodity::CommodityRef)
 
     taxes = []
     for input in pf.inputs
@@ -163,9 +161,7 @@ function get_expression_for_commodity_consumer_price(pf, commodity::CommodityRef
         end
     end
 
-    tax = :(+(0., $(taxes...)))
-
-    return :($commodity * (1. + $tax))
+    return tojump(jm, commodity) * +(1., taxes...)
 end
 
 function get_jump_variable_for_consumer(jm, consumer::ConsumerRef)
@@ -281,4 +277,25 @@ end
 function get_comp_demand_name(i::Input)
     p = i.production_function::Production 
     return Symbol("$(get_name(i.commodity, true))†$(get_prod_func_name(p))")
+end
+
+function tojump(jm, x::Float64)
+    x
+end
+
+function tojump(jm, x::Expr)
+    convert_mpsge_expr_to_jump_nonlinearexpr(jm, x)
+end
+
+function tojump(jm, x::CommodityRef)
+    get_jump_variable_for_commodity(jm, x)
+end
+
+function tojump(jm, x::ConsumerRef)
+    get_jump_variable_for_consumer(jm, x)
+end
+
+
+function tojump(jm, x::ImplicitvarRef)
+    get_jump_variable_for_implicitvar(jm, x)
 end
