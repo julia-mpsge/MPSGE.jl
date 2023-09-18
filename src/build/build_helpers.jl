@@ -186,20 +186,20 @@ function get_tax_revenue_for_consumer(jm, m, consumer::ScalarConsumer)
         for output in pf.outputs
             for tax in output.taxes
                 if get_full(tax.agent) == consumer
-                    push!(taxes, :($(tax.rate) * $(output.quantity) * $(output.commodity) * $(pf.sector) ))
+                    push!(taxes, (tax.rate) * (output.quantity) * (output.commodity) * (pf.sector) )
                 end
             end
         end
         for input in pf.inputs
             for tax in input.taxes
                 if get_full(tax.agent) == consumer
-                    push!(taxes, :($(tax.rate) * $(input.quantity) * $(input.commodity) * $(pf.sector) ))
+                    push!(taxes, (tax.rate) * (input.quantity) * (input.commodity) * (pf.sector) )
                 end
             end
         end
     end
 
-    tax = :(+(0., $(taxes...)))
+    tax = (+(0., (taxes...)))
 
     return tax
 end
@@ -211,11 +211,11 @@ function get_tax_revenue_for_consumer(jm, m, cr::ConsumerRef)
             for tax in output.taxes
                 if cr.subindex === nothing
                     if get_full(tax.agent) == get_full(cr)    
-                        push!(taxes, :($(tax.rate) * $(jm[get_comp_supply_name(output)]) * $(output.commodity) * $(pf.sector)))
+                        push!(taxes, (tax.rate) * (jm[get_comp_supply_name(output)]) * (output.commodity) * (pf.sector))
                     end
                 else
                     if jm[get_full(cr).name][tax.agent.subindex] ==  jm[get_full(cr).name][cr.subindex]
-                        push!(taxes, :($(tax.rate) * $(jm[get_comp_supply_name(output)]) * $(output.commodity) * $(pf.sector)))
+                        push!(taxes, (tax.rate) * (jm[get_comp_supply_name(output)]) * (output.commodity) * (pf.sector))
                     end
                 end    
             end
@@ -224,18 +224,18 @@ function get_tax_revenue_for_consumer(jm, m, cr::ConsumerRef)
             for tax in input.taxes
                 if cr.subindex === nothing
                     if get_full(tax.agent) == get_full(cr)    
-                        push!(taxes, :($(tax.rate) * $(jm[get_comp_demand_name(input)]) * $(input.commodity) * $(pf.sector)))
+                        push!(taxes, (tax.rate) * (jm[get_comp_demand_name(input)]) * (input.commodity) * (pf.sector))
                     end
                 else
                     if jm[get_full(cr).name][tax.agent.subindex] ==  jm[get_full(cr).name][cr.subindex]
-                        push!(taxes, :($(tax.rate) * $(jm[get_comp_demand_name(input)]) * $(input.commodity) * $(pf.sector)))
+                        push!(taxes, (tax.rate) * (jm[get_comp_demand_name(input)]) * (input.commodity) * (pf.sector))
                     end
                 end    
             end
         end
     end
 
-    tax = :(+(0., $(taxes...)))
+    tax = (+(0., (taxes...)))
 
     return tax
 end
@@ -279,23 +279,26 @@ function get_comp_demand_name(i::Input)
     return Symbol("$(get_name(i.commodity, true))†$(get_prod_func_name(p))")
 end
 
-function tojump(jm, x::Float64)
+function tojump(jm::JuMP.Model, x::Float64)
     x
 end
 
-function tojump(jm, x::Expr)
+function tojump(jm::JuMP.Model, x::Expr)
     convert_mpsge_expr_to_jump_nonlinearexpr(jm, x)
 end
 
-function tojump(jm, x::CommodityRef)
+function tojump(jm::JuMP.Model, x::CommodityRef)
     get_jump_variable_for_commodity(jm, x)
 end
 
-function tojump(jm, x::ConsumerRef)
+function tojump(jm::JuMP.Model, x::ConsumerRef)
     get_jump_variable_for_consumer(jm, x)
 end
 
+function tojump(jm::JuMP.Model, x::SectorRef)
+    get_jump_variable_for_sector(jm, x)
+end
 
-function tojump(jm, x::ImplicitvarRef)
+function tojump(jm::JuMP.Model, x::ImplicitvarRef)
     get_jump_variable_for_implicitvar(jm, x)
 end

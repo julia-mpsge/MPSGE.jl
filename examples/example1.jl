@@ -30,6 +30,7 @@ Y = add!(m, Sector(:Y))
 
 @demand(m, RA, 1., [Demand(PU, 150)], [Endowment(PL, :(70 * $endow)), Endowment(PK, 80.)])
 
+solve!(m)
 solve!(m, cumulative_iteration_limit=0)
 algebraic_version(m)
 
@@ -47,7 +48,7 @@ solve!(m)
 
 # Re-running with non-1 elasticities of substitution, non-Cobb-Douglas forms for production in the cost function
 set_value(sub_elas_x, 0.5)
-set_value(sub_elas_y_elas_y, 0.6)
+set_value(sub_elas_y, 0.6)
 set_fixed!(RA, true)
 solve!(m)
 

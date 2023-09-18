@@ -25,7 +25,7 @@ function build_marketclearance!(m, jm)
         for demand_function in m._demands
             for en in demand_function.endowments
                 if en.commodity==commodity
-                    push!(endows, :($(en.quantity)))
+                    push!(endows, tojump(jm,en.quantity))
                 end
             end
         end
@@ -35,7 +35,7 @@ function build_marketclearance!(m, jm)
         for production_function in m._productions
             for output in production_function.outputs
                 if output.commodity==commodity
-                    push!(comp_supplies, :($(production_function.sector) * $(m._implicitvarsDict[get_comp_supply_name(output)])))
+                    push!(comp_supplies, tojump(jm, production_function.sector) * tojump(jm,m._implicitvarsDict[get_comp_supply_name(output)]))
                 end
             end
         end
@@ -45,7 +45,7 @@ function build_marketclearance!(m, jm)
         for demand_function in m._demands
             for demand in demand_function.demands
                 if demand.commodity == commodity
-                    push!(final_demand, :($(m._implicitvarsDict[get_final_demand_name(demand)])))
+                    push!(final_demand, tojump(jm, m._implicitvarsDict[get_final_demand_name(demand)]))
                 end
             end
         end
@@ -55,16 +55,15 @@ function build_marketclearance!(m, jm)
         for production_function in m._productions
             for input in production_function.inputs
                 if input.commodity==commodity
-                    push!(comp_demands, :($(production_function.sector) * $(m._implicitvarsDict[get_comp_demand_name(input)])))
+                    push!(comp_demands, tojump(jm, production_function.sector) * tojump(jm,m._implicitvarsDict[get_comp_demand_name(input)]))
                 end
             end
         end
 
-        ex = :(
-                +(0., $(endows...), $(comp_supplies...)) - +(0., $(final_demand...), $(comp_demands...))
+        jump_ex = (
+                +(0., (endows...), (comp_supplies...)) - +(0., (final_demand...), (comp_demands...))
         )
 
-        jump_ex = convert_mpsge_expr_to_jump_nonlinearexpr(jm, ex)
         jump_var = get_jump_variable_for_commodity(jm, commodity)
 
         @constraint(jm, jump_ex ⟂ jump_var)
