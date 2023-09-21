@@ -140,7 +140,8 @@ solve!(m)
 @test JuMP.value(m._jump_model[Symbol("PUρRA")]) ≈ two_by_two_PriceinInput["DU","PL=1"]#  172.2047
 # @test JuMP.value(m._jump_model[:]) ≈ two_by_two_PriceinInput["CWI","PL=1"]#  1.14803128
 
-set_value(itax, 0.1)
+MPSGE.JuMP.set_parameter_value(m._jump_model[:itax], 0.1)
+# set_value(itax, 0.1)
 solve!(m)
 # Itax=0.1
 @test JuMP.value(m._jump_model[:X]) ≈ two_by_two_PriceinInput["X","Itax=0.1"]#  1.06922305

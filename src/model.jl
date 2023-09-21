@@ -527,7 +527,7 @@ function get_consumer_total_endowment(jm, m, c::ScalarConsumer)
         end
     end
 
-    total_end = (+(0., (get_tax_revenue_for_consumer(jm, m, c)),  (endowments...)))
+    total_end = (+(0., eval(swap_our_param_with_val(get_tax_revenue_for_consumer(jm, m, c))),  (endowments...)))
 
     return total_end
 end
@@ -807,10 +807,16 @@ julia> set_value(var, 1.3)
 """
 function JuMP.set_value(parameter::ParameterRef, new_value::Float64)
     p = parameter.model._parameters[parameter.index]
+    jm = parameter.model._jump_model
     if p isa ScalarParameter
         p.value = new_value
+        if jm!==nothing
+        
+        JuMP.set_parameter_value(jm[parameter.model._parameters[parameter.index].name],new_value)
+        end
     else
         p.value[parameter.subindex] = new_value
+
     end
     return nothing
 end

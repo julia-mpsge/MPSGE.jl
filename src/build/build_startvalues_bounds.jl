@@ -23,7 +23,7 @@ function set_all_start_values(m)
     for s in m._productions
         for i in s.inputs
             compensated_input1_demand_name = get_comp_demand_name(i)
-            JuMP.set_start_value(jm[compensated_input1_demand_name], i.quantity)
+            JuMP.set_start_value(jm[compensated_input1_demand_name], eval(swap_our_param_with_val(i.quantity)))
         end
     end
 
@@ -32,7 +32,7 @@ function set_all_start_values(m)
             if c.fixed
                 start_val = c.benchmark
             else
-            start_val = get_consumer_total_endowment(jm, m, c)
+            start_val = eval(swap_our_param_with_val(get_consumer_total_endowment(jm, m, c)))
             end 
             JuMP.set_start_value(jm[c.name], start_val)
         else
@@ -40,7 +40,7 @@ function set_all_start_values(m)
                 if c.fixed[i[1]] 
                     start_val = c.benchmark[i[1]]
                 else
-                start_val = get_consumer_total_endowment(jm, m, c, i)
+                start_val = eval(swap_our_param_with_val(get_consumer_total_endowment(jm, m, c, i)))
                 end
                 JuMP.set_start_value(jm[c.name][i...], start_val)
             end
@@ -60,14 +60,14 @@ function set_all_start_values(m)
     # Add compensated supply variables
     for s in m._productions
         for o in s.outputs
-            JuMP.set_start_value(jm[get_comp_supply_name(o)], o.quantity)
+            JuMP.set_start_value(jm[get_comp_supply_name(o)], eval(swap_our_param_with_val(o.quantity)))
         end
     end
 
     # Add final demand variables
     for demand_function in m._demands
         for demand in demand_function.demands
-            JuMP.set_start_value(jm[get_final_demand_name(demand)], demand.quantity)
+            JuMP.set_start_value(jm[get_final_demand_name(demand)], eval(swap_our_param_with_val(demand.quantity)))
         end
     end
 end

@@ -142,12 +142,18 @@ function get_expression_for_commodity_producer_price(jm, pf, commodity::Commodit
         for output in pf.outputs
             if output.commodity == commodity
                 for tax in output.taxes
-                    push!(taxes, tax.rate)
+                    push!(taxes, eval(swap_our_param_with_val(tax.rate)))
                 end
             end
         end
-
-    return tojump(jm, commodity) * -(1., taxes...)
+        if taxes == []
+            final_tax = (1- +(0., taxes...))
+        elseif sum(taxes...) == 0.
+            final_tax = -1.
+        else
+            final_tax = -(1., taxes...)
+        end
+    return tojump(jm, commodity) * final_tax
 end
 
 function get_expression_for_commodity_consumer_price(jm, pf, commodity::CommodityRef)
@@ -156,7 +162,7 @@ function get_expression_for_commodity_consumer_price(jm, pf, commodity::Commodit
     for input in pf.inputs
         if input.commodity == commodity
             for tax in input.taxes
-                push!(taxes, tax.rate)
+                push!(taxes, eval(swap_our_param_with_val(tax.rate)))
             end
         end
     end
@@ -186,20 +192,20 @@ function get_tax_revenue_for_consumer(jm, m, consumer::ScalarConsumer)
         for output in pf.outputs
             for tax in output.taxes
                 if get_full(tax.agent) == consumer
-                    push!(taxes, (tax.rate) * (output.quantity) * (output.commodity) * (pf.sector) )
+                    push!(taxes, :($(tax.rate) * $(output.quantity) * $(output.commodity) * $(pf.sector)))
                 end
             end
         end
         for input in pf.inputs
             for tax in input.taxes
                 if get_full(tax.agent) == consumer
-                    push!(taxes, (tax.rate) * (input.quantity) * (input.commodity) * (pf.sector) )
+                    push!(taxes, :($(tax.rate) * $(input.quantity) * $(input.commodity) * $(pf.sector)))
                 end
             end
         end
     end
 
-    tax = (+(0., (taxes...)))
+    tax = :(+(0., $(taxes...)))
 
     return tax
 end
@@ -211,11 +217,11 @@ function get_tax_revenue_for_consumer(jm, m, cr::ConsumerRef)
             for tax in output.taxes
                 if cr.subindex === nothing
                     if get_full(tax.agent) == get_full(cr)    
-                        push!(taxes, (tax.rate) * (jm[get_comp_supply_name(output)]) * (output.commodity) * (pf.sector))
+                        push!(taxes, eval(swap_our_param_with_val((tax.rate))) * (jm[get_comp_supply_name(output)]) * tojump(jm,output.commodity) * tojump(jm,pf.sector))
                     end
                 else
                     if jm[get_full(cr).name][tax.agent.subindex] ==  jm[get_full(cr).name][cr.subindex]
-                        push!(taxes, (tax.rate) * (jm[get_comp_supply_name(output)]) * (output.commodity) * (pf.sector))
+                        push!(taxes, eval(swap_our_param_with_val((tax.rate))) * (jm[get_comp_supply_name(output)]) * tojump(jm,output.commodity) * tojump(jm,pf.sector))
                     end
                 end    
             end
@@ -224,11 +230,11 @@ function get_tax_revenue_for_consumer(jm, m, cr::ConsumerRef)
             for tax in input.taxes
                 if cr.subindex === nothing
                     if get_full(tax.agent) == get_full(cr)    
-                        push!(taxes, (tax.rate) * (jm[get_comp_demand_name(input)]) * (input.commodity) * (pf.sector))
+                        push!(taxes, eval(swap_our_param_with_val((tax.rate))) * (jm[get_comp_demand_name(input)]) * tojump(jm,input.commodity) * tojump(jm,pf.sector))
                     end
                 else
                     if jm[get_full(cr).name][tax.agent.subindex] ==  jm[get_full(cr).name][cr.subindex]
-                        push!(taxes, (tax.rate) * (jm[get_comp_demand_name(input)]) * (input.commodity) * (pf.sector))
+                        push!(taxes, eval(swap_our_param_with_val((tax.rate))) * (jm[get_comp_demand_name(input)]) * tojump(jm,input.commodity) * tojump(jm,pf.sector))
                     end
                 end    
             end

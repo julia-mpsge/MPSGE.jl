@@ -13,7 +13,7 @@ function build_zeroprofit!(m, jm)
                 +(
                     (
                         ((
-                            (get_expression_for_commodity_producer_price(jm, s, output.commodity)) * tojump(jm,m._implicitvarsDict[get_comp_supply_name(output)])
+                       -     (get_expression_for_commodity_producer_price(jm, s, output.commodity)) * tojump(jm,m._implicitvarsDict[get_comp_supply_name(output)])
                         ) for output in s.outputs)...
                     )
                 )
