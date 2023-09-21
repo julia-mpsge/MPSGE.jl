@@ -1,6 +1,14 @@
 function build(m::Model)
-    m._nlexpressions = []
-    jm = Complementarity.MCPModel()
+    m._nlexpressions = (
+        comp_demand=[],
+        comp_supply=[],
+        final_demand=[],
+        zero_profit=[],
+        market_clearance=[],
+        income_balance=[],
+        aux=[]
+    )
+    jm = JuMP.Model()
 
     build_variables!(m, jm)
 

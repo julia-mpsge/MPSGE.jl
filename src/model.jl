@@ -372,7 +372,7 @@ mutable struct Model
     _jump_model::Union{Nothing,JuMP.Model}
     _status
 
-    _nlexpressions::Vector{Any}
+    _nlexpressions::Any
 
     function Model()
         return new(
@@ -389,10 +389,19 @@ mutable struct Model
             AuxConstraint[],
             nothing,
             nothing,
-            []
+            (
+                comp_demand=[],
+                comp_supply=[],
+                final_demand=[],
+                zero_profit=[],
+                market_clearance=[],
+                income_balance=[],
+                aux=[]
+            )
         )
     end
 end
+
 
 
 
@@ -705,7 +714,7 @@ end
 
 
 function JuMP.value(m::Model, name::Symbol)
-    Complementarity.result_value(m._jump_model[name])
+    JuMP.value(m._jump_model[name])
 end
 
 """
@@ -718,16 +727,29 @@ end
 julia> solve!(m, cumulative_iteration_limit=0)
 ```
 """
-function solve!(m::Model; solver::Symbol=:PATH, kwargs...)
+function solve!(m::Model; kwargs...)
     if m._jump_model===nothing
         m._jump_model = build(m)
     end
+
+    JuMP.set_optimizer(m._jump_model, PATHSolver.Optimizer)
+
+    for (k,v) in kwargs
+        JuMP.set_attribute(m._jump_model, string(k), v)
+    end
+
 
     set_all_start_values(m)
     set_all_parameters(m)
     set_all_bounds(m)
 
-    m._status = Complementarity.solveMCP(m._jump_model; solver=solver, kwargs...)
+    JuMP.optimize!(m._jump_model)
+
+    if JuMP.termination_status(m._jump_model) != JuMP.LOCALLY_SOLVED
+        m._status = JuMP.termination_status(m._jump_model)
+    else
+        m._status = :Solved
+    end
 
     return m
 end

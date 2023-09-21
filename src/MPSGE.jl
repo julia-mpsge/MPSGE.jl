@@ -1,7 +1,9 @@
 module MPSGE
 
-import JuMP, Complementarity, MacroTools, PrettyTables
-import JuMP: value, set_value, Containers, set_lower_bound, set_upper_bound
+
+import JuMP, MacroTools, PATHSolver, PrettyTables
+import JuMP: value, set_value, Containers, set_lower_bound, set_upper_bound, @constraint
+
 import JuMP.Containers: DenseAxisArray
 
 export add!, Model, solve!, algebraic_version
