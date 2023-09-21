@@ -403,46 +403,8 @@ mutable struct Model
 end
 
 
-function Base.show(io::IO, m::Model)
-    println(io, "MPSGE model with $(length(m._sectors)) sectors, $(length(m._commodities)) commodities and $(length(m._consumers)) consumers.")
 
-    if length(m._sectors) > 0
-        print(io, "  Sectors: ")
-        print(io, join(["$(s.name) (bm=$(s.benchmark))" for s in m._sectors], ", "))
-        println(io)
-    end
 
-    if length(m._commodities) > 0
-        print(io, "  Commodities: ")
-        print(io, join(["$(c.name) (bm=$(c.benchmark))" for c in m._commodities], ", "))
-        println(io)
-    end
-
-    if length(m._consumers) > 0
-        print(io, "  Consumers: ")
-        print(io, join(["$(c.name) (bm=$(c.benchmark))" for c in m._consumers], ", "))
-        println(io)
-    end
-
-    if length(m._auxs) > 0
-        print(io, "  Auxs: ")
-        print(io, join(["$(a.name) (bm=$(a.benchmark))" for a in m._auxs], ", "))
-        println(io)
-    end
-
-    if m._jump_model!==nothing
-        if m._status==:Solved
-            println(io, "Solution:")
-
-            for n in JuMP.all_variables(m._jump_model)
-                var_value = JuMP.is_parameter(n) ? JuMP.parameter_value(n) : JuMP.value(n)
-                println(io, "  $n:\t$var_value")
-            end        
-        else
-            println(io, "Did not solve with error: $(m._status).")
-        end
-    end
-end
 
 function get_name(sector::SectorRef, include_subindex=false)
     if sector.subindex===nothing || include_subindex==false
@@ -1013,3 +975,5 @@ function set_upper_bound(sector::SectorRef, u_bound::Float64)
 
     # s.model._sectors[s.index].upper_bound = u_bound
 end
+
+

@@ -1,7 +1,9 @@
 module MPSGE
 
-import JuMP, MacroTools, PATHSolver
+
+import JuMP, MacroTools, PATHSolver, PrettyTables
 import JuMP: value, set_value, Containers, set_lower_bound, set_upper_bound, @constraint
+
 import JuMP.Containers: DenseAxisArray
 
 export add!, Model, solve!, algebraic_version
@@ -21,5 +23,6 @@ include("build/build_auxconstraints.jl")
 include("build/build_startvalues_bounds.jl")
 include("build/build.jl")
 include("algebraic_wrapper.jl")
+include("show.jl")
 
 end
