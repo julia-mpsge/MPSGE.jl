@@ -462,6 +462,10 @@ function get_full(a::AuxRef)
     return a.model._auxs[a.index]
 end
 
+function get_full(p::ParameterRef)
+    return p.model._parameters[p.index]
+end
+
 function get_commodity_benchmark(c::CommodityRef)
     if c.subindex===nothing
         return get_full(c).benchmark
