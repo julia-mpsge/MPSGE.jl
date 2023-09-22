@@ -147,7 +147,7 @@ function get_expression_for_commodity_producer_price(jm, pf, commodity::Commodit
             end
         end
 
-    return tojump(jm, commodity) * -(1., taxes...)
+    return tojump(jm, commodity) * (1. - +(0., taxes...))
 end
 
 function get_expression_for_commodity_consumer_price(jm, pf, commodity::CommodityRef)
