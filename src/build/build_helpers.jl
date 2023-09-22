@@ -180,29 +180,29 @@ function get_jump_variable_for_consumer(jm, consumer::IndexedConsumer)
     return jm[consumer.name][consumer.subindex]
 end
 
-function get_tax_revenue_for_consumer(jm, m, consumer::ScalarConsumer)
-    taxes = []
-    for pf in m._productions
-        for output in pf.outputs
-            for tax in output.taxes
-                if get_full(tax.agent) == consumer
-                    push!(taxes, tojump(jm, tax.rate) * tojump(jm, output.quantity) * tojump(jm, output.commodity) * tojump(jm, pf.sector) )
-                end
-            end
-        end
-        for input in pf.inputs
-            for tax in input.taxes
-                if get_full(tax.agent) == consumer
-                    push!(taxes, tojump(jm, tax.rate) * tojump(jm, input.quantity) * tojump(jm, input.commodity) * tojump(jm, pf.sector) )
-                end
-            end
-        end
-    end
+# function get_tax_revenue_for_consumer(jm, m, consumer::ScalarConsumer)
+#     taxes = []
+#     for pf in m._productions
+#         for output in pf.outputs
+#             for tax in output.taxes
+#                 if get_full(tax.agent) == consumer
+#                     push!(taxes, tojump(jm, tax.rate) * tojump(jm, output.quantity) * tojump(jm, output.commodity) * tojump(jm, pf.sector) )
+#                 end
+#             end
+#         end
+#         for input in pf.inputs
+#             for tax in input.taxes
+#                 if get_full(tax.agent) == consumer
+#                     push!(taxes, tojump(jm, tax.rate) * tojump(jm, input.quantity) * tojump(jm, input.commodity) * tojump(jm, pf.sector) )
+#                 end
+#             end
+#         end
+#     end
 
-    tax = +(0., taxes...)
+#     tax = +(0., taxes...)
 
-    return tax
-end
+#     return tax
+# end
 
 function get_tax_revenue_for_consumer(jm, m, cr::ConsumerRef)
     taxes = []
