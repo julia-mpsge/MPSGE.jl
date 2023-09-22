@@ -462,6 +462,10 @@ function get_full(a::AuxRef)
     return a.model._auxs[a.index]
 end
 
+function get_full(p::ParameterRef)
+    return p.model._parameters[p.index]
+end
+
 function get_commodity_benchmark(c::CommodityRef)
     if c.subindex===nothing
         return get_full(c).benchmark
@@ -482,6 +486,40 @@ function get_consumer_total_endowment(jm, m, c::ScalarConsumer)
     endowments = []
     for d in m._demands
         if get_full(d.consumer) == c
+            push!(endowments, 
+                +(
+                    (tojump(jm, en.quantity) * tojump(jm, en.commodity) for en in d.endowments)...
+                )
+            )
+        end
+    end
+
+    total_end = +(0., get_tax_revenue_for_consumer(jm, m, c),  endowments...)
+
+    return total_end
+end
+
+function get_consumer_total_endowment(jm, m, c::IndexedConsumer, i)
+    endowments = []
+    for d in m._demands
+        c_for_d = get_full(d.consumer)
+        
+        if c_for_d == c && d.consumer.subindex_names == i
+            push!(endowments, 
+                +(
+                    (tojump(jm, en.quantity) * tojump(jm, en.commodity) for en in d.endowments)...
+                )
+            )
+        end
+    end
+
+    return +(0., endowments...)
+end
+
+function get_consumer_total_endowment_old(jm, m, c::ScalarConsumer)
+    endowments = []
+    for d in m._demands
+        if get_full(d.consumer) == c
             push!(endowments, :(
                 +($((:($(en.quantity) * 
                 $(en.commodity)) for en in d.endowments)...))
@@ -489,12 +527,12 @@ function get_consumer_total_endowment(jm, m, c::ScalarConsumer)
         end
     end
 
-    total_end = :(+(0., $(get_tax_revenue_for_consumer(jm, m, c)),  $(endowments...)))
+    total_end = :(+(0., $(get_tax_revenue_for_consumer_old(jm, m, c)),  $(endowments...)))
 
     return total_end
 end
 
-function get_consumer_total_endowment(jm, m, c::IndexedConsumer, i)
+function get_consumer_total_endowment_old(jm, m, c::IndexedConsumer, i)
     endowments = []
     for d in m._demands
         c_for_d = get_full(d.consumer)

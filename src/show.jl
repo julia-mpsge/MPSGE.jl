@@ -25,6 +25,19 @@ function Base.show(io::IO, m::Model)
         println(io)
     end
 
+    if m._jump_model!==nothing
+        if m._status==:Solved
+            println()
+            println(io, "Solution:")
+
+            for n in JuMP.all_variables(m._jump_model)
+                var_value = JuMP.is_parameter(n) ? JuMP.parameter_value(n) : JuMP.value(n)
+                println(io, "  $n:\t$var_value")
+            end        
+        else
+            println(io, "Did not solve with error: $(m._status).")
+        end
+    end
 end
 
 
