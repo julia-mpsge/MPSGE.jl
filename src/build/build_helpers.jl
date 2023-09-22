@@ -186,6 +186,66 @@ function get_tax_revenue_for_consumer(jm, m, consumer::ScalarConsumer)
         for output in pf.outputs
             for tax in output.taxes
                 if get_full(tax.agent) == consumer
+                    push!(taxes, tojump(jm, tax.rate) * tojump(jm, output.quantity) * tojump(jm, output.commodity) * tojump(jm, pf.sector) )
+                end
+            end
+        end
+        for input in pf.inputs
+            for tax in input.taxes
+                if get_full(tax.agent) == consumer
+                    push!(taxes, tojump(jm, tax.rate) * tojump(jm, input.quantity) * tojump(jm, input.commodity) * tojump(jm, pf.sector) )
+                end
+            end
+        end
+    end
+
+    tax = +(0., taxes...)
+
+    return tax
+end
+
+function get_tax_revenue_for_consumer(jm, m, cr::ConsumerRef)
+    taxes = []
+    for pf in m._productions
+        for output in pf.outputs
+            for tax in output.taxes
+                if cr.subindex === nothing
+                    if get_full(tax.agent) == get_full(cr)    
+                        push!(taxes, tojump(jm, tax.rate) * jm[get_comp_supply_name(output)] * tojump(jm, output.commodity) * tojump(jm, pf.sector))
+                    end
+                else
+                    if jm[get_full(cr).name][tax.agent.subindex] ==  jm[get_full(cr).name][cr.subindex]
+                        push!(taxes, tojump(jm, tax.rate) * jm[get_comp_supply_name(output)] * tojump(jm, output.commodity) * tojump(jm, pf.sector))
+                    end
+                end    
+            end
+        end
+        for input in pf.inputs
+            for tax in input.taxes
+                if cr.subindex === nothing
+                    if get_full(tax.agent) == get_full(cr)    
+                        push!(taxes, tojump(jm, tax.rate) * jm[get_comp_demand_name(input)] * tojump(jm, input.commodity) * tojump(jm, pf.sector))
+                    end
+                else
+                    if jm[get_full(cr).name][tax.agent.subindex] ==  jm[get_full(cr).name][cr.subindex]
+                        push!(taxes, tojump(jm, tax.rate) * jm[get_comp_demand_name(input)] * tojump(jm, input.commodity) * tojump(jm, pf.sector))
+                    end
+                end    
+            end
+        end
+    end
+
+    tax = +(0., taxes...)
+
+    return tax
+end
+
+function get_tax_revenue_for_consumer_old(jm, m, consumer::ScalarConsumer)
+    taxes = []
+    for pf in m._productions
+        for output in pf.outputs
+            for tax in output.taxes
+                if get_full(tax.agent) == consumer
                     push!(taxes, :($(tax.rate) * $(output.quantity) * $(output.commodity) * $(pf.sector) ))
                 end
             end
@@ -204,7 +264,7 @@ function get_tax_revenue_for_consumer(jm, m, consumer::ScalarConsumer)
     return tax
 end
 
-function get_tax_revenue_for_consumer(jm, m, cr::ConsumerRef)
+function get_tax_revenue_for_consumer_old(jm, m, cr::ConsumerRef)
     taxes = []
     for pf in m._productions
         for output in pf.outputs
@@ -295,6 +355,9 @@ function tojump(jm, x::ConsumerRef)
     get_jump_variable_for_consumer(jm, x)
 end
 
+function tojump(jm, x::SectorRef)
+    get_jump_variable_for_sector(jm, x)
+end
 
 function tojump(jm, x::ImplicitvarRef)
     get_jump_variable_for_implicitvar(jm, x)

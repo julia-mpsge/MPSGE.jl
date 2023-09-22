@@ -32,7 +32,7 @@ function set_all_start_values(m)
             if c.fixed
                 start_val = c.benchmark
             else
-            start_val = eval(swap_our_param_with_val(get_consumer_total_endowment(jm, m, c)))
+                start_val = eval(swap_our_param_with_val(get_consumer_total_endowment_old(jm, m, c)))
             end 
             JuMP.set_start_value(jm[c.name], start_val)
         else
@@ -40,7 +40,7 @@ function set_all_start_values(m)
                 if c.fixed[i[1]] 
                     start_val = c.benchmark[i[1]]
                 else
-                start_val = eval(swap_our_param_with_val(get_consumer_total_endowment(jm, m, c, i)))
+                    start_val = eval(swap_our_param_with_val(get_consumer_total_endowment_old(jm, m, c, i)))
                 end
                 JuMP.set_start_value(jm[c.name][i...], start_val)
             end
