@@ -191,9 +191,9 @@ function create_expenditure_expr(jm, df::DemandFunction)
                 (
                     Θ(jm, df, dm) *
                     (
-                        tojump(jm, dm.commodity) /
-                        tojump(jm, get_commodity_benchmark(dm.commodity)) *
-                        tojump(jm, dm.price)
+                        /(tojump(jm, dm.commodity),
+                        (tojump(jm, get_commodity_benchmark(dm.commodity)) *
+                        tojump(jm, dm.price)))
                     )^(1-tojump(jm, df.elasticity))
                     for dm in df.demands
                 )...
