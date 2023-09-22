@@ -362,3 +362,7 @@ end
 function tojump(jm, x::ImplicitvarRef)
     get_jump_variable_for_implicitvar(jm, x)
 end
+
+function tojump(jm, x::JuMP.VariableRef)
+    x
+end
