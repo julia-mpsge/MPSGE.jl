@@ -142,18 +142,18 @@ function get_expression_for_commodity_producer_price(jm, pf, commodity::Commodit
         for output in pf.outputs
             if output.commodity == commodity
                 for tax in output.taxes
-                    push!(taxes, eval(swap_our_param_with_val(tax.rate)))
+                    push!(taxes, tojump(jm, tax.rate))
                 end
             end
         end
-        if taxes == []
-            final_tax = (1- +(0., taxes...))
-        elseif sum(taxes...) == 0.
-            final_tax = -1.
-        else
-            final_tax = -(1., taxes...)
-        end
-    return tojump(jm, commodity) * final_tax
+        # if taxes == []
+        #     final_tax = (1- +(0., taxes...))
+        # elseif sum(taxes...) == 0.
+        #     final_tax = -1.
+        # else
+        #     final_tax = -(1., taxes...)
+        # end
+    return tojump(jm, commodity) * (1 - +(0., taxes...))
 end
 
 function get_expression_for_commodity_consumer_price(jm, pf, commodity::CommodityRef)
@@ -162,7 +162,7 @@ function get_expression_for_commodity_consumer_price(jm, pf, commodity::Commodit
     for input in pf.inputs
         if input.commodity == commodity
             for tax in input.taxes
-                push!(taxes, eval(swap_our_param_with_val(tax.rate)))
+                push!(taxes, tojump(jm, tax.rate))
             end
         end
     end

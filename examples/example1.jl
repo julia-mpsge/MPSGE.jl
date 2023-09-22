@@ -20,8 +20,8 @@ PK = add!(m, Commodity(:PK))
 
 RA = add!(m, Consumer(:RA, benchmark=164.))
 
-# add!(m, Production(X, 0, :(1.0 * $esub_x), [Output(PX, 110)], [Input(PL, 50, taxes=[Tax(:($itax*1.),RA)],price=1.2), Input(PK, 50)]))
-add!(m, Production(X, 0, :(1.0 * $esub_x), [Output(PX, 110, taxes=[Tax(0.,RA)])], [Input(PL, 50, taxes=[Tax(:($itax*1.),RA)],price=1.2), Input(PK, 50)]))
+add!(m, Production(X, 0, :(1.0 * $esub_x), [Output(PX, 110)], [Input(PL, 50, taxes=[Tax(:($itax*1.),RA)],price=1.2), Input(PK, 50)]))
+# add!(m, Production(X, 0, :(1.0 * $esub_x), [Output(PX, 110, taxes=[Tax(0.,RA)])], [Input(PL, 50, taxes=[Tax(:($itax*1.),RA)],price=1.2), Input(PK, 50)]))
 # add!(m, Production(X, 0, :(1.0 * $esub_x), [Output(PX, 110, taxes=[Tax(:($otax*1.),RA)])], [Input(PL, 50, taxes=[Tax(:($itax*1.),RA)], price=1.2), Input(PK, 50)]))
 add!(m, Production(Y, 0, :(1.0 * $esub_y), [Output(PY, 54)], [Input(PL, 24,), Input(PK, 30)]))
 add!(m, Production(U, 0, :(1.0 * $esub_u), [Output(PU, 164.)], [Input(PX, 110), Input(PY, 54)]))
