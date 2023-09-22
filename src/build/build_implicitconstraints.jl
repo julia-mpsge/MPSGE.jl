@@ -31,12 +31,6 @@ function Θ(jm, df::DemandFunction, dm::Demand)
         )
 end
 
-# # TODO Remove this once this is fixed in JuMP
-# function Base.min(x::JuMP.AbstractJuMPScalar)
-#     JuMP._throw_if_not_real(x)
-#     return JuMP.GenericNonlinearExpr{JuMP.variable_ref_type(x)}(:min, x)
-# end
-
 function y_over_y_bar(jm, pf::Production)    
     if contains_our_param(pf.elasticity)
         jump_elasticity = tojump(jm, pf.elasticity)
