@@ -68,22 +68,41 @@ function y_over_y_bar(jm, pf::Production)
     else # This branch is an optimization: if the elasticity doesn't contain a parameter, we can at build time only insert one case into the expression
         if eval(swap_our_param_with_val(pf.elasticity))==0
             return min(
-                (
-                    tojump(jm, jm[get_comp_demand_name(i)])/tojump(jm, i.quantity) for i in pf.inputs
+                 ( 
+                     if eval(swap_our_param_with_val(i.quantity))>0.
+                       tojump(jm, jm[get_comp_demand_name(i)])/tojump(jm, i.quantity)
+                    else
+                        0.
+                    end
+         for i in pf.inputs
                 )...
             )
         elseif eval(swap_our_param_with_val(pf.elasticity))==1
             return *(
-                (
-                    (jm[get_comp_demand_name(i)]/tojump(jm, i.quantity))^Θ(jm, pf,i)  for i in pf.inputs
+                (   
+                    if eval(swap_our_param_with_val(i.quantity))>0.
+                        (jm[get_comp_demand_name(i)]/tojump(jm, i.quantity))^Θ(jm, pf,i)
+                    else
+                        1.
+                    end
+                    for i in pf.inputs
                 )...
             )
         else
             ρ = (tojump(jm, pf.elasticity)-1)/tojump(jm, pf.elasticity)
             return (
-                    +(
+                    +((
+                        if eval(swap_our_param_with_val(i.quantity))>0.
                         (
-                            Θ(jm, pf,i) * (jm[get_comp_demand_name(i)]/tojump(jm, i.quantity))^ρ for i in pf.inputs
+                          Θ(jm, pf,i) *
+                            (   
+                                    jm[get_comp_demand_name(i)]/tojump(jm, i.quantity)
+                            )^ρ
+                         )
+                        else
+                            0.
+                        end 
+                            for i in pf.inputs
                         )...
                     )
                 )^(1/ρ)
