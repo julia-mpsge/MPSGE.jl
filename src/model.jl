@@ -834,6 +834,16 @@ function JuMP.set_value(consumer::ConsumerRef, new_value::Float64)
     return nothing
 end
 
+function JuMP.set_value(sector::SectorRef, new_value::Float64)
+    s = sector.model._sectors[sector.index]
+    if s isa ScalarSector
+        s.benchmark = new_value
+    else
+        s.benchmark[sector.subindex] = new_value
+    end
+    return nothing
+end
+
 function JuMP.set_value(aux::AuxRef, new_value::Float64)
     a = aux.model._auxs[aux.index]
     if a isa ScalarAux
