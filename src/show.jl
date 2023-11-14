@@ -42,7 +42,7 @@ end
 
 
 
-function Base.show(io::IO,S::Union{SectorRef,CommodityRef,ConsumerRef,AuxRef,ParameterRef})
+function Base.show(io::IO,S::Union{SectorRef,CommodityRef,ConsumerRef,AuxRef})
     #print(io,get_full(S))
     if isnothing(S.subindex)
         return print(io,get_full(S))
@@ -50,6 +50,18 @@ function Base.show(io::IO,S::Union{SectorRef,CommodityRef,ConsumerRef,AuxRef,Par
         names = S.subindex_names
         full_S = get_full(S)
         return print(io,"$(names)\tbm: $(full_S.benchmark[names...])")
+    end
+
+end
+
+function Base.show(io::IO,S::Union{ParameterRef})
+    #print(io,get_full(S))
+    if isnothing(S.subindex)
+        return print(io,get_full(S))
+    else
+        names = S.subindex_names
+        full_S = get_full(S)
+        return print(io,"$(names)\tbm: $(full_S.value[names...])")
     end
 
 end
