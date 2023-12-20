@@ -3,6 +3,7 @@ abstract type MPSGERef end
 struct ParameterRef <: MPSGERef
     model
     index::Int
+    name::Symbol
     subindex::Any
     subindex_names::Any
 end
@@ -10,6 +11,7 @@ end
 struct SectorRef <: MPSGERef
     model
     index::Int
+    name::Symbol
     subindex::Any
     subindex_names::Any
 end
@@ -17,6 +19,7 @@ end
 struct CommodityRef <: MPSGERef
     model
     index::Int
+    name::Symbol
     subindex::Any
     subindex_names::Any
 end
@@ -24,6 +27,7 @@ end
 struct ConsumerRef <: MPSGERef
     model
     index::Int
+    name::Symbol
     subindex::Any
     subindex_names::Any
 end
@@ -31,6 +35,7 @@ end
 struct AuxRef <: MPSGERef
     model
     index::Int
+    name::Symbol
     subindex::Any
     subindex_names::Any
 end
@@ -38,6 +43,7 @@ end
 struct ImplicitvarRef <: MPSGERef
     model
     index::Int
+    name::Symbol
     subindex::Any
     subindex_names::Any
 end

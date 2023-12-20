@@ -365,7 +365,7 @@ function _add!(m::Model,s::MPSGEScalar,output_type,model_array)
     m._jump_model = nothing
     push!(model_array, s)
 
-    s_ref = output_type(m, length(model_array), nothing, nothing)
+    s_ref = output_type(m, length(model_array), s.name,nothing, nothing)
     m._object_dict[s.name] = s
 
     return s_ref
@@ -379,7 +379,7 @@ function _add!(m::Model,s::MPSGEIndexed,output_type, model_array)
     temp_array = Array{output_type}(undef, length.(s.indices)...)
 
     for i in CartesianIndices(temp_array)
-        temp_array[i] = output_type(m, length(model_array), i, Tuple(s.indices[j][v] for (j,v) in enumerate(Tuple(i))))
+        temp_array[i] = output_type(m, length(model_array), s.name, i, Tuple(s.indices[j][v] for (j,v) in enumerate(Tuple(i))))
     end
 
     return JuMP.Containers.DenseAxisArray(temp_array, s.indices...)
@@ -491,7 +491,7 @@ end
 function add!(m::Model, p::ScalarParameter)
     m._jump_model = nothing
     push!(m._parameters, p)
-    return ParameterRef(m, length(m._parameters), nothing, nothing)
+    return ParameterRef(m, length(m._parameters),p.name, nothing, nothing)
 end
 
 function add!(m::Model, p::IndexedParameter)
@@ -501,7 +501,7 @@ function add!(m::Model, p::IndexedParameter)
     temp_array = Array{ParameterRef}(undef, length.(p.indices)...)
 
     for i in CartesianIndices(temp_array)
-        temp_array[i] = ParameterRef(m, length(m._parameters), i, Tuple(p.indices[j][v] for (j,v) in enumerate(Tuple(i))))
+        temp_array[i] = ParameterRef(m, length(m._parameters),  p.name,i, Tuple(p.indices[j][v] for (j,v) in enumerate(Tuple(i))))
     end
     return JuMP.Containers.DenseAxisArray(temp_array, p.indices...)
 end
