@@ -198,21 +198,11 @@ function get_name(im::ImplicitvarRef, include_subindex=false)
     # end 
 end
 
-function get_full(s::SectorRef)
-    return s.model._sectors[s.index]
+
+function get_full(s::MPSGERef)
+    return s.model[s.name]
 end
 
-function get_full(c::CommodityRef)
-    return c.model._commodities[c.index]
-end
-
-function get_full(c::ConsumerRef)
-    return c.model._consumers[c.index]
-end
-
-function get_full(a::AuxRef)
-    return a.model._auxs[a.index]
-end
 
 function get_full(p::ParameterRef)
     return p.model._parameters[p.index]
