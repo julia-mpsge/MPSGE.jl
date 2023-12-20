@@ -182,42 +182,13 @@ function Base.getindex(m::Model,idx::Symbol)
 end
 
 function get_name(mpsge_var::MPSGERef, include_subindex=false)
-    #if mpsge_var.subindex===nothing || !include_subindex
-        #return mpsge_var.model.
-
-end
-
-function get_name(sector::SectorRef, include_subindex=false)
-    if sector.subindex===nothing || include_subindex==false
-        return sector.model._sectors[sector.index].name
+    if mpsge_var.subindex===nothing || include_subindex==false
+        return mpsge_var.name
     else
-        return Symbol("$(sector.model._sectors[sector.index].name )[$(join(string.(sector.subindex_names), ", "))]") 
+        return Symbol("$(mpsge_var.name)[$(join(string.(mpsge_var.subindex_names), ", "))]") 
     end
 end
 
-function get_name(commodity::CommodityRef, include_subindex=false)
-    if commodity.subindex===nothing || include_subindex==false
-        return commodity.model._commodities[commodity.index].name
-    else
-        return Symbol("$(commodity.model._commodities[commodity.index].name )[$(join(string.(commodity.subindex_names), ", "))]") 
-    end
-end
-
-function get_name(consumer::ConsumerRef, include_subindex=false)
-    if consumer.subindex===nothing || include_subindex===false
-        return consumer.model._consumers[consumer.index].name
-    else
-        return Symbol("$(consumer.model._consumers[consumer.index].name )[$(join(string.(consumer.subindex_names), ", "))]") 
-    end 
-end
-
-function get_name(aux::AuxRef, include_subindex=false)
-    if aux.subindex===nothing || include_subindex===false
-        return aux.model._auxs[aux.index].name
-    else
-        return Symbol("$(aux.model._auxs[aux.index].name )[$(join(string.(aux.subindex_names), ", "))]") 
-    end 
-end
 
 function get_name(im::ImplicitvarRef, include_subindex=false)
     # if im.subindex===nothing || include_subindex===false
@@ -509,7 +480,7 @@ end
 function add!(m::Model, im::Implicitvar)
     m._jump_model = nothing
     push!(m._implicitvars, im)
-    push!(m._implicitvarsDict,im.name=>ImplicitvarRef(m, length(m._implicitvars), nothing, nothing))
+    push!(m._implicitvarsDict,im.name=>ImplicitvarRef(m, length(m._implicitvars),im.name, nothing, nothing))
 end
 
 
@@ -685,7 +656,7 @@ end
 function get_nested_commodity(x::SectorRef, name::Symbol)
     for (i,v) in enumerate(x.model._commodities)
         if v.name == Symbol("P$(get_name(x))→$name")
-            return CommodityRef(x.model, i, nothing, nothing)
+            return CommodityRef(x.model, i, v.name, nothing, nothing)
         end
     end
 end
