@@ -8,9 +8,6 @@ MacroTools = "1914dd2f-81c6-5fcd-8719-6d5c9610ff09"
 PATHSolver = "f5f7c340-0bb3-5c69-969a-41884d311d1b"
 PrettyTables = "08abe8d2-0d0c-5749-adfa-8a2ac140af0d"
 
-
-
-
 [extras]
 XLSX = "fdbf4ff8-1666-58a4-91e7-1b58723a45e0"
 TestItemRunner = "f8b46487-2199-4994-9208-9a1283c18c0a"
@@ -18,11 +15,10 @@ Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [compat]
 julia = "1.6"
-JuMP = "1.15"
+JuMP = "1.15.1"
 MacroTools = "0.5"
 PATHSolver = "1.6"
 PrettyTables = "2.2.7"
-
 
 [targets]
 test = ["Test", "TestItemRunner", "XLSX"]
