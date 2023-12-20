@@ -1,233 +1,4 @@
-struct ParameterRef
-    model
-    index::Int
-    subindex::Any
-    subindex_names::Any
-end
 
-struct SectorRef
-    model
-    index::Int
-    subindex::Any
-    subindex_names::Any
-end
-
-struct CommodityRef
-    model
-    index::Int
-    subindex::Any
-    subindex_names::Any
-end
-
-struct ConsumerRef
-    model
-    index::Int
-    subindex::Any
-    subindex_names::Any
-end
-
-struct AuxRef
-    model
-    index::Int
-    subindex::Any
-    subindex_names::Any
-end
-
-struct ImplicitvarRef
-    model
-    index::Int
-    subindex::Any
-    subindex_names::Any
-end
-
-"""
-    Parameter(:symbol; indices, value::Float64=1., string)
-    Struct that holds the name, indices if IndexedParameter, value, and optional description of a parameter within the model.
-### Options
-    Parameter::ScalarParameter, IndexedParameter
-### Example
-```julia-repl
-julia> P = add!(Parameter(model, :P, value=1., description="Elasticity"))
-julia> sectors = [:s1, :s2]
-julia> P = add!(Parameter(model, :P, indices=(,sectors), value=1., description="Elasticity parameters for X Sector "))
-```
-"""
-abstract type Parameter end;
-
-mutable struct ScalarParameter <: Parameter
-    name::Symbol
-    value::Float64
-    description::String
-
-    function ScalarParameter(name::Symbol; value::Float64=1., description::AbstractString="")
-        return new(name, value, description)
-    end
-end
-
-mutable struct IndexedParameter <: Parameter
-    name::Symbol
-    indices::Any
-    value::DenseAxisArray
-    description::String
-
-    function IndexedParameter(name::Symbol, indices; value::Union{Array{Float64},Array{Int}}, description::AbstractString="")
-            return new(name, indices, DenseAxisArray(Float64.(value), indices...), description)
-
-    end
-end
-
-function Parameter(name; indices=nothing, kwargs...)
-    return indices===nothing ? ScalarParameter(name; kwargs...) : IndexedParameter(name, indices; kwargs...)
-end
-
-abstract type Sector end;
-
-mutable struct ScalarSector <: Sector
-    name::Symbol
-    benchmark::Float64
-    lower_bound::Float64
-    upper_bound::Float64
-    description::String
-    fixed::Bool
-
-    function ScalarSector(name::Symbol; description::AbstractString="", lower_bound::Float64=0.0, upper_bound=10e100, benchmark::Float64=1., fixed=false)
-        return new(name, benchmark, lower_bound, upper_bound, description, fixed)
-    end
-end
-
-mutable struct IndexedSector <: Sector
-    name::Symbol
-    indices::Any
-    benchmark::DenseAxisArray
-    lower_bound::DenseAxisArray
-    upper_bound::DenseAxisArray
-    description::String
-    fixed::DenseAxisArray
-
-    function IndexedSector(name::Symbol, indices; benchmark::Float64=1., lower_bound::Float64=0.0, upper_bound::Float64=10e100, description::AbstractString="",  fixed=false)
-        return new(name, indices, DenseAxisArray(fill(benchmark, length.(indices)...), indices...), DenseAxisArray(fill(lower_bound, length.(indices)...), indices...), DenseAxisArray(fill(upper_bound, length.(indices)...), indices...), description, DenseAxisArray(fill(fixed, length.(indices)...), indices...))
-    end
-end
-
-"""
-    Sector(:symbol; indices, value::Float64=1., string)
-    Struct that holds the name, (indices if IndexedSector), value, and optional description of a sector within the model.
-### Options
-    Sector::ScalarSector, IndexedSector
-### Example
-```julia-repl
-julia> S = add!(Sector(model, :S, value=1., description="Sector S"))
-julia> sectors = [:s1, :s2]
-julia> P = add!(Sector(model, :S, indices=(,sectors), value=1., description="S[:s1] and S[:s2] Sectors"))
-```
-"""
-function Sector(name; indices=nothing, kwargs...)
-    return indices===nothing ? ScalarSector(name; kwargs...) : IndexedSector(name, indices; kwargs...)
-end
-
-abstract type Commodity end;
-
-mutable struct ScalarCommodity <: Commodity
-    name::Symbol
-    benchmark::Float64
-    lower_bound::Float64
-    upper_bound::Float64
-    description::String
-    fixed::Bool
-
-    function ScalarCommodity(name::Symbol; description::AbstractString="", lower_bound::Float64=0.001, upper_bound::Float64=10e100, benchmark::Float64=1., fixed=false)
-        return new(name, benchmark, lower_bound, upper_bound, description, fixed)
-    end
-end
-
-mutable struct IndexedCommodity <: Commodity
-    name::Symbol
-    indices::Any
-    benchmark::DenseAxisArray
-    lower_bound::DenseAxisArray
-    upper_bound::DenseAxisArray
-    description::String
-    fixed::DenseAxisArray
-
-    function IndexedCommodity(name::Symbol, indices; benchmark::Float64=1., lower_bound::Float64=0.001, upper_bound::Float64=10e100, description::AbstractString="", fixed=false)
-        return new(name, indices, DenseAxisArray(fill(benchmark, length.(indices)...), indices...), DenseAxisArray(fill(lower_bound, length.(indices)...), indices...), DenseAxisArray(fill(upper_bound, length.(indices)...), indices...), description, DenseAxisArray(fill(fixed, length.(indices)...), indices...))
-    end
-end
-
-function Commodity(name; indices=nothing, kwargs...)
-    return indices===nothing ? ScalarCommodity(name; kwargs...) : IndexedCommodity(name, indices; kwargs...)
-end
-
-abstract type Consumer end;
-
-mutable struct ScalarConsumer <: Consumer
-    name::Symbol
-    benchmark::Float64
-    lower_bound::Float64
-    upper_bound::Float64
-    description::String
-    fixed::Bool
-    
-    function ScalarConsumer(name::Symbol; description::AbstractString="", lower_bound::Float64=0.0, upper_bound::Float64=10e100, benchmark::Float64=1., fixed=false)
-        return new(name, benchmark, lower_bound, upper_bound, description, fixed)
-    end
-end
-
-mutable struct IndexedConsumer <: Consumer
-    name::Symbol
-    indices::Any
-    benchmark::DenseAxisArray
-    lower_bound::DenseAxisArray
-    upper_bound::DenseAxisArray
-    description::String
-    fixed::DenseAxisArray
-
-    function IndexedConsumer(name::Symbol, indices; benchmark::Float64=1., lower_bound::Float64=0.0, upper_bound::Float64=10e100, description::AbstractString="", fixed=false)
-        return new(name, indices, DenseAxisArray(fill(benchmark, length.(indices)...), indices...), DenseAxisArray(fill(lower_bound, length.(indices)...), indices...), DenseAxisArray(fill(upper_bound, length.(indices)...), indices...), description, DenseAxisArray(fill(fixed, length.(indices)...), indices...))
-    end
-end
-
-function Consumer(name; indices=nothing, kwargs...)
-    return indices===nothing ? ScalarConsumer(name; kwargs...) : IndexedConsumer(name, indices; kwargs...)
-end
-
-abstract type Aux end;
-
-mutable struct ScalarAux <: Aux
-    name::Symbol
-    benchmark::Float64
-    lower_bound::Float64
-    upper_bound::Float64
-    description::String
-    fixed::Bool
-
-    function ScalarAux(name::Symbol; description::AbstractString="", lower_bound::Float64=0.0, upper_bound::Float64=10e100, benchmark::Float64=1., fixed=false)
-        return new(name, benchmark, lower_bound, upper_bound, description, fixed)
-    end
-end
-
-mutable struct IndexedAux <: Aux
-    name::Symbol
-    indices::Any
-    benchmark::DenseAxisArray
-    lower_bound::DenseAxisArray
-    upper_bound::DenseAxisArray
-    description::String
-    fixed::DenseAxisArray
-
-    function IndexedAux(name::Symbol, indices; benchmark::Float64=1., lower_bound::Float64=0.0, upper_bound::Float64=10e100, description::AbstractString="", fixed=false)
-        return new(name, indices, DenseAxisArray(fill(benchmark, length.(indices)...), indices...), DenseAxisArray(fill(lower_bound, length.(indices)...), indices...), DenseAxisArray(fill(upper_bound, length.(indices)...), indices...), description, DenseAxisArray(fill(fixed, length.(indices)...), indices...))
-    end
-end
-
-function Aux(name; indices=nothing, kwargs...)
-    return indices===nothing ? ScalarAux(name; kwargs...) : IndexedAux(name, indices; kwargs...)
-end
-
-struct Tax
-    rate::Union{Float64,Expr}
-    agent::ConsumerRef
-end
 
 """
    Input(inputname::Symbol, value::Float64; taxes=taxes::Vector{Tax}, price=price::Union{Float64,Expr}=1.)
@@ -357,11 +128,13 @@ julia> foo = Model()
 ```
 """
 mutable struct Model
+    _object_dict::Dict
+
     _parameters::Vector{Parameter}
-    _sectors::Vector{Sector}
-    _commodities::Vector{Commodity}
-    _consumers::Vector{Consumer}
-    _auxs::Vector{Aux}
+    _sectors::Vector{Union{ScalarSector,IndexedSector}}
+    _commodities::Vector{Union{ScalarCommodity,IndexedCommodity}}
+    _consumers::Vector{Union{ScalarConsumer,IndexedConsumer}}
+    _auxs::Vector{Union{ScalarAux,IndexedAux}}
     _implicitvars::Vector{Implicitvar}
     _implicitvarsDict::Dict{Symbol, ImplicitvarRef}
 
@@ -376,11 +149,12 @@ mutable struct Model
 
     function Model()
         return new(
+            Dict(),
             Parameter[],
-            Sector[],
-            Commodity[],
-            Consumer[],
-            Aux[],
+            Vector{Union{ScalarSector,IndexedSector}}(),
+            Vector{Union{ScalarCommodity,IndexedCommodity}}(),
+            Vector{Union{ScalarConsumer,IndexedConsumer}}(),
+            Vector{Union{ScalarAux,IndexedAux}}(),
             Implicitvar[],
             Dict{Symbol, ImplicitvarRef}(),
 
@@ -404,7 +178,10 @@ end
 
 
 
+function get_name(mpsge_var::MPSGERef, include_subindex=false)
+    return :X
 
+end
 
 function get_name(sector::SectorRef, include_subindex=false)
     if sector.subindex===nothing || include_subindex==false
@@ -605,6 +382,10 @@ julia> add!(m, Production())
 function add!(m::Model, s::ScalarSector)
     m._jump_model = nothing
     push!(m._sectors, s)
+
+    s_ref = SectorRef(m, length(m._sectors), nothing, nothing)
+    m._object_dict[s_ref] = s
+
     return SectorRef(m, length(m._sectors), nothing, nothing)
 end
 
@@ -617,6 +398,7 @@ function add!(m::Model, s::IndexedSector)
     for i in CartesianIndices(temp_array)
         temp_array[i] = SectorRef(m, length(m._sectors), i, Tuple(s.indices[j][v] for (j,v) in enumerate(Tuple(i))))
     end
+
     return JuMP.Containers.DenseAxisArray(temp_array, s.indices...)
 end
 

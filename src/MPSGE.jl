@@ -11,6 +11,9 @@ export Sector, Commodity, Consumer, Aux, Production, DemandFunction, AuxConstrai
 export value, set_value, get_value, set_fixed!, get_nested_commodity, set_lower_bound, set_upper_bound
 export @parameter, @sector, @commodity, @consumer, @production, @demand
 
+include("structs/references.jl")
+include("structs/variables.jl")
+
 include("model.jl")
 include("macros.jl")
 include("build/build_helpers.jl")
