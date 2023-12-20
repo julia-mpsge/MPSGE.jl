@@ -179,7 +179,8 @@ end
 
 
 function get_name(mpsge_var::MPSGERef, include_subindex=false)
-    return :X
+    #if mpsge_var.subindex===nothing || !include_subindex
+        #return mpsge_var.model.
 
 end
 
@@ -356,6 +357,31 @@ function Demand(commodity, quantity::Number, price::Union{Float64,Expr}=1.)
     return Demand(commodity, convert(Float64, quantity), price)
 end
 
+
+function _add!(m::Model,s::MPSGEScalar,output_type,model_array)
+    m._jump_model = nothing
+    push!(model_array, s)
+
+    s_ref = output_type(m, length(model_array), nothing, nothing)
+    m._object_dict[s.name] = s
+
+    return s_ref
+end
+
+function _add!(m::Model,s::MPSGEIndexed,output_type, model_array)
+    m._jump_model = nothing
+    push!(model_array, s)
+    m._object_dict[s.name] = s
+
+    temp_array = Array{output_type}(undef, length.(s.indices)...)
+
+    for i in CartesianIndices(temp_array)
+        temp_array[i] = output_type(m, length(model_array), i, Tuple(s.indices[j][v] for (j,v) in enumerate(Tuple(i))))
+    end
+
+    return JuMP.Containers.DenseAxisArray(temp_array, s.indices...)
+end
+
 """
     add!(m,bar)
     Function that adds an element to the model with a name assignment
@@ -380,84 +406,35 @@ julia> add!(m, Production())
 ```
 """
 function add!(m::Model, s::ScalarSector)
-    m._jump_model = nothing
-    push!(m._sectors, s)
-
-    s_ref = SectorRef(m, length(m._sectors), nothing, nothing)
-    m._object_dict[s_ref] = s
-
-    return SectorRef(m, length(m._sectors), nothing, nothing)
+    _add!(m,s, SectorRef,m._sectors)
 end
 
 function add!(m::Model, s::IndexedSector)
-    m._jump_model = nothing
-    push!(m._sectors, s)
-
-    temp_array = Array{SectorRef}(undef, length.(s.indices)...)
-
-    for i in CartesianIndices(temp_array)
-        temp_array[i] = SectorRef(m, length(m._sectors), i, Tuple(s.indices[j][v] for (j,v) in enumerate(Tuple(i))))
-    end
-
-    return JuMP.Containers.DenseAxisArray(temp_array, s.indices...)
+    _add!(m,s,SectorRef,m._sectors)
 end
 
 function add!(m::Model, c::ScalarCommodity)
-    m._jump_model = nothing
-    push!(m._commodities, c)
-    return CommodityRef(m, length(m._commodities), nothing, nothing)
+    _add!(m,c, CommodityRef, m._commodities)
 end
 
 function add!(m::Model, c::IndexedCommodity)
-    m._jump_model = nothing
-    push!(m._commodities, c)
-
-    temp_array = Array{CommodityRef}(undef, length.(c.indices)...)
-
-    for i in CartesianIndices(temp_array)
-        temp_array[i] = CommodityRef(m, length(m._commodities), i, Tuple(c.indices[j][v] for (j,v) in enumerate(Tuple(i))))
-    end
-    return JuMP.Containers.DenseAxisArray(temp_array, c.indices...)
+    _add!(m,c, CommodityRef, m._commodities)
 end
 
 function add!(m::Model, cn::ScalarConsumer)
-    m._jump_model = nothing
-    push!(m._consumers, cn)
-    cr = ConsumerRef(m, length(m._consumers), nothing, nothing)
-    return cr
+    _add!(m,cn, ConsumerRef, m._consumers)
 end
 
 function add!(m::Model, cn::IndexedConsumer)
-    m._jump_model = nothing
-    push!(m._consumers, cn)
-
-    temp_array = Array{ConsumerRef}(undef, length.(cn.indices)...)
-
-    for i in CartesianIndices(temp_array)
-        temp_array[i] = ConsumerRef(m, length(m._consumers), i, Tuple(cn.indices[j][v] for (j,v) in enumerate(Tuple(i))))
-    end
-    cr = JuMP.Containers.DenseAxisArray(temp_array, cn.indices...)
-    return cr
+    _add!(m,cn, ConsumerRef, m._consumers)
 end
 
 function add!(m::Model, a::ScalarAux)
-    m._jump_model = nothing
-    push!(m._auxs, a)
-    ar = AuxRef(m, length(m._auxs), nothing, nothing)
-    return ar
+    _add!(m,a, AuxRef, m._auxs)
 end
 
 function add!(m::Model, a::IndexedAux)
-    m._jump_model = nothing
-    push!(m._auxs, a)
-
-    temp_array = Array{AuxRef}(undef, length.(a.indices)...)
-
-    for i in CartesianIndices(temp_array)
-        temp_array[i] = AuxRef(m, length(m._auxs), i, Tuple(a.indices[j][v] for (j,v) in enumerate(Tuple(i))))
-    end
-    ar = JuMP.Containers.DenseAxisArray(temp_array, a.indices...)
-    return ar
+    _add!(m,a, AuxRef, m._auxs)
 end
 
 function add!(m::Model, p::Production)
