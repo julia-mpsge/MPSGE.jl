@@ -177,6 +177,9 @@ mutable struct Model
 end
 
 
+function Base.getindex(m::Model,idx::Symbol)
+    return m._object_dict[idx]
+end
 
 function get_name(mpsge_var::MPSGERef, include_subindex=false)
     #if mpsge_var.subindex===nothing || !include_subindex
