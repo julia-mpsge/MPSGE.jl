@@ -128,7 +128,7 @@ julia> foo = Model()
 ```
 """
 mutable struct Model
-    _object_dict::Dict
+    _object_dict::Dict{Symbol,Any}
 
     _parameters::Vector{Parameter}
     _sectors::Vector{Union{ScalarSector,IndexedSector}}
@@ -149,7 +149,7 @@ mutable struct Model
 
     function Model()
         return new(
-            Dict(),
+            Dict{Symbol,Any}(),
             Parameter[],
             Vector{Union{ScalarSector,IndexedSector}}(),
             Vector{Union{ScalarCommodity,IndexedCommodity}}(),
