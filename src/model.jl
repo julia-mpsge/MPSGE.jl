@@ -199,10 +199,8 @@ function get_name(im::ImplicitvarRef, include_subindex=false)
 end
 
 
-function get_full(s::MPSGERef)
-    return s.model[s.name]
-end
-
+get_full(s::MPSGERef) = s.model[s.name]
+get_full(p::ParameterRef) = p.model[p.name]
 
 function get_commodity_benchmark(c::CommodityRef)
     if c.subindex===nothing
@@ -398,11 +396,24 @@ function add!(m::Model, a::IndexedAux)
 end
 
 function add!(m::Model, p::ScalarParameter)
-    _add!(m,p, ParameterRef, m._parameters)
+    m._jump_model = nothing
+    push!(m._parameters, p)
+    m._object_dict[p.name] = p
+
+    return ParameterRef(m, length(m._parameters),p.name, nothing, nothing)
 end
 
 function add!(m::Model, p::IndexedParameter)
-    _add!(m,p, ParameterRef, m._parameters)
+    m._jump_model = nothing
+    push!(m._parameters, p)
+    m._object_dict[p.name] = p
+
+    temp_array = Array{ParameterRef}(undef, length.(p.indices)...)
+
+    for i in CartesianIndices(temp_array)
+        temp_array[i] = ParameterRef(m, length(m._parameters),  p.name,i, Tuple(p.indices[j][v] for (j,v) in enumerate(Tuple(i))))
+    end
+    return JuMP.Containers.DenseAxisArray(temp_array, p.indices...)
 end
 
 
@@ -453,6 +464,7 @@ function add!(m::Model, ac::AuxConstraint)
     push!(m._auxconstraints, ac)
     return m
 end
+
 
 
 function add!(m::Model, im::Implicitvar)
