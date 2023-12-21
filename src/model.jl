@@ -198,6 +198,13 @@ function get_name(im::ImplicitvarRef, include_subindex=false)
     # end 
 end
 
+function get_name(P::ParameterRef, include_subindex=false)
+    if P.subindex===nothing || include_subindex==false
+        return P.name
+    else
+        return Symbol("$(P.name)[$(join(string.(P.subindex_names), ", "))]") 
+    end
+end
 
 get_full(s::MPSGERef) = s.model[s.name]
 get_full(p::ParameterRef) = p.model[p.name]
@@ -594,7 +601,7 @@ end
 ######################
 
 function get_nested_commodity(x::SectorRef, name::Symbol)
-    for (i,v) in enumerate(commodities(model))
+    for (i,v) in enumerate(commodities(x.model))
         if v.name == Symbol("P$(get_name(x))→$name")
             return CommodityRef(x.model, i, v.name, nothing, nothing)
         end

@@ -1,6 +1,6 @@
 function build_incomebalance!(m, jm)
     # Add income balance constraints
-    for c in m._demands
+    for c in demands(m)
         jump_ex = +(
                 (tojump(jm, en.quantity) * tojump(jm, en.commodity) for en in c.endowments)...
             ) +

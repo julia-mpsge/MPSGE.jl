@@ -1,6 +1,6 @@
 function build_auxconstraints!(m::Model, jm)
     # Add aux constraints
-    for ac in m._auxconstraints
+    for ac in auxconstraints(m)
         ac.equation isa Expr || error("You must pass an expression as an aux constraint.")
         (ac.equation.head == :call && length(ac.equation.args) == 3 && ac.equation.args[1] == :(==)) || error("Must pass an equation with an == sign.")
 

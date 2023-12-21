@@ -1,7 +1,7 @@
 function build_zeroprofit!(m, jm)
 
     # Add zero profit constraints
-    for s in m._productions
+    for s in productions(m)
         jump_ex =+(
                 (
                     get_expression_for_commodity_consumer_price(jm, s, input.commodity) * tojump(jm, m._implicitvarsDict[get_comp_demand_name(input)]) for input in s.inputs

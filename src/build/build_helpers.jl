@@ -40,11 +40,7 @@ This function takes an expression tree and replaces all instances of
 function swap_our_param_with_val(expr)
     return MacroTools.postwalk(expr) do x
         if x isa ParameterRef
-            if x.subindex===nothing
-                return x.model._parameters[x.index].value
-            else
-                return x.model._parameters[x.index].value[x.subindex]
-            end
+            return get_value(x)
         elseif x isa CommodityRef
             c = get_full(x)
             if c isa ScalarCommodity
@@ -105,9 +101,9 @@ end
 
 function get_jump_variable_for_param(jm, parameter::ParameterRef)
     if parameter.subindex===nothing
-        return jm[parameter.model._parameters[parameter.index].name]
+        return jm[get_name(parameter)]
     else
-        return jm[parameter.model._parameters[parameter.index].name][parameter.subindex]
+        return jm[get_name(parameter)][parameter.subindex]
     end
 end
 
@@ -182,7 +178,7 @@ end
 
 # function get_tax_revenue_for_consumer(jm, m, consumer::ScalarConsumer)
 #     taxes = []
-#     for pf in m._productions
+#     for pf in productions(m)
 #         for output in pf.outputs
 #             for tax in output.taxes
 #                 if get_full(tax.agent) == consumer
@@ -206,7 +202,7 @@ end
 
 function get_tax_revenue_for_consumer(jm, m, cr::ConsumerRef)
     taxes = []
-    for pf in m._productions
+    for pf in productions(m)
         for output in pf.outputs
             for tax in output.taxes
                 if cr.subindex === nothing
@@ -242,7 +238,7 @@ end
 
 function get_tax_revenue_for_consumer_old(jm, m, consumer::ScalarConsumer)
     taxes = []
-    for pf in m._productions
+    for pf in productions(m)
         for output in pf.outputs
             for tax in output.taxes
                 if get_full(tax.agent) == consumer
@@ -266,7 +262,7 @@ end
 
 function get_tax_revenue_for_consumer_old(jm, m, cr::ConsumerRef)
     taxes = []
-    for pf in m._productions
+    for pf in productions(m)
         for output in pf.outputs
             for tax in output.taxes
                 if cr.subindex === nothing

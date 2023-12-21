@@ -78,19 +78,19 @@ end
 
 function add_implicitvars!(m)
     # Add compensated supply variable Refs to model
-    for s in m._productions
+    for s in productions(m)
         for o in s.outputs
             add!(m, Implicitvar(get_comp_supply_name(o), typeof(o)))
         end
     end
     # Add compensated demand variables
-    for s in m._productions
+    for s in productions(m)
         for i in s.inputs
             add!(m, Implicitvar(get_comp_demand_name(i), typeof(i)))
         end
     end
    # Add final demand variables
-   for demand_function in m._demands
+   for demand_function in demands(m)
         for demand in demand_function.demands
             add!(m, Implicitvar(get_final_demand_name(demand), typeof(demand)))
         end
@@ -100,45 +100,45 @@ end
 function build_variables!(m, jm)
     # Add all parameters
 
-    for p in m._parameters
+    for p in parameters(m)
         add_parameter_to_jump!(jm, p)
     end
 
     # Add all required variables
 
-    for s in m._sectors
+    for s in sectors(m)
         add_sector_to_jump!(jm, s)        
     end
 
-    for c in m._commodities
+    for c in commodities(m)
         add_commodity_to_jump!(jm, c)
     end
 
     # Add aux variables
-    for aux in m._auxs
+    for aux in auxs(m)
         add_aux_to_jump!(jm, aux)
     end
 
     # Add compensated supply variables
-    for s in m._productions
+    for s in productions(m)
         for o in s.outputs
             add_variable!(jm, get_comp_supply_name(o))
         end
     end
 
     # Add compensated demand variables
-    for s in m._productions
+    for s in productions(m)
         for i in s.inputs
             add_variable!(jm, get_comp_demand_name(i))
         end
     end
 
-    for c in m._consumers
+    for c in consumers(m)
         add_consumer_to_jump!(jm, c)
     end
 
     # Add final demand variables
-    for demand_function in m._demands
+    for demand_function in demands(m)
         for demand in demand_function.demands
             add_variable!(jm, get_final_demand_name(demand))
         end
