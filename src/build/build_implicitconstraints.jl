@@ -199,7 +199,7 @@ end
 
 function build_implicitconstraints!(m, jm)
     # Add compensated demand (intermediate and factor)
-    for s in m._productions
+    for s in productions(m)
         for input in s.inputs
 
             jump_ex = 
@@ -221,7 +221,7 @@ function build_implicitconstraints!(m, jm)
     end
 
     # Add compensated supply
-    for s in m._productions
+    for s in productions(m)
         for output in s.outputs
             jump_ex =
                 tojump(jm, output.quantity) *
@@ -244,7 +244,7 @@ function build_implicitconstraints!(m, jm)
     end
 
     # Add final demand
-    for demand_function in m._demands
+    for demand_function in demands(m)
             for demand in demand_function.demands
                 jump_ex = tojump(jm, demand.quantity) *
                     (

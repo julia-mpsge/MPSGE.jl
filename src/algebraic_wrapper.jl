@@ -15,12 +15,12 @@ function algebraic_version(m::Model)
     return AlgebraicWrapper(
         m,
         jump_model,
-        sum(length(s.inputs) for s in m._productions),
-        sum(length(s.outputs) for s in m._productions),
-        sum(length(d.demands) for d in m._demands),
-        length(m._productions),
-        sum(c isa ScalarCommodity ? 1 : c isa IndexedCommodity ? prod(length.(c.indices)) : error("Invalid") for c in m._commodities),
-        length(m._demands)
+        sum(length(s.inputs) for s in productions(m)),
+        sum(length(s.outputs) for s in productions(m)),
+        sum(length(d.demands) for d in demands(m)),
+        length(productions(m)),
+        sum(c isa ScalarCommodity ? 1 : c isa IndexedCommodity ? prod(length.(c.indices)) : error("Invalid") for c in commodities(m)),
+        length(demands(m))
     )
 end
 

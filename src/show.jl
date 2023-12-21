@@ -1,27 +1,27 @@
 function Base.show(io::IO, m::Model)
-    println(io, "MPSGE model with $(length(m._sectors)) sectors, $(length(m._commodities)) commodities and $(length(m._consumers)) consumers.")
+    println(io, "MPSGE model with $(length(sectors(m))) sectors, $(length(commodities(m))) commodities and $(length(consumers(m))) consumers.")
 
-    if length(m._sectors) > 0
+    if length(sectors(m)) > 0
         print(io, "  Sectors: ")
-        print(io, join(["$(s.name)" for s in m._sectors], ", "))
+        print(io, join(["$(s.name)" for s in sectors(m)], ", "))
         println(io)
     end
 
-    if length(m._commodities) > 0
+    if length(commodities(m)) > 0
         print(io, "  Commodities: ")
-        print(io, join(["$(c.name)" for c in m._commodities], ", "))
+        print(io, join(["$(c.name)" for c in commodities(m)], ", "))
         println(io)
     end
 
-    if length(m._consumers) > 0
+    if length(consumers(m)) > 0
         print(io, "  Consumers: ")
-        print(io, join(["$(c.name)" for c in m._consumers], ", "))
+        print(io, join(["$(c.name)" for c in consumers(m)], ", "))
         println(io)
     end
 
-    if length(m._auxs) > 0
+    if length(auxs(m)) > 0
         print(io, "  Auxs: ")
-        print(io, join(["$(a.name)" for a in m._auxs], ", "))
+        print(io, join(["$(a.name)" for a in auxs(m)], ", "))
         println(io)
     end
 

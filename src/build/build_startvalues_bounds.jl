@@ -1,6 +1,6 @@
 function set_all_start_values(m)
     jm = m._jump_model
-    for s in m._sectors
+    for s in sectors(m)
         if s isa ScalarSector
             JuMP.set_start_value(jm[s.name], s.benchmark)
         else
@@ -10,7 +10,7 @@ function set_all_start_values(m)
         end
     end
 
-    for c in m._commodities
+    for c in commodities(m)
         if c isa ScalarCommodity
             JuMP.set_start_value(jm[c.name], c.benchmark)
         else
@@ -20,14 +20,14 @@ function set_all_start_values(m)
         end
     end
 
-    for s in m._productions
+    for s in productions(m)
         for i in s.inputs
             compensated_input1_demand_name = get_comp_demand_name(i)
             JuMP.set_start_value(jm[compensated_input1_demand_name], eval(swap_our_param_with_val(i.quantity)))
         end
     end
 
-    for c in m._consumers
+    for c in consumers(m)
         if c isa ScalarConsumer
             if c.fixed
                 start_val = c.benchmark
@@ -47,7 +47,7 @@ function set_all_start_values(m)
         end
     end
 
-    for aux in m._auxs
+    for aux in auxs(m)
         if aux isa ScalarAux
             JuMP.set_start_value(jm[aux.name], aux.benchmark)
         else
@@ -58,14 +58,14 @@ function set_all_start_values(m)
     end
 
     # Add compensated supply variables
-    for s in m._productions
+    for s in productions(m)
         for o in s.outputs
             JuMP.set_start_value(jm[get_comp_supply_name(o)], eval(swap_our_param_with_val(o.quantity)))
         end
     end
 
     # Add final demand variables
-    for demand_function in m._demands
+    for demand_function in demands(m)
         for demand in demand_function.demands
             JuMP.set_start_value(jm[get_final_demand_name(demand)], eval(swap_our_param_with_val(demand.quantity)))
         end
@@ -75,7 +75,7 @@ end
 function set_all_bounds(m)
     jm = m._jump_model
 
-    for c in m._commodities
+    for c in commodities(m)
         if c isa ScalarCommodity
             jump_var = jm[c.name]
 # TODONE: Allow user defined lower and upper bounds with defaults
@@ -106,7 +106,7 @@ function set_all_bounds(m)
         end
     
     end
-    for cs in m._consumers
+    for cs in consumers(m)
         if cs isa ScalarConsumer
             jump_var = jm[cs.name]
             if cs.fixed
@@ -136,7 +136,7 @@ function set_all_bounds(m)
         end
     end
 
-    for a in m._auxs
+    for a in auxs(m)
         if a isa ScalarAux
             jump_var = jm[a.name]
 # TODONE: Allow user defined llower and upper bounds with defaults
@@ -169,7 +169,7 @@ function set_all_bounds(m)
     
     end
 
-    for s in m._sectors
+    for s in sectors(m)
         if s isa ScalarSector
             jump_var = jm[s.name]
 # TODONE: Allow user defined llower and upper bounds with defaults
@@ -207,7 +207,7 @@ end
 function set_all_parameters(m)
     jm = m._jump_model
 
-    for p in m._parameters
+    for p in parameters(m)
         if p isa ScalarParameter
             JuMP.set_parameter_value(jm[p.name], p.value)
         else
