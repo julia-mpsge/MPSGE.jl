@@ -204,10 +204,6 @@ function get_full(s::MPSGERef)
 end
 
 
-function get_full(p::ParameterRef)
-    return p.model._parameters[p.index]
-end
-
 function get_commodity_benchmark(c::CommodityRef)
     if c.subindex===nothing
         return get_full(c).benchmark
@@ -401,6 +397,15 @@ function add!(m::Model, a::IndexedAux)
     _add!(m,a, AuxRef, m._auxs)
 end
 
+function add!(m::Model, p::ScalarParameter)
+    _add!(m,p, ParameterRef, m._parameters)
+end
+
+function add!(m::Model, p::IndexedParameter)
+    _add!(m,p, ParameterRef, m._parameters)
+end
+
+
 function add!(m::Model, p::Production)
     m._jump_model = nothing
 
@@ -449,23 +454,6 @@ function add!(m::Model, ac::AuxConstraint)
     return m
 end
 
-function add!(m::Model, p::ScalarParameter)
-    m._jump_model = nothing
-    push!(m._parameters, p)
-    return ParameterRef(m, length(m._parameters),p.name, nothing, nothing)
-end
-
-function add!(m::Model, p::IndexedParameter)
-    m._jump_model = nothing
-    push!(m._parameters, p)
-
-    temp_array = Array{ParameterRef}(undef, length.(p.indices)...)
-
-    for i in CartesianIndices(temp_array)
-        temp_array[i] = ParameterRef(m, length(m._parameters),  p.name,i, Tuple(p.indices[j][v] for (j,v) in enumerate(Tuple(i))))
-    end
-    return JuMP.Containers.DenseAxisArray(temp_array, p.indices...)
-end
 
 function add!(m::Model, im::Implicitvar)
     m._jump_model = nothing
@@ -553,7 +541,7 @@ function _set_value(var::IndexedParameter, V::MPSGERef, new_value::Float64)
 end
 
 function get_value(parameter::ParameterRef)
-    p = parameter.model._parameters[parameter.index]
+    p = get_full(parameter)
     if p isa ScalarParameter
         return p.value
     else
