@@ -594,7 +594,7 @@ end
 ######################
 
 function get_nested_commodity(x::SectorRef, name::Symbol)
-    for (i,v) in enumerate(x.model._commodities)
+    for (i,v) in enumerate(commodities(model))
         if v.name == Symbol("P$(get_name(x))→$name")
             return CommodityRef(x.model, i, v.name, nothing, nothing)
         end
@@ -640,7 +640,7 @@ end
 #############################
 ## Extracting Model Fields ##
 #############################
-parameters(m::model) = m._parameters
+parameters(m::Model) = m._parameters
 sectors(m::Model) = m._sectors
 commodities(m::Model) = m._commodities
 consumers(m::Model) = m._consumers
