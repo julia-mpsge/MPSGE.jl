@@ -528,15 +528,28 @@ end
 julia> set_value(var, 1.3)
 ```
 """
-function JuMP.set_value(parameter::ParameterRef, new_value::Float64)
-    #p = parameter.model._parameters[parameter.index]
-    p = get_full(parameter)
-    if p isa ScalarParameter
-        p.value = new_value
-    else
-        p.value[parameter.subindex] = new_value
-    end
+function JuMP.set_value(V::MPSGERef, new_value::Float64)
+    var = get_full(V)
+    _set_value(var, V, new_value)
     return nothing
+end
+
+function _set_value(var::MPSGEScalar, V::MPSGERef, new_value::Float64)
+    var.benchmark = new_value
+end
+
+function _set_value(var::MPSGEIndexed, V::MPSGERef, new_value::Float64)
+    var.benchmark[V.subindex] = new_value
+end
+
+
+
+function _set_value(var::ScalarParameter, V::MPSGERef, new_value::Float64)
+    var.value = new_value
+end
+
+function _set_value(var::IndexedParameter, V::MPSGERef, new_value::Float64)
+    var.value[V.subindex] = new_value
 end
 
 function get_value(parameter::ParameterRef)
@@ -546,52 +559,6 @@ function get_value(parameter::ParameterRef)
     else
         return p.value[parameter.subindex]
     end
-end
-
-function JuMP.set_value(consumer::ConsumerRef, new_value::Float64)
-    #c = consumer.model._consumers[consumer.index]
-    c = get_full(consumer)
-    if c isa ScalarConsumer
-        c.benchmark = new_value
-    else
-        c.benchmark[consumer.subindex] = new_value
-    end
-    return nothing
-end
-
-function JuMP.set_value(sector::SectorRef, new_value::Float64)
-    #s = sector.model._sectors[sector.index]
-    s = get_full(sector)
-    if s isa ScalarSector
-        s.benchmark = new_value
-    else
-        s.benchmark[sector.subindex] = new_value
-    end
-    return nothing
-end
-
-function JuMP.set_value(aux::AuxRef, new_value::Float64)
-    #a = aux.model._auxs[aux.index]
-    a = get_full(aux)
-    if a isa ScalarAux
-        a.benchmark = new_value
-    else
-        a.benchmark[aux.subindex] = new_value
-    end
-    return nothing
-end
-
-function JuMP.set_value(commodity::CommodityRef, new_value::Float64)
-    #c = commodity.model._commodities[commodity.index]
-    c = get_full(commodity)
-    if c isa ScalarCommodity
-        c.benchmark = new_value
-    else
-        c.benchmark[commodity.subindex] = new_value
-    end
-    return nothing
-
-    # c.model._commodities[c.index].benchmark = new_value
 end
 
 
