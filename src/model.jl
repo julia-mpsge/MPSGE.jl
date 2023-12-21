@@ -529,7 +529,8 @@ julia> set_value(var, 1.3)
 ```
 """
 function JuMP.set_value(parameter::ParameterRef, new_value::Float64)
-    p = parameter.model._parameters[parameter.index]
+    #p = parameter.model._parameters[parameter.index]
+    p = get_full(parameter)
     if p isa ScalarParameter
         p.value = new_value
     else
@@ -548,7 +549,8 @@ function get_value(parameter::ParameterRef)
 end
 
 function JuMP.set_value(consumer::ConsumerRef, new_value::Float64)
-    c = consumer.model._consumers[consumer.index]
+    #c = consumer.model._consumers[consumer.index]
+    c = get_full(consumer)
     if c isa ScalarConsumer
         c.benchmark = new_value
     else
@@ -558,7 +560,8 @@ function JuMP.set_value(consumer::ConsumerRef, new_value::Float64)
 end
 
 function JuMP.set_value(sector::SectorRef, new_value::Float64)
-    s = sector.model._sectors[sector.index]
+    #s = sector.model._sectors[sector.index]
+    s = get_full(sector)
     if s isa ScalarSector
         s.benchmark = new_value
     else
@@ -568,7 +571,8 @@ function JuMP.set_value(sector::SectorRef, new_value::Float64)
 end
 
 function JuMP.set_value(aux::AuxRef, new_value::Float64)
-    a = aux.model._auxs[aux.index]
+    #a = aux.model._auxs[aux.index]
+    a = get_full(aux)
     if a isa ScalarAux
         a.benchmark = new_value
     else
@@ -578,7 +582,8 @@ function JuMP.set_value(aux::AuxRef, new_value::Float64)
 end
 
 function JuMP.set_value(commodity::CommodityRef, new_value::Float64)
-    c = commodity.model._commodities[commodity.index]
+    #c = commodity.model._commodities[commodity.index]
+    c = get_full(commodity)
     if c isa ScalarCommodity
         c.benchmark = new_value
     else
@@ -588,6 +593,7 @@ function JuMP.set_value(commodity::CommodityRef, new_value::Float64)
 
     # c.model._commodities[c.index].benchmark = new_value
 end
+
 
 """
     set_fixed!(P, true::Boolean)
@@ -603,45 +609,22 @@ end
 julia> set_fixed!(var, false)
 ```
 """
-function set_fixed!(commodity::CommodityRef, new_value::Bool)    
-    c = commodity.model._commodities[commodity.index]
-    if c isa ScalarCommodity
-        c.fixed = new_value
-    else
-        c.fixed[commodity.subindex] = new_value
-    end
-    return nothing
+function set_fixed!(V::MPSGERef, new_value::Bool)
+    var = get_full(V)
+    _set_fixed!(var,V,new_value)
 end
 
-function set_fixed!(consumer::ConsumerRef, new_value::Bool)    
-    c = consumer.model._consumers[consumer.index]
-    if c isa ScalarConsumer
-        c.fixed = new_value
-    else
-        c.fixed[consumer.subindex] = new_value
-    end
-    return nothing
+function _set_fixed!(var::MPSGEScalar, V::MPSGERef, new_value::Bool)
+    var.fixed = new_value
 end
 
-function set_fixed!(aux::AuxRef, new_value::Bool)    
-    a = aux.model._auxs[aux.index]
-    if a isa ScalarAux
-        a.fixed = new_value
-    else
-        a.fixed[aux.subindex] = new_value
-    end
-    return nothing
+function _set_fixed!(var::MPSGEIndexed, V::MPSGERef, new_value::Bool)
+    var.fixed[V.subindex] = new_value
 end
 
-function set_fixed!(sector::SectorRef, new_value::Bool)    
-    s = sector.model._sectors[sector.index]
-    if s isa ScalarSector
-        s.fixed = new_value
-    else
-        s.fixed[sector.subindex] = new_value
-    end
-    return nothing
-end
+######################
+## Nested Commodity ##
+######################
 
 function get_nested_commodity(x::SectorRef, name::Symbol)
     for (i,v) in enumerate(x.model._commodities)
@@ -651,100 +634,39 @@ function get_nested_commodity(x::SectorRef, name::Symbol)
     end
 end
 
-function set_lower_bound(commodity::CommodityRef, l_bound::Float64)
-    c = commodity.model._commodities[commodity.index]
-    if c isa ScalarCommodity
-        c.lower_bound = l_bound
-    else
-        c.lower_bound[commodity.subindex] = l_bound
-    end
-    return nothing
 
-    # c.model._commodities[c.index].lower_bound = l_bound
+##################
+## Lower Bounds ##
+##################
+
+function _set_lower_bound(var::MPSGEScalar,v::MPSGERef,l_bound::Float64)
+    var.lower_bound = l_bound
 end
 
-function set_lower_bound(consumer::ConsumerRef, l_bound::Float64)
-    cs = consumer.model._consumers[consumer.index]
-    if cs isa ScalarConsumer
-        cs.lower_bound = l_bound
-    else
-        cs.lower_bound[consumer.subindex] = l_bound
-    end
-    return nothing
-
-    # cs.model._consumers[cs.index].lower_bound = l_bound
+function _set_lower_bound(var::MPSGEIndexed,v::MPSGERef,l_bound::Float64)
+    var.lower_bound[v.subindex] = l_bound
 end
 
-function set_lower_bound(aux::AuxRef, l_bound::Float64)
-    a = aux.model._auxs[aux.index]
-    if a isa ScalarAux
-        a.lower_bound = l_bound
-    else
-        a.lower_bound[aux.subindex] = l_bound
-    end
-    return nothing
-
-    # a.model._auxs[a.index].lower_bound = l_bound
+function set_lower_bound(V::MPSGERef, l_bound::Float64)
+    var = get_full(V)
+    _set_lower_bound(var,V, l_bound)
 end
 
-function set_lower_bound(sector::SectorRef, l_bound::Float64)
-    s = sector.model._sectors[sector.index]
-    if s isa ScalarSector
-        s.lower_bound = l_bound
-    else
-        s.lower_bound[sector.subindex] = l_bound
-    end
-    return nothing
 
-    # s.model._sectors[s.index].lower_bound = l_bound
+##################
+## Upper Bounds ##
+##################
+
+function _set_upper_bound(var::MPSGEScalar,v::MPSGERef,u_bound::Float64)
+    var.upper_bound = u_bound
 end
 
-function set_upper_bound(commodity::CommodityRef, u_bound::Float64)
-    c = commodity.model._commodities[commodity.index]
-    if c isa ScalarCommodity
-        c.upper_bound = u_bound
-    else
-        c.upper_bound[commodity.subindex] = u_bound
-    end
-    return nothing
-
-    # c.model._commodities[c.index].upper_bound = u_bound
+function _set_upper_bound(var::MPSGEIndexed,v::MPSGERef,u_bound::Float64)
+    var.upper_bound[v.subindex] = u_bound
 end
 
-function set_upper_bound(consumer::ConsumerRef, u_bound::Float64)
-    cs = consumer.model._consumers[consumer.index]
-    if cs isa ScalarConsumer
-        cs.upper_bound = u_bound
-    else
-        cs.upper_bound[consumer.subindex] = u_bound
-    end
-    return nothing
-
-    # cs.model._consumers[cs.index].upper_bound = u_bound
+function set_upper_bound(V::MPSGERef, u_bound::Float64)
+    var = get_full(V)
+    _set_upper_bound(var,V, u_bound)
 end
-
-function set_upper_bound(aux::AuxRef, u_bound::Float64)
-    a = aux.model._auxs[aux.index]
-    if a isa ScalarAux
-        a.upper_bound = u_bound
-    else
-        a.upper_bound[aux.subindex] = u_bound
-    end
-    return nothing
-
-    # a.model._auxs[a.index].upper_bound = u_bound
-end
-
-function set_upper_bound(sector::SectorRef, u_bound::Float64)
-    s = sector.model._sectors[sector.index]
-    if s isa ScalarSector
-        s.upper_bound = u_bound
-    else
-        s.upper_bound[sector.subindex] = u_bound
-    end
-    return nothing
-
-    # s.model._sectors[s.index].upper_bound = u_bound
-end
-
 
