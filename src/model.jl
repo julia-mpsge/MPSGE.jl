@@ -637,3 +637,18 @@ function set_upper_bound(V::MPSGERef, u_bound::Float64)
     _set_upper_bound(var,V, u_bound)
 end
 
+#############################
+## Extracting Model Fields ##
+#############################
+parameters(m::model) = m._parameters
+sectors(m::Model) = m._sectors
+commodities(m::Model) = m._commodities
+consumers(m::Model) = m._consumers
+auxs(m::Model) = m._auxs
+implicitvars(m::Model) = m._implicitvars
+implicitvarsDict(m::Model) = m._implicitvarsDict
+
+productions(m::Model) = m._productions
+demands(m::Model) = m._demands
+auxconstraints(m::Model) = m._auxconstraints
+
