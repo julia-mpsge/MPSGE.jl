@@ -220,7 +220,7 @@ end
 
 function get_consumer_total_endowment(jm, m, c::ScalarConsumer)
     endowments = []
-    for d in m._demands
+    for d in demands(m)
         if get_full(d.consumer) == c
             push!(endowments, 
                 +(
@@ -237,7 +237,7 @@ end
 
 function get_consumer_total_endowment(jm, m, c::IndexedConsumer, i)
     endowments = []
-    for d in m._demands
+    for d in demands(m)
         c_for_d = get_full(d.consumer)
         
         if c_for_d == c && d.consumer.subindex_names == i
@@ -254,7 +254,7 @@ end
 
 function get_consumer_total_endowment_old(jm, m, c::ScalarConsumer)
     endowments = []
-    for d in m._demands
+    for d in demands(m)
         if get_full(d.consumer) == c
             push!(endowments, :(
                 +($((:($(en.quantity) * 
@@ -270,7 +270,7 @@ end
 
 function get_consumer_total_endowment_old(jm, m, c::IndexedConsumer, i)
     endowments = []
-    for d in m._demands
+    for d in demands(m)
         c_for_d = get_full(d.consumer)
         
         if c_for_d == c && d.consumer.subindex_names == i
