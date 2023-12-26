@@ -318,6 +318,7 @@ end
 function _add!(m::Model,s::MPSGEScalar,output_type)
     m._jump_model = nothing
     s_ref = output_type(m, s.name,nothing, nothing)
+    @assert s.name ∉ keys(m._object_dict) "Variable $(s.name) already associated with model"
     m._object_dict[s.name] = s
 
     return s_ref
