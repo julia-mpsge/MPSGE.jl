@@ -131,10 +131,6 @@ mutable struct Model
     _object_dict::Dict{Symbol,Any}
 
     _parameters::Vector{Parameter}
-    _sectors::Vector{Union{ScalarSector,IndexedSector}}
-    _commodities::Vector{Union{ScalarCommodity,IndexedCommodity}}
-    _consumers::Vector{Union{ScalarConsumer,IndexedConsumer}}
-    _auxs::Vector{Union{ScalarAux,IndexedAux}}
     _implicitvars::Vector{Implicitvar}
     _implicitvarsDict::Dict{Symbol, ImplicitvarRef}
 
@@ -151,10 +147,6 @@ mutable struct Model
         return new(
             Dict{Symbol,Any}(),
             Parameter[],
-            Vector{Union{ScalarSector,IndexedSector}}(),
-            Vector{Union{ScalarCommodity,IndexedCommodity}}(),
-            Vector{Union{ScalarConsumer,IndexedConsumer}}(),
-            Vector{Union{ScalarAux,IndexedAux}}(),
             Implicitvar[],
             Dict{Symbol, ImplicitvarRef}(),
 
@@ -323,26 +315,25 @@ function Demand(commodity, quantity::Number, price::Union{Float64,Expr}=1.)
 end
 
 
-function _add!(m::Model,s::MPSGEScalar,output_type,model_array)
+function _add!(m::Model,s::MPSGEScalar,output_type)
     m._jump_model = nothing
-    push!(model_array, s)
-    s_ref = output_type(m, length(model_array), s.name,nothing, nothing)
+    s_ref = output_type(m, s.name,nothing, nothing)
     @assert s.name ∉ keys(m._object_dict) "Variable $(s.name) already associated with model"
     m._object_dict[s.name] = s
 
     return s_ref
 end
 
-function _add!(m::Model,s::MPSGEIndexed,output_type, model_array)
+function _add!(m::Model,s::MPSGEIndexed,output_type)
     m._jump_model = nothing
-    push!(model_array, s)
     @assert s.name ∉ keys(m._object_dict) "Variable $(s.name) already associated with model"
+
     m._object_dict[s.name] = s
 
     temp_array = Array{output_type}(undef, length.(s.indices)...)
 
     for i in CartesianIndices(temp_array)
-        temp_array[i] = output_type(m, length(model_array), s.name, i, Tuple(s.indices[j][v] for (j,v) in enumerate(Tuple(i))))
+        temp_array[i] = output_type(m, s.name, i, Tuple(s.indices[j][v] for (j,v) in enumerate(Tuple(i))))
     end
 
     return JuMP.Containers.DenseAxisArray(temp_array, s.indices...)
@@ -372,35 +363,35 @@ julia> add!(m, Production())
 ```
 """
 function add!(m::Model, s::ScalarSector)
-    _add!(m,s, SectorRef,m._sectors)
+    _add!(m,s, SectorRef)
 end
 
 function add!(m::Model, s::IndexedSector)
-    _add!(m,s,SectorRef,m._sectors)
+    _add!(m,s,SectorRef)
 end
 
 function add!(m::Model, c::ScalarCommodity)
-    _add!(m,c, CommodityRef, m._commodities)
+    _add!(m,c, CommodityRef)
 end
 
 function add!(m::Model, c::IndexedCommodity)
-    _add!(m,c, CommodityRef, m._commodities)
+    _add!(m,c, CommodityRef)
 end
 
 function add!(m::Model, cn::ScalarConsumer)
-    _add!(m,cn, ConsumerRef, m._consumers)
+    _add!(m,cn, ConsumerRef)
 end
 
 function add!(m::Model, cn::IndexedConsumer)
-    _add!(m,cn, ConsumerRef, m._consumers)
+    _add!(m,cn, ConsumerRef)
 end
 
 function add!(m::Model, a::ScalarAux)
-    _add!(m,a, AuxRef, m._auxs)
+    _add!(m,a, AuxRef)
 end
 
 function add!(m::Model, a::IndexedAux)
-    _add!(m,a, AuxRef, m._auxs)
+    _add!(m,a, AuxRef)
 end
 
 function add!(m::Model, p::ScalarParameter)
@@ -606,7 +597,7 @@ end
 function get_nested_commodity(x::SectorRef, name::Symbol)
     for (i,v) in enumerate(commodities(x.model))
         if v.name == Symbol("P$(get_name(x))→$name")
-            return CommodityRef(x.model, i, v.name, nothing, nothing)
+            return CommodityRef(x.model, v.name, nothing, nothing)
         end
     end
 end
@@ -650,11 +641,16 @@ end
 #############################
 ## Extracting Model Fields ##
 #############################
+_extract_types(m::Model,types...) = [s for (name,s) ∈ m._object_dict if any(isa(s,t) for t∈types)]
+
+
 parameters(m::Model) = m._parameters
-sectors(m::Model) = m._sectors
-commodities(m::Model) = m._commodities
-consumers(m::Model) = m._consumers
-auxs(m::Model) = m._auxs
+
+sectors(m::Model) = _extract_types(m, ScalarSector,IndexedSector)
+commodities(m::Model) = _extract_types(m, ScalarCommodity,IndexedCommodity)
+consumers(m::Model) = _extract_types(m, ScalarConsumer,IndexedConsumer)
+auxs(m::Model) = _extract_types(m, ScalarAux,IndexedAux)
+
 implicitvars(m::Model) = m._implicitvars
 implicitvarsDict(m::Model) = m._implicitvarsDict
 

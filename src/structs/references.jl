@@ -10,7 +10,6 @@ end
 
 struct SectorRef <: MPSGERef
     model
-    index::Int
     name::Symbol
     subindex::Any
     subindex_names::Any
@@ -18,7 +17,6 @@ end
 
 struct CommodityRef <: MPSGERef
     model
-    index::Int
     name::Symbol
     subindex::Any
     subindex_names::Any
@@ -26,7 +24,6 @@ end
 
 struct ConsumerRef <: MPSGERef
     model
-    index::Int
     name::Symbol
     subindex::Any
     subindex_names::Any
@@ -34,7 +31,6 @@ end
 
 struct AuxRef <: MPSGERef
     model
-    index::Int
     name::Symbol
     subindex::Any
     subindex_names::Any
