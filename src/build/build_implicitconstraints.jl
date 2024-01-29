@@ -85,8 +85,8 @@ function y_over_y_bar(jm, pf::Production)
         elseif eval(swap_our_param_with_val(pf.elasticity))==1
             return *(
                 (
-                    # (tojump(jm, i.quantity)/tojump(jm, i.quantity))^Θ(jm, pf,i)  for i in pf.inputs
-                    (jm[get_comp_demand_name(i)]/tojump(jm, i.quantity))^Θ(jm, pf,i)  for i in pf.inputs #For SimpleDemNest->TWOBYTWO (functional version) & test_twobytwo_wTaxes -> twobytwo_wOTax_IndCons
+                    (tojump(jm, i.quantity)/tojump(jm, i.quantity))^Θ(jm, pf,i)  for i in pf.inputs
+                    # (jm[get_comp_demand_name(i)]/tojump(jm, i.quantity))^Θ(jm, pf,i)  for i in pf.inputs #For SimpleDemNest->TWOBYTWO (functional version) & test_twobytwo_wTaxes -> twobytwo_wOTax_IndCons
                 )...
             )
         else

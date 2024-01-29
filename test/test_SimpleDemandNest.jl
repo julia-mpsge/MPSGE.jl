@@ -369,8 +369,10 @@ solve!(m)
 
 #This fails for most variables. The GAMS results has gaps/undefined/no value for PL, HH, and CXHH. This suggests we are not handling results with /0 or 0 results in the same way
 # There's something not working about unfixing HH. Running without first fixing HH does match.  
-set_lower_bound(HH, 0.0)
+# set_lower_bound(HH, 0.0)
 set_lower_bound(PL,0.0)
+set_value(C, 90.)
+set_fixed!(C, true)
 set_value(esubkl, 0.)
 solve!(m) 
 @test JuMP.value(m._jump_model[:Y]) ≈ DNestTest["Y","esubkl=0"]#  1
@@ -395,6 +397,11 @@ solve!(m)
 @test JuMP.value(m._jump_model[Symbol("PXρGOVT")]) ≈ DNestTest["CXG","esubkl=0"]#  49.25642749
 @test JuMP.value(m._jump_model[Symbol("PXρHH")]) ≈ 0 # missing in GAMS DNestTest["CXHH","esubkl=0"]#  
 
+end
+
+@testitem "TWOBYTWO, nested (functional version)" begin
+  using XLSX, MPSGE.JuMP.Containers
+  import JuMP
 
 # And now the Nested Version of the same model with the same results
 m = Model()
@@ -441,6 +448,10 @@ add!(m, DemandFunction(C, :(1*$sigmac),  [Demand(PFX, 90)],              [Endowm
 add!(m, DemandFunction(HH, :(1*$sigma),  [Demand(PX, 80)], [Endowment(PL, :(80*$endow))])) #
 
 solve!(m, cumulative_iteration_limit=0)
+
+gams_results = XLSX.readxlsx(joinpath(@__DIR__, "MPSGEresults.xlsx"))
+a_table = gams_results["SimpleDemNest"][:]  # Generated with SimpleDNestTest.gms
+DNestTest = DenseAxisArray(a_table[2:end,2:end],a_table[2:end,1],a_table[1,2:end])
 
 # Benchmark
 @test JuMP.value(m._jump_model[:Y]) ≈ DNestTest["Y","Benchmark"]#  1
@@ -757,8 +768,9 @@ solve!(m)
 
 
 #This fails for most variables. The GAMS results has gaps/undefined/no value for PL, HH, and CXHH. This suggests we are not handling results with /0 or 0 results in the same way
-set_lower_bound(HH, 0.0)
+# set_lower_bound(HH, 0.0)
 set_lower_bound(PL, 0.0)
+set_fixed!(C, true)
 set_value(esubkl, 0.)
 solve!(m)
 @test JuMP.value(m._jump_model[:Y]) ≈ DNestTest["Y","esubkl=0"]#  1

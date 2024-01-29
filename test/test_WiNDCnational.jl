@@ -10,8 +10,8 @@ import JuMP
 P= load(joinpath(@__DIR__,"./gams/DAAData.jld2"))["data"] # load in date from saved Notebook output Dict, named P
 S= load(joinpath(@__DIR__,"./gams/Indices.jld2"))["data"] # load in date from saved Notebook output Dict, named S
 # Alternate, Julia WiNDC generated data
-# PJ= load(joinpath(@__DIR__,"./data/nationaldata_julia/JDAAData.jld2"))["data"] # load in date from saved Notebook output Dict, named P
-# SJ= load(joinpath(@__DIR__,"./data/nationaldata_julia/JIndices.jld2"))["data"] # load in date from saved Notebook output Dict, named S
+# PJ= load(joinpath(@__DIR__,"./gams/JDAAData.jld2"))["data"] # load in date from saved Notebook output Dict, named P
+# SJ= load(joinpath(@__DIR__,"./gams/JIndices.jld2"))["data"] # load in date from saved Notebook output Dict, named S
 
 y_ = filter!(x -> x != :oth && x!= :use, S[:i][:]) # These 2 sectors 'use' & 'oth' are in the indices list, but have no data (and therefore cause problems)
 a_ = filter!(x -> x != :fbt && x != :mvt && x != :gmt, copy(y_))
@@ -670,79 +670,79 @@ end
 set_value(RA,  12453.8963) #So far, this updated default normalization value needs to be set, value from GAMS output. 12453.8963
 set_fixed!(RA, true)
 
-solve!(WiNnat, cumulative_iteration_limit=10000);
+solve!(WiNnat, convergence_tolerance=1e-6, cumulative_iteration_limit=10000);
 
-@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:ppd]) ≈ WNDCnat["Y.ppd","Countermge"]    atol=1.0e-7 #  1.01879539799114
-@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:res]) ≈ WNDCnat["Y.res","Countermge"]  atol=1.0e-5 #  1.03916450940003
-@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:com]) ≈ WNDCnat["Y.com","Countermge"]  atol=1.0e-5 #  0.999213507047477
-@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:amb]) ≈ WNDCnat["Y.amb","Countermge"]     atol=1.0e-8 #  0.969241605623854
-@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:fbp]) ≈ WNDCnat["Y.fbp","Countermge"]     atol=1.0e-8 #  1.04401987590314
-@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:rec]) ≈ WNDCnat["Y.rec","Countermge"]      atol=1.0e-9 #  1.02557666099282
-@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:con]) ≈ WNDCnat["Y.con","Countermge"]     atol=1.0e-8 #  0.998727851907362
-@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:agr]) ≈ WNDCnat["Y.agr","Countermge"]     atol=1.0e-8 #  1.02650937597374
-@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:eec]) ≈ WNDCnat["Y.eec","Countermge"]     atol=1.0e-8 #  0.99342306828626
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:ppd]) ≈ WNDCnat["Y.ppd","Countermge"]  #  atol=1.0e-7 #  1.01879539799114
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:res]) ≈ WNDCnat["Y.res","Countermge"]  #atol=1.0e-5 #  1.03916450940003
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:com]) ≈ WNDCnat["Y.com","Countermge"]  #atol=1.0e-5 #  0.999213507047477
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:amb]) ≈ WNDCnat["Y.amb","Countermge"]     #atol=1.0e-8 #  0.969241605623854
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:fbp]) ≈ WNDCnat["Y.fbp","Countermge"]     #atol=1.0e-8 #  1.04401987590314
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:rec]) ≈ WNDCnat["Y.rec","Countermge"]      #atol=1.0e-9 #  1.02557666099282
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:con]) ≈ WNDCnat["Y.con","Countermge"]     #atol=1.0e-8 #  0.998727851907362
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:agr]) ≈ WNDCnat["Y.agr","Countermge"]     #atol=1.0e-8 #  1.02650937597374
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:eec]) ≈ WNDCnat["Y.eec","Countermge"]     #atol=1.0e-8 #  0.99342306828626
 @test JuMP.value(WiNnat._jump_model[Symbol("Y")][:fnd]) ≈ WNDCnat["Y.fnd","Countermge"]#  1
-@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:pub]) ≈ WNDCnat["Y.pub","Countermge"] atol=1.0e-4 #  0.995058224664917
-@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:hou]) ≈ WNDCnat["Y.hou","Countermge"]  atol=1.0e-5 #  0.946697277098152
-@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:fbt]) ≈ WNDCnat["Y.fbt","Countermge"]     atol=1.0e-8 #  1.02333194011532
-@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:ins]) ≈ WNDCnat["Y.ins","Countermge"]  atol=1.0e-5 #  0.99526434878665
-@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:tex]) ≈ WNDCnat["Y.tex","Countermge"]  atol=1.0e-5 #  0.987755013051637
-@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:leg]) ≈ WNDCnat["Y.leg","Countermge"]    atol=1.0e-7 #  1.00528427737105
-@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:fen]) ≈ WNDCnat["Y.fen","Countermge"]  atol=1.0e-5 #  1.00420711992385
-@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:uti]) ≈ WNDCnat["Y.uti","Countermge"]    atol=1.0e-7 #  1.02814569632055
-@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:nmp]) ≈ WNDCnat["Y.nmp","Countermge"]     atol=1.0e-8 #  0.997668770519886
-@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:brd]) ≈ WNDCnat["Y.brd","Countermge"]      atol=1.0e-9 #  1.02314762629269
-@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:bnk]) ≈ WNDCnat["Y.bnk","Countermge"]  atol=1.0e-5 #  0.981976556556577
-@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:ore]) ≈ WNDCnat["Y.ore","Countermge"]     atol=1.0e-8 #  1.00433844228312
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:pub]) ≈ WNDCnat["Y.pub","Countermge"] #atol=1.0e-4 #  0.995058224664917
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:hou]) ≈ WNDCnat["Y.hou","Countermge"]  #atol=1.0e-5 #  0.946697277098152
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:fbt]) ≈ WNDCnat["Y.fbt","Countermge"]     #atol=1.0e-8 #  1.02333194011532
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:ins]) ≈ WNDCnat["Y.ins","Countermge"]  #atol=1.0e-5 #  0.99526434878665
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:tex]) ≈ WNDCnat["Y.tex","Countermge"]  #atol=1.0e-5 #  0.987755013051637
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:leg]) ≈ WNDCnat["Y.leg","Countermge"]    #atol=1.0e-7 #  1.00528427737105
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:fen]) ≈ WNDCnat["Y.fen","Countermge"]  #atol=1.0e-5 #  1.00420711992385
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:uti]) ≈ WNDCnat["Y.uti","Countermge"]    #atol=1.0e-7 #  1.02814569632055
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:nmp]) ≈ WNDCnat["Y.nmp","Countermge"]     #atol=1.0e-8 #  0.997668770519886
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:brd]) ≈ WNDCnat["Y.brd","Countermge"]      #atol=1.0e-9 #  1.02314762629269
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:bnk]) ≈ WNDCnat["Y.bnk","Countermge"]  #atol=1.0e-5 #  0.981976556556577
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:ore]) ≈ WNDCnat["Y.ore","Countermge"]     #atol=1.0e-8 #  1.00433844228312
 @test JuMP.value(WiNnat._jump_model[Symbol("Y")][:edu]) ≈ WNDCnat["Y.edu","Countermge"]#  0.961325642755518
-@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:ote]) ≈ WNDCnat["Y.ote","Countermge"]   atol=1.0e-6 #  1.00279349452643
-@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:man]) ≈ WNDCnat["Y.man","Countermge"]       atol=1.0e-10 #  1.0157557775201
-@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:mch]) ≈ WNDCnat["Y.mch","Countermge"]     atol=1.0e-8 #  1.00583441769422
-@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:dat]) ≈ WNDCnat["Y.dat","Countermge"]     atol=1.0e-8 #  0.997027704824509
-@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:amd]) ≈ WNDCnat["Y.amd","Countermge"]   atol=1.0e-6 #  1.05731716703795
-@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:oil]) ≈ WNDCnat["Y.oil","Countermge"]   atol=1.0e-6 #  1.07601899897433
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:ote]) ≈ WNDCnat["Y.ote","Countermge"]   #atol=1.0e-6 #  1.00279349452643
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:man]) ≈ WNDCnat["Y.man","Countermge"]       #atol=1.0e-10 #  1.0157557775201
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:mch]) ≈ WNDCnat["Y.mch","Countermge"]     #atol=1.0e-8 #  1.00583441769422
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:dat]) ≈ WNDCnat["Y.dat","Countermge"]     #atol=1.0e-8 #  0.997027704824509
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:amd]) ≈ WNDCnat["Y.amd","Countermge"]   #atol=1.0e-6 #  1.05731716703795
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:oil]) ≈ WNDCnat["Y.oil","Countermge"]   #atol=1.0e-6 #  1.07601899897433
 @test JuMP.value(WiNnat._jump_model[Symbol("Y")][:hos]) ≈ WNDCnat["Y.hos","Countermge"]#  0.969741673504474
-@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:rnt]) ≈ WNDCnat["Y.rnt","Countermge"]     atol=1.0e-8 #  1.02006210132733
-@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:pla]) ≈ WNDCnat["Y.pla","Countermge"]       atol=1.0e-10 #  1.00803411783979
-@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:fof]) ≈ WNDCnat["Y.fof","Countermge"]   atol=1.0e-6 #  1.01200162267001
-@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:fin]) ≈ WNDCnat["Y.fin","Countermge"]  atol=1.0e-5 #  0.973024378808373
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:rnt]) ≈ WNDCnat["Y.rnt","Countermge"]     #atol=1.0e-8 #  1.02006210132733
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:pla]) ≈ WNDCnat["Y.pla","Countermge"]       #atol=1.0e-10 #  1.00803411783979
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:fof]) ≈ WNDCnat["Y.fof","Countermge"]   #atol=1.0e-6 #  1.01200162267001
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:fin]) ≈ WNDCnat["Y.fin","Countermge"]  #atol=1.0e-5 #  0.973024378808373
 @test JuMP.value(WiNnat._jump_model[Symbol("Y")][:tsv]) ≈ WNDCnat["Y.tsv","Countermge"]#  1.00152715398509
-@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:nrs]) ≈ WNDCnat["Y.nrs","Countermge"]     atol=1.0e-8 #  0.986391506133684
-@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:sec]) ≈ WNDCnat["Y.sec","Countermge"]    atol=1.0e-7 #  0.981791061304817
-@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:art]) ≈ WNDCnat["Y.art","Countermge"]     atol=1.0e-8 #  1.00647162064957
-@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:mov]) ≈ WNDCnat["Y.mov","Countermge"]     atol=1.0e-8 #  1.00701578823184
-@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:fpd]) ≈ WNDCnat["Y.fpd","Countermge"]   atol=1.0e-6 #  1.01933464614267
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:nrs]) ≈ WNDCnat["Y.nrs","Countermge"]     #atol=1.0e-8 #  0.986391506133684
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:sec]) ≈ WNDCnat["Y.sec","Countermge"]    #atol=1.0e-7 #  0.981791061304817
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:art]) ≈ WNDCnat["Y.art","Countermge"]     #atol=1.0e-8 #  1.00647162064957
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:mov]) ≈ WNDCnat["Y.mov","Countermge"]     #atol=1.0e-8 #  1.00701578823184
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:fpd]) ≈ WNDCnat["Y.fpd","Countermge"]   #atol=1.0e-6 #  1.01933464614267
 @test JuMP.value(WiNnat._jump_model[Symbol("Y")][:slg]) ≈ WNDCnat["Y.slg","Countermge"]#  1
-@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:pri]) ≈ WNDCnat["Y.pri","Countermge"]  atol=1.0e-5 #  1.00376858507486
-@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:grd]) ≈ WNDCnat["Y.grd","Countermge"]   atol=1.0e-6 #  0.991541344798476
-@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:pip]) ≈ WNDCnat["Y.pip","Countermge"]   atol=1.0e-6 #  1.02794335860495
-@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:sle]) ≈ WNDCnat["Y.sle","Countermge"]     atol=1.0e-8 #  0.996458642436654
-@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:osv]) ≈ WNDCnat["Y.osv","Countermge"]      atol=1.0e-9 #  0.992685782257385
-@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:trn]) ≈ WNDCnat["Y.trn","Countermge"]   atol=1.0e-6 #  1.02187138857596
-@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:smn]) ≈ WNDCnat["Y.smn","Countermge"]     atol=1.0e-8 #  0.970472174292795
-@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:fmt]) ≈ WNDCnat["Y.fmt","Countermge"]   atol=1.0e-6 #  1.00183519282339
-@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:pet]) ≈ WNDCnat["Y.pet","Countermge"]      atol=1.0e-9 #  1.08463382092375
-@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:mvt]) ≈ WNDCnat["Y.mvt","Countermge"]      atol=1.0e-9 #  1.02309900824386
-@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:cep]) ≈ WNDCnat["Y.cep","Countermge"]  atol=1.0e-5 #  0.985266980409964
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:pri]) ≈ WNDCnat["Y.pri","Countermge"]  #atol=1.0e-5 #  1.00376858507486
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:grd]) ≈ WNDCnat["Y.grd","Countermge"]   #atol=1.0e-6 #  0.991541344798476
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:pip]) ≈ WNDCnat["Y.pip","Countermge"]   #atol=1.0e-6 #  1.02794335860495
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:sle]) ≈ WNDCnat["Y.sle","Countermge"]     #atol=1.0e-8 #  0.996458642436654
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:osv]) ≈ WNDCnat["Y.osv","Countermge"]      #atol=1.0e-9 #  0.992685782257385
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:trn]) ≈ WNDCnat["Y.trn","Countermge"]   #atol=1.0e-6 #  1.02187138857596
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:smn]) ≈ WNDCnat["Y.smn","Countermge"]     #atol=1.0e-8 #  0.970472174292795
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:fmt]) ≈ WNDCnat["Y.fmt","Countermge"]   #atol=1.0e-6 #  1.00183519282339
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:pet]) ≈ WNDCnat["Y.pet","Countermge"]      #atol=1.0e-9 #  1.08463382092375
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:mvt]) ≈ WNDCnat["Y.mvt","Countermge"]      #atol=1.0e-9 #  1.02309900824386
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:cep]) ≈ WNDCnat["Y.cep","Countermge"]  #atol=1.0e-5 #  0.985266980409964
 @test JuMP.value(WiNnat._jump_model[Symbol("Y")][:wst]) ≈ WNDCnat["Y.wst","Countermge"]#  1.00291955467072
-@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:mot]) ≈ WNDCnat["Y.mot","Countermge"]     atol=1.0e-8 #  1.02404048249363
-@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:adm]) ≈ WNDCnat["Y.adm","Countermge"]      atol=1.0e-9 #  1.00240441433003
-@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:soc]) ≈ WNDCnat["Y.soc","Countermge"]     atol=1.0e-8 #  0.977517939406463
-@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:alt]) ≈ WNDCnat["Y.alt","Countermge"]  atol=1.0e-5 #  0.849290791579411
-@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:pmt]) ≈ WNDCnat["Y.pmt","Countermge"]     atol=1.0e-8 #  1.01858672910096
-@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:trk]) ≈ WNDCnat["Y.trk","Countermge"]    atol=1.0e-7 #  1.02647470638081
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:mot]) ≈ WNDCnat["Y.mot","Countermge"]     #atol=1.0e-8 #  1.02404048249363
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:adm]) ≈ WNDCnat["Y.adm","Countermge"]      #atol=1.0e-9 #  1.00240441433003
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:soc]) ≈ WNDCnat["Y.soc","Countermge"]     #atol=1.0e-8 #  0.977517939406463
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:alt]) ≈ WNDCnat["Y.alt","Countermge"]  #atol=1.0e-5 #  0.849290791579411
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:pmt]) ≈ WNDCnat["Y.pmt","Countermge"]     #atol=1.0e-8 #  1.01858672910096
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:trk]) ≈ WNDCnat["Y.trk","Countermge"]    #atol=1.0e-7 #  1.02647470638081
 @test JuMP.value(WiNnat._jump_model[Symbol("Y")][:fdd]) ≈ WNDCnat["Y.fdd","Countermge"] #  1
-@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:gmt]) ≈ WNDCnat["Y.gmt","Countermge"] atol=1.0e-4 #  1.02311042055839
-@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:wtt]) ≈ WNDCnat["Y.wtt","Countermge"]  atol=1.0e-5 #  1.01549527464292
-@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:wpd]) ≈ WNDCnat["Y.wpd","Countermge"]     atol=1.0e-8 #  1.00651815029712
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:gmt]) ≈ WNDCnat["Y.gmt","Countermge"] #atol=1.0e-4 #  1.02311042055839
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:wtt]) ≈ WNDCnat["Y.wtt","Countermge"]  #atol=1.0e-5 #  1.01549527464292
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:wpd]) ≈ WNDCnat["Y.wpd","Countermge"]     #atol=1.0e-8 #  1.00651815029712
 @test JuMP.value(WiNnat._jump_model[Symbol("Y")][:wht]) ≈ WNDCnat["Y.wht","Countermge"]#  1.02303098388213
-@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:wrh]) ≈ WNDCnat["Y.wrh","Countermge"] atol=1.0e-4 #  1.01943032335002
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:wrh]) ≈ WNDCnat["Y.wrh","Countermge"] #atol=1.0e-4 #  1.01943032335002
 @test JuMP.value(WiNnat._jump_model[Symbol("Y")][:ott]) ≈ WNDCnat["Y.ott","Countermge"]#  1.02349454873077
-@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:che]) ≈ WNDCnat["Y.che","Countermge"]     atol=1.0e-8 #  1.00544525470182
-@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:air]) ≈ WNDCnat["Y.air","Countermge"]  atol=1.0e-5 #  1.08534791211508
-@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:mmf]) ≈ WNDCnat["Y.mmf","Countermge"]  atol=1.0e-5 #  0.996969585088487
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:che]) ≈ WNDCnat["Y.che","Countermge"]     #atol=1.0e-8 #  1.00544525470182
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:air]) ≈ WNDCnat["Y.air","Countermge"]  #atol=1.0e-5 #  1.08534791211508
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:mmf]) ≈ WNDCnat["Y.mmf","Countermge"]  #atol=1.0e-5 #  0.996969585088487
 @test JuMP.value(WiNnat._jump_model[Symbol("Y")][:otr]) ≈ WNDCnat["Y.otr","Countermge"]#  1.02245484859239
-@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:min]) ≈ WNDCnat["Y.min","Countermge"]  atol=1.0e-5 #  1.01680420130584
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:min]) ≈ WNDCnat["Y.min","Countermge"]  #atol=1.0e-5 #  1.01680420130584
 @test JuMP.value(WiNnat._jump_model[Symbol("A")][:ppd]) ≈ WNDCnat["A.ppd","Countermge"]#  1.01598686308657
 @test JuMP.value(WiNnat._jump_model[Symbol("A")][:res]) ≈ WNDCnat["A.res","Countermge"]#  1.03671030869442
 @test JuMP.value(WiNnat._jump_model[Symbol("A")][:com]) ≈ WNDCnat["A.com","Countermge"]#  1.00094988736871

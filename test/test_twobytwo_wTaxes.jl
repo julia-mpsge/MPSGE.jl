@@ -466,7 +466,9 @@ solve!(m)
     @test JuMP.value(m._jump_model[Symbol("PUρRA[a]")]) ≈ two_by_two_scalar_results["DURAA.L","Otaxa=.5"] 	#	98.84720496
     @test JuMP.value(m._jump_model[Symbol("PUρRA[b]")]) ≈ two_by_two_scalar_results["DURAB.L","Otaxa=.5"] 	#	49.42360248
 		
-set_value(otaxa, 0.9)		
+set_value(otaxa, 0.9)
+set_value(RA[:b], 92.39999999)
+set_fixed!(RA[:b],true)		
 solve!(m)		
 		
     @test value(m, :X)                                          ≈ two_by_two_scalar_results["X.L","Otaxa=.9"]	#	0.26532998
@@ -493,7 +495,8 @@ solve!(m)
     @test JuMP.value(m._jump_model[Symbol("PUρRA[b]")]) ≈ two_by_two_scalar_results["DURAB.L","Otaxa=.9"] 	#	16.97943723
    		
 set_value(otaxa, 0.1)		
-set_value(otaxb, 0.1)		
+set_value(otaxb, 0.1)
+set_fixed!(RA[:b],false)		
 solve!(m)		
 		
     @test value(m, :X)                                          ≈ two_by_two_scalar_results["X.L","Otax=.1"]	#	1.04880885
