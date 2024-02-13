@@ -7,5 +7,4 @@ Manifest.toml
 docs/build
 test/gams/*.lxi
 test/gams/*.lst
-test/gams/*.log
-test/gams/*.log~1
+test/gams/*.log*
