@@ -47,8 +47,8 @@ tm_0 = P[:tm_0][yr,:][y_] #	"Import tariff"; Initial, for price
 WiNnat = MPSGE.Model()
 
 	# parameters
-	ta = add!(WiNnat, MPSGE.Parameter(:ta, indices = (sectorsi,), value=P[:ta_0][yr,sectorsi].data)) #	"Tax net subsidy rate on intermediate demand",
-	tm = add!(WiNnat, MPSGE.Parameter(:tm, indices = (sectorsi,), value=P[:tm_0][yr,sectorsi].data)) #	"Import tariff";
+	ta = add!(WiNnat, MPSGE.Parameter(:ta, indices = (a_,), value=P[:ta_0][yr,a_].data)) #	"Tax net subsidy rate on intermediate demand",
+	tm = add!(WiNnat, MPSGE.Parameter(:tm, indices = (a_,), value=P[:tm_0][yr,a_].data)) #	"Import tariff";
 
 	# Elasticity parameters
 	t_elas_y =  add!(WiNnat, MPSGE.Parameter(:t_elas_y,  value=0.))
@@ -63,12 +63,12 @@ WiNnat = MPSGE.Model()
 
 	# sectors:
 	Y = add!(WiNnat, Sector(:Y, indices=(sectorsj,)))
-	A = add!(WiNnat, Sector(:A, indices=(sectorsi,)))
+	A = add!(WiNnat, Sector(:A, indices=(a_,)))
 
 	MS = add!(WiNnat, Sector(:MS, indices=(margin,)))
 
 	# commodities:
-	PA  = add!(WiNnat, Commodity(:PA, indices=(sectorsi, ))) #	Armington price
+	PA  = add!(WiNnat, Commodity(:PA, indices=(a_, ))) #	Armington price
 	PY  = add!(WiNnat, Commodity(:PY, indices=(sectorsi,))) #	Supply
 	PVA = add!(WiNnat, Commodity(:PVA, indices=(valueadded,))) #		Value-added
 	PM  = add!(WiNnat, Commodity(:PM, indices=(margin,))) #		Margin
@@ -138,7 +138,7 @@ WiNnat = MPSGE.Model()
 				)
 	end
 
-	add!(WiNnat, DemandFunction(RA, 1.,
+	add!(WiNnat, DemandFunction(RA, :($(d_elas_ra)*1),
 		[Demand(PA[i], fd_0[i,:pce]) for i in a_],
 		[
 			[Endowment(PY[i], fs_0[i]) for i in a_];
@@ -148,18 +148,18 @@ WiNnat = MPSGE.Model()
 		]
 		))
 
-set_value((A[(:gmt)]), 1.0)
-set_value((A[(:mvt)]), 1.0)
-set_value((A[(:fbt)]), 1.0)
-set_fixed!(A[(:gmt)], true)
-set_fixed!(A[(:mvt)], true)
-set_fixed!(A[(:fbt)], true)
-set_value((PA[(:gmt)]), 1.0)
-set_value((PA[(:mvt)]), 1.0)
-set_value((PA[(:fbt)]), 1.0)
-set_fixed!(PA[(:gmt)], true)
-set_fixed!(PA[(:mvt)], true)
-set_fixed!(PA[(:fbt)], true)
+# set_value((A[(:gmt)]), 1.0)
+# set_value((A[(:mvt)]), 1.0)
+# set_value((A[(:fbt)]), 1.0)
+# set_fixed!(A[(:gmt)], true)
+# set_fixed!(A[(:mvt)], true)
+# set_fixed!(A[(:fbt)], true)
+# set_value((PA[(:gmt)]), 1.0)
+# set_value((PA[(:mvt)]), 1.0)
+# set_value((PA[(:fbt)]), 1.0)
+# set_fixed!(PA[(:gmt)], true)
+# set_fixed!(PA[(:mvt)], true)
+# set_fixed!(PA[(:fbt)], true)
 
 set_value(RA, 13138.7573)
 set_fixed!(RA, true)
@@ -254,7 +254,7 @@ WNDCnat = DenseAxisArray(a_table[2:end,2:end],string.(a_table[2:end,1],".",a_tab
 @test JuMP.value(WiNnat._jump_model[Symbol("A")][:fnd]) ≈ WNDCnat["A.fnd","benchmarkmge"]#  1
 @test JuMP.value(WiNnat._jump_model[Symbol("A")][:pub]) ≈ WNDCnat["A.pub","benchmarkmge"]#  1
 @test JuMP.value(WiNnat._jump_model[Symbol("A")][:hou]) ≈ WNDCnat["A.hou","benchmarkmge"]#  1
-@test JuMP.value(WiNnat._jump_model[Symbol("A")][:fbt]) ≈ WNDCnat["A.fbt","benchmarkmge"]#  1
+# @test JuMP.value(WiNnat._jump_model[Symbol("A")][:fbt]) ≈ WNDCnat["A.fbt","benchmarkmge"]#  1
 @test JuMP.value(WiNnat._jump_model[Symbol("A")][:ins]) ≈ WNDCnat["A.ins","benchmarkmge"]#  1
 @test JuMP.value(WiNnat._jump_model[Symbol("A")][:tex]) ≈ WNDCnat["A.tex","benchmarkmge"]#  1
 @test JuMP.value(WiNnat._jump_model[Symbol("A")][:leg]) ≈ WNDCnat["A.leg","benchmarkmge"]#  1
@@ -292,7 +292,7 @@ WNDCnat = DenseAxisArray(a_table[2:end,2:end],string.(a_table[2:end,1],".",a_tab
 @test JuMP.value(WiNnat._jump_model[Symbol("A")][:smn]) ≈ WNDCnat["A.smn","benchmarkmge"]#  1
 @test JuMP.value(WiNnat._jump_model[Symbol("A")][:fmt]) ≈ WNDCnat["A.fmt","benchmarkmge"]#  1
 @test JuMP.value(WiNnat._jump_model[Symbol("A")][:pet]) ≈ WNDCnat["A.pet","benchmarkmge"]#  1
-@test JuMP.value(WiNnat._jump_model[Symbol("A")][:mvt]) ≈ WNDCnat["A.mvt","benchmarkmge"]#  1
+# @test JuMP.value(WiNnat._jump_model[Symbol("A")][:mvt]) ≈ WNDCnat["A.mvt","benchmarkmge"]#  1
 @test JuMP.value(WiNnat._jump_model[Symbol("A")][:cep]) ≈ WNDCnat["A.cep","benchmarkmge"]#  1
 @test JuMP.value(WiNnat._jump_model[Symbol("A")][:wst]) ≈ WNDCnat["A.wst","benchmarkmge"]#  1
 @test JuMP.value(WiNnat._jump_model[Symbol("A")][:mot]) ≈ WNDCnat["A.mot","benchmarkmge"]#  1
@@ -302,7 +302,7 @@ WNDCnat = DenseAxisArray(a_table[2:end,2:end],string.(a_table[2:end,1],".",a_tab
 @test JuMP.value(WiNnat._jump_model[Symbol("A")][:pmt]) ≈ WNDCnat["A.pmt","benchmarkmge"]#  1
 @test JuMP.value(WiNnat._jump_model[Symbol("A")][:trk]) ≈ WNDCnat["A.trk","benchmarkmge"]#  1
 @test JuMP.value(WiNnat._jump_model[Symbol("A")][:fdd]) ≈ WNDCnat["A.fdd","benchmarkmge"]#  1
-@test JuMP.value(WiNnat._jump_model[Symbol("A")][:gmt]) ≈ WNDCnat["A.gmt","benchmarkmge"]#  1
+# @test JuMP.value(WiNnat._jump_model[Symbol("A")][:gmt]) ≈ WNDCnat["A.gmt","benchmarkmge"]#  1
 @test JuMP.value(WiNnat._jump_model[Symbol("A")][:wtt]) ≈ WNDCnat["A.wtt","benchmarkmge"]#  1
 @test JuMP.value(WiNnat._jump_model[Symbol("A")][:wpd]) ≈ WNDCnat["A.wpd","benchmarkmge"]#  1
 @test JuMP.value(WiNnat._jump_model[Symbol("A")][:wht]) ≈ WNDCnat["A.wht","benchmarkmge"]#  1
@@ -523,7 +523,7 @@ WNDCnat = DenseAxisArray(a_table[2:end,2:end],string.(a_table[2:end,1],".",a_tab
 @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:fnd]) ≈ WNDCnat["PA.fnd","benchmarkmge"]#  1
 @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:pub]) ≈ WNDCnat["PA.pub","benchmarkmge"]#  1
 @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:hou]) ≈ WNDCnat["PA.hou","benchmarkmge"]#  1
-@test JuMP.value(WiNnat._jump_model[Symbol("PA")][:fbt]) ≈ WNDCnat["PA.fbt","benchmarkmge"]#  1
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:fbt]) ≈ WNDCnat["PA.fbt","benchmarkmge"]#  1
 @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:ins]) ≈ WNDCnat["PA.ins","benchmarkmge"]#  1
 @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:tex]) ≈ WNDCnat["PA.tex","benchmarkmge"]#  1
 @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:leg]) ≈ WNDCnat["PA.leg","benchmarkmge"]#  1
@@ -561,7 +561,7 @@ WNDCnat = DenseAxisArray(a_table[2:end,2:end],string.(a_table[2:end,1],".",a_tab
 @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:smn]) ≈ WNDCnat["PA.smn","benchmarkmge"]#  1
 @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:fmt]) ≈ WNDCnat["PA.fmt","benchmarkmge"]#  1
 @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:pet]) ≈ WNDCnat["PA.pet","benchmarkmge"]#  1
-@test JuMP.value(WiNnat._jump_model[Symbol("PA")][:mvt]) ≈ WNDCnat["PA.mvt","benchmarkmge"]#  1
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:mvt]) ≈ WNDCnat["PA.mvt","benchmarkmge"]#  1
 @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:cep]) ≈ WNDCnat["PA.cep","benchmarkmge"]#  1
 @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:wst]) ≈ WNDCnat["PA.wst","benchmarkmge"]#  1
 @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:mot]) ≈ WNDCnat["PA.mot","benchmarkmge"]#  1
@@ -571,7 +571,7 @@ WNDCnat = DenseAxisArray(a_table[2:end,2:end],string.(a_table[2:end,1],".",a_tab
 @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:pmt]) ≈ WNDCnat["PA.pmt","benchmarkmge"]#  1
 @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:trk]) ≈ WNDCnat["PA.trk","benchmarkmge"]#  1
 @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:fdd]) ≈ WNDCnat["PA.fdd","benchmarkmge"]#  1
-@test JuMP.value(WiNnat._jump_model[Symbol("PA")][:gmt]) ≈ WNDCnat["PA.gmt","benchmarkmge"]#  1
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:gmt]) ≈ WNDCnat["PA.gmt","benchmarkmge"]#  1
 @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:wtt]) ≈ WNDCnat["PA.wtt","benchmarkmge"]#  1
 @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:wpd]) ≈ WNDCnat["PA.wpd","benchmarkmge"]#  1
 @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:wht]) ≈ WNDCnat["PA.wht","benchmarkmge"]#  1
@@ -663,14 +663,14 @@ WNDCnat = DenseAxisArray(a_table[2:end,2:end],string.(a_table[2:end,1],".",a_tab
 
 
 # Counterfactual
-for i in sectorsi
+for i in a_
 	set_value(ta[i], 0.)
 	set_value(tm[i], 0.)
 end
-set_value(RA,  12453.8963) #So far, this updated default normalization value needs to be set, value from GAMS output. 12453.8963
+set_value(RA,  12453.8963154469) #So far, this updated default normalization value needs to be set, value from GAMS output. 12453.8963
 set_fixed!(RA, true)
 
-solve!(WiNnat, convergence_tolerance=1e-6, cumulative_iteration_limit=10000);
+solve!(WiNnat, convergence_tolerance=1e-6, cumulative_iteration_limit=10000, output_warnings="yes");
 
 @test JuMP.value(WiNnat._jump_model[Symbol("Y")][:ppd]) ≈ WNDCnat["Y.ppd","Countermge"]  #  atol=1.0e-7 #  1.01879539799114
 @test JuMP.value(WiNnat._jump_model[Symbol("Y")][:res]) ≈ WNDCnat["Y.res","Countermge"]  #atol=1.0e-5 #  1.03916450940003
@@ -755,7 +755,7 @@ solve!(WiNnat, convergence_tolerance=1e-6, cumulative_iteration_limit=10000);
 @test JuMP.value(WiNnat._jump_model[Symbol("A")][:fnd]) ≈ WNDCnat["A.fnd","Countermge"]#  1
 @test JuMP.value(WiNnat._jump_model[Symbol("A")][:pub]) ≈ WNDCnat["A.pub","Countermge"]#  0.995390649098765
 @test JuMP.value(WiNnat._jump_model[Symbol("A")][:hou]) ≈ WNDCnat["A.hou","Countermge"]#  0.947340240416864
-@test JuMP.value(WiNnat._jump_model[Symbol("A")][:fbt]) ≈ WNDCnat["A.fbt","Countermge"]#  1
+# @test JuMP.value(WiNnat._jump_model[Symbol("A")][:fbt]) ≈ WNDCnat["A.fbt","Countermge"]#  1
 @test JuMP.value(WiNnat._jump_model[Symbol("A")][:ins]) ≈ WNDCnat["A.ins","Countermge"]#  0.995012305070024
 @test JuMP.value(WiNnat._jump_model[Symbol("A")][:tex]) ≈ WNDCnat["A.tex","Countermge"]#  1.02455568009021
 @test JuMP.value(WiNnat._jump_model[Symbol("A")][:leg]) ≈ WNDCnat["A.leg","Countermge"]#  1.0053916028044
@@ -793,7 +793,7 @@ solve!(WiNnat, convergence_tolerance=1e-6, cumulative_iteration_limit=10000);
 @test JuMP.value(WiNnat._jump_model[Symbol("A")][:smn]) ≈ WNDCnat["A.smn","Countermge"]#  1.00731962935406
 @test JuMP.value(WiNnat._jump_model[Symbol("A")][:fmt]) ≈ WNDCnat["A.fmt","Countermge"]#  1.00894214241408
 @test JuMP.value(WiNnat._jump_model[Symbol("A")][:pet]) ≈ WNDCnat["A.pet","Countermge"]#  1.07877535469425
-@test JuMP.value(WiNnat._jump_model[Symbol("A")][:mvt]) ≈ WNDCnat["A.mvt","Countermge"]#  1
+# @test JuMP.value(WiNnat._jump_model[Symbol("A")][:mvt]) ≈ WNDCnat["A.mvt","Countermge"]#  1
 @test JuMP.value(WiNnat._jump_model[Symbol("A")][:cep]) ≈ WNDCnat["A.cep","Countermge"]#  0.998660303572017
 @test JuMP.value(WiNnat._jump_model[Symbol("A")][:wst]) ≈ WNDCnat["A.wst","Countermge"]#  1.00298117291499
 @test JuMP.value(WiNnat._jump_model[Symbol("A")][:mot]) ≈ WNDCnat["A.mot","Countermge"]#  1.01595926766198
@@ -803,7 +803,7 @@ solve!(WiNnat, convergence_tolerance=1e-6, cumulative_iteration_limit=10000);
 @test JuMP.value(WiNnat._jump_model[Symbol("A")][:pmt]) ≈ WNDCnat["A.pmt","Countermge"]#  1.01403892070354
 @test JuMP.value(WiNnat._jump_model[Symbol("A")][:trk]) ≈ WNDCnat["A.trk","Countermge"]#  1.01810679824243
 @test JuMP.value(WiNnat._jump_model[Symbol("A")][:fdd]) ≈ WNDCnat["A.fdd","Countermge"]#  1
-@test JuMP.value(WiNnat._jump_model[Symbol("A")][:gmt]) ≈ WNDCnat["A.gmt","Countermge"]#  1
+# @test JuMP.value(WiNnat._jump_model[Symbol("A")][:gmt]) ≈ WNDCnat["A.gmt","Countermge"]#  1
 @test JuMP.value(WiNnat._jump_model[Symbol("A")][:wtt]) ≈ WNDCnat["A.wtt","Countermge"]#  1.00693767941564
 @test JuMP.value(WiNnat._jump_model[Symbol("A")][:wpd]) ≈ WNDCnat["A.wpd","Countermge"]#  1.00634650454765
 @test JuMP.value(WiNnat._jump_model[Symbol("A")][:wht]) ≈ WNDCnat["A.wht","Countermge"]#  1.01980126761136
@@ -1024,7 +1024,7 @@ solve!(WiNnat, convergence_tolerance=1e-6, cumulative_iteration_limit=10000);
 @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:fnd]) ≈ WNDCnat["PA.fnd","Countermge"]#  0.980078177983152
 @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:pub]) ≈ WNDCnat["PA.pub","Countermge"]#  0.955834186217905
 @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:hou]) ≈ WNDCnat["PA.hou","Countermge"]#  1.0005642221854
-@test JuMP.value(WiNnat._jump_model[Symbol("PA")][:fbt]) ≈ WNDCnat["PA.fbt","Countermge"]#  1
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:fbt]) ≈ WNDCnat["PA.fbt","Countermge"]#  1
 @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:ins]) ≈ WNDCnat["PA.ins","Countermge"]#  0.955382349850157
 @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:tex]) ≈ WNDCnat["PA.tex","Countermge"]#  0.912723734471556
 @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:leg]) ≈ WNDCnat["PA.leg","Countermge"]#  0.935148987460656
@@ -1062,7 +1062,7 @@ solve!(WiNnat, convergence_tolerance=1e-6, cumulative_iteration_limit=10000);
 @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:smn]) ≈ WNDCnat["PA.smn","Countermge"]#  0.966755543366378
 @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:fmt]) ≈ WNDCnat["PA.fmt","Countermge"]#  0.947009244551105
 @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:pet]) ≈ WNDCnat["PA.pet","Countermge"]#  0.820924987727197
-@test JuMP.value(WiNnat._jump_model[Symbol("PA")][:mvt]) ≈ WNDCnat["PA.mvt","Countermge"]#  1
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:mvt]) ≈ WNDCnat["PA.mvt","Countermge"]#  1
 @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:cep]) ≈ WNDCnat["PA.cep","Countermge"]#  0.957657289208879
 @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:wst]) ≈ WNDCnat["PA.wst","Countermge"]#  0.954004512414617
 @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:mot]) ≈ WNDCnat["PA.mot","Countermge"]#  0.929958821668799
@@ -1072,7 +1072,7 @@ solve!(WiNnat, convergence_tolerance=1e-6, cumulative_iteration_limit=10000);
 @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:pmt]) ≈ WNDCnat["PA.pmt","Countermge"]#  0.95970014637895
 @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:trk]) ≈ WNDCnat["PA.trk","Countermge"]#  0.942049354860982
 @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:fdd]) ≈ WNDCnat["PA.fdd","Countermge"]#  0.975397084495546
-@test JuMP.value(WiNnat._jump_model[Symbol("PA")][:gmt]) ≈ WNDCnat["PA.gmt","Countermge"]#  1
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:gmt]) ≈ WNDCnat["PA.gmt","Countermge"]#  1
 @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:wtt]) ≈ WNDCnat["PA.wtt","Countermge"]#  0.947499646789479
 @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:wpd]) ≈ WNDCnat["PA.wpd","Countermge"]#  0.944991672182799
 @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:wht]) ≈ WNDCnat["PA.wht","Countermge"]#  0.975014893609673
@@ -1161,5 +1161,994 @@ solve!(WiNnat, convergence_tolerance=1e-6, cumulative_iteration_limit=10000);
 @test JuMP.value(WiNnat._jump_model[Symbol("PFX")]) ≈ WNDCnat["PFX.missing","Countermge"]#  0.973859561546895
 @test JuMP.value(WiNnat._jump_model[Symbol("RA")]) ≈ WNDCnat["RA.missing","Countermge"]#  12453.8963154469
 
+set_value(d_elas_ra, 0.)
+set_value(RA, 12453.8764709011)
+set_fixed!(RA, true)
+solve!(WiNnat, convergence_tolerance=1e-6, cumulative_iteration_limit=10000);
+
+# delas=0
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:ppd]) ≈ WNDCnat["Y.ppd","delas=0"]#  1.00578589079367
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:res]) ≈ WNDCnat["Y.res","delas=0"]#  1.00015838522817
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:com]) ≈ WNDCnat["Y.com","delas=0"]#  0.997520496119753
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:amb]) ≈ WNDCnat["Y.amb","delas=0"]#  1.00005865489064
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:fbp]) ≈ WNDCnat["Y.fbp","delas=0"]#  1.0023229758102
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:rec]) ≈ WNDCnat["Y.rec","delas=0"]#  0.99994812697087
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:con]) ≈ WNDCnat["Y.con","delas=0"]#  1.00008477485541
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:agr]) ≈ WNDCnat["Y.agr","delas=0"]#  1.00631987026395
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:eec]) ≈ WNDCnat["Y.eec","delas=0"]#  0.986176053048123
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:fnd]) ≈ WNDCnat["Y.fnd","delas=0"]#  1
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:pub]) ≈ WNDCnat["Y.pub","delas=0"]#  0.997608186148661
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:hou]) ≈ WNDCnat["Y.hou","delas=0"]#  1.00006146198153
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:fbt]) ≈ WNDCnat["Y.fbt","delas=0"]#  1.00182371543356
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:ins]) ≈ WNDCnat["Y.ins","delas=0"]#  1.0002826599843
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:tex]) ≈ WNDCnat["Y.tex","delas=0"]#  0.961127651076228
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:leg]) ≈ WNDCnat["Y.leg","delas=0"]#  0.999165037648243
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:fen]) ≈ WNDCnat["Y.fen","delas=0"]#  1.00071893230265
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:uti]) ≈ WNDCnat["Y.uti","delas=0"]#  1.00081551974773
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:nmp]) ≈ WNDCnat["Y.nmp","delas=0"]#  0.992091281550323
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:brd]) ≈ WNDCnat["Y.brd","delas=0"]#  1.00043906885958
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:bnk]) ≈ WNDCnat["Y.bnk","delas=0"]#  0.998928561425469
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:ore]) ≈ WNDCnat["Y.ore","delas=0"]#  1.00043017494107
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:edu]) ≈ WNDCnat["Y.edu","delas=0"]#  1.0000198568203
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:ote]) ≈ WNDCnat["Y.ote","delas=0"]#  1.00035950284685
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:man]) ≈ WNDCnat["Y.man","delas=0"]#  1.00034630219051
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:mch]) ≈ WNDCnat["Y.mch","delas=0"]#  1.00124556921544
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:dat]) ≈ WNDCnat["Y.dat","delas=0"]#  1.00003676407003
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:amd]) ≈ WNDCnat["Y.amd","delas=0"]#  0.999975508134657
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:oil]) ≈ WNDCnat["Y.oil","delas=0"]#  1.00688094090657
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:hos]) ≈ WNDCnat["Y.hos","delas=0"]#  1.00007774098847
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:rnt]) ≈ WNDCnat["Y.rnt","delas=0"]#  0.996929114791862
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:pla]) ≈ WNDCnat["Y.pla","delas=0"]#  0.996917704223255
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:fof]) ≈ WNDCnat["Y.fof","delas=0"]#  0.999082102369011
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:fin]) ≈ WNDCnat["Y.fin","delas=0"]#  1.00008695060261
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:tsv]) ≈ WNDCnat["Y.tsv","delas=0"]#  0.999019469149103
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:nrs]) ≈ WNDCnat["Y.nrs","delas=0"]#  1.0000610303432
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:sec]) ≈ WNDCnat["Y.sec","delas=0"]#  0.999353621669405
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:art]) ≈ WNDCnat["Y.art","delas=0"]#  0.999817562233491
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:mov]) ≈ WNDCnat["Y.mov","delas=0"]#  0.998063977004327
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:fpd]) ≈ WNDCnat["Y.fpd","delas=0"]#  1.0076540663362
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:slg]) ≈ WNDCnat["Y.slg","delas=0"]#  1
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:pri]) ≈ WNDCnat["Y.pri","delas=0"]#  1.00148071732905
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:grd]) ≈ WNDCnat["Y.grd","delas=0"]#  0.999931290943675
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:pip]) ≈ WNDCnat["Y.pip","delas=0"]#  1.00326450376874
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:sle]) ≈ WNDCnat["Y.sle","delas=0"]#  1.00009576452927
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:osv]) ≈ WNDCnat["Y.osv","delas=0"]#  0.99976951325889
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:trn]) ≈ WNDCnat["Y.trn","delas=0"]#  1.00352853796108
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:smn]) ≈ WNDCnat["Y.smn","delas=0"]#  0.997626230786344
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:fmt]) ≈ WNDCnat["Y.fmt","delas=0"]#  0.993767023918434
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:pet]) ≈ WNDCnat["Y.pet","delas=0"]#  1.00932260447634
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:mvt]) ≈ WNDCnat["Y.mvt","delas=0"]#  1.00179248074627
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:cep]) ≈ WNDCnat["Y.cep","delas=0"]#  0.98250356176541
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:wst]) ≈ WNDCnat["Y.wst","delas=0"]#  1.00037940734138
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:mot]) ≈ WNDCnat["Y.mot","delas=0"]#  1.01286044673038
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:adm]) ≈ WNDCnat["Y.adm","delas=0"]#  1.00018069177495
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:soc]) ≈ WNDCnat["Y.soc","delas=0"]#  1.00006363630375
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:alt]) ≈ WNDCnat["Y.alt","delas=0"]#  0.779459441770819
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:pmt]) ≈ WNDCnat["Y.pmt","delas=0"]#  1.00653119885377
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:trk]) ≈ WNDCnat["Y.trk","delas=0"]#  1.00332203819389
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:fdd]) ≈ WNDCnat["Y.fdd","delas=0"]#  1
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:gmt]) ≈ WNDCnat["Y.gmt","delas=0"]#  1.00179548366021
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:wtt]) ≈ WNDCnat["Y.wtt","delas=0"]#  1.00503703147539
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:wpd]) ≈ WNDCnat["Y.wpd","delas=0"]#  1.00147176303385
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:wht]) ≈ WNDCnat["Y.wht","delas=0"]#  1.00185887017073
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:wrh]) ≈ WNDCnat["Y.wrh","delas=0"]#  1.0003341719639
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:ott]) ≈ WNDCnat["Y.ott","delas=0"]#  1.0018269547206
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:che]) ≈ WNDCnat["Y.che","delas=0"]#  1.00157112042515
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:air]) ≈ WNDCnat["Y.air","delas=0"]#  1.01424711754209
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:mmf]) ≈ WNDCnat["Y.mmf","delas=0"]#  0.988861232088761
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:otr]) ≈ WNDCnat["Y.otr","delas=0"]#  1.00390948064932
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:min]) ≈ WNDCnat["Y.min","delas=0"]#  1.00439416273447
+@test JuMP.value(WiNnat._jump_model[Symbol("A")][:ppd]) ≈ WNDCnat["A.ppd","delas=0"]#  1.00362378204928
+@test JuMP.value(WiNnat._jump_model[Symbol("A")][:res]) ≈ WNDCnat["A.res","delas=0"]#  1.00021957182702
+@test JuMP.value(WiNnat._jump_model[Symbol("A")][:com]) ≈ WNDCnat["A.com","delas=0"]#  0.999135522921707
+@test JuMP.value(WiNnat._jump_model[Symbol("A")][:amb]) ≈ WNDCnat["A.amb","delas=0"]#  1.0000606151002
+@test JuMP.value(WiNnat._jump_model[Symbol("A")][:fbp]) ≈ WNDCnat["A.fbp","delas=0"]#  1.0014980432638
+@test JuMP.value(WiNnat._jump_model[Symbol("A")][:rec]) ≈ WNDCnat["A.rec","delas=0"]#  1.00006293674556
+@test JuMP.value(WiNnat._jump_model[Symbol("A")][:con]) ≈ WNDCnat["A.con","delas=0"]#  1.00010710990035
+@test JuMP.value(WiNnat._jump_model[Symbol("A")][:agr]) ≈ WNDCnat["A.agr","delas=0"]#  1.00420938079824
+@test JuMP.value(WiNnat._jump_model[Symbol("A")][:eec]) ≈ WNDCnat["A.eec","delas=0"]#  1.00177129917099
+@test JuMP.value(WiNnat._jump_model[Symbol("A")][:fnd]) ≈ WNDCnat["A.fnd","delas=0"]#  1
+@test JuMP.value(WiNnat._jump_model[Symbol("A")][:pub]) ≈ WNDCnat["A.pub","delas=0"]#  0.998003914523451
+@test JuMP.value(WiNnat._jump_model[Symbol("A")][:hou]) ≈ WNDCnat["A.hou","delas=0"]#  1.0000619068896
+# @test JuMP.value(WiNnat._jump_model[Symbol("A")][:fbt]) ≈ WNDCnat["A.fbt","delas=0"]#  1
+@test JuMP.value(WiNnat._jump_model[Symbol("A")][:ins]) ≈ WNDCnat["A.ins","delas=0"]#  1.00026112351513
+@test JuMP.value(WiNnat._jump_model[Symbol("A")][:tex]) ≈ WNDCnat["A.tex","delas=0"]#  0.998802020561824
+@test JuMP.value(WiNnat._jump_model[Symbol("A")][:leg]) ≈ WNDCnat["A.leg","delas=0"]#  0.999342267833263
+@test JuMP.value(WiNnat._jump_model[Symbol("A")][:fen]) ≈ WNDCnat["A.fen","delas=0"]#  1.00074025721027
+@test JuMP.value(WiNnat._jump_model[Symbol("A")][:uti]) ≈ WNDCnat["A.uti","delas=0"]#  1.00059423502693
+@test JuMP.value(WiNnat._jump_model[Symbol("A")][:nmp]) ≈ WNDCnat["A.nmp","delas=0"]#  1.0009885464123
+@test JuMP.value(WiNnat._jump_model[Symbol("A")][:brd]) ≈ WNDCnat["A.brd","delas=0"]#  1.00043476267719
+@test JuMP.value(WiNnat._jump_model[Symbol("A")][:bnk]) ≈ WNDCnat["A.bnk","delas=0"]#  0.998959725612476
+@test JuMP.value(WiNnat._jump_model[Symbol("A")][:ore]) ≈ WNDCnat["A.ore","delas=0"]#  1.00041450733429
+@test JuMP.value(WiNnat._jump_model[Symbol("A")][:edu]) ≈ WNDCnat["A.edu","delas=0"]#  1.00001464570266
+@test JuMP.value(WiNnat._jump_model[Symbol("A")][:ote]) ≈ WNDCnat["A.ote","delas=0"]#  1.00145870713754
+@test JuMP.value(WiNnat._jump_model[Symbol("A")][:man]) ≈ WNDCnat["A.man","delas=0"]#  1.00034630219051
+@test JuMP.value(WiNnat._jump_model[Symbol("A")][:mch]) ≈ WNDCnat["A.mch","delas=0"]#  1.00291322551238
+@test JuMP.value(WiNnat._jump_model[Symbol("A")][:dat]) ≈ WNDCnat["A.dat","delas=0"]#  0.999784975131571
+@test JuMP.value(WiNnat._jump_model[Symbol("A")][:amd]) ≈ WNDCnat["A.amd","delas=0"]#  0.999982449448896
+@test JuMP.value(WiNnat._jump_model[Symbol("A")][:oil]) ≈ WNDCnat["A.oil","delas=0"]#  1.00809275865993
+@test JuMP.value(WiNnat._jump_model[Symbol("A")][:hos]) ≈ WNDCnat["A.hos","delas=0"]#  1.00006202409019
+@test JuMP.value(WiNnat._jump_model[Symbol("A")][:rnt]) ≈ WNDCnat["A.rnt","delas=0"]#  0.997645383602863
+@test JuMP.value(WiNnat._jump_model[Symbol("A")][:pla]) ≈ WNDCnat["A.pla","delas=0"]#  1.0029625518548
+@test JuMP.value(WiNnat._jump_model[Symbol("A")][:fof]) ≈ WNDCnat["A.fof","delas=0"]#  1.00188241254111
+@test JuMP.value(WiNnat._jump_model[Symbol("A")][:fin]) ≈ WNDCnat["A.fin","delas=0"]#  1.00007338941603
+@test JuMP.value(WiNnat._jump_model[Symbol("A")][:tsv]) ≈ WNDCnat["A.tsv","delas=0"]#  0.999340056528015
+@test JuMP.value(WiNnat._jump_model[Symbol("A")][:nrs]) ≈ WNDCnat["A.nrs","delas=0"]#  1.00006105936276
+@test JuMP.value(WiNnat._jump_model[Symbol("A")][:sec]) ≈ WNDCnat["A.sec","delas=0"]#  0.999329312333588
+@test JuMP.value(WiNnat._jump_model[Symbol("A")][:art]) ≈ WNDCnat["A.art","delas=0"]#  0.999920748448576
+@test JuMP.value(WiNnat._jump_model[Symbol("A")][:mov]) ≈ WNDCnat["A.mov","delas=0"]#  0.998623985708231
+@test JuMP.value(WiNnat._jump_model[Symbol("A")][:fpd]) ≈ WNDCnat["A.fpd","delas=0"]#  1.00040655132139
+@test JuMP.value(WiNnat._jump_model[Symbol("A")][:slg]) ≈ WNDCnat["A.slg","delas=0"]#  1
+@test JuMP.value(WiNnat._jump_model[Symbol("A")][:pri]) ≈ WNDCnat["A.pri","delas=0"]#  1.00049602112227
+@test JuMP.value(WiNnat._jump_model[Symbol("A")][:grd]) ≈ WNDCnat["A.grd","delas=0"]#  0.999977083962352
+@test JuMP.value(WiNnat._jump_model[Symbol("A")][:pip]) ≈ WNDCnat["A.pip","delas=0"]#  0.985989854394285
+@test JuMP.value(WiNnat._jump_model[Symbol("A")][:sle]) ≈ WNDCnat["A.sle","delas=0"]#  1.0001079732021
+@test JuMP.value(WiNnat._jump_model[Symbol("A")][:osv]) ≈ WNDCnat["A.osv","delas=0"]#  1.0001830996395
+@test JuMP.value(WiNnat._jump_model[Symbol("A")][:trn]) ≈ WNDCnat["A.trn","delas=0"]#  1.00479861873786
+@test JuMP.value(WiNnat._jump_model[Symbol("A")][:smn]) ≈ WNDCnat["A.smn","delas=0"]#  1.00093202581705
+@test JuMP.value(WiNnat._jump_model[Symbol("A")][:fmt]) ≈ WNDCnat["A.fmt","delas=0"]#  1.00153471419173
+@test JuMP.value(WiNnat._jump_model[Symbol("A")][:pet]) ≈ WNDCnat["A.pet","delas=0"]#  1.00586750526947
+# @test JuMP.value(WiNnat._jump_model[Symbol("A")][:mvt]) ≈ WNDCnat["A.mvt","delas=0"]#  1
+@test JuMP.value(WiNnat._jump_model[Symbol("A")][:cep]) ≈ WNDCnat["A.cep","delas=0"]#  0.998378112853963
+@test JuMP.value(WiNnat._jump_model[Symbol("A")][:wst]) ≈ WNDCnat["A.wst","delas=0"]#  1.00037374106843
+@test JuMP.value(WiNnat._jump_model[Symbol("A")][:mot]) ≈ WNDCnat["A.mot","delas=0"]#  1.00631492828117
+@test JuMP.value(WiNnat._jump_model[Symbol("A")][:adm]) ≈ WNDCnat["A.adm","delas=0"]#  1.00017323601709
+@test JuMP.value(WiNnat._jump_model[Symbol("A")][:soc]) ≈ WNDCnat["A.soc","delas=0"]#  1.00006168614886
+@test JuMP.value(WiNnat._jump_model[Symbol("A")][:alt]) ≈ WNDCnat["A.alt","delas=0"]#  1.00069686488033
+@test JuMP.value(WiNnat._jump_model[Symbol("A")][:pmt]) ≈ WNDCnat["A.pmt","delas=0"]#  1.00348211375039
+@test JuMP.value(WiNnat._jump_model[Symbol("A")][:trk]) ≈ WNDCnat["A.trk","delas=0"]#  1.00314533277182
+@test JuMP.value(WiNnat._jump_model[Symbol("A")][:fdd]) ≈ WNDCnat["A.fdd","delas=0"]#  1
+# @test JuMP.value(WiNnat._jump_model[Symbol("A")][:gmt]) ≈ WNDCnat["A.gmt","delas=0"]#  1
+@test JuMP.value(WiNnat._jump_model[Symbol("A")][:wtt]) ≈ WNDCnat["A.wtt","delas=0"]#  1.0061511410938
+@test JuMP.value(WiNnat._jump_model[Symbol("A")][:wpd]) ≈ WNDCnat["A.wpd","delas=0"]#  1.00184795265916
+@test JuMP.value(WiNnat._jump_model[Symbol("A")][:wht]) ≈ WNDCnat["A.wht","delas=0"]#  1.00062798270384
+@test JuMP.value(WiNnat._jump_model[Symbol("A")][:wrh]) ≈ WNDCnat["A.wrh","delas=0"]#  1.00047090752075
+@test JuMP.value(WiNnat._jump_model[Symbol("A")][:ott]) ≈ WNDCnat["A.ott","delas=0"]#  1.00048317729974
+@test JuMP.value(WiNnat._jump_model[Symbol("A")][:che]) ≈ WNDCnat["A.che","delas=0"]#  1.00161061450511
+@test JuMP.value(WiNnat._jump_model[Symbol("A")][:air]) ≈ WNDCnat["A.air","delas=0"]#  1.00766093250638
+@test JuMP.value(WiNnat._jump_model[Symbol("A")][:mmf]) ≈ WNDCnat["A.mmf","delas=0"]#  1.00040257705607
+@test JuMP.value(WiNnat._jump_model[Symbol("A")][:otr]) ≈ WNDCnat["A.otr","delas=0"]#  1.00367228893136
+@test JuMP.value(WiNnat._jump_model[Symbol("A")][:min]) ≈ WNDCnat["A.min","delas=0"]#  1.00401399928603
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[ppd]ρRA")]) ≈ WNDCnat["DPARA.ppd","delas=0"]#  44.9945365993808
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[res]ρRA")]) ≈ WNDCnat["DPARA.res","delas=0"]#  739.686766872371
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[amb]ρRA")]) ≈ WNDCnat["DPARA.amb","delas=0"]#  1051.5603648016
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[fbp]ρRA")]) ≈ WNDCnat["DPARA.fbp","delas=0"]#  1032.70108735466
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[rec]ρRA")]) ≈ WNDCnat["DPARA.rec","delas=0"]#  198.985950838732
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[agr]ρRA")]) ≈ WNDCnat["DPARA.agr","delas=0"]#  147.869919600117
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[eec]ρRA")]) ≈ WNDCnat["DPARA.eec","delas=0"]#  86.2991216794809
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[pub]ρRA")]) ≈ WNDCnat["DPARA.pub","delas=0"]#  130.566354456531
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[hou]ρRA")]) ≈ WNDCnat["DPARA.hou","delas=0"]#  2035.2383474762
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[ins]ρRA")]) ≈ WNDCnat["DPARA.ins","delas=0"]#  387.00875602523
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[tex]ρRA")]) ≈ WNDCnat["DPARA.tex","delas=0"]#  72.7468150502661
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[leg]ρRA")]) ≈ WNDCnat["DPARA.leg","delas=0"]#  104.845945284567
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[fen]ρRA")]) ≈ WNDCnat["DPARA.fen","delas=0"]#  6.15763031614277
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[uti]ρRA")]) ≈ WNDCnat["DPARA.uti","delas=0"]#  264.769880065077
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[nmp]ρRA")]) ≈ WNDCnat["DPARA.nmp","delas=0"]#  20.8812969161211
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[brd]ρRA")]) ≈ WNDCnat["DPARA.brd","delas=0"]#  330.931479670374
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[bnk]ρRA")]) ≈ WNDCnat["DPARA.bnk","delas=0"]#  279.364610523514
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[ore]ρRA")]) ≈ WNDCnat["DPARA.ore","delas=0"]#  5.63104820910038
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[edu]ρRA")]) ≈ WNDCnat["DPARA.edu","delas=0"]#  351.715247249131
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[ote]ρRA")]) ≈ WNDCnat["DPARA.ote","delas=0"]#  32.6181905657221
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[mch]ρRA")]) ≈ WNDCnat["DPARA.mch","delas=0"]#  24.0993923260659
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[dat]ρRA")]) ≈ WNDCnat["DPARA.dat","delas=0"]#  55.6203913722785
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[amd]ρRA")]) ≈ WNDCnat["DPARA.amd","delas=0"]#  157.455010946577
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[hos]ρRA")]) ≈ WNDCnat["DPARA.hos","delas=0"]#  1066.51713067113
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[rnt]ρRA")]) ≈ WNDCnat["DPARA.rnt","delas=0"]#  105.372006849386
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[pla]ρRA")]) ≈ WNDCnat["DPARA.pla","delas=0"]#  67.3747264015542
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[fof]ρRA")]) ≈ WNDCnat["DPARA.fof","delas=0"]#  11.7890180762624
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[fin]ρRA")]) ≈ WNDCnat["DPARA.fin","delas=0"]#  162.347930833277
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[tsv]ρRA")]) ≈ WNDCnat["DPARA.tsv","delas=0"]#  72.8077220205937
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[nrs]ρRA")]) ≈ WNDCnat["DPARA.nrs","delas=0"]#  242.31260789127
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[sec]ρRA")]) ≈ WNDCnat["DPARA.sec","delas=0"]#  224.469566352445
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[art]ρRA")]) ≈ WNDCnat["DPARA.art","delas=0"]#  78.2371598193933
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[mov]ρRA")]) ≈ WNDCnat["DPARA.mov","delas=0"]#  32.5361842892829
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[fpd]ρRA")]) ≈ WNDCnat["DPARA.fpd","delas=0"]#  119.65836621871
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[pri]ρRA")]) ≈ WNDCnat["DPARA.pri","delas=0"]#  8.42139342000007
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[grd]ρRA")]) ≈ WNDCnat["DPARA.grd","delas=0"]#  45.8941685893515
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[sle]ρRA")]) ≈ WNDCnat["DPARA.sle","delas=0"]#  70.8549198361681
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[osv]ρRA")]) ≈ WNDCnat["DPARA.osv","delas=0"]#  615.338507334926
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[trn]ρRA")]) ≈ WNDCnat["DPARA.trn","delas=0"]#  1.50811298680475
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[fmt]ρRA")]) ≈ WNDCnat["DPARA.fmt","delas=0"]#  40.6909273928131
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[pet]ρRA")]) ≈ WNDCnat["DPARA.pet","delas=0"]#  310.703777513767
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[cep]ρRA")]) ≈ WNDCnat["DPARA.cep","delas=0"]#  164.529587884519
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[wst]ρRA")]) ≈ WNDCnat["DPARA.wst","delas=0"]#  27.0315947383601
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[mot]ρRA")]) ≈ WNDCnat["DPARA.mot","delas=0"]#  338.081915304201
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[adm]ρRA")]) ≈ WNDCnat["DPARA.adm","delas=0"]#  63.9163383167582
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[soc]ρRA")]) ≈ WNDCnat["DPARA.soc","delas=0"]#  210.509513182473
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[alt]ρRA")]) ≈ WNDCnat["DPARA.alt","delas=0"]#  399.722630052903
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[pmt]ρRA")]) ≈ WNDCnat["DPARA.pmt","delas=0"]#  1.74003550351761
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[trk]ρRA")]) ≈ WNDCnat["DPARA.trk","delas=0"]#  12.2901422973838
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[wtt]ρRA")]) ≈ WNDCnat["DPARA.wtt","delas=0"]#  21.4086095583859
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[wpd]ρRA")]) ≈ WNDCnat["DPARA.wpd","delas=0"]#  7.89464284252885
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[wrh]ρRA")]) ≈ WNDCnat["DPARA.wrh","delas=0"] atol=1.0e-7 #  0.0873319624154803
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[ott]ρRA")]) ≈ WNDCnat["DPARA.ott","delas=0"]#  5.46861401392708
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[che]ρRA")]) ≈ WNDCnat["DPARA.che","delas=0"]#  630.391967190115
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[air]ρRA")]) ≈ WNDCnat["DPARA.air","delas=0"]#  129.282761998234
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[mmf]ρRA")]) ≈ WNDCnat["DPARA.mmf","delas=0"]#  264.640159034949
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[otr]ρRA")]) ≈ WNDCnat["DPARA.otr","delas=0"]#  23.3484934431293
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[min]ρRA")]) ≈ WNDCnat["DPARA.min","delas=0"]#  0.643986262718571
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[ppd]‡A[ppd]")]) ≈ WNDCnat["SPAA.ppd","delas=0"]#  237.095668402558
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[res]‡A[res]")]) ≈ WNDCnat["SPAA.res","delas=0"]#  959.313391569356
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[com]‡A[com]")]) ≈ WNDCnat["SPAA.com","delas=0"]#  525.388253527651
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[amb]‡A[amb]")]) ≈ WNDCnat["SPAA.amb","delas=0"]#  1093.38061747821
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[fbp]‡A[fbp]")]) ≈ WNDCnat["SPAA.fbp","delas=0"]#  1516.0675363974
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[rec]‡A[rec]")]) ≈ WNDCnat["SPAA.rec","delas=0"]#  204.693237
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[con]‡A[con]")]) ≈ WNDCnat["SPAA.con","delas=0"]#  1661.39244764186
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[agr]‡A[agr]")]) ≈ WNDCnat["SPAA.agr","delas=0"]#  516.449182571726
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[eec]‡A[eec]")]) ≈ WNDCnat["SPAA.eec","delas=0"]#  298.345645152308
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[fnd]‡A[fnd]")]) ≈ WNDCnat["SPAA.fnd","delas=0"]#  380.898129
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[pub]‡A[pub]")]) ≈ WNDCnat["SPAA.pub","delas=0"]#  349.054406441761
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[hou]‡A[hou]")]) ≈ WNDCnat["SPAA.hou","delas=0"]#  2035.11236
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[ins]‡A[ins]")]) ≈ WNDCnat["SPAA.ins","delas=0"]#  1174.62489838087
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[tex]‡A[tex]")]) ≈ WNDCnat["SPAA.tex","delas=0"]#  145.384700102198
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[leg]‡A[leg]")]) ≈ WNDCnat["SPAA.leg","delas=0"]#  348.543208876288
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[fen]‡A[fen]")]) ≈ WNDCnat["SPAA.fen","delas=0"]#  70.4842836606326
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[uti]‡A[uti]")]) ≈ WNDCnat["SPAA.uti","delas=0"]#  652.064819413625
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[nmp]‡A[nmp]")]) ≈ WNDCnat["SPAA.nmp","delas=0"]#  214.170730815099
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[brd]‡A[brd]")]) ≈ WNDCnat["SPAA.brd","delas=0"]#  706.92158293153
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[bnk]‡A[bnk]")]) ≈ WNDCnat["SPAA.bnk","delas=0"]#  792.928809423471
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[ore]‡A[ore]")]) ≈ WNDCnat["SPAA.ore","delas=0"]#  1255.22670672849
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[edu]‡A[edu]")]) ≈ WNDCnat["SPAA.edu","delas=0"]#  392.721177238059
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[ote]‡A[ote]")]) ≈ WNDCnat["SPAA.ote","delas=0"]#  277.512122111029
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[man]‡A[man]")]) ≈ WNDCnat["SPAA.man","delas=0"]#  579.534061485011
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[mch]‡A[mch]")]) ≈ WNDCnat["SPAA.mch","delas=0"]#  587.302459128392
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[dat]‡A[dat]")]) ≈ WNDCnat["SPAA.dat","delas=0"]#  245.676944264987
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[amd]‡A[amd]")]) ≈ WNDCnat["SPAA.amd","delas=0"]#  229.587824
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[oil]‡A[oil]")]) ≈ WNDCnat["SPAA.oil","delas=0"]#  411.497048603792
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[hos]‡A[hos]")]) ≈ WNDCnat["SPAA.hos","delas=0"]#  1073.11603511482
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[rnt]‡A[rnt]")]) ≈ WNDCnat["SPAA.rnt","delas=0"]#  368.878804478233
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[pla]‡A[pla]")]) ≈ WNDCnat["SPAA.pla","delas=0"]#  362.323320781291
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[fof]‡A[fof]")]) ≈ WNDCnat["SPAA.fof","delas=0"]#  92.1228989157354
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[fin]‡A[fin]")]) ≈ WNDCnat["SPAA.fin","delas=0"]#  183.495134
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[tsv]‡A[tsv]")]) ≈ WNDCnat["SPAA.tsv","delas=0"]#  1989.37691817216
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[nrs]‡A[nrs]")]) ≈ WNDCnat["SPAA.nrs","delas=0"]#  245.658333
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[sec]‡A[sec]")]) ≈ WNDCnat["SPAA.sec","delas=0"]#  514.224717426736
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[art]‡A[art]")]) ≈ WNDCnat["SPAA.art","delas=0"]#  174.641390742409
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[mov]‡A[mov]")]) ≈ WNDCnat["SPAA.mov","delas=0"]#  146.569456555932
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[fpd]‡A[fpd]")]) ≈ WNDCnat["SPAA.fpd","delas=0"]#  221.278857788401
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[slg]‡A[slg]")]) ≈ WNDCnat["SPAA.slg","delas=0"]#  1744.23136
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[pri]‡A[pri]")]) ≈ WNDCnat["SPAA.pri","delas=0"]#  89.2867852003098
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[grd]‡A[grd]")]) ≈ WNDCnat["SPAA.grd","delas=0"]#  93.1481825
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[pip]‡A[pip]")]) ≈ WNDCnat["SPAA.pip","delas=0"]#  0.382187262062218
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[sle]‡A[sle]")]) ≈ WNDCnat["SPAA.sle","delas=0"]#  104.176032
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[osv]‡A[osv]")]) ≈ WNDCnat["SPAA.osv","delas=0"]#  868.463326892784
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[trn]‡A[trn]")]) ≈ WNDCnat["SPAA.trn","delas=0"]#  7.92415074551477
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[smn]‡A[smn]")]) ≈ WNDCnat["SPAA.smn","delas=0"]#  124.258768865999
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[fmt]‡A[fmt]")]) ≈ WNDCnat["SPAA.fmt","delas=0"]#  477.223423179182
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[pet]‡A[pet]")]) ≈ WNDCnat["SPAA.pet","delas=0"]#  754.140207758403
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[cep]‡A[cep]")]) ≈ WNDCnat["SPAA.cep","delas=0"]#  754.889357739978
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[wst]‡A[wst]")]) ≈ WNDCnat["SPAA.wst","delas=0"]#  117.576542647166
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[mot]‡A[mot]")]) ≈ WNDCnat["SPAA.mot","delas=0"]#  1115.85632282281
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[adm]‡A[adm]")]) ≈ WNDCnat["SPAA.adm","delas=0"]#  929.237345902182
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[soc]‡A[soc]")]) ≈ WNDCnat["SPAA.soc","delas=0"]#  211.263869
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[alt]‡A[alt]")]) ≈ WNDCnat["SPAA.alt","delas=0"]#  428.649715680174
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[pmt]‡A[pmt]")]) ≈ WNDCnat["SPAA.pmt","delas=0"]#  306.557469719843
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[trk]‡A[trk]")]) ≈ WNDCnat["SPAA.trk","delas=0"]#  37.635985494279
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[fdd]‡A[fdd]")]) ≈ WNDCnat["SPAA.fdd","delas=0"]#  598.321003
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[wtt]‡A[wtt]")]) ≈ WNDCnat["SPAA.wtt","delas=0"]#  24.7107318426004
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[wpd]‡A[wpd]")]) ≈ WNDCnat["SPAA.wpd","delas=0"]#  169.441222157702
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[wht]‡A[wht]")]) ≈ WNDCnat["SPAA.wht","delas=0"]#  101.048663092556
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[wrh]‡A[wrh]")]) ≈ WNDCnat["SPAA.wrh","delas=0"]#  141.955218141518
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[ott]‡A[ott]")]) ≈ WNDCnat["SPAA.ott","delas=0"]#  7.216437
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[che]‡A[che]")]) ≈ WNDCnat["SPAA.che","delas=0"]#  1316.08916247908
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[air]‡A[air]")]) ≈ WNDCnat["SPAA.air","delas=0"]#  206.906400189041
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[mmf]‡A[mmf]")]) ≈ WNDCnat["SPAA.mmf","delas=0"]#  432.903209984379
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[otr]‡A[otr]")]) ≈ WNDCnat["SPAA.otr","delas=0"]#  234.249449781175
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[min]‡A[min]")]) ≈ WNDCnat["SPAA.min","delas=0"]#  110.7701129422
+@test JuMP.value(WiNnat._jump_model[Symbol("PY[ppd]†A→dmppd")]) ≈ WNDCnat["DPYA.ppd","delas=0"]#  178.21075049051
+@test JuMP.value(WiNnat._jump_model[Symbol("PY[res]†A→dmres")]) ≈ WNDCnat["DPYA.res","delas=0"]#  899.582049
+@test JuMP.value(WiNnat._jump_model[Symbol("PY[com]†A→dmcom")]) ≈ WNDCnat["DPYA.com","delas=0"]#  516.642196501858
+@test JuMP.value(WiNnat._jump_model[Symbol("PY[amb]†A→dmamb")]) ≈ WNDCnat["DPYA.amb","delas=0"]#  1092.93382
+@test JuMP.value(WiNnat._jump_model[Symbol("PY[fbp]†A→dmfbp")]) ≈ WNDCnat["DPYA.fbp","delas=0"]#  931.00345778859
+@test JuMP.value(WiNnat._jump_model[Symbol("PY[rec]†A→dmrec")]) ≈ WNDCnat["DPYA.rec","delas=0"]#  195.091973
+@test JuMP.value(WiNnat._jump_model[Symbol("PY[con]†A→dmcon")]) ≈ WNDCnat["DPYA.con","delas=0"]#  1659.55143
+@test JuMP.value(WiNnat._jump_model[Symbol("PY[agr]†A→dmagr")]) ≈ WNDCnat["DPYA.agr","delas=0"]#  396.877165615111
+@test JuMP.value(WiNnat._jump_model[Symbol("PY[eec]†A→dmeec")]) ≈ WNDCnat["DPYA.eec","delas=0"]#  116.115975355055
+@test JuMP.value(WiNnat._jump_model[Symbol("PY[fnd]†A→dmfnd")]) ≈ WNDCnat["DPYA.fnd","delas=0"]#  380.898129
+@test JuMP.value(WiNnat._jump_model[Symbol("PY[pub]†A→dmpub")]) ≈ WNDCnat["DPYA.pub","delas=0"]#  279.081932129493
+@test JuMP.value(WiNnat._jump_model[Symbol("PY[hou]†A→dmhou")]) ≈ WNDCnat["DPYA.hou","delas=0"]#  2073.31916
+@test JuMP.value(WiNnat._jump_model[Symbol("PY[ins]†A→dmins")]) ≈ WNDCnat["DPYA.ins","delas=0"]#  1122.4038138215
+@test JuMP.value(WiNnat._jump_model[Symbol("PY[tex]†A→dmtex")]) ≈ WNDCnat["DPYA.tex","delas=0"]#  44.6512497935603
+@test JuMP.value(WiNnat._jump_model[Symbol("PY[leg]†A→dmleg")]) ≈ WNDCnat["DPYA.leg","delas=0"]#  342.931208808951
+@test JuMP.value(WiNnat._jump_model[Symbol("PY[fen]†A→dmfen")]) ≈ WNDCnat["DPYA.fen","delas=0"]#  70.8983536965506
+@test JuMP.value(WiNnat._jump_model[Symbol("PY[uti]†A→dmuti")]) ≈ WNDCnat["DPYA.uti","delas=0"]#  624.227774668326
+@test JuMP.value(WiNnat._jump_model[Symbol("PY[nmp]†A→dmnmp")]) ≈ WNDCnat["DPYA.nmp","delas=0"]#  122.525922980665
+@test JuMP.value(WiNnat._jump_model[Symbol("PY[brd]†A→dmbrd")]) ≈ WNDCnat["DPYA.brd","delas=0"]#  683.421349297816
+@test JuMP.value(WiNnat._jump_model[Symbol("PY[bnk]†A→dmbnk")]) ≈ WNDCnat["DPYA.bnk","delas=0"]#  852.551368068504
+@test JuMP.value(WiNnat._jump_model[Symbol("PY[ore]†A→dmore")]) ≈ WNDCnat["DPYA.ore","delas=0"]#  1259.29276
+@test JuMP.value(WiNnat._jump_model[Symbol("PY[edu]†A→dmedu")]) ≈ WNDCnat["DPYA.edu","delas=0"]#  393.241182081057
+@test JuMP.value(WiNnat._jump_model[Symbol("PY[ote]†A→dmote")]) ≈ WNDCnat["DPYA.ote","delas=0"]#  317.472450892451
+@test JuMP.value(WiNnat._jump_model[Symbol("PY[man]†A→dmman")]) ≈ WNDCnat["DPYA.man","delas=0"]#  582.277441
+@test JuMP.value(WiNnat._jump_model[Symbol("PY[mch]†A→dmmch")]) ≈ WNDCnat["DPYA.mch","delas=0"]#  350.621153933213
+@test JuMP.value(WiNnat._jump_model[Symbol("PY[dat]†A→dmdat")]) ≈ WNDCnat["DPYA.dat","delas=0"]#  249.628668046696
+@test JuMP.value(WiNnat._jump_model[Symbol("PY[amd]†A→dmamd")]) ≈ WNDCnat["DPYA.amd","delas=0"]#  211.274527
+@test JuMP.value(WiNnat._jump_model[Symbol("PY[oil]†A→dmoil")]) ≈ WNDCnat["DPYA.oil","delas=0"]#  231.642002005523
+@test JuMP.value(WiNnat._jump_model[Symbol("PY[hos]†A→dmhos")]) ≈ WNDCnat["DPYA.hos","delas=0"]#  1069.65355419784
+@test JuMP.value(WiNnat._jump_model[Symbol("PY[rnt]†A→dmrnt")]) ≈ WNDCnat["DPYA.rnt","delas=0"]#  433.205937
+@test JuMP.value(WiNnat._jump_model[Symbol("PY[pla]†A→dmpla")]) ≈ WNDCnat["DPYA.pla","delas=0"]#  229.566295840274
+@test JuMP.value(WiNnat._jump_model[Symbol("PY[fof]†A→dmfof")]) ≈ WNDCnat["DPYA.fof","delas=0"]#  65.7273275023142
+@test JuMP.value(WiNnat._jump_model[Symbol("PY[fin]†A→dmfin")]) ≈ WNDCnat["DPYA.fin","delas=0"]#  183.457238
+@test JuMP.value(WiNnat._jump_model[Symbol("PY[tsv]†A→dmtsv")]) ≈ WNDCnat["DPYA.tsv","delas=0"]#  2035.15069283442
+@test JuMP.value(WiNnat._jump_model[Symbol("PY[nrs]†A→dmnrs")]) ≈ WNDCnat["DPYA.nrs","delas=0"]#  242.743749
+@test JuMP.value(WiNnat._jump_model[Symbol("PY[sec]†A→dmsec")]) ≈ WNDCnat["DPYA.sec","delas=0"]#  584.314692597079
+@test JuMP.value(WiNnat._jump_model[Symbol("PY[art]†A→dmart")]) ≈ WNDCnat["DPYA.art","delas=0"]#  169.247278606401
+@test JuMP.value(WiNnat._jump_model[Symbol("PY[mov]†A→dmmov")]) ≈ WNDCnat["DPYA.mov","delas=0"]#  145.054508466726
+@test JuMP.value(WiNnat._jump_model[Symbol("PY[fpd]†A→dmfpd")]) ≈ WNDCnat["DPYA.fpd","delas=0"]#  72.0340376373278
+@test JuMP.value(WiNnat._jump_model[Symbol("PY[slg]†A→dmslg")]) ≈ WNDCnat["DPYA.slg","delas=0"]#  1744.23136
+@test JuMP.value(WiNnat._jump_model[Symbol("PY[pri]†A→dmpri")]) ≈ WNDCnat["DPYA.pri","delas=0"]#  71.1498911232477
+@test JuMP.value(WiNnat._jump_model[Symbol("PY[grd]†A→dmgrd")]) ≈ WNDCnat["DPYA.grd","delas=0"]#  92.1405807
+@test JuMP.value(WiNnat._jump_model[Symbol("PY[pip]†A→dmpip")]) ≈ WNDCnat["DPYA.pip","delas=0"]#  0.551520281
+@test JuMP.value(WiNnat._jump_model[Symbol("PY[sle]†A→dmsle")]) ≈ WNDCnat["DPYA.sle","delas=0"]#  104.176032
+@test JuMP.value(WiNnat._jump_model[Symbol("PY[osv]†A→dmosv")]) ≈ WNDCnat["DPYA.osv","delas=0"]#  843.612078140922
+@test JuMP.value(WiNnat._jump_model[Symbol("PY[trn]†A→dmtrn")]) ≈ WNDCnat["DPYA.trn","delas=0"]#  10.818151
+@test JuMP.value(WiNnat._jump_model[Symbol("PY[smn]†A→dmsmn")]) ≈ WNDCnat["DPYA.smn","delas=0"]#  126.300856150821
+@test JuMP.value(WiNnat._jump_model[Symbol("PY[fmt]†A→dmfmt")]) ≈ WNDCnat["DPYA.fmt","delas=0"]#  326.674921247834
+@test JuMP.value(WiNnat._jump_model[Symbol("PY[pet]†A→dmpet")]) ≈ WNDCnat["DPYA.pet","delas=0"]#  530.135768600117
+@test JuMP.value(WiNnat._jump_model[Symbol("PY[cep]†A→dmcep")]) ≈ WNDCnat["DPYA.cep","delas=0"]#  293.672381307298
+@test JuMP.value(WiNnat._jump_model[Symbol("PY[wst]†A→dmwst")]) ≈ WNDCnat["DPYA.wst","delas=0"]#  115.755819924613
+@test JuMP.value(WiNnat._jump_model[Symbol("PY[mot]†A→dmmot")]) ≈ WNDCnat["DPYA.mot","delas=0"]#  661.976681705433
+@test JuMP.value(WiNnat._jump_model[Symbol("PY[adm]†A→dmadm")]) ≈ WNDCnat["DPYA.adm","delas=0"]#  923.37937571617
+@test JuMP.value(WiNnat._jump_model[Symbol("PY[soc]†A→dmsoc")]) ≈ WNDCnat["DPYA.soc","delas=0"]#  210.448152
+@test JuMP.value(WiNnat._jump_model[Symbol("PY[alt]†A→dmalt")]) ≈ WNDCnat["DPYA.alt","delas=0"]#  15.1266248122091
+@test JuMP.value(WiNnat._jump_model[Symbol("PY[pmt]†A→dmpmt")]) ≈ WNDCnat["DPYA.pmt","delas=0"]#  209.112552452253
+@test JuMP.value(WiNnat._jump_model[Symbol("PY[trk]†A→dmtrk")]) ≈ WNDCnat["DPYA.trk","delas=0"]#  38.934866
+@test JuMP.value(WiNnat._jump_model[Symbol("PY[fdd]†A→dmfdd")]) ≈ WNDCnat["DPYA.fdd","delas=0"]#  598.321003
+@test JuMP.value(WiNnat._jump_model[Symbol("PY[wtt]†A→dmwtt")]) ≈ WNDCnat["DPYA.wtt","delas=0"]#  29.5450418
+@test JuMP.value(WiNnat._jump_model[Symbol("PY[wpd]†A→dmwpd")]) ≈ WNDCnat["DPYA.wpd","delas=0"]#  110.717249634737
+@test JuMP.value(WiNnat._jump_model[Symbol("PY[wht]†A→dmwht")]) ≈ WNDCnat["DPYA.wht","delas=0"]#  103.418245
+@test JuMP.value(WiNnat._jump_model[Symbol("PY[wrh]†A→dmwrh")]) ≈ WNDCnat["DPYA.wrh","delas=0"]#  141.952358
+@test JuMP.value(WiNnat._jump_model[Symbol("PY[ott]†A→dmott")]) ≈ WNDCnat["DPYA.ott","delas=0"]#  7.216437
+@test JuMP.value(WiNnat._jump_model[Symbol("PY[che]†A→dmche")]) ≈ WNDCnat["DPYA.che","delas=0"]#  747.766537670418
+@test JuMP.value(WiNnat._jump_model[Symbol("PY[air]†A→dmair")]) ≈ WNDCnat["DPYA.air","delas=0"]#  191.205489940419
+@test JuMP.value(WiNnat._jump_model[Symbol("PY[mmf]†A→dmmmf")]) ≈ WNDCnat["DPYA.mmf","delas=0"]#  144.225723685467
+@test JuMP.value(WiNnat._jump_model[Symbol("PY[otr]†A→dmotr")]) ≈ WNDCnat["DPYA.otr","delas=0"]#  244.239910468167
+@test JuMP.value(WiNnat._jump_model[Symbol("PY[min]†A→dmmin")]) ≈ WNDCnat["DPYA.min","delas=0"]#  83.8238663779317
+@test JuMP.value(WiNnat._jump_model[Symbol("PM[trn]‡MS[trn]")]) ≈ WNDCnat["SPMMS.trn","delas=0"]#  441.38467
+@test JuMP.value(WiNnat._jump_model[Symbol("PM[trd]‡MS[trd]")]) ≈ WNDCnat["SPMMS.trd","delas=0"]#  2963.50744
+@test JuMP.value(WiNnat._jump_model[Symbol("MS")][:trn]) ≈ WNDCnat["MS.trn","delas=0"]#  1.00331384764837
+@test JuMP.value(WiNnat._jump_model[Symbol("MS")][:trd]) ≈ WNDCnat["MS.trd","delas=0"]#  1.00176499491427
+@test JuMP.value(WiNnat._jump_model[Symbol("PA")][:ppd]) ≈ WNDCnat["PA.ppd","delas=0"]#  0.944559101695778
+@test JuMP.value(WiNnat._jump_model[Symbol("PA")][:res]) ≈ WNDCnat["PA.res","delas=0"]#  0.903708550522949
+@test JuMP.value(WiNnat._jump_model[Symbol("PA")][:com]) ≈ WNDCnat["PA.com","delas=0"]#  0.971450632063904
+@test JuMP.value(WiNnat._jump_model[Symbol("PA")][:amb]) ≈ WNDCnat["PA.amb","delas=0"]#  0.974885056949802
+@test JuMP.value(WiNnat._jump_model[Symbol("PA")][:fbp]) ≈ WNDCnat["PA.fbp","delas=0"]#  0.904807082769487
+@test JuMP.value(WiNnat._jump_model[Symbol("PA")][:rec]) ≈ WNDCnat["PA.rec","delas=0"]#  0.922449169782505
+@test JuMP.value(WiNnat._jump_model[Symbol("PA")][:con]) ≈ WNDCnat["PA.con","delas=0"]#  0.960504292390402
+@test JuMP.value(WiNnat._jump_model[Symbol("PA")][:agr]) ≈ WNDCnat["PA.agr","delas=0"]#  0.969158177798507
+@test JuMP.value(WiNnat._jump_model[Symbol("PA")][:eec]) ≈ WNDCnat["PA.eec","delas=0"]#  0.936130220504458
+@test JuMP.value(WiNnat._jump_model[Symbol("PA")][:fnd]) ≈ WNDCnat["PA.fnd","delas=0"]#  0.978735209313508
+@test JuMP.value(WiNnat._jump_model[Symbol("PA")][:pub]) ≈ WNDCnat["PA.pub","delas=0"]#  0.955274641335733
+@test JuMP.value(WiNnat._jump_model[Symbol("PA")][:hou]) ≈ WNDCnat["PA.hou","delas=0"]#  1.00356800607814
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:fbt]) ≈ WNDCnat["PA.fbt","delas=0"]#  1
+@test JuMP.value(WiNnat._jump_model[Symbol("PA")][:ins]) ≈ WNDCnat["PA.ins","delas=0"]#  0.954574299699064
+@test JuMP.value(WiNnat._jump_model[Symbol("PA")][:tex]) ≈ WNDCnat["PA.tex","delas=0"]#  0.911106201550666
+@test JuMP.value(WiNnat._jump_model[Symbol("PA")][:leg]) ≈ WNDCnat["PA.leg","delas=0"]#  0.934421555499732
+@test JuMP.value(WiNnat._jump_model[Symbol("PA")][:fen]) ≈ WNDCnat["PA.fen","delas=0"]#  0.973948881811649
+@test JuMP.value(WiNnat._jump_model[Symbol("PA")][:uti]) ≈ WNDCnat["PA.uti","delas=0"]#  0.919543606852853
+@test JuMP.value(WiNnat._jump_model[Symbol("PA")][:nmp]) ≈ WNDCnat["PA.nmp","delas=0"]#  0.938417126742624
+@test JuMP.value(WiNnat._jump_model[Symbol("PA")][:brd]) ≈ WNDCnat["PA.brd","delas=0"]#  0.913682137056211
+@test JuMP.value(WiNnat._jump_model[Symbol("PA")][:bnk]) ≈ WNDCnat["PA.bnk","delas=0"]#  0.978995433429131
+@test JuMP.value(WiNnat._jump_model[Symbol("PA")][:ore]) ≈ WNDCnat["PA.ore","delas=0"]#  0.965298564593069
+@test JuMP.value(WiNnat._jump_model[Symbol("PA")][:edu]) ≈ WNDCnat["PA.edu","delas=0"]#  0.976288086368048
+@test JuMP.value(WiNnat._jump_model[Symbol("PA")][:ote]) ≈ WNDCnat["PA.ote","delas=0"]#  0.961321229467476
+@test JuMP.value(WiNnat._jump_model[Symbol("PA")][:man]) ≈ WNDCnat["PA.man","delas=0"]#  0.973004483189782
+@test JuMP.value(WiNnat._jump_model[Symbol("PA")][:mch]) ≈ WNDCnat["PA.mch","delas=0"]#  0.946113722980971
+@test JuMP.value(WiNnat._jump_model[Symbol("PA")][:dat]) ≈ WNDCnat["PA.dat","delas=0"]#  0.969263532807564
+@test JuMP.value(WiNnat._jump_model[Symbol("PA")][:amd]) ≈ WNDCnat["PA.amd","delas=0"]#  0.891754914733735
+@test JuMP.value(WiNnat._jump_model[Symbol("PA")][:oil]) ≈ WNDCnat["PA.oil","delas=0"]#  0.944525058471408
+@test JuMP.value(WiNnat._jump_model[Symbol("PA")][:hos]) ≈ WNDCnat["PA.hos","delas=0"]#  0.968942512768636
+@test JuMP.value(WiNnat._jump_model[Symbol("PA")][:rnt]) ≈ WNDCnat["PA.rnt","delas=0"]#  0.934171829314441
+@test JuMP.value(WiNnat._jump_model[Symbol("PA")][:pla]) ≈ WNDCnat["PA.pla","delas=0"]#  0.935499824635909
+@test JuMP.value(WiNnat._jump_model[Symbol("PA")][:fof]) ≈ WNDCnat["PA.fof","delas=0"]#  0.964188851356017
+@test JuMP.value(WiNnat._jump_model[Symbol("PA")][:fin]) ≈ WNDCnat["PA.fin","delas=0"]#  0.969344521130822
+@test JuMP.value(WiNnat._jump_model[Symbol("PA")][:tsv]) ≈ WNDCnat["PA.tsv","delas=0"]#  0.972641058003388
+@test JuMP.value(WiNnat._jump_model[Symbol("PA")][:nrs]) ≈ WNDCnat["PA.nrs","delas=0"]#  0.958483264421221
+@test JuMP.value(WiNnat._jump_model[Symbol("PA")][:sec]) ≈ WNDCnat["PA.sec","delas=0"]#  0.971353363818214
+@test JuMP.value(WiNnat._jump_model[Symbol("PA")][:art]) ≈ WNDCnat["PA.art","delas=0"]#  0.945372401757906
+@test JuMP.value(WiNnat._jump_model[Symbol("PA")][:mov]) ≈ WNDCnat["PA.mov","delas=0"]#  0.950767401553106
+@test JuMP.value(WiNnat._jump_model[Symbol("PA")][:fpd]) ≈ WNDCnat["PA.fpd","delas=0"]#  0.925102758032725
+@test JuMP.value(WiNnat._jump_model[Symbol("PA")][:slg]) ≈ WNDCnat["PA.slg","delas=0"]#  0.968358481331393
+@test JuMP.value(WiNnat._jump_model[Symbol("PA")][:pri]) ≈ WNDCnat["PA.pri","delas=0"]#  0.951960665701127
+@test JuMP.value(WiNnat._jump_model[Symbol("PA")][:grd]) ≈ WNDCnat["PA.grd","delas=0"]#  0.96055265642299
+@test JuMP.value(WiNnat._jump_model[Symbol("PA")][:pip]) ≈ WNDCnat["PA.pip","delas=0"]#  0.784186918977728
+@test JuMP.value(WiNnat._jump_model[Symbol("PA")][:sle]) ≈ WNDCnat["PA.sle","delas=0"]#  0.950692169697937
+@test JuMP.value(WiNnat._jump_model[Symbol("PA")][:osv]) ≈ WNDCnat["PA.osv","delas=0"]#  0.949741104856439
+@test JuMP.value(WiNnat._jump_model[Symbol("PA")][:trn]) ≈ WNDCnat["PA.trn","delas=0"]#  1.14207648268644
+@test JuMP.value(WiNnat._jump_model[Symbol("PA")][:smn]) ≈ WNDCnat["PA.smn","delas=0"]#  0.965099589925666
+@test JuMP.value(WiNnat._jump_model[Symbol("PA")][:fmt]) ≈ WNDCnat["PA.fmt","delas=0"]#  0.945421509797243
+@test JuMP.value(WiNnat._jump_model[Symbol("PA")][:pet]) ≈ WNDCnat["PA.pet","delas=0"]#  0.820970005125599
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:mvt]) ≈ WNDCnat["PA.mvt","delas=0"]#  1
+@test JuMP.value(WiNnat._jump_model[Symbol("PA")][:cep]) ≈ WNDCnat["PA.cep","delas=0"]#  0.955919309753241
+@test JuMP.value(WiNnat._jump_model[Symbol("PA")][:wst]) ≈ WNDCnat["PA.wst","delas=0"]#  0.952738240187138
+@test JuMP.value(WiNnat._jump_model[Symbol("PA")][:mot]) ≈ WNDCnat["PA.mot","delas=0"]#  0.928379686984239
+@test JuMP.value(WiNnat._jump_model[Symbol("PA")][:adm]) ≈ WNDCnat["PA.adm","delas=0"]#  0.965713837842447
+@test JuMP.value(WiNnat._jump_model[Symbol("PA")][:soc]) ≈ WNDCnat["PA.soc","delas=0"]#  0.966436120944972
+@test JuMP.value(WiNnat._jump_model[Symbol("PA")][:alt]) ≈ WNDCnat["PA.alt","delas=0"]#  0.874242668909815
+@test JuMP.value(WiNnat._jump_model[Symbol("PA")][:pmt]) ≈ WNDCnat["PA.pmt","delas=0"]#  0.958374533466304
+@test JuMP.value(WiNnat._jump_model[Symbol("PA")][:trk]) ≈ WNDCnat["PA.trk","delas=0"]#  0.940931376144473
+@test JuMP.value(WiNnat._jump_model[Symbol("PA")][:fdd]) ≈ WNDCnat["PA.fdd","delas=0"]#  0.974149507995964
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:gmt]) ≈ WNDCnat["PA.gmt","delas=0"]#  1
+@test JuMP.value(WiNnat._jump_model[Symbol("PA")][:wtt]) ≈ WNDCnat["PA.wtt","delas=0"]#  0.946378878378482
+@test JuMP.value(WiNnat._jump_model[Symbol("PA")][:wpd]) ≈ WNDCnat["PA.wpd","delas=0"]#  0.943466452964732
+@test JuMP.value(WiNnat._jump_model[Symbol("PA")][:wht]) ≈ WNDCnat["PA.wht","delas=0"]#  0.973973514940118
+@test JuMP.value(WiNnat._jump_model[Symbol("PA")][:wrh]) ≈ WNDCnat["PA.wrh","delas=0"]#  0.966541101359892
+@test JuMP.value(WiNnat._jump_model[Symbol("PA")][:ott]) ≈ WNDCnat["PA.ott","delas=0"]#  0.973893652791651
+@test JuMP.value(WiNnat._jump_model[Symbol("PA")][:che]) ≈ WNDCnat["PA.che","delas=0"]#  0.944176796655244
+@test JuMP.value(WiNnat._jump_model[Symbol("PA")][:air]) ≈ WNDCnat["PA.air","delas=0"]#  0.853951457339014
+@test JuMP.value(WiNnat._jump_model[Symbol("PA")][:mmf]) ≈ WNDCnat["PA.mmf","delas=0"]#  0.932150543608111
+@test JuMP.value(WiNnat._jump_model[Symbol("PA")][:otr]) ≈ WNDCnat["PA.otr","delas=0"]#  0.959121965158609
+@test JuMP.value(WiNnat._jump_model[Symbol("PA")][:min]) ≈ WNDCnat["PA.min","delas=0"]#  0.9337776664743
+@test JuMP.value(WiNnat._jump_model[Symbol("PY")][:ppd]) ≈ WNDCnat["PY.ppd","delas=0"]#  0.956792715838143
+@test JuMP.value(WiNnat._jump_model[Symbol("PY")][:res]) ≈ WNDCnat["PY.res","delas=0"]#  0.966658926492167
+@test JuMP.value(WiNnat._jump_model[Symbol("PY")][:com]) ≈ WNDCnat["PY.com","delas=0"]#  0.979062089261254
+@test JuMP.value(WiNnat._jump_model[Symbol("PY")][:amb]) ≈ WNDCnat["PY.amb","delas=0"]#  0.975360089005644
+@test JuMP.value(WiNnat._jump_model[Symbol("PY")][:fbp]) ≈ WNDCnat["PY.fbp","delas=0"]#  0.954856775861678
+@test JuMP.value(WiNnat._jump_model[Symbol("PY")][:rec]) ≈ WNDCnat["PY.rec","delas=0"]#  0.967846619351907
+@test JuMP.value(WiNnat._jump_model[Symbol("PY")][:con]) ≈ WNDCnat["PY.con","delas=0"]#  0.961628798303551
+@test JuMP.value(WiNnat._jump_model[Symbol("PY")][:agr]) ≈ WNDCnat["PY.agr","delas=0"]#  0.958793009499625
+@test JuMP.value(WiNnat._jump_model[Symbol("PY")][:eec]) ≈ WNDCnat["PY.eec","delas=0"]#  0.966261139348885
+@test JuMP.value(WiNnat._jump_model[Symbol("PY")][:fnd]) ≈ WNDCnat["PY.fnd","delas=0"]#  0.978735209313508
+@test JuMP.value(WiNnat._jump_model[Symbol("PY")][:pub]) ≈ WNDCnat["PY.pub","delas=0"]#  0.979182673734003
+@test JuMP.value(WiNnat._jump_model[Symbol("PY")][:hou]) ≈ WNDCnat["PY.hou","delas=0"]#  0.985074412407487
+@test JuMP.value(WiNnat._jump_model[Symbol("PY")][:fbt]) ≈ WNDCnat["PY.fbt","delas=0"]#  0.974887404513812
+@test JuMP.value(WiNnat._jump_model[Symbol("PY")][:ins]) ≈ WNDCnat["PY.ins","delas=0"]#  0.970354622012185
+@test JuMP.value(WiNnat._jump_model[Symbol("PY")][:tex]) ≈ WNDCnat["PY.tex","delas=0"]#  0.954834196282788
+@test JuMP.value(WiNnat._jump_model[Symbol("PY")][:leg]) ≈ WNDCnat["PY.leg","delas=0"]#  0.978208688795886
+@test JuMP.value(WiNnat._jump_model[Symbol("PY")][:fen]) ≈ WNDCnat["PY.fen","delas=0"]#  0.973928759455097
+@test JuMP.value(WiNnat._jump_model[Symbol("PY")][:uti]) ≈ WNDCnat["PY.uti","delas=0"]#  0.963151569334982
+@test JuMP.value(WiNnat._jump_model[Symbol("PY")][:nmp]) ≈ WNDCnat["PY.nmp","delas=0"]#  0.963327800769308
+@test JuMP.value(WiNnat._jump_model[Symbol("PY")][:brd]) ≈ WNDCnat["PY.brd","delas=0"]#  0.963537345547161
+@test JuMP.value(WiNnat._jump_model[Symbol("PY")][:bnk]) ≈ WNDCnat["PY.bnk","delas=0"]#  0.977778253482725
+@test JuMP.value(WiNnat._jump_model[Symbol("PY")][:ore]) ≈ WNDCnat["PY.ore","delas=0"]#  0.964736218577388
+@test JuMP.value(WiNnat._jump_model[Symbol("PY")][:edu]) ≈ WNDCnat["PY.edu","delas=0"]#  0.976952920174631
+@test JuMP.value(WiNnat._jump_model[Symbol("PY")][:ote]) ≈ WNDCnat["PY.ote","delas=0"]#  0.969588573915453
+@test JuMP.value(WiNnat._jump_model[Symbol("PY")][:man]) ≈ WNDCnat["PY.man","delas=0"]#  0.975509483821164
+@test JuMP.value(WiNnat._jump_model[Symbol("PY")][:mch]) ≈ WNDCnat["PY.mch","delas=0"]#  0.964434809622883
+@test JuMP.value(WiNnat._jump_model[Symbol("PY")][:dat]) ≈ WNDCnat["PY.dat","delas=0"]#  0.97253494283897
+@test JuMP.value(WiNnat._jump_model[Symbol("PY")][:amd]) ≈ WNDCnat["PY.amd","delas=0"]#  0.969052319378871
+@test JuMP.value(WiNnat._jump_model[Symbol("PY")][:oil]) ≈ WNDCnat["PY.oil","delas=0"]#  0.971133839245036
+@test JuMP.value(WiNnat._jump_model[Symbol("PY")][:hos]) ≈ WNDCnat["PY.hos","delas=0"]#  0.970529301558178
+@test JuMP.value(WiNnat._jump_model[Symbol("PY")][:rnt]) ≈ WNDCnat["PY.rnt","delas=0"]#  0.977069926278026
+@test JuMP.value(WiNnat._jump_model[Symbol("PY")][:pla]) ≈ WNDCnat["PY.pla","delas=0"]#  0.957914996803299
+@test JuMP.value(WiNnat._jump_model[Symbol("PY")][:fof]) ≈ WNDCnat["PY.fof","delas=0"]#  0.974299563337718
+@test JuMP.value(WiNnat._jump_model[Symbol("PY")][:fin]) ≈ WNDCnat["PY.fin","delas=0"]#  0.969544754604155
+@test JuMP.value(WiNnat._jump_model[Symbol("PY")][:tsv]) ≈ WNDCnat["PY.tsv","delas=0"]#  0.975009673295218
+@test JuMP.value(WiNnat._jump_model[Symbol("PY")][:nrs]) ≈ WNDCnat["PY.nrs","delas=0"]#  0.969991614268573
+@test JuMP.value(WiNnat._jump_model[Symbol("PY")][:sec]) ≈ WNDCnat["PY.sec","delas=0"]#  0.97342173573989
+@test JuMP.value(WiNnat._jump_model[Symbol("PY")][:art]) ≈ WNDCnat["PY.art","delas=0"]#  0.976529030169516
+@test JuMP.value(WiNnat._jump_model[Symbol("PY")][:mov]) ≈ WNDCnat["PY.mov","delas=0"]#  0.974625051181186
+@test JuMP.value(WiNnat._jump_model[Symbol("PY")][:fpd]) ≈ WNDCnat["PY.fpd","delas=0"]#  0.959812821471709
+@test JuMP.value(WiNnat._jump_model[Symbol("PY")][:slg]) ≈ WNDCnat["PY.slg","delas=0"]#  0.968358481331393
+@test JuMP.value(WiNnat._jump_model[Symbol("PY")][:pri]) ≈ WNDCnat["PY.pri","delas=0"]#  0.961223409030763
+@test JuMP.value(WiNnat._jump_model[Symbol("PY")][:grd]) ≈ WNDCnat["PY.grd","delas=0"]#  0.971056764148964
+@test JuMP.value(WiNnat._jump_model[Symbol("PY")][:pip]) ≈ WNDCnat["PY.pip","delas=0"]#  0.982765720409024
+@test JuMP.value(WiNnat._jump_model[Symbol("PY")][:sle]) ≈ WNDCnat["PY.sle","delas=0"]#  0.950692169697937
+@test JuMP.value(WiNnat._jump_model[Symbol("PY")][:osv]) ≈ WNDCnat["PY.osv","delas=0"]#  0.972266365835301
+@test JuMP.value(WiNnat._jump_model[Symbol("PY")][:trn]) ≈ WNDCnat["PY.trn","delas=0"]#  0.960853177432763
+@test JuMP.value(WiNnat._jump_model[Symbol("PY")][:smn]) ≈ WNDCnat["PY.smn","delas=0"]#  0.965186454635132
+@test JuMP.value(WiNnat._jump_model[Symbol("PY")][:fmt]) ≈ WNDCnat["PY.fmt","delas=0"]#  0.967934476021085
+@test JuMP.value(WiNnat._jump_model[Symbol("PY")][:pet]) ≈ WNDCnat["PY.pet","delas=0"]#  0.95090734150171
+@test JuMP.value(WiNnat._jump_model[Symbol("PY")][:mvt]) ≈ WNDCnat["PY.mvt","delas=0"]#  0.976135119587273
+@test JuMP.value(WiNnat._jump_model[Symbol("PY")][:cep]) ≈ WNDCnat["PY.cep","delas=0"]#  0.982444249688533
+@test JuMP.value(WiNnat._jump_model[Symbol("PY")][:wst]) ≈ WNDCnat["PY.wst","delas=0"]#  0.967101417684808
+@test JuMP.value(WiNnat._jump_model[Symbol("PY")][:mot]) ≈ WNDCnat["PY.mot","delas=0"]#  0.949160347406224
+@test JuMP.value(WiNnat._jump_model[Symbol("PY")][:adm]) ≈ WNDCnat["PY.adm","delas=0"]#  0.97234771138567
+@test JuMP.value(WiNnat._jump_model[Symbol("PY")][:soc]) ≈ WNDCnat["PY.soc","delas=0"]#  0.970182119024674
+@test JuMP.value(WiNnat._jump_model[Symbol("PY")][:alt]) ≈ WNDCnat["PY.alt","delas=0"]#  0.956355540362678
+@test JuMP.value(WiNnat._jump_model[Symbol("PY")][:pmt]) ≈ WNDCnat["PY.pmt","delas=0"]#  0.961264065170689
+@test JuMP.value(WiNnat._jump_model[Symbol("PY")][:trk]) ≈ WNDCnat["PY.trk","delas=0"]#  0.95176491870528
+@test JuMP.value(WiNnat._jump_model[Symbol("PY")][:fdd]) ≈ WNDCnat["PY.fdd","delas=0"]#  0.974149507995964
+@test JuMP.value(WiNnat._jump_model[Symbol("PY")][:gmt]) ≈ WNDCnat["PY.gmt","delas=0"]#  0.975054414528506
+@test JuMP.value(WiNnat._jump_model[Symbol("PY")][:wtt]) ≈ WNDCnat["PY.wtt","delas=0"]#  0.955998169561914
+@test JuMP.value(WiNnat._jump_model[Symbol("PY")][:wpd]) ≈ WNDCnat["PY.wpd","delas=0"]#  0.961003943715435
+@test JuMP.value(WiNnat._jump_model[Symbol("PY")][:wht]) ≈ WNDCnat["PY.wht","delas=0"]#  0.973894387535495
+@test JuMP.value(WiNnat._jump_model[Symbol("PY")][:wrh]) ≈ WNDCnat["PY.wrh","delas=0"]#  0.967702169555874
+@test JuMP.value(WiNnat._jump_model[Symbol("PY")][:ott]) ≈ WNDCnat["PY.ott","delas=0"]#  0.973893652791651
+@test JuMP.value(WiNnat._jump_model[Symbol("PY")][:che]) ≈ WNDCnat["PY.che","delas=0"]#  0.96204513129435
+@test JuMP.value(WiNnat._jump_model[Symbol("PY")][:air]) ≈ WNDCnat["PY.air","delas=0"]#  0.951831466519571
+@test JuMP.value(WiNnat._jump_model[Symbol("PY")][:mmf]) ≈ WNDCnat["PY.mmf","delas=0"]#  0.969069627087884
+@test JuMP.value(WiNnat._jump_model[Symbol("PY")][:otr]) ≈ WNDCnat["PY.otr","delas=0"]#  0.960930067711432
+@test JuMP.value(WiNnat._jump_model[Symbol("PY")][:min]) ≈ WNDCnat["PY.min","delas=0"]#  0.962909289551694
+@test JuMP.value(WiNnat._jump_model[Symbol("PVA")][:compen]) ≈ WNDCnat["PVA.compen","delas=0"]#  0.987058107194174
+@test JuMP.value(WiNnat._jump_model[Symbol("PVA")][:surplus]) ≈ WNDCnat["PVA.surplus","delas=0"]#  0.987738426310087
+@test JuMP.value(WiNnat._jump_model[Symbol("PM")][:trn]) ≈ WNDCnat["PM.trn","delas=0"]#  0.956766602494605
+@test JuMP.value(WiNnat._jump_model[Symbol("PM")][:trd]) ≈ WNDCnat["PM.trd","delas=0"]#  0.974162073506261
+@test JuMP.value(WiNnat._jump_model[Symbol("PFX")]) ≈ WNDCnat["PFX.missing","delas=0"]#  0.970531966783069
+@test JuMP.value(WiNnat._jump_model[Symbol("RA")]) ≈ WNDCnat["RA.missing","delas=0"]#  12453.8764709011
+
+set_value(d_elas_ra, 0.5)
+set_value(RA, 12453.8764709011)
+set_fixed!(RA, true)
+solve!(WiNnat, convergence_tolerance=1e-6, cumulative_iteration_limit=10000);
+
+# delas=0.5
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:ppd]) ≈ WNDCnat["Y.ppd","delas=0.5"]#  1.01243676672209
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:res]) ≈ WNDCnat["Y.res","delas=0.5"]#  1.01988597601756
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:com]) ≈ WNDCnat["Y.com","delas=0.5"]#  0.998357459839861
+# @test JuMP.value(WiNnat._jump_model[Symbol("Y")][:amb]) ≈ WNDCnat["Y.amb","delas=0.5"]#  0.985097164034131
+# @test JuMP.value(WiNnat._jump_model[Symbol("Y")][:fbp]) ≈ WNDCnat["Y.fbp","delas=0.5"]#  1.02318805328515
+# @test JuMP.value(WiNnat._jump_model[Symbol("Y")][:rec]) ≈ WNDCnat["Y.rec","delas=0.5"]#  1.01310336651876
+# @test JuMP.value(WiNnat._jump_model[Symbol("Y")][:con]) ≈ WNDCnat["Y.con","delas=0.5"]#  0.999395887634254
+# @test JuMP.value(WiNnat._jump_model[Symbol("Y")][:agr]) ≈ WNDCnat["Y.agr","delas=0.5"]#  1.01644798491717
+# @test JuMP.value(WiNnat._jump_model[Symbol("Y")][:eec]) ≈ WNDCnat["Y.eec","delas=0.5"]#  0.989975970504904
+# @test JuMP.value(WiNnat._jump_model[Symbol("Y")][:fnd]) ≈ WNDCnat["Y.fnd","delas=0.5"]#  1
+# @test JuMP.value(WiNnat._jump_model[Symbol("Y")][:pub]) ≈ WNDCnat["Y.pub","delas=0.5"]#  0.996421056594617
+# @test JuMP.value(WiNnat._jump_model[Symbol("Y")][:hou]) ≈ WNDCnat["Y.hou","delas=0.5"]#  0.97239492264923
+# @test JuMP.value(WiNnat._jump_model[Symbol("Y")][:fbt]) ≈ WNDCnat["Y.fbt","delas=0.5"]#  1.01259002967415
+# @test JuMP.value(WiNnat._jump_model[Symbol("Y")][:ins]) ≈ WNDCnat["Y.ins","delas=0.5"]#  0.997966168822418
+# @test JuMP.value(WiNnat._jump_model[Symbol("Y")][:tex]) ≈ WNDCnat["Y.tex","delas=0.5"]#  0.974610499448548
+# @test JuMP.value(WiNnat._jump_model[Symbol("Y")][:leg]) ≈ WNDCnat["Y.leg","delas=0.5"]#  1.00236064390243
+# @test JuMP.value(WiNnat._jump_model[Symbol("Y")][:fen]) ≈ WNDCnat["Y.fen","delas=0.5"]#  1.00263877847833
+# @test JuMP.value(WiNnat._jump_model[Symbol("Y")][:uti]) ≈ WNDCnat["Y.uti","delas=0.5"]#  1.01421165005993
+# @test JuMP.value(WiNnat._jump_model[Symbol("Y")][:nmp]) ≈ WNDCnat["Y.nmp","delas=0.5"]#  0.994961995841088
+# @test JuMP.value(WiNnat._jump_model[Symbol("Y")][:brd]) ≈ WNDCnat["Y.brd","delas=0.5"]#  1.01163988478686
+# @test JuMP.value(WiNnat._jump_model[Symbol("Y")][:bnk]) ≈ WNDCnat["Y.bnk","delas=0.5"]#  0.990349347083891
+# @test JuMP.value(WiNnat._jump_model[Symbol("Y")][:ore]) ≈ WNDCnat["Y.ore","delas=0.5"]#  1.00251307694888
+# @test JuMP.value(WiNnat._jump_model[Symbol("Y")][:edu]) ≈ WNDCnat["Y.edu","delas=0.5"]#  0.98123437658592
+# @test JuMP.value(WiNnat._jump_model[Symbol("Y")][:ote]) ≈ WNDCnat["Y.ote","delas=0.5"]#  1.0015930889444
+# @test JuMP.value(WiNnat._jump_model[Symbol("Y")][:man]) ≈ WNDCnat["Y.man","delas=0.5"]#  1.00813373330034
+# @test JuMP.value(WiNnat._jump_model[Symbol("Y")][:mch]) ≈ WNDCnat["Y.mch","delas=0.5"]#  1.00356199425038
+# @test JuMP.value(WiNnat._jump_model[Symbol("Y")][:dat]) ≈ WNDCnat["Y.dat","delas=0.5"]#  0.998548168433061
+# @test JuMP.value(WiNnat._jump_model[Symbol("Y")][:amd]) ≈ WNDCnat["Y.amd","delas=0.5"]#  1.02848814483197
+# @test JuMP.value(WiNnat._jump_model[Symbol("Y")][:oil]) ≈ WNDCnat["Y.oil","delas=0.5"]#  1.04054785057702
+# @test JuMP.value(WiNnat._jump_model[Symbol("Y")][:hos]) ≈ WNDCnat["Y.hos","delas=0.5"]#  0.985553557159185
+# @test JuMP.value(WiNnat._jump_model[Symbol("Y")][:rnt]) ≈ WNDCnat["Y.rnt","delas=0.5"]#  1.00840868669164
+# @test JuMP.value(WiNnat._jump_model[Symbol("Y")][:pla]) ≈ WNDCnat["Y.pla","delas=0.5"]#  1.00263350861923
+# @test JuMP.value(WiNnat._jump_model[Symbol("Y")][:fof]) ≈ WNDCnat["Y.fof","delas=0.5"]#  1.00566785073444
+# @test JuMP.value(WiNnat._jump_model[Symbol("Y")][:fin]) ≈ WNDCnat["Y.fin","delas=0.5"]#  0.986841711447615
+# @test JuMP.value(WiNnat._jump_model[Symbol("Y")][:tsv]) ≈ WNDCnat["Y.tsv","delas=0.5"]#  1.00034535996551
+# @test JuMP.value(WiNnat._jump_model[Symbol("Y")][:nrs]) ≈ WNDCnat["Y.nrs","delas=0.5"]#  0.993876986225821
+# @test JuMP.value(WiNnat._jump_model[Symbol("Y")][:sec]) ≈ WNDCnat["Y.sec","delas=0.5"]#  0.990887207357132
+# @test JuMP.value(WiNnat._jump_model[Symbol("Y")][:art]) ≈ WNDCnat["Y.art","delas=0.5"]#  1.00322784203326
+# @test JuMP.value(WiNnat._jump_model[Symbol("Y")][:mov]) ≈ WNDCnat["Y.mov","delas=0.5"]#  1.00253668803782
+# @test JuMP.value(WiNnat._jump_model[Symbol("Y")][:fpd]) ≈ WNDCnat["Y.fpd","delas=0.5"]#  1.01366546527586
+# @test JuMP.value(WiNnat._jump_model[Symbol("Y")][:slg]) ≈ WNDCnat["Y.slg","delas=0.5"]#  1
+# @test JuMP.value(WiNnat._jump_model[Symbol("Y")][:pri]) ≈ WNDCnat["Y.pri","delas=0.5"]#  1.00277548202722
+# @test JuMP.value(WiNnat._jump_model[Symbol("Y")][:grd]) ≈ WNDCnat["Y.grd","delas=0.5"]#  0.995708639842001
+# @test JuMP.value(WiNnat._jump_model[Symbol("Y")][:pip]) ≈ WNDCnat["Y.pip","delas=0.5"]#  1.01548018613236
+# @test JuMP.value(WiNnat._jump_model[Symbol("Y")][:sle]) ≈ WNDCnat["Y.sle","delas=0.5"]#  0.999134023218203
+# @test JuMP.value(WiNnat._jump_model[Symbol("Y")][:osv]) ≈ WNDCnat["Y.osv","delas=0.5"]#  0.996735662574078
+# @test JuMP.value(WiNnat._jump_model[Symbol("Y")][:trn]) ≈ WNDCnat["Y.trn","delas=0.5"]#  1.01248674745598
+# @test JuMP.value(WiNnat._jump_model[Symbol("Y")][:smn]) ≈ WNDCnat["Y.smn","delas=0.5"]#  0.984385184623502
+# @test JuMP.value(WiNnat._jump_model[Symbol("Y")][:fmt]) ≈ WNDCnat["Y.fmt","delas=0.5"]#  0.997882112422253
+@test JuMP.value(WiNnat._jump_model[Symbol("Y")][:pet]) ≈ WNDCnat["Y.pet","delas=0.5"]#  1.04578927053345
+# @test JuMP.value(WiNnat._jump_model[Symbol("Y")][:mvt]) ≈ WNDCnat["Y.mvt","delas=0.5"]#  1.01247340694856
+# @test JuMP.value(WiNnat._jump_model[Symbol("Y")][:cep]) ≈ WNDCnat["Y.cep","delas=0.5"]#  0.984030689369513
+# @test JuMP.value(WiNnat._jump_model[Symbol("Y")][:wst]) ≈ WNDCnat["Y.wst","delas=0.5"]#  1.00186758476926
+# @test JuMP.value(WiNnat._jump_model[Symbol("Y")][:mot]) ≈ WNDCnat["Y.mot","delas=0.5"]#  1.01863694578436
+# @test JuMP.value(WiNnat._jump_model[Symbol("Y")][:adm]) ≈ WNDCnat["Y.adm","delas=0.5"]#  1.00142859539338
+# @test JuMP.value(WiNnat._jump_model[Symbol("Y")][:soc]) ≈ WNDCnat["Y.soc","delas=0.5"]#  0.989411138455745
+# @test JuMP.value(WiNnat._jump_model[Symbol("Y")][:alt]) ≈ WNDCnat["Y.alt","delas=0.5"]#  0.814008535651438
+# @test JuMP.value(WiNnat._jump_model[Symbol("Y")][:pmt]) ≈ WNDCnat["Y.pmt","delas=0.5"]#  1.0126612383107
+# @test JuMP.value(WiNnat._jump_model[Symbol("Y")][:trk]) ≈ WNDCnat["Y.trk","delas=0.5"]#  1.01479977203563
+# @test JuMP.value(WiNnat._jump_model[Symbol("Y")][:fdd]) ≈ WNDCnat["Y.fdd","delas=0.5"]#  1
+# @test JuMP.value(WiNnat._jump_model[Symbol("Y")][:gmt]) ≈ WNDCnat["Y.gmt","delas=0.5"]#  1.01248373473656
+# @test JuMP.value(WiNnat._jump_model[Symbol("Y")][:wtt]) ≈ WNDCnat["Y.wtt","delas=0.5"]#  1.01036613884684
+# @test JuMP.value(WiNnat._jump_model[Symbol("Y")][:wpd]) ≈ WNDCnat["Y.wpd","delas=0.5"]#  1.00405332945149
+# @test JuMP.value(WiNnat._jump_model[Symbol("Y")][:wht]) ≈ WNDCnat["Y.wht","delas=0.5"]#  1.01247943081767
+# @test JuMP.value(WiNnat._jump_model[Symbol("Y")][:wrh]) ≈ WNDCnat["Y.wrh","delas=0.5"]#  1.00990645546212
+# @test JuMP.value(WiNnat._jump_model[Symbol("Y")][:ott]) ≈ WNDCnat["Y.ott","delas=0.5"]#  1.01268633136744
+# @test JuMP.value(WiNnat._jump_model[Symbol("Y")][:che]) ≈ WNDCnat["Y.che","delas=0.5"]#  1.00378197892127
+# @test JuMP.value(WiNnat._jump_model[Symbol("Y")][:air]) ≈ WNDCnat["Y.air","delas=0.5"]#  1.04904035477477
+# @test JuMP.value(WiNnat._jump_model[Symbol("Y")][:mmf]) ≈ WNDCnat["Y.mmf","delas=0.5"]#  0.993235621486512
+# @test JuMP.value(WiNnat._jump_model[Symbol("Y")][:otr]) ≈ WNDCnat["Y.otr","delas=0.5"]#  1.01313067892542
+# @test JuMP.value(WiNnat._jump_model[Symbol("Y")][:min]) ≈ WNDCnat["Y.min","delas=0.5"]#  1.01065794826323
+# @test JuMP.value(WiNnat._jump_model[Symbol("A")][:ppd]) ≈ WNDCnat["A.ppd","delas=0.5"]#  1.00995102143583
+# @test JuMP.value(WiNnat._jump_model[Symbol("A")][:res]) ≈ WNDCnat["A.res","delas=0.5"]#  1.0186642125745
+# @test JuMP.value(WiNnat._jump_model[Symbol("A")][:com]) ≈ WNDCnat["A.com","delas=0.5"]#  1.00006903401578
+# @test JuMP.value(WiNnat._jump_model[Symbol("A")][:amb]) ≈ WNDCnat["A.amb","delas=0.5"]#  0.985636876656064
+# @test JuMP.value(WiNnat._jump_model[Symbol("A")][:fbp]) ≈ WNDCnat["A.fbp","delas=0.5"]#  1.02169915520047
+# @test JuMP.value(WiNnat._jump_model[Symbol("A")][:rec]) ≈ WNDCnat["A.rec","delas=0.5"]#  1.01305192001064
+# @test JuMP.value(WiNnat._jump_model[Symbol("A")][:con]) ≈ WNDCnat["A.con","delas=0.5"]#  0.999286302451195
+# @test JuMP.value(WiNnat._jump_model[Symbol("A")][:agr]) ≈ WNDCnat["A.agr","delas=0.5"]#  1.01392324038891
+# @test JuMP.value(WiNnat._jump_model[Symbol("A")][:eec]) ≈ WNDCnat["A.eec","delas=0.5"]#  1.00467254607232
+# @test JuMP.value(WiNnat._jump_model[Symbol("A")][:fnd]) ≈ WNDCnat["A.fnd","delas=0.5"]#  1
+# @test JuMP.value(WiNnat._jump_model[Symbol("A")][:pub]) ≈ WNDCnat["A.pub","delas=0.5"]#  0.996779968938176
+# @test JuMP.value(WiNnat._jump_model[Symbol("A")][:hou]) ≈ WNDCnat["A.hou","delas=0.5"]#  0.972740417586429
+# @test JuMP.value(WiNnat._jump_model[Symbol("A")][:fbt]) ≈ WNDCnat["A.fbt","delas=0.5"]#  1
+# @test JuMP.value(WiNnat._jump_model[Symbol("A")][:ins]) ≈ WNDCnat["A.ins","delas=0.5"]#  0.997827384586593
+# @test JuMP.value(WiNnat._jump_model[Symbol("A")][:tex]) ≈ WNDCnat["A.tex","delas=0.5"]#  1.01187871537137
+# @test JuMP.value(WiNnat._jump_model[Symbol("A")][:leg]) ≈ WNDCnat["A.leg","delas=0.5"]#  1.00250270879963
+# @test JuMP.value(WiNnat._jump_model[Symbol("A")][:fen]) ≈ WNDCnat["A.fen","delas=0.5"]#  1.00264304777137
+# @test JuMP.value(WiNnat._jump_model[Symbol("A")][:uti]) ≈ WNDCnat["A.uti","delas=0.5"]#  1.01052675062657
+# @test JuMP.value(WiNnat._jump_model[Symbol("A")][:nmp]) ≈ WNDCnat["A.nmp","delas=0.5"]#  1.00342639060623
+# @test JuMP.value(WiNnat._jump_model[Symbol("A")][:brd]) ≈ WNDCnat["A.brd","delas=0.5"]#  1.01163385236238
+# @test JuMP.value(WiNnat._jump_model[Symbol("A")][:bnk]) ≈ WNDCnat["A.bnk","delas=0.5"]#  0.990512368289017
+# @test JuMP.value(WiNnat._jump_model[Symbol("A")][:ore]) ≈ WNDCnat["A.ore","delas=0.5"]#  1.00247560580001
+# @test JuMP.value(WiNnat._jump_model[Symbol("A")][:edu]) ≈ WNDCnat["A.edu","delas=0.5"]#  0.986371396728823
+# @test JuMP.value(WiNnat._jump_model[Symbol("A")][:ote]) ≈ WNDCnat["A.ote","delas=0.5"]#  1.00237101071941
+# @test JuMP.value(WiNnat._jump_model[Symbol("A")][:man]) ≈ WNDCnat["A.man","delas=0.5"]#  1.00813373330034
+# @test JuMP.value(WiNnat._jump_model[Symbol("A")][:mch]) ≈ WNDCnat["A.mch","delas=0.5"]#  1.00472731195032
+# @test JuMP.value(WiNnat._jump_model[Symbol("A")][:dat]) ≈ WNDCnat["A.dat","delas=0.5"]#  0.998458073271863
+# @test JuMP.value(WiNnat._jump_model[Symbol("A")][:amd]) ≈ WNDCnat["A.amd","delas=0.5"]#  1.02107320620759
+# @test JuMP.value(WiNnat._jump_model[Symbol("A")][:oil]) ≈ WNDCnat["A.oil","delas=0.5"]#  1.0398956433845
+# @test JuMP.value(WiNnat._jump_model[Symbol("A")][:hos]) ≈ WNDCnat["A.hos","delas=0.5"]#  0.988467046116498
+# @test JuMP.value(WiNnat._jump_model[Symbol("A")][:rnt]) ≈ WNDCnat["A.rnt","delas=0.5"]#  1.00523696640568
+# @test JuMP.value(WiNnat._jump_model[Symbol("A")][:pla]) ≈ WNDCnat["A.pla","delas=0.5"]#  1.00821966079609
+# @test JuMP.value(WiNnat._jump_model[Symbol("A")][:fof]) ≈ WNDCnat["A.fof","delas=0.5"]#  1.00859952645722
+# @test JuMP.value(WiNnat._jump_model[Symbol("A")][:fin]) ≈ WNDCnat["A.fin","delas=0.5"]#  0.988894183313094
+# @test JuMP.value(WiNnat._jump_model[Symbol("A")][:tsv]) ≈ WNDCnat["A.tsv","delas=0.5"]#  1.00073177759008
+# @test JuMP.value(WiNnat._jump_model[Symbol("A")][:nrs]) ≈ WNDCnat["A.nrs","delas=0.5"]#  0.993831917665359
+# @test JuMP.value(WiNnat._jump_model[Symbol("A")][:sec]) ≈ WNDCnat["A.sec","delas=0.5"]#  0.990877043763559
+# @test JuMP.value(WiNnat._jump_model[Symbol("A")][:art]) ≈ WNDCnat["A.art","delas=0.5"]#  1.00326917610518
+# @test JuMP.value(WiNnat._jump_model[Symbol("A")][:mov]) ≈ WNDCnat["A.mov","delas=0.5"]#  1.00295491637687
+# @test JuMP.value(WiNnat._jump_model[Symbol("A")][:fpd]) ≈ WNDCnat["A.fpd","delas=0.5"]#  1.00581404880909
+# @test JuMP.value(WiNnat._jump_model[Symbol("A")][:slg]) ≈ WNDCnat["A.slg","delas=0.5"]#  1
+# @test JuMP.value(WiNnat._jump_model[Symbol("A")][:pri]) ≈ WNDCnat["A.pri","delas=0.5"]#  1.00171498070511
+# @test JuMP.value(WiNnat._jump_model[Symbol("A")][:grd]) ≈ WNDCnat["A.grd","delas=0.5"]#  0.996410010461494
+# @test JuMP.value(WiNnat._jump_model[Symbol("A")][:pip]) ≈ WNDCnat["A.pip","delas=0.5"]#  1.02328548396755
+# @test JuMP.value(WiNnat._jump_model[Symbol("A")][:sle]) ≈ WNDCnat["A.sle","delas=0.5"]#  0.999389927007246
+# @test JuMP.value(WiNnat._jump_model[Symbol("A")][:osv]) ≈ WNDCnat["A.osv","delas=0.5"]#  1.0000210940405
+# @test JuMP.value(WiNnat._jump_model[Symbol("A")][:trn]) ≈ WNDCnat["A.trn","delas=0.5"]#  0.995116615781495
+# @test JuMP.value(WiNnat._jump_model[Symbol("A")][:smn]) ≈ WNDCnat["A.smn","delas=0.5"]#  1.00404400644595
+# @test JuMP.value(WiNnat._jump_model[Symbol("A")][:fmt]) ≈ WNDCnat["A.fmt","delas=0.5"]#  1.00532856239972
+@test JuMP.value(WiNnat._jump_model[Symbol("A")][:pet]) ≈ WNDCnat["A.pet","delas=0.5"]#  1.04116741918214
+# @test JuMP.value(WiNnat._jump_model[Symbol("A")][:mvt]) ≈ WNDCnat["A.mvt","delas=0.5"]#  1
+# @test JuMP.value(WiNnat._jump_model[Symbol("A")][:cep]) ≈ WNDCnat["A.cep","delas=0.5"]#  0.998653134088926
+# @test JuMP.value(WiNnat._jump_model[Symbol("A")][:wst]) ≈ WNDCnat["A.wst","delas=0.5"]#  1.00186350559656
+# @test JuMP.value(WiNnat._jump_model[Symbol("A")][:mot]) ≈ WNDCnat["A.mot","delas=0.5"]#  1.01131721833419
+# @test JuMP.value(WiNnat._jump_model[Symbol("A")][:adm]) ≈ WNDCnat["A.adm","delas=0.5"]#  1.00142621852353
+# @test JuMP.value(WiNnat._jump_model[Symbol("A")][:soc]) ≈ WNDCnat["A.soc","delas=0.5"]#  0.989698429646106
+# @test JuMP.value(WiNnat._jump_model[Symbol("A")][:alt]) ≈ WNDCnat["A.alt","delas=0.5"]#  1.03892356791105
+# @test JuMP.value(WiNnat._jump_model[Symbol("A")][:pmt]) ≈ WNDCnat["A.pmt","delas=0.5"]#  1.00885505257068
+# @test JuMP.value(WiNnat._jump_model[Symbol("A")][:trk]) ≈ WNDCnat["A.trk","delas=0.5"]#  1.01070649923203
+# @test JuMP.value(WiNnat._jump_model[Symbol("A")][:fdd]) ≈ WNDCnat["A.fdd","delas=0.5"]#  1
+# @test JuMP.value(WiNnat._jump_model[Symbol("A")][:gmt]) ≈ WNDCnat["A.gmt","delas=0.5"]#  1
+# @test JuMP.value(WiNnat._jump_model[Symbol("A")][:wtt]) ≈ WNDCnat["A.wtt","delas=0.5"]#  1.00680656426112
+# @test JuMP.value(WiNnat._jump_model[Symbol("A")][:wpd]) ≈ WNDCnat["A.wpd","delas=0.5"]#  1.00416021405889
+# @test JuMP.value(WiNnat._jump_model[Symbol("A")][:wht]) ≈ WNDCnat["A.wht","delas=0.5"]#  1.01025813822442
+# @test JuMP.value(WiNnat._jump_model[Symbol("A")][:wrh]) ≈ WNDCnat["A.wrh","delas=0.5"]#  1.01010472217285
+# @test JuMP.value(WiNnat._jump_model[Symbol("A")][:ott]) ≈ WNDCnat["A.ott","delas=0.5"]#  0.992613210099542
+# @test JuMP.value(WiNnat._jump_model[Symbol("A")][:che]) ≈ WNDCnat["A.che","delas=0.5"]#  1.00443188613084
+# @test JuMP.value(WiNnat._jump_model[Symbol("A")][:air]) ≈ WNDCnat["A.air","delas=0.5"]#  1.04206464412903
+# @test JuMP.value(WiNnat._jump_model[Symbol("A")][:mmf]) ≈ WNDCnat["A.mmf","delas=0.5"]#  1.00407319647858
+# @test JuMP.value(WiNnat._jump_model[Symbol("A")][:otr]) ≈ WNDCnat["A.otr","delas=0.5"]#  1.01237698718806
+# @test JuMP.value(WiNnat._jump_model[Symbol("A")][:min]) ≈ WNDCnat["A.min","delas=0.5"]#  1.01021085069484
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[ppd]ρRA")]) ≈ WNDCnat["DPARA.ppd","delas=0.5"]#  45.0601240268544
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[res]ρRA")]) ≈ WNDCnat["DPARA.res","delas=0.5"]#  757.159852022435
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[amb]ρRA")]) ≈ WNDCnat["DPARA.amb","delas=0.5"]#  1036.26147061985
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[fbp]ρRA")]) ≈ WNDCnat["DPARA.fbp","delas=0.5"]#  1056.76295080827
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[rec]ρRA")]) ≈ WNDCnat["DPARA.rec","delas=0.5"]#  201.622836574546
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[agr]ρRA")]) ≈ WNDCnat["DPARA.agr","delas=0.5"]#  146.243621187287
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[eec]ρRA")]) ≈ WNDCnat["DPARA.eec","delas=0.5"]#  86.797819897891
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[pub]ρRA")]) ≈ WNDCnat["DPARA.pub","delas=0.5"]#  130.040069459569
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[hou]ρRA")]) ≈ WNDCnat["DPARA.hou","delas=0.5"]#  1979.63604680992
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[ins]ρRA")]) ≈ WNDCnat["DPARA.ins","delas=0.5"]#  385.566129845515
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[tex]ρRA")]) ≈ WNDCnat["DPARA.tex","delas=0.5"]#  74.1659091322046
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[leg]ρRA")]) ≈ WNDCnat["DPARA.leg","delas=0.5"]#  105.577046670679
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[fen]ρRA")]) ≈ WNDCnat["DPARA.fen","delas=0.5"]#  6.06867376929024
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[uti]ρRA")]) ≈ WNDCnat["DPARA.uti","delas=0.5"]#  268.845203837184
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[nmp]ρRA")]) ≈ WNDCnat["DPARA.nmp","delas=0.5"]#  20.9808628913747
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[brd]ρRA")]) ≈ WNDCnat["DPARA.brd","delas=0.5"]#  337.157926326524
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[bnk]ρRA")]) ≈ WNDCnat["DPARA.bnk","delas=0.5"]#  274.89115487289
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[ore]ρRA")]) ≈ WNDCnat["DPARA.ore","delas=0.5"]#  5.5803628866489
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[edu]ρRA")]) ≈ WNDCnat["DPARA.edu","delas=0.5"]#  346.338341665916
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[ote]ρRA")]) ≈ WNDCnat["DPARA.ote","delas=0.5"]#  32.3881248792287
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[mch]ρRA")]) ≈ WNDCnat["DPARA.mch","delas=0.5"]#  24.1116591528413
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[dat]ρRA")]) ≈ WNDCnat["DPARA.dat","delas=0.5"]#  55.0248135435681
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[amd]ρRA")]) ≈ WNDCnat["DPARA.amd","delas=0.5"]#  162.283228323791
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[hos]ρRA")]) ≈ WNDCnat["DPARA.hos","delas=0.5"]#  1054.16888132703
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[rnt]ρRA")]) ≈ WNDCnat["DPARA.rnt","delas=0.5"]#  106.208566618766
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[pla]ρRA")]) ≈ WNDCnat["DPARA.pla","delas=0.5"]#  67.7954100210675
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[fof]ρRA")]) ≈ WNDCnat["DPARA.fof","delas=0.5"]#  11.6825512065375
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[fin]ρRA")]) ≈ WNDCnat["DPARA.fin","delas=0.5"]#  160.488498183504
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[tsv]ρRA")]) ≈ WNDCnat["DPARA.tsv","delas=0.5"]#  71.843019788449
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[nrs]ρRA")]) ≈ WNDCnat["DPARA.nrs","delas=0.5"]#  240.782367299231
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[sec]ρRA")]) ≈ WNDCnat["DPARA.sec","delas=0.5"]#  221.599693829797
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[art]ρRA")]) ≈ WNDCnat["DPARA.art","delas=0.5"]#  78.332736118235
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[mov]ρRA")]) ≈ WNDCnat["DPARA.mov","delas=0.5"]#  32.4892083513815
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[fpd]ρRA")]) ≈ WNDCnat["DPARA.fpd","delas=0.5"]#  121.062232092821
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[pri]ρRA")]) ≈ WNDCnat["DPARA.pri","delas=0.5"]#  8.40015228867906
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[grd]ρRA")]) ≈ WNDCnat["DPARA.grd","delas=0.5"]#  45.5828317793725
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[sle]ρRA")]) ≈ WNDCnat["DPARA.sle","delas=0.5"]#  70.6524090594336
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[osv]ρRA")]) ≈ WNDCnat["DPARA.osv","delas=0.5"]#  614.384644587196
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[trn]ρRA")]) ≈ WNDCnat["DPARA.trn","delas=0.5"]#  1.37381536268478
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[fmt]ρRA")]) ≈ WNDCnat["DPARA.fmt","delas=0.5"]#  40.7257821156265
+@test JuMP.value(WiNnat._jump_model[Symbol("PA[pet]ρRA")]) ≈ WNDCnat["DPARA.pet","delas=0.5"]#  333.867745419442
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[cep]ρRA")]) ≈ WNDCnat["DPARA.cep","delas=0.5"]#  163.759555533644
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[wst]ρRA")]) ≈ WNDCnat["DPARA.wst","delas=0.5"]#  26.9531426343918
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[mot]ρRA")]) ≈ WNDCnat["DPARA.mot","delas=0.5"]#  341.464580579289
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[adm]ρRA")]) ≈ WNDCnat["DPARA.adm","delas=0.5"]#  63.2880744886363
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[soc]ρRA")]) ≈ WNDCnat["DPARA.soc","delas=0.5"]#  208.320131495183
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[alt]ρRA")]) ≈ WNDCnat["DPARA.alt","delas=0.5"]#  415.991408372126
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[pmt]ρRA")]) ≈ WNDCnat["DPARA.pmt","delas=0.5"]#  1.7298687899749
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[trk]ρRA")]) ≈ WNDCnat["DPARA.trk","delas=0.5"]#  12.3315496707354
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[wtt]ρRA")]) ≈ WNDCnat["DPARA.wtt","delas=0.5"]#  21.4185797442208
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[wpd]ρRA")]) ≈ WNDCnat["DPARA.wpd","delas=0.5"]#  7.90974168013956
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[wrh]ρRA")]) ≈ WNDCnat["DPARA.wrh","delas=0.5"]#  0.0864360974265916
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[ott]ρRA")]) ≈ WNDCnat["DPARA.ott","delas=0.5"]#  5.39308235257145
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[che]ρRA")]) ≈ WNDCnat["DPARA.che","delas=0.5"]#  631.55244405337
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[air]ρRA")]) ≈ WNDCnat["DPARA.air","delas=0.5"]#  136.190640936229
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[mmf]ρRA")]) ≈ WNDCnat["DPARA.mmf","delas=0.5"]#  266.752381548512
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[otr]ρRA")]) ≈ WNDCnat["DPARA.otr","delas=0.5"]#  23.1992665259564
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[min]ρRA")]) ≈ WNDCnat["DPARA.min","delas=0.5"]#  0.648907418888096
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[ppd]‡A[ppd]")]) ≈ WNDCnat["SPAA.ppd","delas=0.5"]#  237.042258809771
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[res]‡A[res]")]) ≈ WNDCnat["SPAA.res","delas=0.5"]#  959.30920358167
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[com]‡A[com]")]) ≈ WNDCnat["SPAA.com","delas=0.5"]#  525.381541371094
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[amb]‡A[amb]")]) ≈ WNDCnat["SPAA.amb","delas=0.5"]#  1093.38052789571
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[fbp]‡A[fbp]")]) ≈ WNDCnat["SPAA.fbp","delas=0.5"]#  1515.85960332083
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[rec]‡A[rec]")]) ≈ WNDCnat["SPAA.rec","delas=0.5"]#  204.693237
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[con]‡A[con]")]) ≈ WNDCnat["SPAA.con","delas=0.5"]#  1661.39225288267
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[agr]‡A[agr]")]) ≈ WNDCnat["SPAA.agr","delas=0.5"]#  516.24630188779
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[eec]‡A[eec]")]) ≈ WNDCnat["SPAA.eec","delas=0.5"]#  298.28950099067
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[fnd]‡A[fnd]")]) ≈ WNDCnat["SPAA.fnd","delas=0.5"]#  380.898129
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[pub]‡A[pub]")]) ≈ WNDCnat["SPAA.pub","delas=0.5"]#  348.938289320993
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[hou]‡A[hou]")]) ≈ WNDCnat["SPAA.hou","delas=0.5"]#  2035.11236
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[ins]‡A[ins]")]) ≈ WNDCnat["SPAA.ins","delas=0.5"]#  1174.57356283324
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[tex]‡A[tex]")]) ≈ WNDCnat["SPAA.tex","delas=0.5"]#  145.366271676348
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[leg]‡A[leg]")]) ≈ WNDCnat["SPAA.leg","delas=0.5"]#  348.505781910617
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[fen]‡A[fen]")]) ≈ WNDCnat["SPAA.fen","delas=0.5"]#  70.484605514581
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[uti]‡A[uti]")]) ≈ WNDCnat["SPAA.uti","delas=0.5"]#  652.048199468549
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[nmp]‡A[nmp]")]) ≈ WNDCnat["SPAA.nmp","delas=0.5"]#  214.143191827356
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[brd]‡A[brd]")]) ≈ WNDCnat["SPAA.brd","delas=0.5"]#  706.859057988137
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[bnk]‡A[bnk]")]) ≈ WNDCnat["SPAA.bnk","delas=0.5"]#  792.736754302412
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[ore]‡A[ore]")]) ≈ WNDCnat["SPAA.ore","delas=0.5"]#  1255.2142585677
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[edu]‡A[edu]")]) ≈ WNDCnat["SPAA.edu","delas=0.5"]#  392.718862367539
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[ote]‡A[ote]")]) ≈ WNDCnat["SPAA.ote","delas=0.5"]#  277.22539563263
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[man]‡A[man]")]) ≈ WNDCnat["SPAA.man","delas=0.5"]#  579.531360390116
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[mch]‡A[mch]")]) ≈ WNDCnat["SPAA.mch","delas=0.5"]#  587.112660860874
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[dat]‡A[dat]")]) ≈ WNDCnat["SPAA.dat","delas=0.5"]#  245.647070841696
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[amd]‡A[amd]")]) ≈ WNDCnat["SPAA.amd","delas=0.5"]#  229.587824
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[oil]‡A[oil]")]) ≈ WNDCnat["SPAA.oil","delas=0.5"]#  411.376147896077
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[hos]‡A[hos]")]) ≈ WNDCnat["SPAA.hos","delas=0.5"]#  1073.11371300456
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[rnt]‡A[rnt]")]) ≈ WNDCnat["SPAA.rnt","delas=0.5"]#  368.467575126058
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[pla]‡A[pla]")]) ≈ WNDCnat["SPAA.pla","delas=0.5"]#  362.263068479548
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[fof]‡A[fof]")]) ≈ WNDCnat["SPAA.fof","delas=0.5"]#  92.1131343757475
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[fin]‡A[fin]")]) ≈ WNDCnat["SPAA.fin","delas=0.5"]#  183.495134
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[tsv]‡A[tsv]")]) ≈ WNDCnat["SPAA.tsv","delas=0.5"]#  1989.13386888999
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[nrs]‡A[nrs]")]) ≈ WNDCnat["SPAA.nrs","delas=0.5"]#  245.658333
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[sec]‡A[sec]")]) ≈ WNDCnat["SPAA.sec","delas=0.5"]#  514.165906249902
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[art]‡A[art]")]) ≈ WNDCnat["SPAA.art","delas=0.5"]#  174.636633032318
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[mov]‡A[mov]")]) ≈ WNDCnat["SPAA.mov","delas=0.5"]#  146.493343776654
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[fpd]‡A[fpd]")]) ≈ WNDCnat["SPAA.fpd","delas=0.5"]#  221.271403128093
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[slg]‡A[slg]")]) ≈ WNDCnat["SPAA.slg","delas=0.5"]#  1744.23136
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[pri]‡A[pri]")]) ≈ WNDCnat["SPAA.pri","delas=0.5"]#  89.2821943716604
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[grd]‡A[grd]")]) ≈ WNDCnat["SPAA.grd","delas=0.5"]#  93.1481825
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[pip]‡A[pip]")]) ≈ WNDCnat["SPAA.pip","delas=0.5"]#  0.380571076520651
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[sle]‡A[sle]")]) ≈ WNDCnat["SPAA.sle","delas=0.5"]#  104.176032
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[osv]‡A[osv]")]) ≈ WNDCnat["SPAA.osv","delas=0.5"]#  868.463235119891
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[trn]‡A[trn]")]) ≈ WNDCnat["SPAA.trn","delas=0.5"]#  7.92090092170896
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[smn]‡A[smn]")]) ≈ WNDCnat["SPAA.smn","delas=0.5"]#  124.253788843119
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[fmt]‡A[fmt]")]) ≈ WNDCnat["SPAA.fmt","delas=0.5"]#  477.156574865818
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[pet]‡A[pet]")]) ≈ WNDCnat["SPAA.pet","delas=0.5"]#  753.75904815071
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[cep]‡A[cep]")]) ≈ WNDCnat["SPAA.cep","delas=0.5"]#  754.719744960267
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[wst]‡A[wst]")]) ≈ WNDCnat["SPAA.wst","delas=0.5"]#  117.576207274571
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[mot]‡A[mot]")]) ≈ WNDCnat["SPAA.mot","delas=0.5"]#  1115.65463827953
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[adm]‡A[adm]")]) ≈ WNDCnat["SPAA.adm","delas=0.5"]#  929.23430111397
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[soc]‡A[soc]")]) ≈ WNDCnat["SPAA.soc","delas=0.5"]#  211.263869
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[alt]‡A[alt]")]) ≈ WNDCnat["SPAA.alt","delas=0.5"]#  428.63988823013
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[pmt]‡A[pmt]")]) ≈ WNDCnat["SPAA.pmt","delas=0.5"]#  306.493613096515
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[trk]‡A[trk]")]) ≈ WNDCnat["SPAA.trk","delas=0.5"]#  37.6322704279848
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[fdd]‡A[fdd]")]) ≈ WNDCnat["SPAA.fdd","delas=0.5"]#  598.321003
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[wtt]‡A[wtt]")]) ≈ WNDCnat["SPAA.wtt","delas=0.5"]#  24.7014719142186
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[wpd]‡A[wpd]")]) ≈ WNDCnat["SPAA.wpd","delas=0.5"]#  169.42858714196
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[wht]‡A[wht]")]) ≈ WNDCnat["SPAA.wht","delas=0.5"]#  101.043210787764
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[wrh]‡A[wrh]")]) ≈ WNDCnat["SPAA.wrh","delas=0.5"]#  141.955011912645
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[ott]‡A[ott]")]) ≈ WNDCnat["SPAA.ott","delas=0.5"]#  7.216437
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[che]‡A[che]")]) ≈ WNDCnat["SPAA.che","delas=0.5"]#  1315.58772751069
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[air]‡A[air]")]) ≈ WNDCnat["SPAA.air","delas=0.5"]#  206.785758150423
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[mmf]‡A[mmf]")]) ≈ WNDCnat["SPAA.mmf","delas=0.5"]#  432.825451495033
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[otr]‡A[otr]")]) ≈ WNDCnat["SPAA.otr","delas=0.5"]#  234.235207264151
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA[min]‡A[min]")]) ≈ WNDCnat["SPAA.min","delas=0.5"]#  110.707702826321
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY[ppd]†A→dmppd")]) ≈ WNDCnat["DPYA.ppd","delas=0.5"]#  178.256813902463
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY[res]†A→dmres")]) ≈ WNDCnat["DPYA.res","delas=0.5"]#  899.582049
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY[com]†A→dmcom")]) ≈ WNDCnat["DPYA.com","delas=0.5"]#  516.649898560368
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY[amb]†A→dmamb")]) ≈ WNDCnat["DPYA.amb","delas=0.5"]#  1092.93382
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY[fbp]†A→dmfbp")]) ≈ WNDCnat["DPYA.fbp","delas=0.5"]#  931.251070587899
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY[rec]†A→dmrec")]) ≈ WNDCnat["DPYA.rec","delas=0.5"]#  195.091973
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY[con]†A→dmcon")]) ≈ WNDCnat["DPYA.con","delas=0.5"]#  1659.55143
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY[agr]†A→dmagr")]) ≈ WNDCnat["DPYA.agr","delas=0.5"]#  397.024445520014
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY[eec]†A→dmeec")]) ≈ WNDCnat["DPYA.eec","delas=0.5"]#  116.224602225512
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY[fnd]†A→dmfnd")]) ≈ WNDCnat["DPYA.fnd","delas=0.5"]#  380.898129
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY[pub]†A→dmpub")]) ≈ WNDCnat["DPYA.pub","delas=0.5"]#  279.094208134003
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY[hou]†A→dmhou")]) ≈ WNDCnat["DPYA.hou","delas=0.5"]#  2073.31916
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY[ins]†A→dmins")]) ≈ WNDCnat["DPYA.ins","delas=0.5"]#  1122.53945097812
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY[tex]†A→dmtex")]) ≈ WNDCnat["DPYA.tex","delas=0.5"]#  44.6835445946073
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY[leg]†A→dmleg")]) ≈ WNDCnat["DPYA.leg","delas=0.5"]#  342.941202554652
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY[fen]†A→dmfen")]) ≈ WNDCnat["DPYA.fen","delas=0.5"]#  70.8982207884942
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY[uti]†A→dmuti")]) ≈ WNDCnat["DPYA.uti","delas=0.5"]#  624.237086740571
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY[nmp]†A→dmnmp")]) ≈ WNDCnat["DPYA.nmp","delas=0.5"]#  122.588272442773
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY[brd]†A→dmbrd")]) ≈ WNDCnat["DPYA.brd","delas=0.5"]#  683.422053280957
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY[bnk]†A→dmbnk")]) ≈ WNDCnat["DPYA.bnk","delas=0.5"]#  852.551516138285
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY[ore]†A→dmore")]) ≈ WNDCnat["DPYA.ore","delas=0.5"]#  1259.29276
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY[edu]†A→dmedu")]) ≈ WNDCnat["DPYA.edu","delas=0.5"]#  393.242773982239
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY[ote]†A→dmote")]) ≈ WNDCnat["DPYA.ote","delas=0.5"]#  317.58715531611
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY[man]†A→dmman")]) ≈ WNDCnat["DPYA.man","delas=0.5"]#  582.277441
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY[mch]†A→dmmch")]) ≈ WNDCnat["DPYA.mch","delas=0.5"]#  350.820648889152
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY[dat]†A→dmdat")]) ≈ WNDCnat["DPYA.dat","delas=0.5"]#  249.63483299757
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY[amd]†A→dmamd")]) ≈ WNDCnat["DPYA.amd","delas=0.5"]#  211.274527
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY[oil]†A→dmoil")]) ≈ WNDCnat["DPYA.oil","delas=0.5"]#  232.058988306448
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY[hos]†A→dmhos")]) ≈ WNDCnat["DPYA.hos","delas=0.5"]#  1069.65732716006
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY[rnt]†A→dmrnt")]) ≈ WNDCnat["DPYA.rnt","delas=0.5"]#  433.205937
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY[pla]†A→dmpla")]) ≈ WNDCnat["DPYA.pla","delas=0.5"]#  229.66487257659
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY[fof]†A→dmfof")]) ≈ WNDCnat["DPYA.fof","delas=0.5"]#  65.745918634565
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY[fin]†A→dmfin")]) ≈ WNDCnat["DPYA.fin","delas=0.5"]#  183.457238
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY[tsv]†A→dmtsv")]) ≈ WNDCnat["DPYA.tsv","delas=0.5"]#  2035.31278550717
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY[nrs]†A→dmnrs")]) ≈ WNDCnat["DPYA.nrs","delas=0.5"]#  242.743749
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY[sec]†A→dmsec")]) ≈ WNDCnat["DPYA.sec","delas=0.5"]#  584.314739652457
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY[art]†A→dmart")]) ≈ WNDCnat["DPYA.art","delas=0.5"]#  169.25132985919
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY[mov]†A→dmmov")]) ≈ WNDCnat["DPYA.mov","delas=0.5"]#  145.086764881248
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY[fpd]†A→dmfpd")]) ≈ WNDCnat["DPYA.fpd","delas=0.5"]#  72.0740621404007
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY[slg]†A→dmslg")]) ≈ WNDCnat["DPYA.slg","delas=0.5"]#  1744.23136
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY[pri]†A→dmpri")]) ≈ WNDCnat["DPYA.pri","delas=0.5"]#  71.1547479575622
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY[grd]†A→dmgrd")]) ≈ WNDCnat["DPYA.grd","delas=0.5"]#  92.1405807
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY[pip]†A→dmpip")]) ≈ WNDCnat["DPYA.pip","delas=0.5"]#  0.551520281
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY[sle]†A→dmsle")]) ≈ WNDCnat["DPYA.sle","delas=0.5"]#  104.176032
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY[osv]†A→dmosv")]) ≈ WNDCnat["DPYA.osv","delas=0.5"]#  843.617845888317
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY[trn]†A→dmtrn")]) ≈ WNDCnat["DPYA.trn","delas=0.5"]#  10.818151
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY[smn]†A→dmsmn")]) ≈ WNDCnat["DPYA.smn","delas=0.5"]#  126.30253012871
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY[fmt]†A→dmfmt")]) ≈ WNDCnat["DPYA.fmt","delas=0.5"]#  326.770351755691
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY[pet]†A→dmpet")]) ≈ WNDCnat["DPYA.pet","delas=0.5"]#  530.314023931433
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY[cep]†A→dmcep")]) ≈ WNDCnat["DPYA.cep","delas=0.5"]#  294.0555382098
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY[wst]†A→dmwst")]) ≈ WNDCnat["DPYA.wst","delas=0.5"]#  115.756304435511
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY[mot]†A→dmmot")]) ≈ WNDCnat["DPYA.mot","delas=0.5"]#  662.445547589631
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY[adm]†A→dmadm")]) ≈ WNDCnat["DPYA.adm","delas=0.5"]#  923.381795523787
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY[soc]†A→dmsoc")]) ≈ WNDCnat["DPYA.soc","delas=0.5"]#  210.448152
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY[alt]†A→dmalt")]) ≈ WNDCnat["DPYA.alt","delas=0.5"]#  15.1340936958987
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY[pmt]†A→dmpmt")]) ≈ WNDCnat["DPYA.pmt","delas=0.5"]#  209.257117915282
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY[trk]†A→dmtrk")]) ≈ WNDCnat["DPYA.trk","delas=0.5"]#  38.934866
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY[fdd]†A→dmfdd")]) ≈ WNDCnat["DPYA.fdd","delas=0.5"]#  598.321003
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY[wtt]†A→dmwtt")]) ≈ WNDCnat["DPYA.wtt","delas=0.5"]#  29.5450418
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY[wpd]†A→dmwpd")]) ≈ WNDCnat["DPYA.wpd","delas=0.5"]#  110.751311022094
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY[wht]†A→dmwht")]) ≈ WNDCnat["DPYA.wht","delas=0.5"]#  103.418245
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY[wrh]†A→dmwrh")]) ≈ WNDCnat["DPYA.wrh","delas=0.5"]#  141.952358
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY[ott]†A→dmott")]) ≈ WNDCnat["DPYA.ott","delas=0.5"]#  7.216437
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY[che]†A→dmche")]) ≈ WNDCnat["DPYA.che","delas=0.5"]#  748.468424078777
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY[air]†A→dmair")]) ≈ WNDCnat["DPYA.air","delas=0.5"]#  191.300045170429
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY[mmf]†A→dmmmf")]) ≈ WNDCnat["DPYA.mmf","delas=0.5"]#  144.347624373182
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY[otr]†A→dmotr")]) ≈ WNDCnat["DPYA.otr","delas=0.5"]#  244.239969510576
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY[min]†A→dmmin")]) ≈ WNDCnat["DPYA.min","delas=0.5"]#  83.8292439906876
+# @test JuMP.value(WiNnat._jump_model[Symbol("PM[trn]‡MS[trn]")]) ≈ WNDCnat["SPMMS.trn","delas=0.5"]#  441.38467
+# @test JuMP.value(WiNnat._jump_model[Symbol("PM[trd]‡MS[trd]")]) ≈ WNDCnat["SPMMS.trd","delas=0.5"]#  2963.50744
+# @test JuMP.value(WiNnat._jump_model[Symbol("MS")][:trn]) ≈ WNDCnat["MS.trn","delas=0.5"]#  1.01527815024853
+# @test JuMP.value(WiNnat._jump_model[Symbol("MS")][:trd]) ≈ WNDCnat["MS.trd","delas=0.5"]#  1.01230852907687
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:ppd]) ≈ WNDCnat["PA.ppd","delas=0.5"]#  0.945140197709488
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:res]) ≈ WNDCnat["PA.res","delas=0.5"]#  0.904652892905589
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:com]) ≈ WNDCnat["PA.com","delas=0.5"]#  0.973046864300211
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:amb]) ≈ WNDCnat["PA.amb","delas=0.5"]#  0.976092887866181
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:fbp]) ≈ WNDCnat["PA.fbp","delas=0.5"]#  0.905222925282818
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:rec]) ≈ WNDCnat["PA.rec","delas=0.5"]#  0.923265955812877
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:con]) ≈ WNDCnat["PA.con","delas=0.5"]#  0.961278520486227
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:agr]) ≈ WNDCnat["PA.agr","delas=0.5"]#  0.96909698486413
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:eec]) ≈ WNDCnat["PA.eec","delas=0.5"]#  0.937036591197483
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:fnd]) ≈ WNDCnat["PA.fnd","delas=0.5"]#  0.979463374001478
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:pub]) ≈ WNDCnat["PA.pub","delas=0.5"]#  0.955585617217787
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:hou]) ≈ WNDCnat["PA.hou","delas=0.5"]#  1.00189285811208
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:fbt]) ≈ WNDCnat["PA.fbt","delas=0.5"]#  1
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:ins]) ≈ WNDCnat["PA.ins","delas=0.5"]#  0.955004159021877
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:tex]) ≈ WNDCnat["PA.tex","delas=0.5"]#  0.911970420038665
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:leg]) ≈ WNDCnat["PA.leg","delas=0.5"]#  0.934815046709346
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:fen]) ≈ WNDCnat["PA.fen","delas=0.5"]#  0.975890460905855
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:uti]) ≈ WNDCnat["PA.uti","delas=0.5"]#  0.91937778259042
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:nmp]) ≈ WNDCnat["PA.nmp","delas=0.5"]#  0.938922355190893
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:brd]) ≈ WNDCnat["PA.brd","delas=0.5"]#  0.91321039734632
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:bnk]) ≈ WNDCnat["PA.bnk","delas=0.5"]#  0.978999974911223
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:ore]) ≈ WNDCnat["PA.ore","delas=0.5"]#  0.965194949931579
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:edu]) ≈ WNDCnat["PA.edu","delas=0.5"]#  0.97755832559901
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:ote]) ≈ WNDCnat["PA.ote","delas=0.5"]#  0.961412035279279
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:man]) ≈ WNDCnat["PA.man","delas=0.5"]#  0.97440623147216
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:mch]) ≈ WNDCnat["PA.mch","delas=0.5"]#  0.946933379047208
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:dat]) ≈ WNDCnat["PA.dat","delas=0.5"]#  0.968528389047219
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:amd]) ≈ WNDCnat["PA.amd","delas=0.5"]#  0.892333359181414
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:oil]) ≈ WNDCnat["PA.oil","delas=0.5"]#  0.944735721853549
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:hos]) ≈ WNDCnat["PA.hos","delas=0.5"]#  0.970234516593953
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:rnt]) ≈ WNDCnat["PA.rnt","delas=0.5"]#  0.933024055181551
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:pla]) ≈ WNDCnat["PA.pla","delas=0.5"]#  0.936170343563667
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:fof]) ≈ WNDCnat["PA.fof","delas=0.5"]#  0.965253342086377
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:fin]) ≈ WNDCnat["PA.fin","delas=0.5"]#  0.969989700476859
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:tsv]) ≈ WNDCnat["PA.tsv","delas=0.5"]#  0.973525120066279
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:nrs]) ≈ WNDCnat["PA.nrs","delas=0.5"]#  0.959984225635516
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:sec]) ≈ WNDCnat["PA.sec","delas=0.5"]#  0.972608490404801
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:art]) ≈ WNDCnat["PA.art","delas=0.5"]#  0.945585911333066
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:mov]) ≈ WNDCnat["PA.mov","delas=0.5"]#  0.950640720981328
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:fpd]) ≈ WNDCnat["PA.fpd","delas=0.5"]#  0.926041003688575
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:slg]) ≈ WNDCnat["PA.slg","delas=0.5"]#  0.969916200670407
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:pri]) ≈ WNDCnat["PA.pri","delas=0.5"]#  0.952697504196913
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:grd]) ≈ WNDCnat["PA.grd","delas=0.5"]#  0.960890375138728
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:pip]) ≈ WNDCnat["PA.pip","delas=0.5"]#  0.781868345526557
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:sle]) ≈ WNDCnat["PA.sle","delas=0.5"]#  0.953339320633534
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:osv]) ≈ WNDCnat["PA.osv","delas=0.5"]#  0.950843222439624
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:trn]) ≈ WNDCnat["PA.trn","delas=0.5"]#  1.14227969214863
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:smn]) ≈ WNDCnat["PA.smn","delas=0.5"]#  0.966004078681194
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:fmt]) ≈ WNDCnat["PA.fmt","delas=0.5"]#  0.946275819441559
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:pet]) ≈ WNDCnat["PA.pet","delas=0.5"]#  0.820928950163508
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:mvt]) ≈ WNDCnat["PA.mvt","delas=0.5"]#  1
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:cep]) ≈ WNDCnat["PA.cep","delas=0.5"]#  0.956833013401351
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:wst]) ≈ WNDCnat["PA.wst","delas=0.5"]#  0.953423714285322
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:mot]) ≈ WNDCnat["PA.mot","delas=0.5"]#  0.929210245629629
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:adm]) ≈ WNDCnat["PA.adm","delas=0.5"]#  0.966810685540033
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:soc]) ≈ WNDCnat["PA.soc","delas=0.5"]#  0.967926555601326
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:alt]) ≈ WNDCnat["PA.alt","delas=0.5"]#  0.87520579330517
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:pmt]) ≈ WNDCnat["PA.pmt","delas=0.5"]#  0.959072252096919
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:trk]) ≈ WNDCnat["PA.trk","delas=0.5"]#  0.941542531256691
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:fdd]) ≈ WNDCnat["PA.fdd","delas=0.5"]#  0.974826342493881
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:gmt]) ≈ WNDCnat["PA.gmt","delas=0.5"]#  1
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:wtt]) ≈ WNDCnat["PA.wtt","delas=0.5"]#  0.947015348260372
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:wpd]) ≈ WNDCnat["PA.wpd","delas=0.5"]#  0.944282207961669
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:wht]) ≈ WNDCnat["PA.wht","delas=0.5"]#  0.974539149389098
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:wrh]) ≈ WNDCnat["PA.wrh","delas=0.5"]#  0.967648373728616
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:ott]) ≈ WNDCnat["PA.ott","delas=0.5"]#  0.974634704152285
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:che]) ≈ WNDCnat["PA.che","delas=0.5"]#  0.944417300106697
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:air]) ≈ WNDCnat["PA.air","delas=0.5"]#  0.854177543307008
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:mmf]) ≈ WNDCnat["PA.mmf","delas=0.5"]#  0.932945598568183
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:otr]) ≈ WNDCnat["PA.otr","delas=0.5"]#  0.960131350744643
+# @test JuMP.value(WiNnat._jump_model[Symbol("PA")][:min]) ≈ WNDCnat["PA.min","delas=0.5"]#  0.933574887500853
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY")][:ppd]) ≈ WNDCnat["PY.ppd","delas=0.5"]#  0.957371237581366
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY")][:res]) ≈ WNDCnat["PY.res","delas=0.5"]#  0.967671161954627
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY")][:com]) ≈ WNDCnat["PY.com","delas=0.5"]#  0.980669782754909
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY")][:amb]) ≈ WNDCnat["PY.amb","delas=0.5"]#  0.976568548467505
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY")][:fbp]) ≈ WNDCnat["PY.fbp","delas=0.5"]#  0.955130562237221
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY")][:rec]) ≈ WNDCnat["PY.rec","delas=0.5"]#  0.968703602721967
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY")][:con]) ≈ WNDCnat["PY.con","delas=0.5"]#  0.962403989232918
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY")][:agr]) ≈ WNDCnat["PY.agr","delas=0.5"]#  0.958576177666825
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY")][:eec]) ≈ WNDCnat["PY.eec","delas=0.5"]#  0.966990579307507
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY")][:fnd]) ≈ WNDCnat["PY.fnd","delas=0.5"]#  0.979463374001478
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY")][:pub]) ≈ WNDCnat["PY.pub","delas=0.5"]#  0.979550430840125
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY")][:hou]) ≈ WNDCnat["PY.hou","delas=0.5"]#  0.983430133805168
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY")][:fbt]) ≈ WNDCnat["PY.fbt","delas=0.5"]#  0.975973643994495
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY")][:ins]) ≈ WNDCnat["PY.ins","delas=0.5"]#  0.970754148038202
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY")][:tex]) ≈ WNDCnat["PY.tex","delas=0.5"]#  0.955691958041676
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY")][:leg]) ≈ WNDCnat["PY.leg","delas=0.5"]#  0.978658905987505
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY")][:fen]) ≈ WNDCnat["PY.fen","delas=0.5"]#  0.975868985069321
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY")][:uti]) ≈ WNDCnat["PY.uti","delas=0.5"]#  0.962982970876244
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY")][:nmp]) ≈ WNDCnat["PY.nmp","delas=0.5"]#  0.963634970108683
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY")][:brd]) ≈ WNDCnat["PY.brd","delas=0.5"]#  0.963081960971072
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY")][:bnk]) ≈ WNDCnat["PY.bnk","delas=0.5"]#  0.977901140187266
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY")][:ore]) ≈ WNDCnat["PY.ore","delas=0.5"]#  0.964637447473895
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY")][:edu]) ≈ WNDCnat["PY.edu","delas=0.5"]#  0.978224927465962
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY")][:ote]) ≈ WNDCnat["PY.ote","delas=0.5"]#  0.969996638283914
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY")][:man]) ≈ WNDCnat["PY.man","delas=0.5"]#  0.97691711751733
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY")][:mch]) ≈ WNDCnat["PY.mch","delas=0.5"]#  0.965255364634832
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY")][:dat]) ≈ WNDCnat["PY.dat","delas=0.5"]#  0.971844406255276
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY")][:amd]) ≈ WNDCnat["PY.amd","delas=0.5"]#  0.969680903448769
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY")][:oil]) ≈ WNDCnat["PY.oil","delas=0.5"]#  0.970593516024889
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY")][:hos]) ≈ WNDCnat["PY.hos","delas=0.5"]#  0.971822758755271
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY")][:rnt]) ≈ WNDCnat["PY.rnt","delas=0.5"]#  0.976413854349883
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY")][:pla]) ≈ WNDCnat["PY.pla","delas=0.5"]#  0.9584923100911
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY")][:fof]) ≈ WNDCnat["PY.fof","delas=0.5"]#  0.975374151899061
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY")][:fin]) ≈ WNDCnat["PY.fin","delas=0.5"]#  0.970190067222211
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY")][:tsv]) ≈ WNDCnat["PY.tsv","delas=0.5"]#  0.975916644650378
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY")][:nrs]) ≈ WNDCnat["PY.nrs","delas=0.5"]#  0.971510597275635
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY")][:sec]) ≈ WNDCnat["PY.sec","delas=0.5"]#  0.974735236862947
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY")][:art]) ≈ WNDCnat["PY.art","delas=0.5"]#  0.976751191194228
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY")][:mov]) ≈ WNDCnat["PY.mov","delas=0.5"]#  0.974595761015874
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY")][:fpd]) ≈ WNDCnat["PY.fpd","delas=0.5"]#  0.960794876800887
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY")][:slg]) ≈ WNDCnat["PY.slg","delas=0.5"]#  0.969916200670407
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY")][:pri]) ≈ WNDCnat["PY.pri","delas=0.5"]#  0.961979246880187
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY")][:grd]) ≈ WNDCnat["PY.grd","delas=0.5"]#  0.971398175982146
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY")][:pip]) ≈ WNDCnat["PY.pip","delas=0.5"]#  0.981938417029131
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY")][:sle]) ≈ WNDCnat["PY.sle","delas=0.5"]#  0.953339320633534
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY")][:osv]) ≈ WNDCnat["PY.osv","delas=0.5"]#  0.973391346546706
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY")][:trn]) ≈ WNDCnat["PY.trn","delas=0.5"]#  0.961221268344908
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY")][:smn]) ≈ WNDCnat["PY.smn","delas=0.5"]#  0.966103982502013
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY")][:fmt]) ≈ WNDCnat["PY.fmt","delas=0.5"]#  0.968802149589158
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY")][:pet]) ≈ WNDCnat["PY.pet","delas=0.5"]#  0.950793445388338
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY")][:mvt]) ≈ WNDCnat["PY.mvt","delas=0.5"]#  0.97721968022921
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY")][:cep]) ≈ WNDCnat["PY.cep","delas=0.5"]#  0.982965019595103
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY")][:wst]) ≈ WNDCnat["PY.wst","delas=0.5"]#  0.967796580618928
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY")][:mot]) ≈ WNDCnat["PY.mot","delas=0.5"]#  0.949811632208893
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY")][:adm]) ≈ WNDCnat["PY.adm","delas=0.5"]#  0.97345241308982
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY")][:soc]) ≈ WNDCnat["PY.soc","delas=0.5"]#  0.971678330747137
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY")][:alt]) ≈ WNDCnat["PY.alt","delas=0.5"]#  0.957776289877319
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY")][:pmt]) ≈ WNDCnat["PY.pmt","delas=0.5"]#  0.961755781425041
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY")][:trk]) ≈ WNDCnat["PY.trk","delas=0.5"]#  0.952430119010462
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY")][:fdd]) ≈ WNDCnat["PY.fdd","delas=0.5"]#  0.974826342493881
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY")][:gmt]) ≈ WNDCnat["PY.gmt","delas=0.5"]#  0.976529160437046
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY")][:wtt]) ≈ WNDCnat["PY.wtt","delas=0.5"]#  0.956820401627842
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY")][:wpd]) ≈ WNDCnat["PY.wpd","delas=0.5"]#  0.961780697173675
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY")][:wht]) ≈ WNDCnat["PY.wht","delas=0.5"]#  0.97448626666803
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY")][:wrh]) ≈ WNDCnat["PY.wrh","delas=0.5"]#  0.968811475780097
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY")][:ott]) ≈ WNDCnat["PY.ott","delas=0.5"]#  0.974634704152285
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY")][:che]) ≈ WNDCnat["PY.che","delas=0.5"]#  0.961877509706166
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY")][:air]) ≈ WNDCnat["PY.air","delas=0.5"]#  0.95212576189474
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY")][:mmf]) ≈ WNDCnat["PY.mmf","delas=0.5"]#  0.969747703671534
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY")][:otr]) ≈ WNDCnat["PY.otr","delas=0.5"]#  0.961970484538815
+# @test JuMP.value(WiNnat._jump_model[Symbol("PY")][:min]) ≈ WNDCnat["PY.min","delas=0.5"]#  0.962723933015537
+# @test JuMP.value(WiNnat._jump_model[Symbol("PVA")][:compen]) ≈ WNDCnat["PVA.compen","delas=0.5"]#  0.98955309837526
+# @test JuMP.value(WiNnat._jump_model[Symbol("PVA")][:surplus]) ≈ WNDCnat["PVA.surplus","delas=0.5"]#  0.985772741023506
+# @test JuMP.value(WiNnat._jump_model[Symbol("PM")][:trn]) ≈ WNDCnat["PM.trn","delas=0.5"]#  0.957232419396773
+# @test JuMP.value(WiNnat._jump_model[Symbol("PM")][:trd]) ≈ WNDCnat["PM.trd","delas=0.5"]#  0.974911343510673
+# @test JuMP.value(WiNnat._jump_model[Symbol("PFX")]) ≈ WNDCnat["PFX.missing","delas=0.5"]#  0.972241725345085
+@test JuMP.value(WiNnat._jump_model[Symbol("RA")]) ≈ WNDCnat["RA.missing","delas=0.5"]#  12453.8764709011
 
 end
