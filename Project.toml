@@ -12,6 +12,8 @@ PrettyTables = "08abe8d2-0d0c-5749-adfa-8a2ac140af0d"
 XLSX = "fdbf4ff8-1666-58a4-91e7-1b58723a45e0"
 TestItemRunner = "f8b46487-2199-4994-9208-9a1283c18c0a"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+JLD2 = "033835bb-8acc-5ee8-8aae-3f567f8a3819"
+
 
 [compat]
 julia = "1.6"
@@ -21,4 +23,4 @@ PATHSolver = "1.6"
 PrettyTables = "2.2.7"
 
 [targets]
-test = ["Test", "TestItemRunner", "XLSX"]
+test = ["Test", "TestItemRunner", "XLSX", "JLD2"]
