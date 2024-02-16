@@ -21,6 +21,7 @@ JuMP = "1.15.1"
 MacroTools = "0.5"
 PATHSolver = "1.6"
 PrettyTables = "2.2.7"
+JLD2 = "0.4.43 - 0.4.44"
 
 [targets]
 test = ["Test", "TestItemRunner", "XLSX", "FileIO", "JLD2"]
