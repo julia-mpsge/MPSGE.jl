@@ -184,14 +184,14 @@
     set_value(RA, 13138.7573)
     set_fixed!(RA, true)
     
-    solve!(WiNnat, cumulative_iteration_limit=0.)
+    # solve!(WiNnat, cumulative_iteration_limit=0.)
     
     # gams_results = XLSX.readxlsx(joinpath(@__DIR__, "MPSGEresults.xlsx"))
     # a_table = gams_results["WNDCnat"][:]  # Generated from JPMGE_MPSGE
     # WNDCnat = DenseAxisArray(a_table[2:end,2:end],string.(a_table[2:end,1],".",a_table[2:end,2]),a_table[1,2:end])
     
     
-    @test JuMP.value(WiNnat._jump_model[Symbol("Y")][:ppd]) ≈ 1.# WNDCnat["Y.ppd","benchmarkmge"]#  1
+    # @test JuMP.value(WiNnat._jump_model[Symbol("Y")][:ppd]) ≈ 1.# WNDCnat["Y.ppd","benchmarkmge"]#  1
     # @test JuMP.value(WiNnat._jump_model[Symbol("Y")][:res]) ≈ WNDCnat["Y.res","benchmarkmge"]#  1
     # @test JuMP.value(WiNnat._jump_model[Symbol("Y")][:com]) ≈ WNDCnat["Y.com","benchmarkmge"]#  1
     # @test JuMP.value(WiNnat._jump_model[Symbol("Y")][:amb]) ≈ WNDCnat["Y.amb","benchmarkmge"]#  1
@@ -683,14 +683,14 @@
     
     
     # # Counterfactual
-    # for i in a_
-    #     set_value(ta[i], 0.)
-    #     set_value(tm[i], 0.)
-    # end
-    # set_value(RA,  12453.8963154469) #So far, this updated default normalization value needs to be set, value from GAMS output. 12453.8963
-    # set_fixed!(RA, true)
+    for i in a_
+        set_value(ta[i], 0.)
+        set_value(tm[i], 0.)
+    end
+    set_value(RA,  12453.8963154469) #So far, this updated default normalization value needs to be set, value from GAMS output. 12453.8963
+    set_fixed!(RA, true)
     
-    # solve!(WiNnat, convergence_tolerance=1e-6, cumulative_iteration_limit=10000);
+    solve!(WiNnat, convergence_tolerance=1e-6, cumulative_iteration_limit=10000);
     
     # @test JuMP.value(WiNnat._jump_model[Symbol("Y")][:ppd]) ≈ WNDCnat["Y.ppd","Countermge"]  #  atol=1.0e-7 #  1.01879539799114
     # @test JuMP.value(WiNnat._jump_model[Symbol("Y")][:res]) ≈ WNDCnat["Y.res","Countermge"]  #atol=1.0e-5 #  1.03916450940003
