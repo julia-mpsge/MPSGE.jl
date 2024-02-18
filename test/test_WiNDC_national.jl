@@ -1,7 +1,7 @@
 @testitem "WiNDC national model" begin
     # Replication of the WiNDC national MGE model
     using XLSX, MPSGE.JuMP.Containers
-    using JLD2
+    # using JLD2
     import JuMP, CSV
     
     # New data from Mitch Oct 11
