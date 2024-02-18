@@ -183,6 +183,8 @@
     
     set_value(RA, 13138.7573)
     set_fixed!(RA, true)
+
+    MPSGE.build(WiNnat)
     
     # solve!(WiNnat, cumulative_iteration_limit=0.)
     
