@@ -1,9 +1,9 @@
 @testitem "WiNDC national model" begin
     # Replication of the WiNDC national MGE model
-    using XLSX, JuMP.Containers
+    using XLSX, MPSGE.JuMP.Containers
     # using JLD2
-    # import JuMP
-    using CSV
+    import JuMP
+    import CSV
     
     # New data from Mitch Oct 11
     set_names = [:m,:va,:j,:fd,:ts,:yr,:i]; 
