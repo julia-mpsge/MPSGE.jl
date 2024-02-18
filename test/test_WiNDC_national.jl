@@ -184,7 +184,7 @@
     set_value(RA, 13138.7573)
     set_fixed!(RA, true)
     
-    solve!(WiNnat, cumulative_iteration_limit=0);
+    solve!(WiNnat, cumulative_iteration_limit=0.)
     
     gams_results = XLSX.readxlsx(joinpath(@__DIR__, "MPSGEresults.xlsx"))
     a_table = gams_results["WNDCnat"][:]  # Generated from JPMGE_MPSGE
