@@ -2,15 +2,46 @@
     # Replication of the WiNDC national MGE model
     using XLSX, MPSGE.JuMP.Containers
     using JLD2
-    import JuMP
+    import JuMP, CSV
     
-    
-    ## Load all the data: Data was uploaded and structured into Dicts of DenseAxisArrays with a Julia notebook "national_data.ipynb"
     # New data from Mitch Oct 11
-    P= load(joinpath(@__DIR__,"./gams/DAAData.jld2"))["data"] # load in date from saved Notebook output Dict, named P
-    S= load(joinpath(@__DIR__,"./gams/Indices.jld2"))["data"] # load in date from saved Notebook output Dict, named S
+    set_names = [:m,:va,:j,:fd,:ts,:yr,:i]; 
+    S = Dict(); for set in set_names
+    S[set] = [Symbol(a) for (a,b) in CSV.File(joinpath(@__DIR__,"./gams/national_ls/$set.csv"),stringtype=String)]
+    end
+    parm_names = [  (:a_0, (:yr, :i)), # (:tax_0, (:yr, :i)), Not in this model
+                (:id_0, (:yr, :i, :j)),
+                (:ys_0, (:yr, :j, :i)),
+                (:ms_0, (:yr, :i, :m)),
+                (:x_0, (:yr, :i)),
+                (:s_0, (:yr, :i)),
+                (:fs_0, (:yr, :i)), # (:duty_0, (:yr, :i)), Not in this model # (:trn_0, (:yr, :i)), Not in this model
+                (:tm_0, (:yr, :i)),
+                (:va_0, (:yr, :va, :j)),
+                (:md_0, (:yr, :m, :i)),
+                (:fd_0, (:yr, :i, :fd)),
+                (:m_0, (:yr, :i)), # (:mrg_0, (:yr, :i)), Not in this model
+                (:ty_0, (:yr, :j)),
+                (:bopdef_0, (:yr,)), # (:sbd_0, (:yr, :i)), Not in this model
+                (:ta_0, (:yr, :i)),
+                (:y_0, (:yr, :i)), # (:ts_0, (:yr, :ts, :j)) Not in this model
+                ];
+    # Using the indices from S (from csv files), load the data from the csvs as DenseAxisArrays
+    P= Dict(); 
+    for (parm,parm_domain) in parm_names
+        X = DenseAxisArray{Float64}(undef,[S[elm] for elm in parm_domain]...)
+        fill!(X,0.0)
+        for row in CSV.File(joinpath(@__DIR__,"gams/national_ls/$parm.csv"),stringtype=String)
+            element = [Symbol(row[elm]) for elm in parm_domain]
+            X[element...] = row[:value]
+        end
+        P[parm] = X
+    end
+    # JLD2 data causes an issue with the tests on Github
+    # P= load(joinpath(@__DIR__,"./gams/DAAData.jld2"))["data"] # load in date from saved Notebook output Dict, named P
+     # S= load(joinpath(@__DIR__,"./gams/Indices.jld2"))["data"] # load in date from saved Notebook output Dict, named S
     # Alternate, Julia WiNDC generated data
-    # P= load(joinpath(@__DIR__,"./gams/JDAAData.jld2"))["data"] # load in date from saved Notebook output Dict, named P
+    # PJ= load(joinpath(@__DIR__,"./gams/JDAAData.jld2"))["data"] # load in date from saved Notebook output Dict, named P
     # SJ= load(joinpath(@__DIR__,"./gams/JIndices.jld2"))["data"] # load in date from saved Notebook output Dict, named S
     
     y_ = filter!(x -> x != :oth && x!= :use, S[:i][:]) # These 2 sectors 'use' & 'oth' are in the indices list, but have no data (and therefore cause problems)
@@ -19,7 +50,7 @@
     # Indexes (set from the data files, via the notebook)
     sectorsi = S[:i]#[:] # "BEA Goods and sectors categories", is "i" in GAMS
     sectorsj = copy(sectorsi) # "BEA Goods and sectors categories", is "j" in GAMS, for iterating over double index
-    xfd = filter!(x -> x != :pce, S[:fd]) # "BEA Final demand categories",
+    xfd = filter!(x -> x != :pce, copy(S[:fd])) # "BEA Final demand categories",
     ts = S[:ts] # "BEA Taxes and subsidies categories",
     valueadded = filter!(s -> s != :othtax, S[:va]) # "BEA Value added categories excluding othtax", va in GAMS
     margin  = S[:m] # "Margins (trade or transport)"; m in GAMS
@@ -2139,4 +2170,4 @@
     @test JuMP.value(WiNnat._jump_model[Symbol("PFX")]) ≈ WNDCnat["PFX.missing","delas=0.5"]#  0.972241725345085
     @test JuMP.value(WiNnat._jump_model[Symbol("RA")]) ≈ WNDCnat["RA.missing","delas=0.5"]#  12453.8764709011
     
-    end
+end
