@@ -40,9 +40,9 @@
         end
         P[parm] = X
     end
-    # JLD2 data causes an issue with the tests on Github
-    P= load(joinpath(@__DIR__,"./gams/DAAData.jld2"))["data"] # load in date from saved Notebook output Dict, named P
-    S= load(joinpath(@__DIR__,"./gams/Indices.jld2"))["data"] # load in date from saved Notebook output Dict, named S
+    # JLD2 package and data causes an issue with the tests on Github
+    # P= load(joinpath(@__DIR__,"./gams/DAAData.jld2"))["data"] # load in date from saved Notebook output Dict, named P
+    # S= load(joinpath(@__DIR__,"./gams/Indices.jld2"))["data"] # load in date from saved Notebook output Dict, named S
     # Alternate, Julia WiNDC generated data
     # PJ= load(joinpath(@__DIR__,"./gams/JDAAData.jld2"))["data"] # load in date from saved Notebook output Dict, named P
     # SJ= load(joinpath(@__DIR__,"./gams/JIndices.jld2"))["data"] # load in date from saved Notebook output Dict, named S
