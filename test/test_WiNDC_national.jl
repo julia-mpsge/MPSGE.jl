@@ -1,13 +1,14 @@
 @testitem "WiNDC national model" begin
     # Replication of the WiNDC national MGE model
     using XLSX, MPSGE.JuMP.Containers
-    # using JLD2
+    using JLD2
     import JuMP
     import CSV
     import PATHSolver
     PATHSolver.c_api_License_SetString("2830898829&Courtesy&&&USR&45321&5_1_2021&1000&PATH&GEN&31_12_2025&0_0_0&6000&0_0")
     
     # New data from Mitch Oct 11
+    # Using the indices from S (from csv files), load the data from the csvs as DenseAxisArrays
     set_names = [:m,:va,:j,:fd,:ts,:yr,:i]; 
     S = Dict(); for set in set_names
     S[set] = [Symbol(a) for (a,b) in CSV.File(joinpath(@__DIR__,"./gams/national_ls/$set.csv"),stringtype=String)]
@@ -29,7 +30,6 @@
                 (:ta_0, (:yr, :i)),
                 (:y_0, (:yr, :i)), # (:ts_0, (:yr, :ts, :j)) Not in this model
                 ];
-    # Using the indices from S (from csv files), load the data from the csvs as DenseAxisArrays
     P= Dict(); 
     for (parm,parm_domain) in parm_names
         X = DenseAxisArray{Float64}(undef,[S[elm] for elm in parm_domain]...)
@@ -41,8 +41,8 @@
         P[parm] = X
     end
     # JLD2 data causes an issue with the tests on Github
-    # P= load(joinpath(@__DIR__,"./gams/DAAData.jld2"))["data"] # load in date from saved Notebook output Dict, named P
-     # S= load(joinpath(@__DIR__,"./gams/Indices.jld2"))["data"] # load in date from saved Notebook output Dict, named S
+    P= load(joinpath(@__DIR__,"./gams/DAAData.jld2"))["data"] # load in date from saved Notebook output Dict, named P
+    S= load(joinpath(@__DIR__,"./gams/Indices.jld2"))["data"] # load in date from saved Notebook output Dict, named S
     # Alternate, Julia WiNDC generated data
     # PJ= load(joinpath(@__DIR__,"./gams/JDAAData.jld2"))["data"] # load in date from saved Notebook output Dict, named P
     # SJ= load(joinpath(@__DIR__,"./gams/JIndices.jld2"))["data"] # load in date from saved Notebook output Dict, named S
