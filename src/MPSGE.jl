@@ -2,7 +2,7 @@ module MPSGE
 
 
 import JuMP, MacroTools, PATHSolver, PrettyTables
-import JuMP: value, set_value, Containers, set_lower_bound, set_upper_bound, @constraint
+import JuMP: value, set_value, Containers, set_lower_bound, set_upper_bound, @constraint, @expression
 
 import JuMP.Containers: DenseAxisArray
 
