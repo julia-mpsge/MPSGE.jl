@@ -163,29 +163,33 @@ function build_implicitconstraints!(m, jm)
     # Add compensated demand (intermediate and factor)
     for s in m._productions
         for input in s.inputs
-
-            jump_ex = 
+            jm[get_comp_demand_name(input)] = @expression(jm, 
+            # jump_ex = 
                 tojump(jm, input.quantity) *
                 (       
                     create_cost_expr(m, jm, s) * 
                     get_commodity_benchmark(input.commodity) * 
                     tojump(jm, input.price) /
                     get_expression_for_commodity_consumer_price(jm, s, input.commodity)
-                )^tojump(jm,s.elasticity) - 
-                tojump(jm, m._implicitvarsDict[get_comp_demand_name(input)])
+                )^tojump(jm,s.elasticity) #- 
+                # tojump(jm, m._implicitvarsDict[get_comp_demand_name(input)])
+                )
 
-            jump_var = jm[get_comp_demand_name(input)]
+            # jump_var = jm[get_comp_demand_name(input)]
 
-            @constraint(jm, jump_ex ⟂ jump_var)
-            push!(m._nlexpressions.comp_demand, (expr=jump_ex, var=jump_var))
+            # @constraint(jm, jump_ex ⟂ jump_var)
+            push!(m._nlexpressions.comp_demand, jm[get_comp_demand_name(input)])
+            # push!(m._nlexpressions.comp_demand, (@expression(jm, :($jump_var), :($jump_ex))))
+            # push!(m._nlexpressions.comp_demand, (expr=jump_ex, var=jump_var))
         end
     end
 
     # Add compensated supply
     for s in m._productions
         for output in s.outputs
-            jump_ex =
-                tojump(jm, output.quantity) *
+            # jump_ex =
+            jm[get_comp_supply_name(output)] =
+            @expression(jm, tojump(jm, output.quantity) *
                 (
                     get_expression_for_commodity_producer_price(jm, s, output.commodity) /
                     (
@@ -193,20 +197,23 @@ function build_implicitconstraints!(m, jm)
                         get_commodity_benchmark(output.commodity) *
                         tojump(jm, output.price)
                     )
-                )^tojump(jm, s.tr_elasticity) -
-                tojump(jm, m._implicitvarsDict[get_comp_supply_name(output)])
+                )^tojump(jm, s.tr_elasticity))# -
+                # tojump(jm, m._implicitvarsDict[get_comp_supply_name(output)])
 
-            jump_var = jm[get_comp_supply_name(output)]
+            # jump_var = jm[get_comp_supply_name(output)]
 
-            @constraint(jm, jump_ex ⟂ jump_var)
-            push!(m._nlexpressions.comp_supply, (expr=jump_ex, var=jump_var))
+            # @constraint(jm, jump_ex ⟂ jump_var)
+            # push!(m._nlexpressions.comp_supply, (expr=jump_ex, var=jump_var))
+            push!(m._nlexpressions.comp_supply, jm[get_comp_supply_name(output)])
         end
     end
 
     # Add final demand
     for demand_function in m._demands
             for demand in demand_function.demands
-                jump_ex = tojump(jm, demand.quantity) *
+                # jump_ex = 
+                jm[get_final_demand_name(demand)] =
+                @expression(jm, tojump(jm, demand.quantity) *
                     (
                         tojump(jm, demand_function.consumer) / # (consumer's) income
                         +(
@@ -220,13 +227,14 @@ function build_implicitconstraints!(m, jm)
                         tojump(jm, get_commodity_benchmark(demand.commodity)) *
                         tojump(jm, demand.price) / # p__bar_i
                         tojump(jm, demand.commodity)
-                    ) ^ tojump(jm, demand_function.elasticity) - # p_i
-                    tojump(jm, m._implicitvarsDict[get_final_demand_name(demand)])
+                    ) ^ tojump(jm, demand_function.elasticity)# - # p_i
+                    # tojump(jm, m._implicitvarsDict[get_final_demand_name(demand)])
+                )
+                # jump_var = jm[get_final_demand_name(demand)]
 
-                jump_var = jm[get_final_demand_name(demand)]
-
-                @constraint(jm, jump_ex ⟂ jump_var)
-                push!(m._nlexpressions.final_demand, (expr=jump_ex, var=jump_var))
+                # @constraint(jm, jump_ex ⟂ jump_var)
+                push!(m._nlexpressions.final_demand, jm[get_final_demand_name(demand)])
+                # push!(m._nlexpressions.final_demand, (expr=jump_ex, var=jump_var))
             end
     end
 end
