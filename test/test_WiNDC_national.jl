@@ -1,16 +1,50 @@
 @testitem "WiNDC national model" begin
     # Replication of the WiNDC national MGE model
     using XLSX, MPSGE.JuMP.Containers
-    using JLD2
+    # using JLD2
     import JuMP
+    import CSV
+    import PATHSolver
+    PATHSolver.c_api_License_SetString("2830898829&Courtesy&&&USR&45321&5_1_2021&1000&PATH&GEN&31_12_2025&0_0_0&6000&0_0")
     
-    
-    ## Load all the data: Data was uploaded and structured into Dicts of DenseAxisArrays with a Julia notebook "national_data.ipynb"
     # New data from Mitch Oct 11
-    P= load(joinpath(@__DIR__,"./gams/DAAData.jld2"))["data"] # load in date from saved Notebook output Dict, named P
-    S= load(joinpath(@__DIR__,"./gams/Indices.jld2"))["data"] # load in date from saved Notebook output Dict, named S
+    # Using the indices from S (from csv files), load the data from the csvs as DenseAxisArrays
+    set_names = [:m,:va,:j,:fd,:ts,:yr,:i]; 
+    S = Dict(); for set in set_names
+    S[set] = [Symbol(a) for (a,b) in CSV.File(joinpath(@__DIR__,"./gams/national_ls/$set.csv"),stringtype=String)]
+    end
+    parm_names = [  (:a_0, (:yr, :i)), # (:tax_0, (:yr, :i)), Not in this model
+                (:id_0, (:yr, :i, :j)),
+                (:ys_0, (:yr, :j, :i)),
+                (:ms_0, (:yr, :i, :m)),
+                (:x_0, (:yr, :i)),
+                (:s_0, (:yr, :i)),
+                (:fs_0, (:yr, :i)), # (:duty_0, (:yr, :i)), Not in this model # (:trn_0, (:yr, :i)), Not in this model
+                (:tm_0, (:yr, :i)),
+                (:va_0, (:yr, :va, :j)),
+                (:md_0, (:yr, :m, :i)),
+                (:fd_0, (:yr, :i, :fd)),
+                (:m_0, (:yr, :i)), # (:mrg_0, (:yr, :i)), Not in this model
+                (:ty_0, (:yr, :j)),
+                (:bopdef_0, (:yr,)), # (:sbd_0, (:yr, :i)), Not in this model
+                (:ta_0, (:yr, :i)),
+                (:y_0, (:yr, :i)), # (:ts_0, (:yr, :ts, :j)) Not in this model
+                ];
+    P= Dict(); 
+    for (parm,parm_domain) in parm_names
+        X = DenseAxisArray{Float64}(undef,[S[elm] for elm in parm_domain]...)
+        fill!(X,0.0)
+        for row in CSV.File(joinpath(@__DIR__,"gams/national_ls/$parm.csv"),stringtype=String)
+            element = [Symbol(row[elm]) for elm in parm_domain]
+            X[element...] = row[:value]
+        end
+        P[parm] = X
+    end
+    # JLD2 package and data causes an issue with the tests on Github
+    # P= load(joinpath(@__DIR__,"./gams/DAAData.jld2"))["data"] # load in date from saved Notebook output Dict, named P
+    # S= load(joinpath(@__DIR__,"./gams/Indices.jld2"))["data"] # load in date from saved Notebook output Dict, named S
     # Alternate, Julia WiNDC generated data
-    # P= load(joinpath(@__DIR__,"./gams/JDAAData.jld2"))["data"] # load in date from saved Notebook output Dict, named P
+    # PJ= load(joinpath(@__DIR__,"./gams/JDAAData.jld2"))["data"] # load in date from saved Notebook output Dict, named P
     # SJ= load(joinpath(@__DIR__,"./gams/JIndices.jld2"))["data"] # load in date from saved Notebook output Dict, named S
     
     y_ = filter!(x -> x != :oth && x!= :use, S[:i][:]) # These 2 sectors 'use' & 'oth' are in the indices list, but have no data (and therefore cause problems)
@@ -19,7 +53,7 @@
     # Indexes (set from the data files, via the notebook)
     sectorsi = S[:i]#[:] # "BEA Goods and sectors categories", is "i" in GAMS
     sectorsj = copy(sectorsi) # "BEA Goods and sectors categories", is "j" in GAMS, for iterating over double index
-    xfd = filter!(x -> x != :pce, S[:fd]) # "BEA Final demand categories",
+    xfd = filter!(x -> x != :pce, copy(S[:fd])) # "BEA Final demand categories",
     ts = S[:ts] # "BEA Taxes and subsidies categories",
     valueadded = filter!(s -> s != :othtax, S[:va]) # "BEA Value added categories excluding othtax", va in GAMS
     margin  = S[:m] # "Margins (trade or transport)"; m in GAMS
@@ -152,14 +186,14 @@
     set_value(RA, 13138.7573)
     set_fixed!(RA, true)
     
-    solve!(WiNnat, cumulative_iteration_limit=0);
+    solve!(WiNnat, cumulative_iteration_limit=0.)
     
     gams_results = XLSX.readxlsx(joinpath(@__DIR__, "MPSGEresults.xlsx"))
     a_table = gams_results["WNDCnat"][:]  # Generated from JPMGE_MPSGE
     WNDCnat = DenseAxisArray(a_table[2:end,2:end],string.(a_table[2:end,1],".",a_table[2:end,2]),a_table[1,2:end])
     
     
-    @test JuMP.value(WiNnat._jump_model[Symbol("Y")][:ppd]) ≈ WNDCnat["Y.ppd","benchmarkmge"]#  1
+    @test JuMP.value(WiNnat._jump_model[Symbol("Y")][:ppd]) ≈ 1.# WNDCnat["Y.ppd","benchmarkmge"]#  1
     @test JuMP.value(WiNnat._jump_model[Symbol("Y")][:res]) ≈ WNDCnat["Y.res","benchmarkmge"]#  1
     @test JuMP.value(WiNnat._jump_model[Symbol("Y")][:com]) ≈ WNDCnat["Y.com","benchmarkmge"]#  1
     @test JuMP.value(WiNnat._jump_model[Symbol("Y")][:amb]) ≈ WNDCnat["Y.amb","benchmarkmge"]#  1
@@ -2139,4 +2173,4 @@
     @test JuMP.value(WiNnat._jump_model[Symbol("PFX")]) ≈ WNDCnat["PFX.missing","delas=0.5"]#  0.972241725345085
     @test JuMP.value(WiNnat._jump_model[Symbol("RA")]) ≈ WNDCnat["RA.missing","delas=0.5"]#  12453.8764709011
     
-    end
+end
