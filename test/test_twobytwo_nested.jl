@@ -108,7 +108,7 @@
     # For now just run these functions, we might add tests for the results
     # at a later point
     repr(MIME("text/plain"), m)
-    # TODO repr(MIME("text/plain"), avm2)
+    repr(MIME("text/plain"), avm2)
     # TODO repr(MIME("text/latex"), avm2)
   
     set_fixed!(get_nested_commodity(U, :X), true)
