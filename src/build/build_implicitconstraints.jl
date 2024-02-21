@@ -178,7 +178,7 @@ function build_implicitconstraints!(m, jm)
             # jump_var = jm[get_comp_demand_name(input)]
 
             # @constraint(jm, jump_ex ⟂ jump_var)
-            push!(m._nlexpressions.comp_demand, jm[get_comp_demand_name(input)])
+            push!(m._nlexpressions.comp_demand, get_comp_demand_name(input) => jm[get_comp_demand_name(input)])
             # push!(m._nlexpressions.comp_demand, (@expression(jm, :($jump_var), :($jump_ex))))
             # push!(m._nlexpressions.comp_demand, (expr=jump_ex, var=jump_var))
         end
@@ -204,7 +204,7 @@ function build_implicitconstraints!(m, jm)
 
             # @constraint(jm, jump_ex ⟂ jump_var)
             # push!(m._nlexpressions.comp_supply, (expr=jump_ex, var=jump_var))
-            push!(m._nlexpressions.comp_supply, jm[get_comp_supply_name(output)])
+            push!(m._nlexpressions.comp_supply, get_comp_supply_name(output) => jm[get_comp_supply_name(output)])
         end
     end
 
@@ -233,7 +233,7 @@ function build_implicitconstraints!(m, jm)
                 # jump_var = jm[get_final_demand_name(demand)]
 
                 # @constraint(jm, jump_ex ⟂ jump_var)
-                push!(m._nlexpressions.final_demand, jm[get_final_demand_name(demand)])
+                push!(m._nlexpressions.final_demand, get_final_demand_name(demand) => jm[get_final_demand_name(demand)])
                 # push!(m._nlexpressions.final_demand, (expr=jump_ex, var=jump_var))
             end
     end
