@@ -38,9 +38,6 @@ function algebraic_version_main(m::Model)
     return AlgebraicWrapper_main(
         m,
         jump_model,
-        # sum(length(s.inputs) for s in m._productions),
-        # sum(length(s.outputs) for s in m._productions),
-        # sum(length(d.demands) for d in m._demands),
         length(m._productions),
         sum(c isa ScalarCommodity ? 1 : c isa IndexedCommodity ? prod(length.(c.indices)) : error("Invalid") for c in m._commodities),
         length(m._demands)
@@ -50,6 +47,7 @@ end
 function constraint_values(m::Model)
     for (i,c)=enumerate(Iterators.flatten(m._nlexpressions))
         var_values = []
+        if c isa NamedTuple
         println("Constraint $i $(JuMP.name(c.var)): ", value(c.expr) do j
                 val = if JuMP.is_parameter(j)
                     JuMP.parameter_value(j)
@@ -61,9 +59,21 @@ function constraint_values(m::Model)
                 return val
             end
         )
+        else
+            println("Constraint $i $(c[1]): ", value(c[2]) do j
+                val = if JuMP.is_parameter(j)
+                    JuMP.parameter_value(j)
+                else
+                    JuMP.value(j)
+                end
 
+                push!(var_values, "  $(JuMP.name(j)) = $val")
+                return val
+            end
+        )
+        end
         for s in var_values
-            println(s)
+        println(s)
         end
     end
 end

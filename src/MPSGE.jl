@@ -6,7 +6,7 @@ import JuMP: value, set_value, Containers, set_lower_bound, set_upper_bound, @co
 
 import JuMP.Containers: DenseAxisArray
 
-export add!, Model, solve!, algebraic_version, algebraic_version_main
+export add!, Model, solve!, algebraic_version, algebraic_version_main, constraint_values
 export Sector, Commodity, Consumer, Aux, Production, DemandFunction, AuxConstraint, Endowment, Input, Output, Parameter, Demand, Tax, Nest
 export value, set_value, get_value, set_fixed!, get_nested_commodity, set_lower_bound, set_upper_bound
 export @parameter, @sector, @commodity, @consumer, @production, @demand
