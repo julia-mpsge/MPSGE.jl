@@ -1,38 +1,15 @@
-function add_variable!(m::MPSGEModel, S::MPSGEScalarVariable)
-    jm = jump_model(m)
-    jm[name(S)] = @variable(jm,base_name = string(name(S)),start=1)
-end
 
-function add_variable!(m::MPSGEModel, S::MPSGEIndexedVariable)
-
-    jm = jump_model(m)
-    index = S.index
-
-    dim = length.(index)
-    
-    x = JuMP.@variable(jm, [1:prod(dim)], lower_bound=0, start = 1)
-
-    for (i, ind) in enumerate(Iterators.product(index...))
-        new_index = join(ind,",")
-        JuMP.set_name(x[i], "$(name(S))[$new_index]")
-    end
-
-    output = JuMP.Containers.DenseAxisArray(reshape(x, Tuple(dim)), index...)
-    jm[name(S)] = output
-    return output
-
-end
 
 function add!(m::MPSGEModel,S::MPSGEScalarVariable)
     @assert !haskey(m.object_dict,name(S)) "Variable $(name(S)) already exists in model"
     m.object_dict[name(S)] = S
-    add_variable!(m,S)
+    #add_variable!(m,S)
 end
 
 function add!(m::MPSGEModel, S::MPSGEIndexedVariable)
     @assert !haskey(m.object_dict,name(S)) "Variable $(name(S)) already exists in model"
     m.object_dict[name(S)] = S
-    add_variable!(m,S)
+    #add_variable!(m,S)
 end
 
 

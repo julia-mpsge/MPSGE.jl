@@ -261,9 +261,9 @@ struct ScalarDemand
     endowments::Dict{Commodity,ScalarEndowment}
     quantity::Float64
     function ScalarDemand(consumer::ScalarConsumer,demands::Vector{ScalarDem},endowments::Vector{ScalarEndowment})
-        var = get_variable(consumer)
+        #var = get_variable(consumer)
         quantity=  sum(d.quantity for d∈demands)
-        set_start_value(var, quantity)
+        #set_start_value(var, quantity)
         new(consumer,
             Dict(demand.commodity => demand for demand in demands), 
             Dict(endowment.commodity => endowment for endowment in endowments),
@@ -316,13 +316,20 @@ extract_scalars(S::MPSGEIndexedVariable) = S.subsectors.data
 
 
 ## Variables 
+
+raw_sectors(m::MPSGEModel) = [s for (_,s) in m.object_dict if isa(s,Sector)]
+raw_commodities(m::MPSGEModel) = [s for (_,s) in m.object_dict if isa(s,Commodity)]
+raw_consumers(m::MPSGEModel) = [s for (_,s) in m.object_dict if isa(s,Consumer)]
+
+
 """
     sectors(m::MPSGEModel)
 
 Return all sectors in a model
 """
 function sectors(m::MPSGEModel)
-    X = [extract_scalars(s) for (_,s) in m.object_dict if isa(s,Sector)] |>  
+    X = raw_sectors(m) |>
+        x -> extract_scalars.(x) |> #[extract_scalars(s) for (_,s) in m.object_dict if isa(s,Sector)] |>  
         x -> Iterators.flatten(x) |>
         x -> collect(x)
     return X
@@ -343,7 +350,8 @@ end
 
 
 function commodities(m::MPSGEModel)
-    X = [extract_scalars(s) for (_,s) in m.object_dict if isa(s,Commodity)] |>  
+    X = raw_commodities(m) |>
+        x -> extract_scalars.(x) |>  
         x -> Iterators.flatten(x) |>
         x -> collect(x)
     return X
@@ -355,7 +363,8 @@ end
 
 
 function consumers(m::MPSGEModel)
-    X = [extract_scalars(s) for (_,s) in m.object_dict if isa(s,Consumer)] |>  
+    X = raw_consumers(m) |>
+        x -> extract_scalars.(x) |>
         x -> Iterators.flatten(x) |>
         x -> collect(x)
     return X

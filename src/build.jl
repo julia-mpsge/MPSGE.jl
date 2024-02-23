@@ -163,6 +163,33 @@ function demand(H::Consumer, C::Commodity)
     return d.quantity/total_quantity * get_variable(H)/get_variable(C)
 end
 
+###########################
+## Create JuMP Variables ##
+###########################
+function add_variable!(m::MPSGEModel, S::MPSGEScalarVariable)
+    jm = jump_model(m)
+    jm[name(S)] = @variable(jm,base_name = string(name(S)),start=1)
+end
+
+function add_variable!(m::MPSGEModel, S::MPSGEIndexedVariable)
+
+    jm = jump_model(m)
+    index = S.index
+
+    dim = length.(index)
+    
+    x = JuMP.@variable(jm, [1:prod(dim)], lower_bound=0, start = 1)
+
+    for (i, ind) in enumerate(Iterators.product(index...))
+        new_index = join(ind,",")
+        JuMP.set_name(x[i], "$(name(S))[$new_index]")
+    end
+
+    output = JuMP.Containers.DenseAxisArray(reshape(x, Tuple(dim)), index...)
+    jm[name(S)] = output
+    return output
+
+end
 
 
 
@@ -174,6 +201,20 @@ model. However, I *think* we can do this here without issue. I would
 prefer doing it here.
 """
 function build!(M::MPSGEModel)
+    M.jump_model = JuMP.Model(PATHSolver.Optimizer)
+
+    for (_,V) in object_dict(M)
+        add_variable!(M, V)
+    end
+
+    #Need to set start values of demands
+    # This needs to be more elegant
+    for (consumer,d) in M.demands
+        var = get_variable(consumer)
+        set_start_value(var, d.quantity)
+    end
+
+
     build_compensated_demands!(M)
     build_commodity_dictionary!(M)
     build_constraints!(M)
