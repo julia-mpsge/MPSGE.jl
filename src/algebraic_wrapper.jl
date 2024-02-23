@@ -9,6 +9,14 @@ struct AlgebraicWrapper
     n_income_balance::Int
 end
 
+struct AlgebraicWrapper_main
+    _source
+    _jmpsource
+    n_zero_profits::Int
+    n_market_clearance::Int
+    n_income_balance::Int
+end
+
 function algebraic_version(m::Model)    
     jump_model = m._jump_model===nothing ? build(m) : m._jump_model
 
@@ -24,9 +32,22 @@ function algebraic_version(m::Model)
     )
 end
 
+function algebraic_version_main(m::Model)    
+    jump_model = m._jump_model===nothing ? build(m) : m._jump_model
+
+    return AlgebraicWrapper_main(
+        m,
+        jump_model,
+        length(m._productions),
+        sum(c isa ScalarCommodity ? 1 : c isa IndexedCommodity ? prod(length.(c.indices)) : error("Invalid") for c in m._commodities),
+        length(m._demands)
+    )
+end
+
 function constraint_values(m::Model)
     for (i,c)=enumerate(Iterators.flatten(m._nlexpressions))
         var_values = []
+        if c isa NamedTuple
         println("Constraint $i $(JuMP.name(c.var)): ", value(c.expr) do j
                 val = if JuMP.is_parameter(j)
                     JuMP.parameter_value(j)
@@ -38,15 +59,27 @@ function constraint_values(m::Model)
                 return val
             end
         )
+        else
+            println("Constraint $i $(c[1]): ", value(c[2]) do j
+                val = if JuMP.is_parameter(j)
+                    JuMP.parameter_value(j)
+                else
+                    JuMP.value(j)
+                end
 
+                push!(var_values, "  $(JuMP.name(j)) = $val")
+                return val
+            end
+        )
+        end
         for s in var_values
-            println(s)
+        println(s)
         end
     end
 end
 
 function Base.show(io::IO, m::AlgebraicWrapper)
-    constraint_strings = [sprint(show, c.expr) for c in Iterators.flatten(m._source._nlexpressions)]
+    constraint_strings = [sprint(show, c) for c in Iterators.flatten(m._source._nlexpressions)]
     
     column1_width = maximum(textwidth.(constraint_strings))
 
@@ -54,17 +87,7 @@ function Base.show(io::IO, m::AlgebraicWrapper)
     for i in m._source._nlexpressions.comp_demand
         print(io, "    ")
 
-        print(io, rpad(sprint(show, i.expr), column1_width))
-
-        print(io, "  ┴  ")
-
-        c = i.var
-
-        if JuMP.is_fixed(c)
-            print(io, JuMP.name(c), " = $(JuMP.fix_value(c))")
-        else
-            print(io, !JuMP.has_lower_bound(c) ? "" : "$(JuMP.lower_bound(c)) < ", JuMP.name(c), !JuMP.has_upper_bound(c) ? "" : " < $(JuMP.upper_bound(c))")
-        end
+        print(io, rpad(sprint(show, i), column1_width))
 
         println(io)
     end
@@ -73,17 +96,8 @@ function Base.show(io::IO, m::AlgebraicWrapper)
     for i in m._source._nlexpressions.comp_supply
         print(io, "    ")
 
-        print(io, rpad(sprint(show, i.expr), column1_width))
+        print(io, rpad(sprint(show, i), column1_width))
 
-        print(io, "  ┴  ")
-
-        c = i.var
-
-        if JuMP.is_fixed(c)
-            print(io, JuMP.name(c), " = $(JuMP.fix_value(c))")
-        else
-            print(io, !JuMP.has_lower_bound(c) ? "" : "$(JuMP.lower_bound(c)) < ", JuMP.name(c), !JuMP.has_upper_bound(c) ? "" : " < $(JuMP.upper_bound(c))")
-        end
 
         println(io)
     end
@@ -92,17 +106,7 @@ function Base.show(io::IO, m::AlgebraicWrapper)
     for i in m._source._nlexpressions.final_demand
         print(io, "    ")
 
-        print(io, rpad(sprint(show, i.expr), column1_width))
-
-        print(io, "  ┴  ")
-
-        c = i.var
-
-        if JuMP.is_fixed(c)
-            print(io, JuMP.name(c), " = $(JuMP.fix_value(c))")
-        else
-            print(io, !JuMP.has_lower_bound(c) ? "" : "$(JuMP.lower_bound(c)) < ", JuMP.name(c), !JuMP.has_upper_bound(c) ? "" : " < $(JuMP.upper_bound(c))")
-        end
+        print(io, rpad(sprint(show, i), column1_width))
 
         println(io)
     end
@@ -165,6 +169,69 @@ function Base.show(io::IO, m::AlgebraicWrapper)
     end
 end
 
+function Base.show(io::IO, m::AlgebraicWrapper_main)
+    constraint_strings = [sprint(show, c) for c in Iterators.flatten(m._source._nlexpressions)]
+    
+    column1_width = maximum(textwidth.(constraint_strings))
+
+    println(io, "    Zero Profit")
+    for i in m._source._nlexpressions.zero_profit
+        print(io, "    ")
+
+        print(io, rpad(sprint(show, i.expr), column1_width))
+
+        print(io, "  ┴  ")
+
+        c = i.var
+
+        if JuMP.is_fixed(c)
+            print(io, JuMP.name(c), " = $(JuMP.fix_value(c))")
+        else
+            print(io, !JuMP.has_lower_bound(c) ? "" : "$(JuMP.lower_bound(c)) < ", JuMP.name(c), !JuMP.has_upper_bound(c) ? "" : " < $(JuMP.upper_bound(c))")
+        end
+
+        println(io)
+    end
+    println(io, "   ")
+    println(io, "    Market clearance")
+    for i in m._source._nlexpressions.market_clearance
+        print(io, "  ")
+
+        print(io, rpad(sprint(show, i.expr), column1_width))
+
+        print(io, "  ┴  ")
+
+        c = i.var
+
+        if JuMP.is_fixed(c)
+            print(io, JuMP.name(c), " = $(JuMP.fix_value(c))")
+        else
+            print(io, !JuMP.has_lower_bound(c) ? "" : "$(JuMP.lower_bound(c)) < ", JuMP.name(c), !JuMP.has_upper_bound(c) ? "" : " < $(JuMP.upper_bound(c))")
+        end
+
+        println(io)
+    end
+    println(io, "    ")
+    println(io, "    Income balance")
+    for i in m._source._nlexpressions.income_balance
+        print(io, "  ")
+
+        print(io, rpad(sprint(show, i.expr), column1_width))
+
+        print(io, "  ┴  ")
+
+        c = i.var
+
+        if JuMP.is_fixed(c)
+            print(io, JuMP.name(c), " = $(JuMP.fix_value(c))")
+        else
+            print(io, !JuMP.has_lower_bound(c) ? "" : "$(JuMP.lower_bound(c)) < ", JuMP.name(c), !JuMP.has_upper_bound(c) ? "" : " < $(JuMP.upper_bound(c))")
+        end
+
+        println(io)
+    end
+end
+
 function Base.show(io::IO, ::MIME"text/latex", m::AlgebraicWrapper)
     println(io, raw"$$ \begin{alignat*}{3}\\")
 
@@ -172,18 +239,10 @@ function Base.show(io::IO, ::MIME"text/latex", m::AlgebraicWrapper)
     for i in m._source._nlexpressions.comp_demand
         print(io, "& \\quad ")
 
-        s = sprint((io, val) -> show(io, "text/latex", val), i.expr)
+        s = sprint((io, val) -> show(io, "text/latex", val), i[2])
         print(io, s[3:end-2])
 
         print(io, raw"\quad && \perp \quad && ")
-
-        c = i.var
-
-        if JuMP.is_fixed(c)
-            print(io, JuMP.name(c), " = $(JuMP.fix_value(c))")
-        else
-            print(io, !JuMP.has_lower_bound(c) ? "" : "$(JuMP.lower_bound(c)) <", JuMP.name(c), !JuMP.has_upper_bound(c) ? "" : " < $(JuMP.upper_bound(c))")
-        end
 
         println(io, "\\\\")
     end
@@ -192,38 +251,22 @@ function Base.show(io::IO, ::MIME"text/latex", m::AlgebraicWrapper)
     for i in m._source._nlexpressions.comp_supply
         print(io, "& \\quad ")
 
-        s = sprint((io, val) -> show(io, "text/latex", val), i.expr)
+        s = sprint((io, val) -> show(io, "text/latex", val), i[2])
         print(io, s[3:end-2])
 
         print(io, raw"\quad && \perp \quad && ")
 
-        c = i.var
-
-        if JuMP.is_fixed(c)
-            print(io, JuMP.name(c), " = $(JuMP.fix_value(c))")
-        else
-            print(io, !JuMP.has_lower_bound(c) ? "" : "$(JuMP.lower_bound(c)) <", JuMP.name(c), !JuMP.has_upper_bound(c) ? "" : " < $(JuMP.upper_bound(c))")
-        end
-
-        println(io, "\\\\")
+         println(io, "\\\\")
     end
     
     println(io, raw"& \text{Final Demand} \quad && \quad && \\\\")
     for i in m._source._nlexpressions.final_demand
         print(io, "& \\quad ")
 
-        s = sprint((io, val) -> show(io, "text/latex", val), i.expr)
+        s = sprint((io, val) -> show(io, "text/latex", val), i[2])
         print(io, s[3:end-2])
 
         print(io, raw"\quad && \perp \quad && ")
-
-        c = i.var
-
-        if JuMP.is_fixed(c)
-            print(io, JuMP.name(c), " = $(JuMP.fix_value(c))")
-        else
-            print(io, !JuMP.has_lower_bound(c) ? "" : "$(JuMP.lower_bound(c)) <", JuMP.name(c), !JuMP.has_upper_bound(c) ? "" : " < $(JuMP.upper_bound(c))")
-        end
 
         println(io, "\\\\")
     end

@@ -35,7 +35,9 @@ function build_marketclearance!(m, jm)
         for production_function in m._productions
             for output in production_function.outputs
                 if output.commodity==commodity
-                    push!(comp_supplies, tojump(jm, production_function.sector) * tojump(jm, m._implicitvarsDict[get_comp_supply_name(output)]))
+                    push!(comp_supplies, tojump(jm, production_function.sector) * jm[get_comp_supply_name(output)])
+                    # push!(comp_supplies, tojump(jm, production_function.sector) * tojump(jm, m._nlexpressions.comp_supply[get_comp_supply_name(output)]))
+                    # push!(comp_supplies, tojump(jm, production_function.sector) * tojump(jm, m._implicitvarsDict[get_comp_supply_name(output)]))
                 end
             end
         end
@@ -45,7 +47,9 @@ function build_marketclearance!(m, jm)
         for demand_function in m._demands
             for demand in demand_function.demands
                 if demand.commodity == commodity
-                    push!(final_demand, tojump(jm, m._implicitvarsDict[get_final_demand_name(demand)]))
+                    push!(final_demand, jm[get_final_demand_name(demand)])
+                    # push!(final_demand, tojump(jm, m._nlexpressions.comp_demand[get_final_demand_name(demand)]))
+                    # push!(final_demand, tojump(jm, m._implicitvarsDict[get_final_demand_name(demand)]))
                 end
             end
         end
@@ -55,7 +59,9 @@ function build_marketclearance!(m, jm)
         for production_function in m._productions
             for input in production_function.inputs
                 if input.commodity==commodity
-                    push!(comp_demands, tojump(jm, production_function.sector) * tojump(jm, m._implicitvarsDict[get_comp_demand_name(input)]))
+                    push!(comp_demands, tojump(jm, production_function.sector) * jm[get_comp_demand_name(input)])
+                    # push!(comp_demands, tojump(jm, production_function.sector) * tojump(jm, m._nlexpressions.final_demand[get_comp_demand_name(input)]))
+                    # push!(comp_demands, tojump(jm, production_function.sector) * tojump(jm, m._implicitvarsDict[get_comp_demand_name(input)]))
                 end
             end
         end

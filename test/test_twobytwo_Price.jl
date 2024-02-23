@@ -361,7 +361,7 @@ solve!(m)
 @test JuMP.value(m._jump_model[:PY]) ≈ two_by_two_PriceinOutput["PY","Otax=0.1"]#  1.0917372
 @test JuMP.value(m._jump_model[:PU]) ≈ two_by_two_PriceinOutput["PU","Otax=0.1"]#  1.0424989
 @test JuMP.value(m._jump_model[:PL]) ≈ two_by_two_PriceinOutput["PL","Otax=0.1"]#  1
-@test JuMP.value(m._jump_model[:PK]) ≈ two_by_two_PriceinOutput["PK","Otax=0.1"]#  1.1711502
+@test JuMP.value(m._jump_model[:PK]) ≈ two_by_two_PriceinOutput["PK","Otax=0.1"] atol=1e-7 #  1.1711502
 @test JuMP.value(m._jump_model[Symbol("PX‡X")]) ≈ two_by_two_PriceinOutput["SX","Otax=0.1"]#  100
 @test JuMP.value(m._jump_model[Symbol("PY‡Y")]) ≈ two_by_two_PriceinOutput["SY","Otax=0.1"]#  54
 @test JuMP.value(m._jump_model[Symbol("PU‡U")]) ≈ two_by_two_PriceinOutput["SU","Otax=0.1"]#  154

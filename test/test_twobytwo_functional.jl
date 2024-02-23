@@ -62,6 +62,10 @@
     repr(MIME("text/plain"), avm2)
     repr(MIME("text/latex"), avm2)
 
+    avm_main = algebraic_version_main(m)
+    @test typeof(avm_main) == MPSGE.AlgebraicWrapper_main
+    repr(MIME("text/plain"), avm_main)
+
     set_fixed!(PX, true)
     set_value(endow, 2.2)
     solve!(m)

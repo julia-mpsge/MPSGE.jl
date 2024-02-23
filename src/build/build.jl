@@ -12,9 +12,9 @@ function build(m::Model)
 
     build_variables!(m, jm)
 
-    add_implicitvars!(m)
+    # add_implicitvars!(m)
     
-    build_implicitconstraints!(m, jm)
+    build_implicitexpressions!(m, jm)
 
     build_zeroprofit!(m, jm)
 

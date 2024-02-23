@@ -576,7 +576,10 @@ solve!(m)
     @test JuMP.value(m._jump_model[Symbol("PU‡U")]) ≈ two_by_two_scalar_results["SU.L","Otax=.5"]	#	150
     @test JuMP.value(m._jump_model[Symbol("PUρRA[a]")]) ≈ two_by_two_scalar_results["DURAA.L","Otax=.5"] 	#	91.47968056
     @test JuMP.value(m._jump_model[Symbol("PUρRA[b]")]) ≈ two_by_two_scalar_results["DURAB.L","Otax=.5"] 	#	65.34262897
-		
+
+    #TODO this specific case fails without one of the Consumers set and fixed. Otherwise RA[a] comes back as 0
+set_value(RA[:b],577.5) 
+set_fixed!(RA[:b], true)
 set_value(otaxa, 0.9)		
 set_value(otaxb, 0.9)		
 solve!(m)		

@@ -76,26 +76,26 @@ function add_aux_to_jump!(jm, aux::IndexedAux)
     add_variable!(jm, aux.name, aux.indices, 0.)
 end
 
-function add_implicitvars!(m)
-    # Add compensated supply variable Refs to model
-    for s in m._productions
-        for o in s.outputs
-            add!(m, Implicitvar(get_comp_supply_name(o), typeof(o)))
-        end
-    end
-    # Add compensated demand variables
-    for s in m._productions
-        for i in s.inputs
-            add!(m, Implicitvar(get_comp_demand_name(i), typeof(i)))
-        end
-    end
-   # Add final demand variables
-   for demand_function in m._demands
-        for demand in demand_function.demands
-            add!(m, Implicitvar(get_final_demand_name(demand), typeof(demand)))
-        end
-    end
-end
+# function add_implicitvars!(m)
+#     # Add compensated supply variable Refs to model
+#     for s in m._productions
+#         for o in s.outputs
+#             add!(m, Implicitvar(get_comp_supply_name(o), typeof(o)))
+#         end
+#     end
+#     # Add compensated demand variables
+#     for s in m._productions
+#         for i in s.inputs
+#             add!(m, Implicitvar(get_comp_demand_name(i), typeof(i)))
+#         end
+#     end
+#    # Add final demand variables
+#    for demand_function in m._demands
+#         for demand in demand_function.demands
+#             add!(m, Implicitvar(get_final_demand_name(demand), typeof(demand)))
+#         end
+#     end
+# end
 
 function build_variables!(m, jm)
     # Add all parameters
@@ -120,27 +120,27 @@ function build_variables!(m, jm)
     end
 
     # Add compensated supply variables
-    for s in m._productions
-        for o in s.outputs
-            add_variable!(jm, get_comp_supply_name(o))
-        end
-    end
+    # for s in m._productions
+    #     for o in s.outputs
+    #         add_variable!(jm, get_comp_supply_name(o))
+    #     end
+    # end
 
     # Add compensated demand variables
-    for s in m._productions
-        for i in s.inputs
-            add_variable!(jm, get_comp_demand_name(i))
-        end
-    end
+    # for s in m._productions
+    #     for i in s.inputs
+    #         add_variable!(jm, get_comp_demand_name(i))
+    #     end
+    # end
 
     for c in m._consumers
         add_consumer_to_jump!(jm, c)
     end
 
     # Add final demand variables
-    for demand_function in m._demands
-        for demand in demand_function.demands
-            add_variable!(jm, get_final_demand_name(demand))
-        end
-    end
+    # for demand_function in m._demands
+    #     for demand in demand_function.demands
+    #         add_variable!(jm, get_final_demand_name(demand))
+    #     end
+    # end
 end

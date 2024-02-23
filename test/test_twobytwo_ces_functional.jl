@@ -60,6 +60,14 @@
     repr(MIME("text/plain"), m)
     repr(MIME("text/plain"), avm2)
     repr(MIME("text/latex"), avm2)
+    avm_main2 = algebraic_version_main(m)
+    @test typeof(avm_main2) == MPSGE.AlgebraicWrapper_main
+    cnvals = constraint_values(m)
+    # repr(MIME("test/plain"), cnvals)
+
+    # For now just run these functions, we might add tests for the results
+    # at a later point
+    repr(MIME("text/plain"), avm_main2)
 
     set_value(endow, 2.2)
     set_value(RA, 157.)
