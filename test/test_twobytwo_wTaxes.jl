@@ -465,7 +465,10 @@ solve!(m)
     @test JuMP.value(m._jump_model[Symbol("PU‡U")]) ≈ two_by_two_scalar_results["SU.L","Otaxa=.5"]	#	150
     @test JuMP.value(m._jump_model[Symbol("PUρRA[a]")]) ≈ two_by_two_scalar_results["DURAA.L","Otaxa=.5"] 	#	98.84720496
     @test JuMP.value(m._jump_model[Symbol("PUρRA[b]")]) ≈ two_by_two_scalar_results["DURAB.L","Otaxa=.5"] 	#	49.42360248
-		
+
+#TODO this specific case fails without one of the Consumers set and fixed. Otherwise RA[a] comes back as 0
+set_value(RA[:b],92.39999999) 
+set_fixed!(RA[:b], true)
 set_value(otaxa, 0.9)		
 solve!(m)		
 		
@@ -492,6 +495,7 @@ solve!(m)
     @test JuMP.value(m._jump_model[Symbol("PUρRA[a]")]) ≈ two_by_two_scalar_results["DURAA.L","Otaxa=.9"] 	#	67.91774892
     @test JuMP.value(m._jump_model[Symbol("PUρRA[b]")]) ≈ two_by_two_scalar_results["DURAB.L","Otaxa=.9"] 	#	16.97943723
    		
+set_fixed!(RA[:b], false)
 set_value(otaxa, 0.1)		
 set_value(otaxb, 0.1)		
 solve!(m)		
@@ -1285,7 +1289,6 @@ end
 @test JuMP.value(m._jump_model[Symbol("CONS")]) ≈ two_by_two_AuxinDemand["CONS.L","benchmark"]#  200
 @test JuMP.value(m._jump_model[Symbol("PWρCONS")]) ≈ two_by_two_AuxinDemand["CWCONS.L","benchmark"]#  200
 
-set_value(U, .1)
     set_value(CONS,210.)
     set_fixed!(CONS,true)
     solve!(m)

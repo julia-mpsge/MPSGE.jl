@@ -31,66 +31,6 @@ function Θ(jm, df::DemandFunction, dm::Demand)
         )
 end
 
-function y_over_y_bar(jm, pf::Production)    
-    if contains_our_param(pf.elasticity)
-        jump_elasticity = tojump(jm, pf.elasticity)
-        ρ = (
-                jump_elasticity - 1
-            ) / 
-            jump_elasticity
-
-        jump_expr =  
-            JuMP.op_ifelse(
-                JuMP.op_equal_to(jump_elasticity, 0.0),
-                min(
-                    (
-                        jm[get_comp_demand_name(i)] / tojump(jm, i.quantity) for i in pf.inputs
-                    )...
-                ),
-                JuMP.op_ifelse(
-                    JuMP.op_equal_to(jump_elasticity,1.),
-                    *(
-                        (
-                            (jm[get_comp_demand_name(i)]/tojump(jm, i.quantity))^Θ(jm, pf,i) for i in pf.inputs
-                        )...
-                    ),
-                    (
-                        +(
-                            (
-                                Θ(jm, pf,i) * (jm[get_comp_demand_name(i)]/tojump(jm, i.quantity))^ρ for i in pf.inputs
-                            )...
-                        )
-                    ) ^ (1/ρ)
-                )
-            )
-
-        return jump_expr
-    else # This branch is an optimization: if the elasticity doesn't contain a parameter, we can at build time only insert one case into the expression
-        if eval(swap_our_param_with_val(pf.elasticity))==0
-            return min(
-                (
-                    tojump(jm, jm[get_comp_demand_name(i)])/tojump(jm, i.quantity) for i in pf.inputs
-                )...
-            )
-        elseif eval(swap_our_param_with_val(pf.elasticity))==1
-            return *(
-                (
-                    (jm[get_comp_demand_name(i)]/tojump(jm, i.quantity))^Θ(jm, pf,i)  for i in pf.inputs
-                )...
-            )
-        else
-            ρ = (tojump(jm, pf.elasticity)-1)/tojump(jm, pf.elasticity)
-            return (
-                    +(
-                        (
-                            Θ(jm, pf,i) * (jm[get_comp_demand_name(i)]/tojump(jm, i.quantity))^ρ for i in pf.inputs
-                        )...
-                    )
-                )^(1/ρ)
-        end
-    end
-end
-
 function create_cost_expr(m, jm, pf::Production)
     if contains_our_param(pf.elasticity)
         return JuMP.op_ifelse(
@@ -104,15 +44,15 @@ function create_cost_expr(m, jm, pf::Production)
                         )
                     ) ^ Θ(jm, pf, input) for input in pf.inputs
                 )...
-            ) *
-            y_over_y_bar(jm, pf),
+            )
+            ,
             (
                 +(
                     (
                         Θ(jm, pf, input) * (get_expression_for_commodity_consumer_price(jm, pf, input.commodity)/(tojump(jm, get_commodity_benchmark(input.commodity))*tojump(jm, input.price))) ^ (1-tojump(jm, pf.elasticity)) for input in pf.inputs
                     )...
                 )
-            )^(1/(1-tojump(jm, pf.elasticity))) * y_over_y_bar(jm, pf)
+            )^(1/(1-tojump(jm, pf.elasticity)))
         )
     else # This branch is an optimization: if the elasticity doesn't contain a parameter, we can at build time only insert one case into the expression
         if eval(swap_our_param_with_val(pf.elasticity))==1
@@ -121,7 +61,7 @@ function create_cost_expr(m, jm, pf::Production)
                             (get_expression_for_commodity_consumer_price(jm, pf, input.commodity)/(tojump(jm, get_commodity_benchmark(input.commodity))*tojump(jm, input.price))) ^ Θ(jm, pf, input)
                             for input in pf.inputs
                         )...
-                ) * y_over_y_bar(jm, pf)
+                )
         else 
             return (
                 +(
@@ -129,7 +69,7 @@ function create_cost_expr(m, jm, pf::Production)
                         Θ(jm, pf, input) * (get_expression_for_commodity_consumer_price(jm, pf, input.commodity)/(tojump(jm, get_commodity_benchmark(input.commodity))*tojump(jm, input.price))) ^ (1-tojump(jm, pf.elasticity)) for input in pf.inputs
                     )...
                 )
-            )^(1/(1-tojump(jm, pf.elasticity))) * y_over_y_bar(jm, pf)
+            )^(1/(1-tojump(jm, pf.elasticity)))
         end
     end
 end
@@ -153,35 +93,57 @@ function create_rev_expr(m, jm, pf::Production)
     return jump_expr
 end
 
-function u_over_u_bar(jm, dm::DemandFunction)
-    if contains_our_param(dm.elasticity)
-        ρ = (tojump(jm, dm.elasticity)-1)/tojump(jm, dm.elasticity)
-
-        
-                    # TODO #71 Figure out why the commented version doesn't work, it matches paper
-                    # (+($((:( $(Θ(jm, dm,d)) * ($(jm[get_final_demand_name(d)])/$(d.quantity))^$ρ ) for d in dm.demands)...)))^(1/$ρ)
-        expr = +(
-            (
-                Θ(jm, dm,d) * (tojump(jm, d.quantity)/tojump(jm, d.quantity))^ρ for d in dm.demands
-            )...
-        )^(1/ρ)
-        return expr
-    else # This branch is an optimization: if the elasticity doesn't contain a parameter, we can at build time only insert one case into the expression
-            ρ = (tojump(jm, dm.elasticity)-1)/tojump(jm, dm.elasticity)
-            return(
-                +(
-                    # TODO #71 Figure out why the commented version doesn't work, it matches paper
-                    # $((:( $(Θ(jm, dm,d)) * ($(jm[get_final_demand_name(d)])/$(d.quantity))^$ρ ) for d in dm.demands)...)
-                    (
-                        Θ(jm, dm,d) * (tojump(jm, d.quantity)/tojump(jm, d.quantity))^ρ for d in dm.demands
-                    )...
-                )
-            )^(1/ρ)
-    end
-end
-
 function create_expenditure_expr(jm, df::DemandFunction)
-    expr = +(
+    if contains_our_param(df.elasticity)
+        return JuMP.op_ifelse(
+            JuMP.op_equal_to(tojump(jm,df.elasticity), 1.), 
+            *(
+                (
+                    (
+                        tojump(jm, dm.commodity) 
+                        /
+                        (
+                            tojump(jm, get_commodity_benchmark(dm.commodity)) *
+                        tojump(jm, dm.price)
+                        )
+                    )^(Θ(jm, df, dm))
+                    for dm in df.demands
+                )...
+            ),   
+     +(
+                (
+                    Θ(jm, df, dm) *
+                    (
+                        tojump(jm, dm.commodity) 
+                        /
+                        (
+                            tojump(jm, get_commodity_benchmark(dm.commodity)) *
+                        tojump(jm, dm.price)
+                        )
+                    )^(1-tojump(jm, df.elasticity))
+                    for dm in df.demands
+                )...
+        ) ^ (1/(1-tojump(jm, df.elasticity)))
+        )
+    else
+        if eval(swap_our_param_with_val(df.elasticity))==1
+            expr = 
+            *(
+                (
+                    (
+                        tojump(jm, dm.commodity) 
+                        /
+                        (
+                            tojump(jm, get_commodity_benchmark(dm.commodity)) *
+                        tojump(jm, dm.price)
+                        )
+                    )^(Θ(jm, df, dm))
+                    for dm in df.demands
+                )...
+            )
+        else
+            expr =
+            +(
                 (
                     Θ(jm, df, dm) *
                     (
@@ -191,10 +153,10 @@ function create_expenditure_expr(jm, df::DemandFunction)
                     )^(1-tojump(jm, df.elasticity))
                     for dm in df.demands
                 )...
-        ) ^ (1/(1-tojump(jm, df.elasticity))) *
-        u_over_u_bar(jm, df)
-    
+            ) ^ (1/(1-tojump(jm, df.elasticity)))
+        end
     return expr
+    end
 end
 
 function build_implicitconstraints!(m, jm)
@@ -204,7 +166,6 @@ function build_implicitconstraints!(m, jm)
 
             jump_ex = 
                 tojump(jm, input.quantity) *
-                y_over_y_bar(jm, s) *
                 (       
                     create_cost_expr(m, jm, s) * 
                     get_commodity_benchmark(input.commodity) * 
@@ -225,7 +186,6 @@ function build_implicitconstraints!(m, jm)
         for output in s.outputs
             jump_ex =
                 tojump(jm, output.quantity) *
-                y_over_y_bar(jm, s) *
                 (
                     get_expression_for_commodity_producer_price(jm, s, output.commodity) /
                     (
@@ -253,7 +213,7 @@ function build_implicitconstraints!(m, jm)
                             (
                                 tojump(jm, d.quantity) * tojump(jm, d.price) * tojump(jm, get_commodity_benchmark(d.commodity)) for d in demand_function.demands
                             )...
-                        ) # benchmark income (?)
+                        ) # benchmark income
                     ) *
                     create_expenditure_expr(jm, demand_function) ^ (tojump(jm, demand_function.elasticity)-1) *
                     (

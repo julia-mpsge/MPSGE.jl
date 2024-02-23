@@ -369,6 +369,7 @@ solve!(m)
 
 #This fails for most variables. The GAMS results has gaps/undefined/no value for PL, HH, and CXHH. This suggests we are not handling results with /0 or 0 results in the same way
 # There's something not working about unfixing HH. Running without first fixing HH does match.  
+set_fixed!(C, true)
 set_lower_bound(HH, 0.0)
 set_lower_bound(PL,0.0)
 set_value(esubkl, 0.)
@@ -757,6 +758,7 @@ solve!(m)
 
 
 #This fails for most variables. The GAMS results has gaps/undefined/no value for PL, HH, and CXHH. This suggests we are not handling results with /0 or 0 results in the same way
+set_fixed!(C,true)
 set_lower_bound(HH, 0.0)
 set_lower_bound(PL, 0.0)
 set_value(esubkl, 0.)

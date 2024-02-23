@@ -5,3 +5,6 @@
 .ipynb_checkpoints
 Manifest.toml
 docs/build
+*.log*
+*.lst
+*.lxi
