@@ -159,7 +159,7 @@ function create_expenditure_expr(jm, df::DemandFunction)
     end
 end
 
-function build_implicitconstraints!(m, jm)
+function build_implicitexpressions!(m, jm)
     # Add compensated demand (intermediate and factor)
     for s in m._productions
         for input in s.inputs

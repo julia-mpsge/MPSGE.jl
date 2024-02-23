@@ -14,7 +14,7 @@ function build(m::Model)
 
     # add_implicitvars!(m)
     
-    build_implicitconstraints!(m, jm)
+    build_implicitexpressions!(m, jm)
 
     build_zeroprofit!(m, jm)
 
