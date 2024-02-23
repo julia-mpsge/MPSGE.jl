@@ -239,18 +239,10 @@ function Base.show(io::IO, ::MIME"text/latex", m::AlgebraicWrapper)
     for i in m._source._nlexpressions.comp_demand
         print(io, "& \\quad ")
 
-        s = sprint((io, val) -> show(io, "text/latex", val), i.expr)
+        s = sprint((io, val) -> show(io, "text/latex", val), i[2])
         print(io, s[3:end-2])
 
         print(io, raw"\quad && \perp \quad && ")
-
-        c = i.var
-
-        if JuMP.is_fixed(c)
-            print(io, JuMP.name(c), " = $(JuMP.fix_value(c))")
-        else
-            print(io, !JuMP.has_lower_bound(c) ? "" : "$(JuMP.lower_bound(c)) <", JuMP.name(c), !JuMP.has_upper_bound(c) ? "" : " < $(JuMP.upper_bound(c))")
-        end
 
         println(io, "\\\\")
     end
@@ -259,38 +251,22 @@ function Base.show(io::IO, ::MIME"text/latex", m::AlgebraicWrapper)
     for i in m._source._nlexpressions.comp_supply
         print(io, "& \\quad ")
 
-        s = sprint((io, val) -> show(io, "text/latex", val), i.expr)
+        s = sprint((io, val) -> show(io, "text/latex", val), i[2])
         print(io, s[3:end-2])
 
         print(io, raw"\quad && \perp \quad && ")
 
-        c = i.var
-
-        if JuMP.is_fixed(c)
-            print(io, JuMP.name(c), " = $(JuMP.fix_value(c))")
-        else
-            print(io, !JuMP.has_lower_bound(c) ? "" : "$(JuMP.lower_bound(c)) <", JuMP.name(c), !JuMP.has_upper_bound(c) ? "" : " < $(JuMP.upper_bound(c))")
-        end
-
-        println(io, "\\\\")
+         println(io, "\\\\")
     end
     
     println(io, raw"& \text{Final Demand} \quad && \quad && \\\\")
     for i in m._source._nlexpressions.final_demand
         print(io, "& \\quad ")
 
-        s = sprint((io, val) -> show(io, "text/latex", val), i.expr)
+        s = sprint((io, val) -> show(io, "text/latex", val), i[2])
         print(io, s[3:end-2])
 
         print(io, raw"\quad && \perp \quad && ")
-
-        c = i.var
-
-        if JuMP.is_fixed(c)
-            print(io, JuMP.name(c), " = $(JuMP.fix_value(c))")
-        else
-            print(io, !JuMP.has_lower_bound(c) ? "" : "$(JuMP.lower_bound(c)) <", JuMP.name(c), !JuMP.has_upper_bound(c) ? "" : " < $(JuMP.upper_bound(c))")
-        end
 
         println(io, "\\\\")
     end

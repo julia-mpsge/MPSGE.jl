@@ -60,7 +60,7 @@
     # at a later point
     repr(MIME("text/plain"), m)
     repr(MIME("text/plain"), avm2)
-    # TODO repr(MIME("text/latex"), avm2)
+    repr(MIME("text/latex"), avm2)
 
     avm_main = algebraic_version_main(m)
     @test typeof(avm_main) == MPSGE.AlgebraicWrapper_main

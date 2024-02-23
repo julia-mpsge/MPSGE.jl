@@ -109,7 +109,7 @@
     # at a later point
     repr(MIME("text/plain"), m)
     repr(MIME("text/plain"), avm2)
-    # TODO repr(MIME("text/latex"), avm2)
+    repr(MIME("text/latex"), avm2)
   
     set_fixed!(get_nested_commodity(U, :X), true)
     set_value(endow, 2.2)
