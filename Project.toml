@@ -1,0 +1,13 @@
+name = "MPSGE_MP"
+uuid = "e4d7e5e9-05a6-42ea-b397-b92e5812bd75"
+authors = ["Mitch Phillipson"]
+version = "1.0.0-DEV"
+
+[compat]
+julia = "1"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]
