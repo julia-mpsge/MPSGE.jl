@@ -759,7 +759,7 @@ end
     solve!(m::Model; solver=solvername, keywords)
     Function to solve the model. Triggers the build if the model hasn't been built yet.
 ### Argumenents
-    See @Complementarity.solveMCP() for full list of argument Options
+    See PATHSolver and the linked PATH webpage for full list of argument Options
 ### Example
 ```julia-repl
 julia> solve!(m, cumulative_iteration_limit=0)

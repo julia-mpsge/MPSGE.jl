@@ -1,10 +1,4 @@
-"""
-    convert_mpsge_expr_to_jump_nonlinearexpr(jm, expr)
-
-This function takes an expression tree and replaces all instances of
-MPSGE types with corresponding JuMP types and converts `Expr`s into
-`JuMP.NonlinearExpr`.
-"""
+# This function takes an expression tree and replaces all instances of MPSGE types with corresponding JuMP types and converts `Expr`s into `JuMP.NonlinearExpr`.
 function convert_mpsge_expr_to_jump_nonlinearexpr(jm, expr)
     return MacroTools.postwalk(expr) do x
         if x isa Expr
@@ -31,12 +25,8 @@ function convert_mpsge_expr_to_jump_nonlinearexpr(jm, expr)
     end
 end
 
-"""
-swap_our_param_with_val(expr)
 
-This function takes an expression tree and replaces all instances of
-`ParameterRef` with its value.
-"""
+# This function takes an expression tree and replaces all instances of the different `Refs` with its value.
 function swap_our_param_with_val(expr)
     return MacroTools.postwalk(expr) do x
         if x isa ParameterRef
@@ -72,12 +62,7 @@ function swap_our_param_with_val(expr)
     end
 end
 
-"""
-contains_our_param(expr)
-
-This function takes an expression tree and tests whether it contains
-a `ParameterRef` or `CommodityRef`
-"""
+# This function takes an expression tree and tests whether it contains a `ParameterRef` or `CommodityRef`
 function contains_our_param(expr)
     if expr isa Expr
         for x in expr.args

@@ -9,4 +9,5 @@ Input
 Output
 set_value
 set_fixed!
+solve!
 ```
