@@ -203,7 +203,7 @@ prefer doing it here.
 function build!(M::MPSGEModel)
     M.jump_model = JuMP.Model(PATHSolver.Optimizer)
 
-    for (_,V) in object_dict(M)
+    for (_,V) in object_dict(M) #Want IndexedVariables... Can be smarter
         add_variable!(M, V)
     end
 
@@ -214,7 +214,7 @@ function build!(M::MPSGEModel)
         set_start_value(var, d.quantity)
     end
 
-
+    prune!(M)
     build_compensated_demands!(M)
     build_commodity_dictionary!(M)
     build_constraints!(M)
@@ -228,8 +228,9 @@ function build_constraints!(M::MPSGEModel)
     jm = jump_model(M)
 
     # sectors(M) may not be correct here. You really want the production blocks. 
-    # Conversely, every sector *should* have a production block. 
-    @constraint(jm, zero_profit[S = sectors(M)],
+    # Conversely, every sector *should* have a production block. No longer true
+    # with pruning. 
+    @constraint(jm, zero_profit[S = production_sectors(M)],
         -sum(compensated_demand(S,C) * get_variable(C) for C∈commodities(S) if compensated_demand(S,C)!=0; init=0)  +   sum(tau(S,H) for H∈consumers(M) if tau(S,H)!=0; init=0) ⟂ get_variable(S)
     )
 
@@ -238,7 +239,7 @@ function build_constraints!(M::MPSGEModel)
     )
 
     @constraint(jm, income_balance[H = consumers(M)],
-        get_variable(H) - (sum(endowment(H,C)*get_variable(C) for C∈commodities(M) if endowment(H,C)!=0) - sum(tau(S,H)*get_variable(S) for S∈sectors(M) if tau(S,H)!=0; init=0)) ⟂ get_variable(H)
+        get_variable(H) - (sum(endowment(H,C)*get_variable(C) for C∈commodities(M) if endowment(H,C)!=0) - sum(tau(S,H)*get_variable(S) for S∈production_sectors(M) if tau(S,H)!=0; init=0)) ⟂ get_variable(H)
     );
 
 end

@@ -7,8 +7,9 @@ include("show.jl")
 include("model.jl")
 
 include("macros.jl")
-include("build.jl")
+include("prune.jl")
 
+include("build.jl")
 include("report.jl")
 
 #Structs
@@ -22,7 +23,7 @@ export  MPSGEModel,
 
 #Struct access
 export  name, quantity, production, jump_model, sectors, commodities,
-        consumers, production, taxes
+        consumers, taxes, sector, commodity, consumer
 
 
 #Model

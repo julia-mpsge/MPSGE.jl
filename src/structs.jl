@@ -211,10 +211,10 @@ end
 ## Production ##
 ################
 
-struct ScalarProduction
+mutable struct ScalarProduction
     sector::ScalarSector
-    output::ScalarNest
-    input::ScalarNest
+    output::Union{Nothing,ScalarNest}
+    input::Union{Nothing,ScalarNest}
     nested_compensated_demand::Dict
     compensated_demand::Dict
     taxes::Dict
@@ -329,10 +329,23 @@ Return all sectors in a model
 """
 function sectors(m::MPSGEModel)
     X = raw_sectors(m) |>
-        x -> extract_scalars.(x) |> #[extract_scalars(s) for (_,s) in m.object_dict if isa(s,Sector)] |>  
+        x -> extract_scalars.(x) |>  
         x -> Iterators.flatten(x) |>
         x -> collect(x)
     return X
+end
+
+
+"""
+    production_sectors(m::MPSGEModel)
+
+Return all sectors that have a corresponding production block. 
+These are coming from a dictionary, so order is not guaranteed.
+
+This is primarily used when generating constraints.
+"""
+function production_sectors(m::MPSGEModel)
+    return collect(keys(m.productions))
 end
 
 """
