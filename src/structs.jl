@@ -24,6 +24,7 @@ abstract type AbstractNest end;
 #Getters
 name(V::MPSGEVariable) = V.name
 model(V::MPSGEVariable) = V.model
+description(V::MPSGEVariable) = V.description
 
 Base.getindex(S::MPSGEIndexedVariable, index...) = S.subsectors[index...]
 
@@ -32,15 +33,17 @@ subindex(V::MPSGEScalarVariable) = V.subindex
 
 
 
+
 struct ScalarSector <: MPSGEScalarVariable
     model::AbstractMPSGEModel
     name::Symbol
     subindex::Any
-    function ScalarSector(model::AbstractMPSGEModel,name::Symbol) 
-        S = new(model,name,missing)
+    description::String
+    function ScalarSector(model::AbstractMPSGEModel,name::Symbol; description ="") 
+        S = new(model,name,missing, description)
         return S
     end
-    ScalarSector(model::AbstractMPSGEModel,name::Symbol,subindex) = new(model,name,subindex)
+    ScalarSector(model::AbstractMPSGEModel,name::Symbol,subindex; description = "") = new(model,name,subindex,description)
 end
 
 struct IndexedSector <: MPSGEIndexedVariable
@@ -48,15 +51,16 @@ struct IndexedSector <: MPSGEIndexedVariable
     name::Symbol
     subsectors::Any
     index::Any
-    function IndexedSector(model::AbstractMPSGEModel,name::Symbol,index) 
+    description::String
+    function IndexedSector(model::AbstractMPSGEModel,name::Symbol,index; description = "") 
         temp_array = Array{ScalarSector}(undef, length.(index)...)
 
         for i in CartesianIndices(temp_array)
-            temp_array[i] = ScalarSector(model, name, Tuple(index[j][v] for (j,v) in enumerate(Tuple(i))))
+            temp_array[i] = ScalarSector(model, name, Tuple(index[j][v] for (j,v) in enumerate(Tuple(i))); description = description)
         end
         
         sr = JuMP.Containers.DenseAxisArray(temp_array, index...)
-        S = new(model,name, sr, index)
+        S = new(model,name, sr, index, description)
         return S
     end
 end
@@ -67,12 +71,13 @@ struct ScalarCommodity <: MPSGEScalarVariable
     model::AbstractMPSGEModel
     name::Symbol
     subindex::Any
-    function ScalarCommodity(model::AbstractMPSGEModel,name::Symbol) 
-        S = new(model,name,missing)
+    description::String
+    function ScalarCommodity(model::AbstractMPSGEModel,name::Symbol; description = "") 
+        S = new(model,name,missing, description)
         
         return S
     end
-    ScalarCommodity(model::AbstractMPSGEModel,name::Symbol,subindex) = new(model,name,subindex)
+    ScalarCommodity(model::AbstractMPSGEModel,name::Symbol,subindex; description = "") = new(model,name,subindex, description)
 end
 
 struct IndexedCommodity <: MPSGEIndexedVariable
@@ -80,15 +85,16 @@ struct IndexedCommodity <: MPSGEIndexedVariable
     name::Symbol
     subsectors::Any
     index::Any
-    function IndexedCommodity(model::AbstractMPSGEModel,name::Symbol,index) 
+    description::String
+    function IndexedCommodity(model::AbstractMPSGEModel,name::Symbol,index; description = "") 
         temp_array = Array{ScalarCommodity}(undef, length.(index)...)
 
         for i in CartesianIndices(temp_array)
-            temp_array[i] = ScalarCommodity(model, name, Tuple(index[j][v] for (j,v) in enumerate(Tuple(i))))
+            temp_array[i] = ScalarCommodity(model, name, Tuple(index[j][v] for (j,v) in enumerate(Tuple(i))); description = description)
         end
         
         sr = JuMP.Containers.DenseAxisArray(temp_array, index...)
-        S = new(model,name, sr, index)
+        S = new(model,name, sr, index, description)
         return S
     end
 end
@@ -100,12 +106,13 @@ struct ScalarConsumer <: MPSGEScalarVariable
     model::AbstractMPSGEModel
     name::Symbol
     subindex::Any
-    function ScalarConsumer(model::AbstractMPSGEModel,name::Symbol) 
-        S = new(model,name,missing)
+    description::String
+    function ScalarConsumer(model::AbstractMPSGEModel,name::Symbol; description = "") 
+        S = new(model,name,missing, description)
         
         return S
     end
-    ScalarConsumer(model::AbstractMPSGEModel,name::Symbol,subindex) = new(model,name,subindex)
+    ScalarConsumer(model::AbstractMPSGEModel,name::Symbol,subindex; description = "") = new(model,name,subindex, description)
 end
 
 struct IndexedConsumer <: MPSGEIndexedVariable
@@ -113,15 +120,16 @@ struct IndexedConsumer <: MPSGEIndexedVariable
     name::Symbol
     subsectors::Any
     index::Any
-    function IndexedConsumer(model::AbstractMPSGEModel,name::Symbol,index) 
+    description::String
+    function IndexedConsumer(model::AbstractMPSGEModel,name::Symbol,index; description = "") 
         temp_array = Array{ScalarConsumer}(undef, length.(index)...)
 
         for i in CartesianIndices(temp_array)
-            temp_array[i] = ScalarConsumer(model, name, Tuple(index[j][v] for (j,v) in enumerate(Tuple(i))))
+            temp_array[i] = ScalarConsumer(model, name, Tuple(index[j][v] for (j,v) in enumerate(Tuple(i))); description = description)
         end
         
         sr = JuMP.Containers.DenseAxisArray(temp_array, index...)
-        S = new(model,name, sr, index)
+        S = new(model,name, sr, index, description)
         return S
     end
 end

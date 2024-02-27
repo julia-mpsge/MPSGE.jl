@@ -13,20 +13,20 @@ function add!(m::MPSGEModel, S::MPSGEIndexedVariable)
 end
 
 
-function add_sector!(model::AbstractMPSGEModel, name::Symbol; index = nothing)
-    S = index === nothing ? ScalarSector(model,name) : IndexedSector(model,name,index)
+function add_sector!(model::AbstractMPSGEModel, name::Symbol; index = nothing, description = "")
+    S = index === nothing ? ScalarSector(model,name; description = description) : IndexedSector(model,name,index; description = description)
     add!(model,S)
     return S
 end
 
-function add_commodity!(model::AbstractMPSGEModel, name::Symbol; index = nothing)
-    S = index === nothing ? ScalarCommodity(model,name) : IndexedCommodity(model,name,index)
+function add_commodity!(model::AbstractMPSGEModel, name::Symbol; index = nothing, description = "")
+    S = index === nothing ? ScalarCommodity(model,name; description = description) : IndexedCommodity(model,name,index; description = description)
     add!(model,S)
     return S
 end
 
-function add_consumer!(model::MPSGEModel, name::Symbol; index = nothing)
-    S = index === nothing ? ScalarConsumer(model,name) : IndexedConsumer(model,name,index)
+function add_consumer!(model::MPSGEModel, name::Symbol; index = nothing, description = "")
+    S = index === nothing ? ScalarConsumer(model,name; description = description) : IndexedConsumer(model,name,index; description = description)
     add!(model,S)
     return S
 end

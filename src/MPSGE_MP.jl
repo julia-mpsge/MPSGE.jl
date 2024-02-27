@@ -2,6 +2,8 @@ module MPSGE_MP
 
 using JuMP, DataFrames, PATHSolver
 
+import JuMP:fix,value
+
 include("structs.jl")
 include("show.jl")
 include("model.jl")
@@ -11,6 +13,8 @@ include("prune.jl")
 
 include("build.jl")
 include("report.jl")
+
+include("convenience_functions.jl")
 
 #Structs
 export  MPSGEModel, 
@@ -23,7 +27,7 @@ export  MPSGEModel,
 
 #Struct access
 export  name, quantity, production, jump_model, sectors, commodities,
-        consumers, taxes, sector, commodity, consumer
+        consumers, taxes, sector, commodity, consumer, description
 
 
 #Model
@@ -40,5 +44,8 @@ export  build!, compensated_demand_dictionary, compensated_demand, tau,
 
 #Reporting
 export generate_report, solve!
+
+#Convenience
+export value, fix
 
 end
