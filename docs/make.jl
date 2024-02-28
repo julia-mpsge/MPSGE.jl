@@ -9,7 +9,7 @@ makedocs(;
     sitename="MPSGE_MP.jl",
     format=Documenter.HTML(;
         canonical="https://mitchphillipson.github.io/MPSGE_MP.jl",
-        edit_link="master",
+        edit_link="main",
         assets=String[],
     ),
     pages=[
@@ -18,6 +18,14 @@ makedocs(;
 )
 
 deploydocs(;
-    repo="github.com/mitchphillipson/MPSGE_MP.jl",
-    devbranch="master",
+    repo = "github.com/mitchphillipson/MPSGE_MP.jl",
+    devbranch = "main",
+    branch = "gh-pages"
 )
+
+#deploydocs(
+#    repo = "https://github.com/uw-windc/WiNDC.jl",
+#    target = "build",
+#    branch = "gh-pages",
+#    versions = ["stable" => "v^", "v#.#" ],
+#)
