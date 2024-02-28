@@ -3,6 +3,13 @@ using Documenter
 
 DocMeta.setdocmeta!(MPSGE_MP, :DocTestSetup, :(using MPSGE_MP); recursive=true)
 
+
+const _PAGES = [
+    "Introduction" => ["index.md"],
+    "How it works" => ["how_it_works.md"]
+]
+
+
 makedocs(;
     modules=[MPSGE_MP],
     authors="Mitch Phillipson",
@@ -12,9 +19,7 @@ makedocs(;
         edit_link="main",
         assets=String[],
     ),
-    pages=[
-        "Home" => "index.md",
-    ],
+    pages=_PAGES
 )
 
 deploydocs(;
