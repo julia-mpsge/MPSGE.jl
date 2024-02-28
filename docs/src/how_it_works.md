@@ -48,13 +48,7 @@ C_n =
 
 
 In general, these trees can be highly nested. Consider a path from the root, ``n_1``
-to a leaf ``n_{k+1}``, see the Figure below.
-
-```@raw html
-<img src="../images/root_to_leaf.png" height="200"/>
-``` ⠀
-
-Using this we can calculate the compensated demand, ``CD(S,C,n_k)``, for the sector
+to a leaf ``n_{k+1}``. Using this we can calculate the compensated demand, ``CD(S,C,n_k)``, for the sector
 ``S``, commodity ``C`` and nest ``n_k``
 ```math
 CD(S,C,n_k) = -\epsilon Q_C \left(\frac{C_{n_k}}{\pi_{n_k,C}}\right)^{-\epsilon\sigma_k} \prod_{i=1}^{k-1} \left(\frac{C_{n_i}}{C_{n_{i+1}}}\right)^{-\epsilon\sigma_{i}}.
