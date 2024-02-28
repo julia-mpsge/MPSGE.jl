@@ -8,12 +8,9 @@ Documentation for [MPSGE](https://github.com/mitchphillipson/MPSGE_MP.jl).
 
 
 
+```@index
+```
 
-#This is a test
-
-#```@index
-#```
-
-#```@autodocs
-#Modules = [MPSGE_MP]
-#```
+```@autodocs
+Modules = [MPSGE_MP]
+```
