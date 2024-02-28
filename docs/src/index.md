@@ -2,9 +2,11 @@
 CurrentModule = MPSGE_MP
 ```
 
-# MPSGE_MP
+# MPSGE
 
-Documentation for [MPSGE_MP](https://github.com/mitchphillipson/MPSGE_MP.jl).
+Documentation for [MPSGE](https://github.com/mitchphillipson/MPSGE_MP.jl).
+
+This is a test
 
 ```@index
 ```
