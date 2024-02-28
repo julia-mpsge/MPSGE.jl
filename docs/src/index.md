@@ -6,11 +6,14 @@ CurrentModule = MPSGE_MP
 
 Documentation for [MPSGE](https://github.com/mitchphillipson/MPSGE_MP.jl).
 
-This is a test
 
-```@index
-```
 
-```@autodocs
-Modules = [MPSGE_MP]
-```
+
+#This is a test
+
+#```@index
+#```
+
+#```@autodocs
+#Modules = [MPSGE_MP]
+#```
