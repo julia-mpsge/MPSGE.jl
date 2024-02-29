@@ -227,9 +227,6 @@ function build_constraints!(M::MPSGEModel)
 
     jm = jump_model(M)
 
-    # sectors(M) may not be correct here. You really want the production blocks. 
-    # Conversely, every sector *should* have a production block. No longer true
-    # with pruning. 
     @constraint(jm, zero_profit[S = production_sectors(M)],
         -sum(compensated_demand(S,C) * get_variable(C) for C∈commodities(S) if compensated_demand(S,C)!=0; init=0)  +   sum(tau(S,H) for H∈consumers(M) if tau(S,H)!=0; init=0) ⟂ get_variable(S)
     )
