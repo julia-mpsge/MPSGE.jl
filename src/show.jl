@@ -237,6 +237,23 @@ function Base.show(io::IO, E::Endowment)
     print(io,"E: $(get_name(E.commodity))\tQ: $(E.quantity)")
 end
 
+function generate_name(s::Union{SectorRef,ConsumerRef}, c::CommodityRef, type::String)
+    if type=="o"
+        return Symbol("$(get_name(c))‡$(get_name(s))")
+    elseif type=="i"
+        return Symbol("$(get_name(c))†$(get_name(s))")
+    elseif type=="fd"
+        return Symbol("$(get_name(c))ρ$(get_name(s))")
+     else 
+        v = println("options are \"o\" for output, \"i\" for input, or \"fd\" for final_demand")
+        return v
+    end
+end
+
+
+function generate_name(s::Symbol, name::Symbol)
+            return Symbol("$(s)→$(name)")
+end
 
 function var_report(m::Model; format::String="csv", decimals::Int = 15, mdecimals::Int = 4)
     jm=m._jump_model
@@ -271,6 +288,9 @@ function var_report(m::Model; format::String="csv", decimals::Int = 15, mdecimal
 
             var = extract_variable_ref(c.func[2])
             val = value(var)
+            var = string(var) # for ability to filter
+            var = replace(var, ":"=>"","("=>"",")"=>"",","=>"")
+            var = Symbol(var)
             margin = value(c.func[1])
 
             push!(out,(var,val,margin))
@@ -279,4 +299,25 @@ function var_report(m::Model; format::String="csv", decimals::Int = 15, mdecimal
         df = DataFrame(out,[:var,:value,:margin])
         return df
     end
+end
+
+"""
+    PATH_var(::model, ::Int)
+    Function that gets the variable name and solved value associated with the PATH row number
+### Options
+    None
+### Example
+```julia-repl
+julia> PATH_var(model, 11)
+("Variable name", "Variable value as passed by PATH")
+```
+"""
+function PATH_var(m, number::Int)
+   v = MPSGE.JuMP.MOI.get(m._jump_model.moi_backend, JuMP.MOI.VariableName(), JuMP.MOI.VariableIndex(number))
+   val = MPSGE.JuMP.MOI.get(m._jump_model.moi_backend,  JuMP.MOI.VariablePrimal(), JuMP.MOI.VariableIndex(number))
+   if v==""
+    println("Name not seen by PATH (or index outside of PATH model bounds)")
+   else
+   return v, val
+   end
 end

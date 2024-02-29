@@ -2,7 +2,7 @@ module MPSGE
 
 
 import JuMP, MacroTools, PATHSolver, PrettyTables, CSV, DataFrames
-import JuMP: value, set_value, Containers, set_lower_bound, set_upper_bound, @constraint, @expression
+import JuMP: value, set_value, Containers, set_lower_bound, set_upper_bound, @constraint, @expression, MOI
 import DataFrames: DataFrame
 import CSV: File
 
@@ -12,7 +12,7 @@ export add!, Model, solve!, algebraic_version, algebraic_version_main, constrain
 export Sector, Commodity, Consumer, Aux, Production, DemandFunction, AuxConstraint, Endowment, Input, Output, Parameter, Demand, Tax, Nest
 export value, set_value, get_value, set_fixed!, get_nested_commodity, set_lower_bound, set_upper_bound
 export @parameter, @sector, @commodity, @consumer, @production, @demand
-export var_report
+export var_report, PATH_var
 
 include("model.jl")
 include("macros.jl")

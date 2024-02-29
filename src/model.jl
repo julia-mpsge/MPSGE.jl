@@ -759,6 +759,10 @@ end
     solve!(m::Model; solver=solvername, keywords)
     Function to solve the model. Triggers the build if the model hasn't been built yet.
 ### Argumenents
+    cumulative_iteration_limit=Int 
+    Set to 0 to validate benchmark by calculating residuals without any changes to the values
+    convergence_tolerance=1e-9
+    The largest value allowed for a margin value/residual.
     See PATHSolver and the linked PATH webpage for full list of argument Options
 ### Example
 ```julia-repl
