@@ -37,6 +37,13 @@ function add_parameter!(model::MPSGEModel, name::Symbol, value::Number; index=no
     return S
 end
 
+function add_parameter!(model::MPSGEModel, name::Symbol, value::AbstractArray; index=nothing, description = "")
+    @assert( !isnothing(index), "Parameter $name is being created with an array of values, but the index is nothing") 
+    S = IndexedParameter(model,name,index, value; description = description)
+    add!(model,S)
+    return S
+end
+
 
 function get_variable(S::MPSGEScalarVariable)
     jm = jump_model(S.model)

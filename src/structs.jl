@@ -164,6 +164,19 @@ struct IndexedParameter <: MPSGEIndexedVariable
         S = new(model,name, sr, index, description)
         return S
     end
+
+    function IndexedParameter(model::AbstractMPSGEModel,name::Symbol,index, value::AbstractArray; description = "") 
+        temp_array = Array{ScalarParameter}(undef, length.(index)...)
+
+        for i in CartesianIndices(temp_array)
+            ind = Tuple(index[j][v] for (j,v) in enumerate(Tuple(i)))
+            temp_array[i] = ScalarParameter(model, name, value[ind...], ind; description = description)
+        end
+        
+        sr = JuMP.Containers.DenseAxisArray(temp_array, index...)
+        S = new(model,name, sr, index, description)
+        return S
+    end
 end
 
 const Parameter = Union{ScalarParameter,IndexedParameter}
@@ -175,11 +188,12 @@ function set_value!(P::ScalarParameter, value::Number)
     if !isnothing(jump_model(model(P)))
         fix(get_variable(P), value; force=true)
     end
+    return value
 end
 
 
-set_value!(P::IndexedParameter, value::Number) = set_value!.(P,value)
-set_value!(P::IndexedParameter, value::AbstractArray) = set_value!.(P,value)
+set_value!(P::IndexedParameter, value::Number) = set_value!.(P.subsectors,value)
+set_value!(P::IndexedParameter, value::AbstractArray) = set_value!.(P.subsectors,value)
 
 
 
