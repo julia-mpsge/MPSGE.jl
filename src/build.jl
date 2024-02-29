@@ -64,7 +64,7 @@ function build_compensated_demand!(P::ScalarProduction)
 
     #T = prod_commodities[1]
     for T∈prod_commodities
-        commodity = commodity(T)
+        C = commodity(T)
         nest = name(parent(T))
 
         sign = T isa ScalarInput ? -1 : 1
@@ -75,11 +75,11 @@ function build_compensated_demand!(P::ScalarProduction)
             if H∉keys(P.taxes)
                 P.taxes[H] = Dict()
             end
-            P.taxes[H][commodity,nest] = -sign*tax(t) #Should be a sum
+            P.taxes[H][C,nest] = -sign*tax(t) #Should be a sum
         end
 
-        if commodity ∉ keys(P.compensated_demand)
-            P.compensated_demand[commodity] = Dict()
+        if C ∉ keys(P.compensated_demand)
+            P.compensated_demand[C] = Dict()
         end
 
         quantity = base_quantity(T)
@@ -90,7 +90,7 @@ function build_compensated_demand!(P::ScalarProduction)
             push!(nest_list, (T,parent(T)))
             T = parent(T)
         end
-        P.compensated_demand[commodity][nest] = -sign * quantity * prod((P.nested_compensated_demand[parent_T,parent(parent_T)]/P.nested_compensated_demand[T,parent(T)])^(-sign*elasticity(parent_T)) for (T,parent_T)∈nest_list  if elasticity(parent_T)!=0; init = 1)
+        P.compensated_demand[C][nest] = -sign * quantity * prod((P.nested_compensated_demand[parent_T,parent(parent_T)]/P.nested_compensated_demand[T,parent(T)])^(-sign*elasticity(parent_T)) for (T,parent_T)∈nest_list  if elasticity(parent_T)!=0; init = 1)
     end
 end
 
