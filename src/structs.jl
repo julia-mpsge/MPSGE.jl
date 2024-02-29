@@ -170,7 +170,14 @@ const Parameter = Union{ScalarParameter,IndexedParameter}
 
 value(P::ScalarParameter) = P.value
 
-set_value!(P::ScalarParameter, value::Number) = (P.value = value)
+function set_value!(P::ScalarParameter, value::Number)
+    P.value = value
+    if !isnothing(jump_model(model(P)))
+        fix(get_variable(P), value; force=true)
+    end
+end
+
+
 set_value!(P::IndexedParameter, value::Number) = set_value!.(P,value)
 set_value!(P::IndexedParameter, value::AbstractArray) = set_value!.(P,value)
 
@@ -204,11 +211,12 @@ set_parent(child::ScalarNetput,parent::AbstractNest) = (child.parent = parent)
 
 struct Tax
     agent::Consumer
-    tax::Float64
+    tax::Union{Number,Parameter}
 end
 
 tax_agent(T::Tax) = T.agent
-tax(T::Tax) = T.tax
+tax(T::Tax) = isa(T.tax, Number) ? T.tax : get_variable(T.tax)
+
 
 mutable struct ScalarInput <: ScalarNetput
     commodity::ScalarCommodity
@@ -334,11 +342,11 @@ quantity(D::Demand) = D.quantity
 
 mutable struct MPSGEModel <:AbstractMPSGEModel
     object_dict::Dict{Symbol,Any} # Contains only MPSGEVariables?
-    jump_model::JuMP.Model
+    jump_model::Union{JuMP.Model,Nothing}
     productions::Dict{Sector,Production}
     demands::Dict{Consumer,Demand}
     commodities::Dict{Commodity,Vector{Sector}} #Generated on model build
-    MPSGEModel() = new(Dict(),JuMP.Model(PATHSolver.Optimizer),Dict(),Dict(),Dict())
+    MPSGEModel() = new(Dict(),nothing,Dict(),Dict(),Dict())
 end
 
 #Getters

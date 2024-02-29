@@ -43,7 +43,7 @@ function build_nested_compensated_demand(P::ScalarProduction,T::ScalarNest, sign
 end
 
 function build_nested_compensated_demand(P::ScalarProduction,T::ScalarNetput, sign::Int)
-    return get_variable(T.commodity)*(1 - sign*sum(tax.tax for tax in T.taxes; init=0))/T.reference_price
+    return get_variable(T.commodity)*(1 - sign*sum(tax(t) for t in T.taxes; init=0))/T.reference_price
 end
 
 function cobb_douglass(P::ScalarProduction, T::ScalarNest, sign)
@@ -70,12 +70,12 @@ function build_compensated_demand!(P::ScalarProduction)
         sign = T isa ScalarInput ? -1 : 1
 
         #build taxes
-        for tax in taxes(T)
-            H = tax.agent
+        for t in taxes(T)
+            H = tax_agent(t)
             if H∉keys(P.taxes)
                 P.taxes[H] = Dict()
             end
-            P.taxes[H][commodity,nest] = -sign*tax.tax #Should be a sum
+            P.taxes[H][commodity,nest] = -sign*tax(t) #Should be a sum
         end
 
         if commodity ∉ keys(P.compensated_demand)
