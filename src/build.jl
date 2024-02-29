@@ -35,7 +35,7 @@ function build_nested_compensated_demand!(P::ScalarProduction)
 end
 
 function build_nested_compensated_demand(P::ScalarProduction,T::ScalarNest, sign::Int)
-    if T.elasticity == 1
+    if elasticity(T) == 1
         return cobb_douglass(P,T,sign)
     else
         return CES(P,T,sign)
@@ -43,15 +43,15 @@ function build_nested_compensated_demand(P::ScalarProduction,T::ScalarNest, sign
 end
 
 function build_nested_compensated_demand(P::ScalarProduction,T::ScalarNetput, sign::Int)
-    return get_variable(T.commodity)*(1 - sign*sum(tax(t) for t in T.taxes; init=0))/T.reference_price
+    return get_variable(commodity(T))*(1 - sign*sum(tax(t) for t in taxes(T); init=0))/reference_price(T)
 end
 
 function cobb_douglass(P::ScalarProduction, T::ScalarNest, sign)
-    return prod(P.nested_compensated_demand[child,T]^(quantity(child)/quantity(T)) for child in T.children; init=1)
+    return prod(P.nested_compensated_demand[child,T]^(quantity(child)/quantity(T)) for child in children(T); init=1)
 end
 
 function CES(P::ScalarProduction, T::ScalarNest, sign::Int)
-    return sum(quantity(child)/quantity(T) * P.nested_compensated_demand[child,T]^(1+sign*T.elasticity) for child in T.children; init=0) ^ (1/(1+sign*T.elasticity))
+    return sum(quantity(child)/quantity(T) * P.nested_compensated_demand[child,T]^(1+sign*elasticity(T)) for child in children(T); init=0) ^ (1/(1+sign*elasticity(T)))
 end
 
 
@@ -64,7 +64,7 @@ function build_compensated_demand!(P::ScalarProduction)
 
     #T = prod_commodities[1]
     for T∈prod_commodities
-        commodity = T.commodity
+        commodity = commodity(T)
         nest = name(parent(T))
 
         sign = T isa ScalarInput ? -1 : 1
@@ -90,7 +90,7 @@ function build_compensated_demand!(P::ScalarProduction)
             push!(nest_list, (T,parent(T)))
             T = parent(T)
         end
-        P.compensated_demand[commodity][nest] = -sign * quantity * prod((P.nested_compensated_demand[parent_T,parent(parent_T)]/P.nested_compensated_demand[T,parent(T)])^(-sign*parent_T.elasticity) for (T,parent_T)∈nest_list  if parent_T.elasticity!=0; init = 1)
+        P.compensated_demand[commodity][nest] = -sign * quantity * prod((P.nested_compensated_demand[parent_T,parent(parent_T)]/P.nested_compensated_demand[T,parent(T)])^(-sign*elasticity(parent_T)) for (T,parent_T)∈nest_list  if elasticity(parent_T)!=0; init = 1)
     end
 end
 
@@ -140,27 +140,28 @@ end
 ########################
 
 function demand(H::Consumer)
-    M = H.model
-    return M.demands[H]
+    D = demands(model(H))
+    return D[H]
 end
 
 function endowment(H::Consumer, C::Commodity)
     D = demand(H)
-    if !haskey(D.endowments,C)
+    endows = endowments(D)
+    if !haskey(endows,C)
         return 0
     else
-        return D.endowments[C].quantity
+        return quantity(endows[C])
     end
 end
 
 function demand(H::Consumer, C::Commodity)
     D = demand(H)
-    total_quantity = D.quantity
+    total_quantity = quantity(D)
     if !haskey(D.demands, C)
         return 0
     end
     d = D.demands[C]
-    return d.quantity/total_quantity * get_variable(H)/get_variable(C)
+    return quantity(d)/total_quantity * get_variable(H)/get_variable(C)
 end
 
 ###########################
@@ -211,7 +212,7 @@ function build!(M::MPSGEModel)
     # This needs to be more elegant
     for (consumer,d) in M.demands
         var = get_variable(consumer)
-        set_start_value(var, d.quantity)
+        set_start_value(var, quantity(d))
     end
 
     #Need to fix all parameter variables
