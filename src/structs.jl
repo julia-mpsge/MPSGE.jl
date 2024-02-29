@@ -136,6 +136,45 @@ end
 
 const Consumer = Union{ScalarConsumer,IndexedConsumer}
 
+mutable struct ScalarParameter <: MPSGEScalarVariable
+    model::AbstractMPSGEModel
+    name::Symbol
+    subindex::Any
+    value::Number
+    description::String
+    ScalarParameter(model::AbstractMPSGEModel,name::Symbol, value::Number; description = "") = new(model,name,missing, value, description)
+    ScalarParameter(model::AbstractMPSGEModel,name::Symbol, value::Number,subindex; description = "") = new(model,name,subindex, value, description)
+end
+
+
+struct IndexedParameter <: MPSGEIndexedVariable
+    model::AbstractMPSGEModel
+    name::Symbol
+    subsectors::Any
+    index::Any
+    description::String
+    function IndexedParameter(model::AbstractMPSGEModel,name::Symbol,index, value::Number; description = "") 
+        temp_array = Array{ScalarParameter}(undef, length.(index)...)
+
+        for i in CartesianIndices(temp_array)
+            temp_array[i] = ScalarParameter(model, name, value, Tuple(index[j][v] for (j,v) in enumerate(Tuple(i))); description = description)
+        end
+        
+        sr = JuMP.Containers.DenseAxisArray(temp_array, index...)
+        S = new(model,name, sr, index, description)
+        return S
+    end
+end
+
+const Parameter = Union{ScalarParameter,IndexedParameter}
+
+value(P::ScalarParameter) = P.value
+
+set_value!(P::ScalarParameter, value::Number) = (P.value = value)
+set_value!(P::IndexedParameter, value::Number) = set_value!.(P,value)
+set_value!(P::IndexedParameter, value::AbstractArray) = set_value!.(P,value)
+
+
 
 ####################
 ## Tree Structure ##
@@ -328,6 +367,7 @@ extract_scalars(S::MPSGEIndexedVariable) = S.subsectors.data
 raw_sectors(m::MPSGEModel) = [s for (_,s) in m.object_dict if isa(s,Sector)]
 raw_commodities(m::MPSGEModel) = [s for (_,s) in m.object_dict if isa(s,Commodity)]
 raw_consumers(m::MPSGEModel) = [s for (_,s) in m.object_dict if isa(s,Consumer)]
+raw_parameters(m::MPSGEModel) = [s for (_,s) in m.object_dict if isa(s,Parameter)]
 
 
 """
@@ -390,6 +430,15 @@ function consumers(m::MPSGEModel)
         x -> collect(x)
     return X
 end
+
+function parameters(m::MPSGEModel)
+    X = raw_parameters(m) |>
+        x -> extract_scalars.(x) |>
+        x -> Iterators.flatten(x) |>
+        x -> collect(x)
+    return X
+end
+
 
 ## Production
 function production(S::ScalarSector)

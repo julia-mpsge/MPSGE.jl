@@ -31,6 +31,12 @@ function add_consumer!(model::MPSGEModel, name::Symbol; index = nothing, descrip
     return S
 end
 
+function add_parameter!(model::MPSGEModel, name::Symbol, value::Number; index=nothing, description = "")
+    S = index === nothing ? ScalarParameter(model,name, value; description = description) : IndexedParameter(model,name,index, value; description = description)
+    add!(model,S)
+    return S
+end
+
 
 function get_variable(S::MPSGEScalarVariable)
     jm = jump_model(S.model)

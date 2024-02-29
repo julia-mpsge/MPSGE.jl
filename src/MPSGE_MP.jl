@@ -21,6 +21,7 @@ export  MPSGEModel,
         ScalarSector,    IndexedSector,    Sector, 
         ScalarCommodity, IndexedCommodity, Commodity, 
         ScalarConsumer,  IndexedConsumer,  Consumer, 
+        ScalarParameter, IndexedParameter, Parameter,
         Tax, ScalarInput, ScalarOutput,
         ScalarNest, ScalarProduction,
         ScalarDem, ScalarEndowment, ScalarDemand
@@ -32,11 +33,14 @@ export  name, quantity, production, jump_model, sectors, commodities,
 
 #Model
 export  add_variable!, add!, add_sector!, add_commodity!, add_consumer!,
-        get_variable, add_production!, add_demand!
+        get_variable, add_production!, add_demand!, add_parameter!
 
 #Macros
-export  @sector, @sectors, @commodity, @commodities, @consumer,
-        @consumers, @production
+export  @sector,    @sectors, 
+        @commodity, @commodities, 
+        @consumer,  @consumers,  
+        @parameter, @parameters,
+        @production
 
 #Building
 export  build!, compensated_demand_dictionary, compensated_demand, tau, 

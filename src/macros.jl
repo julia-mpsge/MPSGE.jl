@@ -76,6 +76,17 @@ macro consumers(model, block)
     return _plural_macro_code(model, block, Symbol("@consumer"))
 end
 
+macro parameter(model, name, value, kwargs...)
+    constr_call = :(add_parameter!($(esc(model)),$(QuoteNode(name)), $(esc(value))))
+    _add_kw_args(constr_call, kwargs)
+    return :($(esc(name)) = $constr_call)
+end
+
+macro parameters(model, block)
+    return _plural_macro_code(model, block, Symbol("@parameter"))
+end
+
+
 macro production(model, sector, output, input)
     constr_call = :(add_production!($(esc(model)), $(esc(name)), $(esc(output)), $(esc(input))))
     #_add_kw_args(constr_call, kwargs)

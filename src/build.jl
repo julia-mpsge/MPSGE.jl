@@ -214,6 +214,11 @@ function build!(M::MPSGEModel)
         set_start_value(var, d.quantity)
     end
 
+    #Need to fix all parameter variables
+    for P∈parameters(M)
+        fix(P,value(P))
+    end
+
     prune!(M)
     build_compensated_demands!(M)
     build_commodity_dictionary!(M)
