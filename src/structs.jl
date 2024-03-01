@@ -202,21 +202,37 @@ set_value!(P::IndexedParameter, value::AbstractArray) = set_value!.(P.subsectors
 ####################
 
 # Getters
+"""
+    _get_parameter_value
+
+The purpose of this is to return either the variable or the value depending on 
+if the model has been generated.
+"""
+_get_parameter_value(x) = x
+function _get_parameter_value(X::ScalarParameter)
+    if !isnothing(jump_model(model(X)))
+        return get_variable(X)
+    end
+    return value(X)
+end
+
+
+
 commodity(C::ScalarNetput) = C.commodity
-base_quantity(N::ScalarNetput) = N.quantity
-reference_price(N::ScalarNetput) = N.reference_price
+base_quantity(N::ScalarNetput) = _get_parameter_value(N.quantity)
+reference_price(N::ScalarNetput) = _get_parameter_value(N.reference_price)
 quantity(N::ScalarNetput) = base_quantity(N)*reference_price(N)
 taxes(N::ScalarNetput) = N.taxes
 name(N::ScalarNetput) = name(commodity(N))
 parent(N::ScalarNetput) = N.parent
 children(N::ScalarNetput) = []
 
-quantity(N::AbstractNest) = N.quantity
-base_quantity(N::AbstractNest) = N.quantity
+quantity(N::AbstractNest) = base_quantity(N)
+base_quantity(N::AbstractNest) = _get_parameter_value(N.quantity)
 name(N::AbstractNest) = N.name
 children(N::AbstractNest) = N.children
 parent(N::AbstractNest) = ismissing(N.parent) ? N : N.parent
-elasticity(N::AbstractNest) = N.elasticity
+elasticity(N::AbstractNest) = _get_parameter_value(N.elasticity)
 
 
 # Small Setter
@@ -229,18 +245,20 @@ struct Tax
 end
 
 tax_agent(T::Tax) = T.agent
-tax(T::Tax) = isa(T.tax, Number) ? T.tax : get_variable(T.tax)
+tax(T::Tax) = _get_parameter_value(T.tax)
+
+#isa(T.tax, Number) ? T.tax : get_variable(T.tax)
 
 
 mutable struct ScalarInput <: ScalarNetput
     commodity::ScalarCommodity
-    quantity::Float64
-    reference_price::Float64
+    quantity::Union{Real,ScalarParameter}
+    reference_price::Union{Real,ScalarParameter}
     taxes::Vector{Tax}
     parent::Union{AbstractNest,Missing}
     ScalarInput(commodity::ScalarCommodity,
-                         quantity::Real;
-                         reference_price=1,
+                         quantity::Union{Real,ScalarParameter};
+                         reference_price::Union{Real,ScalarParameter}=1,
                          taxes = []
         ) = new(commodity,quantity,reference_price,taxes,missing)
 end
@@ -248,13 +266,13 @@ end
 
 mutable struct ScalarOutput <: ScalarNetput
     commodity::ScalarCommodity
-    quantity::Float64
-    reference_price::Float64
+    quantity::Union{Real,ScalarParameter}
+    reference_price::Union{Real,ScalarParameter}
     taxes::Vector{Tax}
     parent::Union{AbstractNest,Missing}
     ScalarOutput(commodity::ScalarCommodity,
-                 quantity::Real;
-                 reference_price=1,
+                 quantity::Union{Real,ScalarParameter};
+                 reference_price::Union{Real,ScalarParameter}=1,
                  taxes = []
         ) = new(commodity,quantity,reference_price,taxes,missing)
 end
@@ -262,11 +280,11 @@ end
 
 mutable struct ScalarNest <: AbstractNest
     name::Symbol
-    elasticity::Float64
-    quantity::Float64
+    elasticity::Union{Real,ScalarParameter}
+    quantity::Union{Real,ScalarParameter}
     children::Vector{Union{ScalarNest,ScalarNetput}}
     parent::Union{ScalarNest,Missing}
-    function ScalarNest(name::Symbol;elasticity::Real=0,children = [])  
+    function ScalarNest(name::Symbol;elasticity::Union{Real,ScalarParameter}=0,children = [])  
         N = new(name,elasticity,sum(quantity(c) for c∈children; init=0),children, missing)
         for child in children
             set_parent(child,N)
