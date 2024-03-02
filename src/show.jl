@@ -237,30 +237,69 @@ function Base.show(io::IO, E::Endowment)
     print(io,"E: $(get_name(E.commodity))\tQ: $(E.quantity)")
 end
 
-function generate_name(s::Union{SectorRef,ConsumerRef}, c::CommodityRef, type::String)
+"""
+A function to return the internal names of generated 'implicit' variables, combinations of a Sector or Consumer, and a commodity,
+and a string argument for outputs/compensated supply="o", inputs/compensated demand ="i", final demand ="fd".
+Or for a nested sector, symbols for the top level sector and nest name.
+Can be combined and applied iteratively.
+"""
+function generate_name(m::Model, s::Union{SectorRef,ConsumerRef}, c::CommodityRef, type::String)
     if type=="o"
-        return Symbol("$(get_name(c))‡$(get_name(s))")
+        sym = Symbol("$(get_name(c))‡‡$(get_name(s))")
     elseif type=="i"
-        return Symbol("$(get_name(c))†$(get_name(s))")
+        sym = Symbol("$(get_name(c))†$(get_name(s))")
     elseif type=="fd"
-        return Symbol("$(get_name(c))ρ$(get_name(s))")
+        sym = Symbol("$(get_name(c))ρ$(get_name(s))")
      else 
         v = println("options are \"o\" for output, \"i\" for input, or \"fd\" for final_demand")
         return v
     end
+    return sym
 end
 
 
-function generate_name(s::Symbol, name::Symbol)
-            return Symbol("$(s)→$(name)")
+function generate_name(m::Model, s::Symbol, commod_or_nest::Symbol, type::String)
+    if type=="o"
+        sym = Symbol("$(commod_or_nest)‡‡$(s)")
+    elseif type=="i"
+        sym = Symbol("$(commod_or_nest)†$(get_name(s))")
+    elseif type=="fd"
+        sym = Symbol("$(commod_or_nest)ρ$(get_name(s))")
+    elseif type=="n"
+        sym = Symbol("$(s)→$(commod_or_nest)")
+     else 
+        v = println("options are \"o\" for output, \"i\" for input, \"fd\" for final_demand, or v\"n\" for final_demand")
+        return v
+    end
+    val = JuMP.value(m._jump_model[sym])
+    varref = m._jump_model[sym]
+            return [sym, val, varref]
 end
 
-function var_report(m::Model; format::String="csv", decimals::Int = 15, mdecimals::Int = 4)
+function var_report(m::Model; format::String="df", decimals::Int = 15, mdecimals::Int = 4)
     jm=m._jump_model
     extract_variable_ref(v::JuMP.NonlinearExpr) = v.args[1]
     extract_variable_ref(v::JuMP.AffExpr) = collect(keys(v.terms))[1]
     extract_variable_ref(v::JuMP.QuadExpr) = extract_variable_ref(v.aff)
-    if format=="csv"
+    if format=="df"
+         out = []
+
+        for ci in JuMP.all_constraints(jm; include_variable_in_set_constraints = false)
+            c = JuMP.constraint_object(ci)
+
+            var = extract_variable_ref(c.func[2])
+            val = value(var)
+            var = string(var) # for ability to filter
+            var = replace(var, ":"=>"","("=>"",")"=>"",","=>"")
+            var = Symbol(var)
+            margin = value(c.func[1])
+
+            push!(out,(var,val,margin))
+        end
+
+        df = DataFrame(out,[:var,:value,:margin])
+        return df
+    else
         mapping = Dict()
         for ci in JuMP.all_constraints(jm; include_variable_in_set_constraints = false)
             c = JuMP.constraint_object(ci)
@@ -280,24 +319,6 @@ function var_report(m::Model; format::String="csv", decimals::Int = 15, mdecimal
             out = out*"\"$elm\",$val,$margin\n"
         end
     	return CSV.File(IOBuffer(out))
-    else
-        out = []
-
-        for ci in JuMP.all_constraints(jm; include_variable_in_set_constraints = false)
-            c = JuMP.constraint_object(ci)
-
-            var = extract_variable_ref(c.func[2])
-            val = value(var)
-            var = string(var) # for ability to filter
-            var = replace(var, ":"=>"","("=>"",")"=>"",","=>"")
-            var = Symbol(var)
-            margin = value(c.func[1])
-
-            push!(out,(var,val,margin))
-        end
-
-        df = DataFrame(out,[:var,:value,:margin])
-        return df
     end
 end
 

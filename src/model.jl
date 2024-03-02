@@ -744,11 +744,11 @@ function add!(m::Model, p::IndexedParameter)
     return JuMP.Containers.DenseAxisArray(temp_array, p.indices...)
 end
 
-function add!(m::Model, im::Implicitvar)
-    m._jump_model = nothing
-    push!(m._implicitvars, im)
-    push!(m._implicitvarsDict,im.name=>ImplicitvarRef(m, length(m._implicitvars), nothing, nothing))
-end
+# function add!(m::Model, im::Implicitvar)
+#     m._jump_model = nothing
+#     push!(m._implicitvars, im)
+#     push!(m._implicitvarsDict,im.name=>ImplicitvarRef(m, length(m._implicitvars), nothing, nothing))
+# end
 
 
 function JuMP.value(m::Model, name::Symbol)
