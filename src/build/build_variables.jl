@@ -26,6 +26,7 @@ end
 
 function add_parameter_to_jump!(jm, parameter::ScalarParameter)
     jmp_p = JuMP.@variable(jm, set = JuMP.Parameter(parameter.value))
+    JuMP.set_name(jmp_p, "$(parameter.name)")
     jm[parameter.name] = jmp_p
 end
 
