@@ -197,9 +197,6 @@ end
 """
     build!(M::MPSGEModel)
 
-Currently, I'm creating the variables when the sector is added to the
-model. However, I *think* we can do this here without issue. I would
-prefer doing it here.
 """
 function build!(M::MPSGEModel)
     M.jump_model = JuMP.Model(PATHSolver.Optimizer)
