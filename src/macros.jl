@@ -92,3 +92,10 @@ macro production(model, sector, output, input)
     #_add_kw_args(constr_call, kwargs)
     return :($constr_call)
 end
+
+
+macro demand(model, consumer, demands, endowments)
+    constr_call = :(add_demand!($(esc(model)), $(esc(consumer)), $(esc(demands)), $(esc(endowments))))
+    #_add_kw_args(constr_call, kwargs)
+    return :($constr_call)
+end
