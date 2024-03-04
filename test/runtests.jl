@@ -3,5 +3,5 @@ using Test
 
 @testset "MPSGE_MP.jl" begin
 
-    include("pruning.jl")
+    include("test_pruning.jl")
 end
