@@ -1,5 +1,5 @@
 function prune!(T::MPSGE_MP.ScalarNetput)
-    if T.quantity != 0
+    if quantity(T) != 0
         return T
     else
         return nothing
@@ -7,7 +7,7 @@ function prune!(T::MPSGE_MP.ScalarNetput)
 end
 
 function prune!(T::MPSGE_MP.ScalarNest)
-    if T.quantity == 0
+    if quantity(T) == 0
         return nothing
     end
     T.children = [e for e∈prune!.(MPSGE_MP.children(T)) if !isnothing(e)]

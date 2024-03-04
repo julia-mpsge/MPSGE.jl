@@ -228,7 +228,7 @@ parent(N::ScalarNetput) = N.parent
 children(N::ScalarNetput) = []
 
 quantity(N::AbstractNest) = base_quantity(N)
-base_quantity(N::AbstractNest) = _get_parameter_value(N.quantity)
+base_quantity(N::AbstractNest) = sum(quantity(c) for c∈children(N); init=0)#_get_parameter_value(N.quantity)
 name(N::AbstractNest) = N.name
 children(N::AbstractNest) = N.children
 parent(N::AbstractNest) = ismissing(N.parent) ? N : N.parent
@@ -281,11 +281,10 @@ end
 mutable struct ScalarNest <: AbstractNest
     name::Symbol
     elasticity::Union{Real,ScalarParameter}
-    quantity::Union{Real,ScalarParameter}
     children::Vector{Union{ScalarNest,ScalarNetput}}
     parent::Union{ScalarNest,Missing}
     function ScalarNest(name::Symbol;elasticity::Union{Real,ScalarParameter}=0,children = [])  
-        N = new(name,elasticity,sum(quantity(c) for c∈children; init=0),children, missing)
+        N = new(name,elasticity,children, missing)
         for child in children
             set_parent(child,N)
         end
@@ -326,21 +325,21 @@ taxes(P::Production) = P.taxes
 
 struct ScalarDem
     commodity::ScalarCommodity
-    quantity::Float64
+    quantity::Union{Real,Parameter}
 end
 
 
 struct ScalarEndowment
     commodity::ScalarCommodity
-    quantity::Float64
+    quantity::Union{Real,Parameter}
 end
 
 # Getters
 commodity(C::ScalarDem) = C.commodity
-quantity(C::ScalarDem) = C.quantity
+quantity(C::ScalarDem) = _get_parameter_value(C.quantity)
 
 commodity(C::ScalarEndowment) = C.commodity
-quantity(C::ScalarEndowment) = C.quantity
+quantity(C::ScalarEndowment) = _get_parameter_value(C.quantity)
 
 struct ScalarDemand
     consumer::ScalarConsumer
