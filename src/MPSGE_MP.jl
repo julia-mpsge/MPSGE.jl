@@ -41,7 +41,7 @@ export  @sector,    @sectors,
         @commodity, @commodities, 
         @consumer,  @consumers,  
         @parameter, @parameters,
-        @production
+        @production, @demand
 
 #Building
 export  build!, compensated_demand_dictionary, compensated_demand, tau, 
@@ -51,6 +51,6 @@ export  build!, compensated_demand_dictionary, compensated_demand, tau,
 export generate_report, solve!
 
 #Convenience
-export value, fix
+export value, fix, unfix
 
 end
