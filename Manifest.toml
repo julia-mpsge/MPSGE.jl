@@ -2,7 +2,7 @@
 
 julia_version = "1.9.2"
 manifest_format = "2.0"
-project_hash = "90de94a0a115d3c408fc04a70ccf0b3f0f02dd2b"
+project_hash = "6fda0a39ccb2bf2cb915e06de5dcc423d802115f"
 
 [[deps.ArgTools]]
 uuid = "0dad84c5-d112-42e6-8d28-ef12dabb789f"
@@ -357,9 +357,10 @@ version = "1.6.3"
 
 [[deps.PATHSolver]]
 deps = ["DataDeps", "MathOptInterface", "SparseArrays"]
-git-tree-sha1 = "e5ff253580a4bb098ee9992d8b58f9276d06f273"
+git-tree-sha1 = "40d548f55f831af270c62d0748088d6af16ceda0"
+pinned = true
 uuid = "f5f7c340-0bb3-5c69-969a-41884d311d1b"
-version = "1.7.3"
+version = "1.7.2"
 
 [[deps.Parsers]]
 deps = ["Dates", "PrecompileTools", "UUIDs"]
