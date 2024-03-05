@@ -5,4 +5,6 @@ using Test
 
     include("test_pruning.jl")
     include("test_Benchmark-Theta.jl")
+    include("test_jpmge.jl")
+
 end
