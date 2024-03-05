@@ -276,50 +276,50 @@ function generate_name(m::Model, s::Symbol, commod_or_nest::Symbol, type::String
             return [sym, val, varref]
 end
 
-function var_report(m::Model; format::String="df", decimals::Int = 15, mdecimals::Int = 4)
+"""
+For exporting to csv, use keyword argument bom=true for the symbols
+
+
+
+
+for i in keys(object_dictionary(jm)), 
+if isa JuMP.NonlinearExpr # these are the implicit constraint_values
+.func[2].arg[1]
+else isa JuMP.VariableRef
+
+"""
+
+function var_report(m::Model, implicit::Bool=false; decimals::Int = 15, mdecimals::Int = 12)
     jm=m._jump_model
     extract_variable_ref(v::JuMP.NonlinearExpr) = v.args[1]
     extract_variable_ref(v::JuMP.AffExpr) = collect(keys(v.terms))[1]
     extract_variable_ref(v::JuMP.QuadExpr) = extract_variable_ref(v.aff)
-    if format=="df"
-         out = []
-
-        for ci in JuMP.all_constraints(jm; include_variable_in_set_constraints = false)
+    out = []
+    mapping = Dict()
+    for ci in JuMP.all_constraints(jm; include_variable_in_set_constraints = false)
             c = JuMP.constraint_object(ci)
-
-            var = extract_variable_ref(c.func[2])
-            val = value(var)
-            var = string(var) # for ability to filter
-            var = replace(var, ":"=>"","("=>"",")"=>"",","=>"")
-            var = Symbol(var)
-            margin = value(c.func[1])
-
-            push!(out,(var,val,margin))
-        end
-
-        df = DataFrame(out,[:var,:value,:margin])
-        return df
-    else
-        mapping = Dict()
-        for ci in JuMP.all_constraints(jm; include_variable_in_set_constraints = false)
-            c = JuMP.constraint_object(ci)
-            mapping[extract_variable_ref(c.func[2])] = c.func[1]
-        end
-
-        out = "var_name,value,margin\n"
-        for elm in JuMP.all_variables(jm)
-            val = JuMP.is_parameter(elm) ? round(JuMP.parameter_value(elm), digits = decimals) : round(JuMP.value(elm), digits=decimals)
-            margin = "."
-            try
-                margin = round(value(mapping[elm]),digits = mdecimals)
-            catch
-                margin = "."
-            end
-            
-            out = out*"\"$elm\",$val,$margin\n"
-        end
-    	return CSV.File(IOBuffer(out))
+        # Dictionary to set order and link variable name to values
+        mapping[extract_variable_ref(c.func[2])] = c.func[1]
     end
+    for elm in JuMP.all_variables(jm)
+        val = JuMP.is_parameter(elm) ? round(JuMP.parameter_value(elm), digits = decimals) : round(JuMP.value(elm), digits=decimals)
+        margin = "."
+        try
+            margin = round(value(mapping[elm]),digits = mdecimals)
+        catch
+            margin = missing
+        end
+        push!(out,(elm,val,margin))
+    end
+    if implicit==true
+        for key in keys(jm.obj_dict)
+            if jm.obj_dict[key] isa JuMP.NonlinearExpr
+            push!(out,(key, JuMP.value(jm[key]),missing))
+            end
+        end
+    end
+        df = DataFrame(out, [:var,:value,:margin])
+        return df
 end
 
 """
