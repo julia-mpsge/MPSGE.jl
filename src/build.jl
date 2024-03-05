@@ -36,11 +36,15 @@ end
 
 function build_nested_compensated_demand(P::ScalarProduction,T::ScalarNest, sign::Int)
     if raw_elasticity(T) isa Parameter
-        return JuMP.op_ifelse(
-            value(raw_elasticity(T)) * sign == -1,
-            cobb_douglass(P,T,sign), 
-            CES(P,T,sign)
-        )
+
+        jm = jump_model(model(sector(P)))
+
+        #This must be an explicit expression, otherwise it's evaluated now. 
+        return @expression(jm, JuMP.op_ifelse(
+                    elasticity(T) * sign == -1,
+                    cobb_douglass(P,T,sign), 
+                    CES(P,T,sign)
+                ))
     end
 
     if elasticity(T)*sign == -1 #Cobb-Douglas is only on demand side with σ=1
