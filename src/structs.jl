@@ -233,6 +233,8 @@ name(N::AbstractNest) = N.name
 children(N::AbstractNest) = N.children
 parent(N::AbstractNest) = ismissing(N.parent) ? N : N.parent
 elasticity(N::AbstractNest) = _get_parameter_value(N.elasticity)
+raw_elasticity(N::AbstractNest) = N.elasticity
+
 
 
 # Small Setter
