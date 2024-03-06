@@ -173,7 +173,7 @@ function demand(H::Consumer, C::Commodity)
         return 0
     end
     d = D.demands[C]
-    return quantity(d)*reference_price(d)/total_quantity * get_variable(H)/get_variable(C) * ifelse(elasticity(D) != 1, (expenditure(D)*reference_price(d)/get_variable(C))^(elasticity(D)-1), 1)
+    return quantity(d)/total_quantity * get_variable(H)/get_variable(C) * ifelse(elasticity(D) != 1, (expenditure(D)*reference_price(d)/get_variable(C))^(elasticity(D)-1), 1)
 end
 
 
