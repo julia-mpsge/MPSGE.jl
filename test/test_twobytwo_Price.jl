@@ -508,7 +508,7 @@ end
             ScalarOutput(PX, 80, taxes=[Tax(RA, otax)])
         ]),
         ScalarNest(:s; elasticity = esub_x, children = [
-            ScalarInput(PL, 30, taxes=[Tax(RA, itax)], reference_price=1.2), 
+            ScalarInput(PL, 30, taxes=[Tax(RA, itax)]), 
             ScalarInput(PK, 50)
         ])
     )
@@ -541,7 +541,8 @@ end
         [
             ScalarEndowment(PL, endow), 
             ScalarEndowment(PK, 80)
-        ]
+        ],
+        elasticity = esub_ra
     )
 
 
@@ -576,7 +577,7 @@ end
     # # set_fixed!(RA, true)
 
 
-#=
+
 
     # # algebraic_version(m)
     solve!(m)
@@ -627,6 +628,7 @@ end
     @test value(demand(RA, PU)) ≈ two_by_two_PriceinDemand["DU","eRA=.6"]#  128.8306562
     @test value(demand(RA, PY)) ≈ two_by_two_PriceinDemand["DY","eRA=.6"]#  10.4162285
 
+    
     set_value!(pr_Ud, 3.)
     solve!(m)
     # pr_Ud=3
@@ -650,6 +652,8 @@ end
     @test value(RA) ≈ two_by_two_PriceinDemand["RA","pr_Ud=3"]#  139.2001931
     @test value(demand(RA, PU)) ≈ two_by_two_PriceinDemand["DU","pr_Ud=3"]#  133.6355722
     @test value(demand(RA, PY)) ≈ two_by_two_PriceinDemand["DY","pr_Ud=3"]#  5.5900505
+
+    
 
     set_value!(esub_ra, .5)
     set_value!(pr_Ud,  2.)
@@ -750,6 +754,7 @@ end
     @test value(demand(RA, PU)) ≈ two_by_two_PriceinDemand["DU","Itax=0.1"]#  123.8062579
     @test value(demand(RA, PY)) ≈ two_by_two_PriceinDemand["DY","Itax=0.1"]#  15.4017044
 
+    
     set_value!(otax, 0.1)
     solve!(m)
     # Otax=0.1
@@ -774,5 +779,5 @@ end
     @test value(demand(RA, PU)) ≈ two_by_two_PriceinDemand["DU","Otax=0.1"]#  122.9999725
     @test value(demand(RA, PY)) ≈ two_by_two_PriceinDemand["DY","Otax=0.1"]#  15.9343683
 
-    =#
+    
 end
