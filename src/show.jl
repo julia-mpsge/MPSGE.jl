@@ -20,11 +20,11 @@ function Base.show(io::IO,M::MPSGEModel)
 
     println(io,"")
 
-    for p∈M.productions
+    for (_,p)∈M.productions
         println(io,p)
     end
 
-    for d∈M.demands
+    for (_,d)∈M.demands
         println(io,d)
     end
 
@@ -64,10 +64,10 @@ end
 
 function Base.show(io::IO, D::ScalarDemand)
     println(io,"\$Demand: $(consumer(D))")
-    for d∈D.demands
+    for (_,d)∈D.demands
         println(io,"    $d")
     end
-    for e∈D.endowments
+    for (_,e)∈D.endowments
         println(io,"    $e")
     end
 end

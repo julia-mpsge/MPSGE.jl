@@ -35,7 +35,19 @@ function build_nested_compensated_demand!(P::ScalarProduction)
 end
 
 function build_nested_compensated_demand(P::ScalarProduction,T::ScalarNest, sign::Int)
-    if T.elasticity == 1
+    if raw_elasticity(T) isa Parameter
+
+        jm = jump_model(model(sector(P)))
+
+        #This must be an explicit expression, otherwise it's evaluated now. 
+        return @expression(jm, JuMP.op_ifelse(
+                    elasticity(T) * sign == -1,
+                    cobb_douglass(P,T,sign), 
+                    CES(P,T,sign)
+                ))
+    end
+
+    if elasticity(T)*sign == -1 #Cobb-Douglas is only on demand side with σ=1
         return cobb_douglass(P,T,sign)
     else
         return CES(P,T,sign)
@@ -43,15 +55,15 @@ function build_nested_compensated_demand(P::ScalarProduction,T::ScalarNest, sign
 end
 
 function build_nested_compensated_demand(P::ScalarProduction,T::ScalarNetput, sign::Int)
-    return get_variable(T.commodity)*(1 - sign*sum(tax.tax for tax in T.taxes; init=0))/T.reference_price
+    return get_variable(commodity(T))*(1 - sign*sum(tax(t) for t in taxes(T); init=0))/reference_price(T)
 end
 
 function cobb_douglass(P::ScalarProduction, T::ScalarNest, sign)
-    return prod(P.nested_compensated_demand[child,T]^(quantity(child)/quantity(T)) for child in T.children; init=1)
+    return prod(P.nested_compensated_demand[child,T]^(quantity(child)/quantity(T)) for child in children(T); init=1)
 end
 
 function CES(P::ScalarProduction, T::ScalarNest, sign::Int)
-    return sum(quantity(child)/quantity(T) * P.nested_compensated_demand[child,T]^(1+sign*T.elasticity) for child in T.children; init=0) ^ (1/(1+sign*T.elasticity))
+    return sum(quantity(child)/quantity(T) * P.nested_compensated_demand[child,T]^(1+sign*elasticity(T)) for child in children(T); init=0) ^ (1/(1+sign*elasticity(T)))
 end
 
 
@@ -64,22 +76,22 @@ function build_compensated_demand!(P::ScalarProduction)
 
     #T = prod_commodities[1]
     for T∈prod_commodities
-        commodity = T.commodity
+        C = commodity(T)
         nest = name(parent(T))
 
         sign = T isa ScalarInput ? -1 : 1
 
         #build taxes
-        for tax in taxes(T)
-            H = tax.agent
+        for t in taxes(T)
+            H = tax_agent(t)
             if H∉keys(P.taxes)
                 P.taxes[H] = Dict()
             end
-            P.taxes[H][commodity,nest] = -sign*tax.tax #Should be a sum
+            P.taxes[H][C,nest] = -sign*tax(t) #Should be a sum
         end
 
-        if commodity ∉ keys(P.compensated_demand)
-            P.compensated_demand[commodity] = Dict()
+        if C ∉ keys(P.compensated_demand)
+            P.compensated_demand[C] = Dict()
         end
 
         quantity = base_quantity(T)
@@ -90,7 +102,7 @@ function build_compensated_demand!(P::ScalarProduction)
             push!(nest_list, (T,parent(T)))
             T = parent(T)
         end
-        P.compensated_demand[commodity][nest] = -sign * quantity * prod((P.nested_compensated_demand[parent_T,parent(parent_T)]/P.nested_compensated_demand[T,parent(T)])^(-sign*parent_T.elasticity) for (T,parent_T)∈nest_list  if parent_T.elasticity!=0; init = 1)
+        P.compensated_demand[C][nest] = -sign * quantity * prod((P.nested_compensated_demand[parent_T,parent(parent_T)]/P.nested_compensated_demand[T,parent(T)])^(-sign*elasticity(parent_T)) for (T,parent_T)∈nest_list  if elasticity(parent_T)!=0; init = 1)
     end
 end
 
@@ -140,27 +152,28 @@ end
 ########################
 
 function demand(H::Consumer)
-    M = H.model
-    return M.demands[H]
+    D = demands(model(H))
+    return D[H]
 end
 
 function endowment(H::Consumer, C::Commodity)
     D = demand(H)
-    if !haskey(D.endowments,C)
+    endows = endowments(D)
+    if !haskey(endows,C)
         return 0
     else
-        return D.endowments[C].quantity
+        return quantity(endows[C])
     end
 end
 
 function demand(H::Consumer, C::Commodity)
     D = demand(H)
-    total_quantity = D.quantity
+    total_quantity = quantity(D)
     if !haskey(D.demands, C)
         return 0
     end
     d = D.demands[C]
-    return d.quantity/total_quantity * get_variable(H)/get_variable(C)
+    return quantity(d)/total_quantity * get_variable(H)/get_variable(C)
 end
 
 ###########################
@@ -168,7 +181,7 @@ end
 ###########################
 function add_variable!(m::MPSGEModel, S::MPSGEScalarVariable)
     jm = jump_model(m)
-    jm[name(S)] = @variable(jm,base_name = string(name(S)),start=1)
+    jm[name(S)] = @variable(jm,base_name = string(name(S)),start=1, lower_bound = 0)
 end
 
 function add_variable!(m::MPSGEModel, S::MPSGEIndexedVariable)
@@ -196,9 +209,6 @@ end
 """
     build!(M::MPSGEModel)
 
-Currently, I'm creating the variables when the sector is added to the
-model. However, I *think* we can do this here without issue. I would
-prefer doing it here.
 """
 function build!(M::MPSGEModel)
     M.jump_model = JuMP.Model(PATHSolver.Optimizer)
@@ -211,7 +221,12 @@ function build!(M::MPSGEModel)
     # This needs to be more elegant
     for (consumer,d) in M.demands
         var = get_variable(consumer)
-        set_start_value(var, d.quantity)
+        set_start_value(var, quantity(d))
+    end
+
+    #Need to fix all parameter variables
+    for P∈parameters(M)
+        fix(P,value(P))
     end
 
     prune!(M)
@@ -228,7 +243,7 @@ function build_constraints!(M::MPSGEModel)
     jm = jump_model(M)
 
     @constraint(jm, zero_profit[S = production_sectors(M)],
-        -sum(compensated_demand(S,C) * get_variable(C) for C∈commodities(S) if compensated_demand(S,C)!=0; init=0)  +   sum(tau(S,H) for H∈consumers(M) if tau(S,H)!=0; init=0) ⟂ get_variable(S)
+        sum(compensated_demand(S,C) * get_variable(C) for C∈commodities(S) if compensated_demand(S,C)!=0; init=0)  -   sum(tau(S,H) for H∈consumers(M) if tau(S,H)!=0; init=0) ⟂ get_variable(S)
     )
 
     @constraint(jm, market_clearance[C = commodities(M)],

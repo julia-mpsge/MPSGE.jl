@@ -6,6 +6,8 @@ Fun fact: I don't think GAMS MPSGE does this. It will just error.
 """
 
 @testset "Pruning a sector/nest from a Model" begin
+
+    using MPSGE_MP
     
     M = MPSGEModel()
 
@@ -113,16 +115,16 @@ Fun fact: I don't think GAMS MPSGE does this. It will just error.
     solve!(M)
 
     # Make sure the solution is correct
-    @test MPSGE_MP.value(get_variable(W)) ≈ 0.9838272769615133
-    @test MPSGE_MP.value(get_variable(Y)) ≈ 1.1091469981123894
-    @test MPSGE_MP.value(get_variable(X)) ≈ 0.8618665918328441
-    @test MPSGE_MP.value(get_variable(PY)) ≈ 0.09909680198537893
-    @test MPSGE_MP.value(get_variable(PW)) ≈ 0.11407666201399301
-    @test MPSGE_MP.value(get_variable(PL)) ≈ 0.09596021792565605
-    @test MPSGE_MP.value(get_variable(PX)) ≈ 0.13132093625155308
-    @test MPSGE_MP.value(get_variable(PK)) ≈ 0.08978538540360285
-    @test MPSGE_MP.value(get_variable(CONS)) ≈ 22.446346350813023
-    @test MPSGE_MP.value(get_variable(Q)) == 0
+    @test isapprox(value(W),0.9838272769615133,atol = 1e-6)
+    @test isapprox(value(Y), 1.1091469981123894,atol = 1e-6)
+    @test isapprox(value(X), 0.8618665918328441,atol = 1e-6)
+    @test isapprox(value(PY), 0.09909680198537893,atol = 1e-6)
+    @test isapprox(value(PW), 0.11407666201399301,atol = 1e-6)
+    @test isapprox(value(PL), 0.09596021792565605,atol = 1e-6)
+    @test isapprox(value(PX), 0.13132093625155308,atol = 1e-6)
+    @test isapprox(value(PK), 0.08978538540360285,atol = 1e-6)
+    @test isapprox(value(CONS), 22.446346350813023,atol = 1e-6)
+    @test value(Q) == 0
     
 end
 
