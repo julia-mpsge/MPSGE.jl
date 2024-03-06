@@ -55,7 +55,7 @@
     avm2 = algebraic_version(m)
     @test typeof(avm2) == MPSGE.AlgebraicWrapper
     vr = var_report(m, decimals=16, mdecimals=5) #default is formated for CSV
-    df_vr = var_report(m, format="df")
+    df_vr = var_report(m)
     @test typeof(df_vr) == DataFrames.DataFrame
 
     # For now just run these functions, we might add tests for the results
