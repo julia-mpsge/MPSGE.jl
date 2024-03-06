@@ -173,7 +173,13 @@ function demand(H::Consumer, C::Commodity)
         return 0
     end
     d = D.demands[C]
-    return quantity(d)/total_quantity * get_variable(H)/get_variable(C)
+    return quantity(d)*reference_price(d)/total_quantity * get_variable(H)/get_variable(C)# * (expenditure(D)*reference_price(d)/get_variable(C))^(elasticity(D)-1)
+end
+
+
+function expenditure(D::ScalarDemand)
+    total_quantity = quantity(D)
+    return sum( quantity(d)/total_quantity * get_variable(commodity(d))/reference_price(d) for (_,d)∈demands(D))
 end
 
 ###########################
@@ -221,7 +227,7 @@ function build!(M::MPSGEModel)
     # This needs to be more elegant
     for (consumer,d) in M.demands
         var = get_variable(consumer)
-        set_start_value(var, quantity(d))
+        set_start_value(var, raw_quantity(d))
     end
 
     #Need to fix all parameter variables

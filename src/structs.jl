@@ -328,6 +328,8 @@ taxes(P::Production) = P.taxes
 struct ScalarDem
     commodity::ScalarCommodity
     quantity::Union{Real,Parameter}
+    reference_price::Union{Real,Parameter}
+    ScalarDem(commodity::ScalarCommodity, quantity::Union{Real,Parameter}; reference_price::Union{Real,Parameter} = 1) = new(commodity,quantity,reference_price)
 end
 
 
@@ -338,25 +340,30 @@ end
 
 # Getters
 commodity(C::ScalarDem) = C.commodity
-quantity(C::ScalarDem) = _get_parameter_value(C.quantity)
+base_quantity(D::ScalarDem) = _get_parameter_value(D.quantity)
+quantity(D::ScalarDem) = base_quantity(D) * reference_price(D)
+reference_price(D::ScalarDem) = _get_parameter_value(D.reference_price)
+raw_quantity(D::ScalarDem) = value(D.quantity)*value(D.reference_price)
 
 commodity(C::ScalarEndowment) = C.commodity
 quantity(C::ScalarEndowment) = _get_parameter_value(C.quantity)
 
 struct ScalarDemand
     consumer::ScalarConsumer
+    elasticity::Union{Real, ScalarParameter}
     demands::Dict{Commodity,ScalarDem}
     endowments::Dict{Commodity,ScalarEndowment}
-    quantity::Float64
-    function ScalarDemand(consumer::ScalarConsumer,demands::Vector{ScalarDem},endowments::Vector{ScalarEndowment})
-        #var = get_variable(consumer)
-        quantity=  sum(d.quantity for d∈demands)
-        #set_start_value(var, quantity)
-        new(consumer,
-            Dict(demand.commodity => demand for demand in demands), 
-            Dict(endowment.commodity => endowment for endowment in endowments),
-            quantity
-            )
+    function ScalarDemand(
+        consumer::ScalarConsumer,
+        demands::Vector{ScalarDem},
+        endowments::Vector{ScalarEndowment};
+        elasticity::Union{Real,ScalarParameter} = 1
+        )
+            new(consumer,
+                elasticity,
+                Dict(demand.commodity => demand for demand in demands), 
+                Dict(endowment.commodity => endowment for endowment in endowments),
+                )
     end
 end
 
@@ -365,7 +372,9 @@ const Demand = ScalarDemand
 consumer(D::Demand) = D.consumer
 demands(D::Demand) = D.demands
 endowments(D::Demand) = D.endowments
-quantity(D::Demand) = D.quantity
+quantity(D::Demand) = sum(quantity(d) for (_,d)∈demands(D))
+elasticity(D::Demand) = _get_parameter_value(D.elasticity)
+raw_quantity(D::Demand) = sum(raw_quantity(d) for (_,d)∈demands(D))
 
 
 ###########
