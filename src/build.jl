@@ -181,7 +181,7 @@ end
 ###########################
 function add_variable!(m::MPSGEModel, S::MPSGEScalarVariable)
     jm = jump_model(m)
-    jm[name(S)] = @variable(jm,base_name = string(name(S)),start=1)
+    jm[name(S)] = @variable(jm,base_name = string(name(S)),start=1, lower_bound = 0)
 end
 
 function add_variable!(m::MPSGEModel, S::MPSGEIndexedVariable)
@@ -243,7 +243,7 @@ function build_constraints!(M::MPSGEModel)
     jm = jump_model(M)
 
     @constraint(jm, zero_profit[S = production_sectors(M)],
-        -sum(compensated_demand(S,C) * get_variable(C) for C∈commodities(S) if compensated_demand(S,C)!=0; init=0)  +   sum(tau(S,H) for H∈consumers(M) if tau(S,H)!=0; init=0) ⟂ get_variable(S)
+        sum(compensated_demand(S,C) * get_variable(C) for C∈commodities(S) if compensated_demand(S,C)!=0; init=0)  -   sum(tau(S,H) for H∈consumers(M) if tau(S,H)!=0; init=0) ⟂ get_variable(S)
     )
 
     @constraint(jm, market_clearance[C = commodities(M)],
