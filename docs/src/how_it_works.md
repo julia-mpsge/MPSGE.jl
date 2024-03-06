@@ -90,7 +90,7 @@ With these definitions, we can define the complementarity constraints.
 Let ``S`` be a sector with a production block, then the zero profit condition is 
 given by,
 ```math
-\left(-\sum_{C\in\text{ Commodities}}CD(S,C)\cdot C\right) + \sum_{H\in\text{ Consumers}} \tau(S,H) \perp S.
+\left(\sum_{C\in\text{ Commodities}}CD(S,C)\cdot C\right) - \sum_{H\in\text{ Consumers}} \tau(S,H) \perp S.
 ```
 
 
