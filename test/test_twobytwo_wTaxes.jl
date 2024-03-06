@@ -197,6 +197,8 @@
     @test value(compensated_demand(U, PU, :t)) ≈ -two_by_two_scalar_results["SU.L","Otax=.1"]#    50.
     @test value(demand(RA, PU)) ≈ two_by_two_scalar_results["CWI.L","Otax=.1"] # 156.6285843
 
+
+    
     set_value!(otax, 0.2)
     solve!(m)
 
@@ -245,10 +247,11 @@
     @test value(compensated_demand(U, PU, :t)) ≈ -two_by_two_scalar_results["SU.L","Otax=.5"]#    50.
     @test value(demand(RA, PU)) ≈ two_by_two_scalar_results["CWI.L","Otax=.5"] # 148.2708074
 
+    
     set_value!(otax, 0.9)
     solve!(m)
 
-    @test value(X)                                          ≈ two_by_two_scalar_results["X.L","Otax=.9"]#    0.2653299831628428
+    @test value(X) ≈ two_by_two_scalar_results["X.L","Otax=.9"]#    0.2653299831628428
     @test value(Y) ≈ two_by_two_scalar_results["Y.L","Otax=.9"]#    2.575333351676288
     @test value(U) ≈ two_by_two_scalar_results["U.L","Otax=.9"]#    0.5659812410319296
     @test value(RA) ≈ two_by_two_scalar_results["RA.L","Otax=.9"]#    461.9999999777376
@@ -269,9 +272,11 @@
     @test value(compensated_demand(U, PU, :t)) ≈ -two_by_two_scalar_results["SU.L","Otax=.9"]#    50.
     @test value(demand(RA, PU)) ≈ two_by_two_scalar_results["CWI.L","Otax=.9"] # 84.89718615
 
+    
+
 end
 
-
+   
 
 @testset "TWOBYTWOwOTax_IndCons" begin
     using XLSX, MPSGE_MP.JuMP.Containers
@@ -352,6 +357,8 @@ end
     two_by_two_scalar_results = DenseAxisArray(a_table[2:end,2:end],a_table[2:end,1],a_table[1,2:end])
  
     solve!(m, cumulative_iteration_limit=0)
+
+
 
     @test value(X) ≈ two_by_two_scalar_results["X.L","benchmark"]#    1.
     @test value(Y) ≈ two_by_two_scalar_results["Y.L","benchmark"]#    1.
@@ -541,6 +548,8 @@ end
     @test value(demand(RA[:a], PU)) ≈ two_by_two_scalar_results["DURAA.L","Otaxa=.5"] 	#	98.84720496
     @test value(demand(RA[:b], PU)) ≈ two_by_two_scalar_results["DURAB.L","Otaxa=.5"] 	#	49.42360248
 		
+
+ 
     set_value!(otaxa, 0.9)		
     solve!(m)		
 		
@@ -675,6 +684,7 @@ end
     @test value(demand(RA[:a], PU)) ≈ two_by_two_scalar_results["DURAA.L","Otax=.9"] 	#	101.9345
     @test value(demand(RA[:b], PU)) ≈ two_by_two_scalar_results["DURAB.L","Otax=.9"] 	#	54.88780834
   		
+    
 end		
 
 
@@ -1197,6 +1207,8 @@ end
     @test value(demand(CONS, PW)) ≈ two_by_two_scalar_results["DW.L","S.T1,O3=.1"]#  198.8847
     # CWI ")]) ≈ two_by_two_scalar_results["CWI.L","S.T1,O3=.1"]#  0.99442372
 
+
+
     set_value!(otax3, 0.)
     set_value!(otax4, 0.1)
     solve!(m)
@@ -1306,7 +1318,7 @@ end
     # CWI ")]) ≈ two_by_two_scalar_results["CWI.L","O2=.3,I=.2"]#  0.91527149
     
 
-    #=
+    
     set_value!(itax, 1.0)
     solve!(m)
 
@@ -1333,7 +1345,8 @@ end
     @test value(demand(CONS, PW)) ≈ two_by_two_scalar_results["DW.L","ITAX=100%"]#  170.1883
     # CWI ")]) ≈ two_by_two_scalar_results["CWI.L","ITAX=100%"]#  0.85094165
 
-    =#
+    
+    
 end
 
 #=
