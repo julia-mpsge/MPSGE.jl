@@ -284,6 +284,10 @@ function _get_parameter_value(x::abstractMPSGEExpr)
     return NonlinearExpr(x.head, _get_parameter_value.(x.args)...)
 end
 
+function _get_parameter_value(x:: MPSGEScalarVariable)
+    return get_variable(x)
+end
+
 
 
 commodity(C::ScalarNetput) = C.commodity
@@ -311,7 +315,7 @@ set_parent(child::ScalarNetput,parent::AbstractNest) = (child.parent = parent)
 
 struct Tax
     agent::Consumer
-    tax::Union{Number,Parameter}
+    tax::MPSGEquantity
 end
 
 tax_agent(T::Tax) = T.agent
@@ -427,11 +431,12 @@ struct ScalarDemand
         endowments::Vector{ScalarEndowment};
         elasticity::MPSGEquantity = 1
         )
-            new(consumer,
-                elasticity,
-                Dict(demand.commodity => demand for demand in demands), 
-                Dict(endowment.commodity => endowment for endowment in endowments),
-                )
+
+        new(consumer,
+            elasticity,
+            Dict(demand.commodity => demand for demand in demands), 
+            Dict(endowment.commodity => endowment for endowment in endowments),
+            )
     end
 end
 
