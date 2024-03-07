@@ -197,12 +197,45 @@ end
 set_value!(P::IndexedParameter, value::Number) = set_value!.(P.subsectors,value)
 set_value!(P::IndexedParameter, value::AbstractArray) = set_value!.(P.subsectors,value)
 
+
+
+struct ScalarAuxiliary <: MPSGEScalarVariable
+    model::AbstractMPSGEModel
+    name::Symbol
+    subindex::Any
+    description::String
+    ScalarAuxiliary(model::AbstractMPSGEModel,name::Symbol; description = "") = new(model,name, missing, description)
+    ScalarAuxiliary(model::AbstractMPSGEModel,name::Symbol,subindex; description = "") = new(model,name,subindex, description)
+end
+
+struct IndexedAuxiliary <: MPSGEIndexedVariable
+    model::AbstractMPSGEModel
+    name::Symbol
+    subsectors::Any
+    index::Any
+    description::String
+    function IndexedAuxiliary(model::AbstractMPSGEModel,name::Symbol,index; description = "") 
+        temp_array = Array{ScalarAuxiliary}(undef, length.(index)...)
+
+        for i in CartesianIndices(temp_array)
+            temp_array[i] = ScalarAuxiliary(model, name, Tuple(index[j][v] for (j,v) in enumerate(Tuple(i))); description = description)
+        end
+        
+        sr = JuMP.Containers.DenseAxisArray(temp_array, index...)
+        S = new(model,name, sr, index, description)
+        return S
+    end
+end
+
+const Auxiliary = Union{ScalarAuxiliary,IndexedAuxiliary}
+
+
 #######################
 ## MPSGE Expressions ##
 #######################
 struct MPSGEExpr <: abstractMPSGEExpr
     head::Symbol
-    args::Vector{Union{Real,ScalarParameter,abstractMPSGEExpr}}
+    args::Vector{Union{Real,MPSGEScalarVariable,abstractMPSGEExpr}}
 end
 
 const MPSGEquantity = Union{Real,MPSGEScalarVariable,MPSGEExpr}
@@ -412,6 +445,17 @@ elasticity(D::Demand) = _get_parameter_value(D.elasticity)
 raw_quantity(D::Demand) = sum(raw_quantity(d) for (_,d)∈demands(D))
 
 
+
+struct ScalarAuxConstraint
+    aux::ScalarAuxiliary
+    constraint::MPSGEExpr
+end
+
+const AuxConstraint = ScalarAuxConstraint
+
+auxiliary(C::AuxConstraint) = C.aux
+constraint(C::AuxConstraint) = _get_parameter_value(C.constraint)
+
 ###########
 ## Model ##
 ###########
@@ -423,7 +467,8 @@ mutable struct MPSGEModel <:AbstractMPSGEModel
     productions::Dict{Sector,Production}
     demands::Dict{Consumer,Demand}
     commodities::Dict{Commodity,Vector{Sector}} #Generated on model build
-    MPSGEModel() = new(Dict(),nothing,Dict(),Dict(),Dict())
+    auxiliaries::Dict{Auxiliary, AuxConstraint}
+    MPSGEModel() = new(Dict(),nothing,Dict(),Dict(),Dict(),Dict())
 end
 
 #Getters
@@ -431,6 +476,7 @@ object_dict(M::MPSGEModel) = M.object_dict
 jump_model(M::MPSGEModel) = M.jump_model
 productions(M::MPSGEModel) = M.productions
 demands(M::MPSGEModel) = M.demands
+aux_constraints(M::MPSGEModel) = M.auxiliaries
 Base.getindex(M::MPSGEModel,key::Symbol) = M.object_dict[key]
 
 
@@ -453,6 +499,7 @@ raw_sectors(m::MPSGEModel) = [s for (_,s) in m.object_dict if isa(s,Sector)]
 raw_commodities(m::MPSGEModel) = [s for (_,s) in m.object_dict if isa(s,Commodity)]
 raw_consumers(m::MPSGEModel) = [s for (_,s) in m.object_dict if isa(s,Consumer)]
 raw_parameters(m::MPSGEModel) = [s for (_,s) in m.object_dict if isa(s,Parameter)]
+raw_auxiliaries(m::MPSGEModel) = [s for (_,s) in m.object_dict if isa(s,Auxiliary)]
 
 
 """
@@ -518,6 +565,15 @@ end
 
 function parameters(m::MPSGEModel)
     X = raw_parameters(m) |>
+        x -> extract_scalars.(x) |>
+        x -> Iterators.flatten(x) |>
+        x -> collect(x)
+    return X
+end
+
+
+function auxiliaries(m::MPSGEModel)
+    X = raw_auxiliaries(m) |>
         x -> extract_scalars.(x) |>
         x -> Iterators.flatten(x) |>
         x -> collect(x)
