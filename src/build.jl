@@ -35,7 +35,7 @@ function build_nested_compensated_demand!(P::ScalarProduction)
 end
 
 function build_nested_compensated_demand(P::ScalarProduction,T::ScalarNest, sign::Int)
-    if raw_elasticity(T) isa Parameter
+    if !(isa(raw_elasticity(T), Real))
 
         jm = jump_model(model(sector(P)))
 

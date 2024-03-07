@@ -7,7 +7,7 @@
     @parameters(m, begin
         esub_x, 1
         esub_y, 1
-        endow, 70
+        endow, 1
         otax, 0
     end)
 
@@ -61,7 +61,7 @@
     @demand(m, RA, 
         [ScalarDem(PU, 150. )], 
         [
-            ScalarEndowment(PL, endow), 
+            ScalarEndowment(PL, endow*70), 
             ScalarEndowment(PK, 80)
         ]
     )
@@ -291,7 +291,7 @@ end
     @parameters(m, begin
         esub_x, 1
         esub_y, 1
-        endow, 35
+        endow, 1
         otaxa, 0
         otaxb, 0
     end)
@@ -345,7 +345,7 @@ end
         @demand(m, RA[r], 
             [ScalarDem(PU, 75. )], 
             [
-                ScalarEndowment(PL, endow), 
+                ScalarEndowment(PL, endow*35), 
                 ScalarEndowment(PK, 40)
             ]
         )

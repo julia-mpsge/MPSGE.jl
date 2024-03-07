@@ -4,8 +4,8 @@
 
     m = MPSGEModel()
 
-    @parameter(m, endow, 1*70)
-    @parameter(m, diff, 100)
+    @parameter(m, endow, 1)
+    @parameter(m, diff, 0)
     
     @sector(m, X)
     @sector(m, Y)
@@ -21,7 +21,7 @@
     
     @production(m, X, 
         ScalarNest(:t; elasticity = 0, children = [
-            ScalarOutput(PX,diff)
+            ScalarOutput(PX, 100 + diff)
         ]),
         ScalarNest(:s; elasticity = 1, children = [
             ScalarInput(PL, 50), ScalarInput(PK, 50)
@@ -43,7 +43,7 @@
         ScalarNest(:s; elasticity = 1, children = [ScalarInput(PX, 100), ScalarInput(PY, 50)])
     )
     
-    @demand(m, RA, [ScalarDem(PU, 150)], [ScalarEndowment(PL, endow), ScalarEndowment(PK, 80.)])
+    @demand(m, RA, [ScalarDem(PU, 150)], [ScalarEndowment(PL, endow * 70), ScalarEndowment(PK, 80.)])
     
 
     solve!(m, cumulative_iteration_limit=0)
@@ -65,8 +65,8 @@
     @test value(compensated_demand(U,PX)) ≈  100.
     @test value(compensated_demand(U,PY)) ≈  50.
 
-    set_value!(diff, 100 + 10.)
-    set_value!(endow, 70*1.1)
+    set_value!(diff,  10)
+    set_value!(endow, 1.1)
     fix(RA, 157.0)
     
     solve!(m)
@@ -101,8 +101,8 @@ end
 
     m = MPSGEModel()
 
-    @parameter(m, endow, 1*70)
-    @parameter(m, diff, 50)
+    @parameter(m, endow, 1)
+    @parameter(m, diff, 0)
 
     @sector(m, X)
     @sector(m, Y)
@@ -121,7 +121,7 @@ end
             ScalarOutput(PX,100)
         ]),
         ScalarNest(:s; elasticity = 1, children = [
-            ScalarInput(PL, diff), ScalarInput(PK, 50)
+            ScalarInput(PL, 50 + diff), ScalarInput(PK, 50)
         ])
     )
 
@@ -140,7 +140,7 @@ end
         ScalarNest(:s; elasticity = 1, children = [ScalarInput(PX, 100), ScalarInput(PY, 50)])
     )
 
-    @demand(m, RA, [ScalarDem(PU, 150)], [ScalarEndowment(PL, endow), ScalarEndowment(PK, 80.)])
+    @demand(m, RA, [ScalarDem(PU, 150)], [ScalarEndowment(PL, endow * 70), ScalarEndowment(PK, 80.)])
 
     solve!(m, cumulative_iteration_limit=0)
 
@@ -161,7 +161,7 @@ end
     @test value(compensated_demand(U,PX)) ≈  100.
     @test value(compensated_demand(U,PY)) ≈  50.
 
-    set_value!(diff, 50 + 10.)
+    set_value!(diff, 10.)
     fix(RA, 150)
     solve!(m)
 
@@ -185,7 +185,7 @@ end
     @test value(RA) ≈ 150
     @test value(demand(RA,PU)) ≈ 140.5066 atol=1.0e-4
 
-    set_value!(endow, 70*1.1)
+    set_value!(endow, 1.1)
     fix(RA,157.0)
     
     solve!(m)

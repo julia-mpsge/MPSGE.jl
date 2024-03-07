@@ -5,10 +5,10 @@
     m = MPSGEModel()
     # Here parameter values are doubled and input data halved from MPSGE version       
     @parameters(m, begin
-        inputcoeff, 2 * 25
-        endow, 2 * 35
-        elascoeff, 2 * .5
-        outputmult, 2 * 75
+        inputcoeff, 2
+        endow, 2
+        elascoeff, 2
+        outputmult, 2
     end)
 
     @sectors(m, begin
@@ -32,7 +32,7 @@
             ScalarOutput(PX,100)
         ]),
         ScalarNest(:s; elasticity = 1, children = [
-            ScalarInput(PL, inputcoeff), 
+            ScalarInput(PL, inputcoeff * 25), 
             ScalarInput(PK, 50)
         ])
     )
@@ -41,7 +41,7 @@
         ScalarNest(:t; elasticity = 0, children = [
             ScalarOutput(PY,50)
         ]),
-        ScalarNest(:s; elasticity = elascoeff, children = [
+        ScalarNest(:s; elasticity = elascoeff * .5, children = [
             ScalarInput(PL, 20), 
             ScalarInput(PK, 30)
         ])
@@ -49,7 +49,7 @@
 
     @production(m, U, 
         ScalarNest(:t; elasticity = 0, children = [
-            ScalarOutput(PU, outputmult)
+            ScalarOutput(PU, outputmult * 75)
         ]),
         ScalarNest(:s; elasticity = 1, children = [
             ScalarInput(PX, 100), 
@@ -60,7 +60,7 @@
     @demand(m, RA,
         [ScalarDem(PU,150)],
         [
-            ScalarEndowment(PL, endow), 
+            ScalarEndowment(PL, endow * 35), 
             ScalarEndowment(PK, 80)
         ]
     )
@@ -91,7 +91,7 @@
 
 
     fix(PX, 1)
-    set_value!(endow, 2.2 * 35)
+    set_value!(endow, 2.2)
     solve!(m)
 
     @test value(X) ≈ two_by_two_scalar_results["X.L","PX=1"]#    1.04880885

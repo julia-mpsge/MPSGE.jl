@@ -9,6 +9,8 @@ abstract type MPSGEVariable end
 abstract type MPSGEIndexedVariable <: MPSGEVariable end
 abstract type MPSGEScalarVariable <: MPSGEVariable end
 
+abstract type abstractMPSGEExpr end
+
 abstract type ScalarNetput end
 abstract type IndexedNetput end
 
@@ -195,6 +197,34 @@ end
 set_value!(P::IndexedParameter, value::Number) = set_value!.(P.subsectors,value)
 set_value!(P::IndexedParameter, value::AbstractArray) = set_value!.(P.subsectors,value)
 
+#######################
+## MPSGE Expressions ##
+#######################
+struct MPSGEExpr <: abstractMPSGEExpr
+    head::Symbol
+    args::Vector{Union{Real,ScalarParameter,abstractMPSGEExpr}}
+end
+
+const MPSGEquantity = Union{Real,MPSGEScalarVariable,MPSGEExpr}
+const _MPSGEquantity = Union{MPSGEScalarVariable,MPSGEExpr}
+
+value(x::abstractMPSGEExpr) = value(_get_parameter_value(x))
+
+
+Base.:+(x::MPSGEquantity,y::_MPSGEquantity) = MPSGEExpr(:+, [x, y])
+Base.:+(x::_MPSGEquantity,y::Real) = MPSGEExpr(:+, [x, y])
+
+Base.:-(x::MPSGEquantity,y::_MPSGEquantity) = MPSGEExpr(:-, [x, y])
+Base.:-(x::_MPSGEquantity,y::Real) = MPSGEExpr(:-, [x, y])
+
+Base.:*(x::MPSGEquantity,y::_MPSGEquantity) = MPSGEExpr(:*, [x, y])
+Base.:*(x::_MPSGEquantity,y::Real) = MPSGEExpr(:*, [x, y])
+
+Base.:/(x::MPSGEquantity,y::_MPSGEquantity) = MPSGEExpr(:/, [x, y])
+Base.:/(x::_MPSGEquantity,y::Real) = MPSGEExpr(:/, [x, y])
+
+Base.:^(x::MPSGEquantity,y::_MPSGEquantity) = MPSGEExpr(:^, [x, y])
+Base.:^(x::_MPSGEquantity,y::Real) = MPSGEExpr(:^, [x, y])
 
 
 ####################
@@ -214,6 +244,11 @@ function _get_parameter_value(X::ScalarParameter)
         return get_variable(X)
     end
     return value(X)
+end
+
+
+function _get_parameter_value(x::abstractMPSGEExpr)
+    return NonlinearExpr(x.head, _get_parameter_value.(x.args)...)
 end
 
 
@@ -254,27 +289,27 @@ tax(T::Tax) = _get_parameter_value(T.tax)
 
 mutable struct ScalarInput <: ScalarNetput
     commodity::ScalarCommodity
-    quantity::Union{Real,ScalarParameter}
-    reference_price::Union{Real,ScalarParameter}
+    quantity::MPSGEquantity
+    reference_price::MPSGEquantity
     taxes::Vector{Tax}
     parent::Union{AbstractNest,Missing}
     ScalarInput(commodity::ScalarCommodity,
-                         quantity::Union{Real,ScalarParameter};
-                         reference_price::Union{Real,ScalarParameter}=1,
-                         taxes = []
+                quantity::MPSGEquantity;
+                reference_price::MPSGEquantity=1,
+                taxes = []
         ) = new(commodity,quantity,reference_price,taxes,missing)
 end
 
 
 mutable struct ScalarOutput <: ScalarNetput
     commodity::ScalarCommodity
-    quantity::Union{Real,ScalarParameter}
-    reference_price::Union{Real,ScalarParameter}
+    quantity::MPSGEquantity
+    reference_price::MPSGEquantity
     taxes::Vector{Tax}
     parent::Union{AbstractNest,Missing}
     ScalarOutput(commodity::ScalarCommodity,
-                 quantity::Union{Real,ScalarParameter};
-                 reference_price::Union{Real,ScalarParameter}=1,
+                 quantity::MPSGEquantity;
+                 reference_price::MPSGEquantity=1,
                  taxes = []
         ) = new(commodity,quantity,reference_price,taxes,missing)
 end
@@ -282,10 +317,10 @@ end
 
 mutable struct ScalarNest <: AbstractNest
     name::Symbol
-    elasticity::Union{Real,ScalarParameter}
+    elasticity::MPSGEquantity
     children::Vector{Union{ScalarNest,ScalarNetput}}
     parent::Union{ScalarNest,Missing}
-    function ScalarNest(name::Symbol;elasticity::Union{Real,ScalarParameter}=0,children = [])  
+    function ScalarNest(name::Symbol;elasticity::MPSGEquantity=0,children = [])  
         N = new(name,elasticity,children, missing)
         for child in children
             set_parent(child,N)
@@ -327,15 +362,15 @@ taxes(P::Production) = P.taxes
 
 struct ScalarDem
     commodity::ScalarCommodity
-    quantity::Union{Real,Parameter}
-    reference_price::Union{Real,Parameter}
-    ScalarDem(commodity::ScalarCommodity, quantity::Union{Real,Parameter}; reference_price::Union{Real,Parameter} = 1) = new(commodity,quantity,reference_price)
+    quantity::MPSGEquantity
+    reference_price::MPSGEquantity
+    ScalarDem(commodity::ScalarCommodity, quantity::MPSGEquantity; reference_price::MPSGEquantity = 1) = new(commodity,quantity,reference_price)
 end
 
 
 struct ScalarEndowment
     commodity::ScalarCommodity
-    quantity::Union{Real,Parameter}
+    quantity::MPSGEquantity
 end
 
 # Getters
@@ -350,14 +385,14 @@ quantity(C::ScalarEndowment) = _get_parameter_value(C.quantity)
 
 struct ScalarDemand
     consumer::ScalarConsumer
-    elasticity::Union{Real, ScalarParameter}
+    elasticity::MPSGEquantity
     demands::Dict{Commodity,ScalarDem}
     endowments::Dict{Commodity,ScalarEndowment}
     function ScalarDemand(
         consumer::ScalarConsumer,
         demands::Vector{ScalarDem},
         endowments::Vector{ScalarEndowment};
-        elasticity::Union{Real,ScalarParameter} = 1
+        elasticity::MPSGEquantity = 1
         )
             new(consumer,
                 elasticity,
