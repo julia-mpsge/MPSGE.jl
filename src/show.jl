@@ -45,6 +45,13 @@ function Base.show(io::IO,S::MPSGEIndexedVariable) #This could be smarter
     print(io,S.subsectors)
 end
 
+#################
+## Expressions ##
+#################
+function Base.show(io::IO, e::abstractMPSGEExpr)
+    print(io, join(["($a)" for a∈e.args], " $(e.head) "))
+end
+
 ########################
 ## Production/Demands ##
 ########################
