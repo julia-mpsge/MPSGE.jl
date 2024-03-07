@@ -44,6 +44,13 @@ function add_parameter!(model::MPSGEModel, name::Symbol, value::AbstractArray; i
     return S
 end
 
+function add_auxiliary!(model::MPSGEModel, name::Symbol; index = nothing, description = "")
+    S = index === nothing ? ScalarAuxiliary(model,name; description = description) : IndexedAuxiliary(model,name,index; description = description)
+    add!(model,S)
+    return S
+end
+
+
 
 function get_variable(S::MPSGEScalarVariable)
     jm = jump_model(S.model)
@@ -75,5 +82,12 @@ end
 function add_demand!(M::MPSGEModel,H::ScalarConsumer,demands::Vector{ScalarDem},endowments::Vector{ScalarEndowment};elasticity::Union{Real,ScalarParameter} = 1)
     P = ScalarDemand(H,demands,endowments; elasticity = elasticity)
     M.demands[H] = P
+    return P
+end
+
+
+function add_aux_constraint!(model::AbstractMPSGEModel, A::ScalarAuxiliary, constraint::MPSGEExpr)
+    P = ScalarAuxConstraint(A,constraint)
+    model.auxiliaries[A] = P
     return P
 end
