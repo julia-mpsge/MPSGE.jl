@@ -186,19 +186,22 @@ end
 ###########################
 ## Create JuMP Variables ##
 ###########################
-function add_variable!(m::MPSGEModel, S::MPSGEScalarVariable)
+function add_variable!(m::MPSGEModel, S::MPSGEScalarVariable; start = 1)
     jm = jump_model(m)
-    jm[name(S)] = @variable(jm,base_name = string(name(S)),start=1, lower_bound = 0)
+    jm[name(S)] = @variable(jm,base_name = string(name(S)),start=start, lower_bound = 0)
 end
 
-function add_variable!(m::MPSGEModel, S::MPSGEIndexedVariable)
+
+
+
+function add_variable!(m::MPSGEModel, S::MPSGEIndexedVariable; start = 1)
 
     jm = jump_model(m)
     index = S.index
 
     dim = length.(index)
     
-    x = JuMP.@variable(jm, [1:prod(dim)], lower_bound=0, start = 1)
+    x = JuMP.@variable(jm, [1:prod(dim)], lower_bound=0, start = start)
 
     for (i, ind) in enumerate(Iterators.product(index...))
         new_index = join(ind,",")
@@ -211,6 +214,9 @@ function add_variable!(m::MPSGEModel, S::MPSGEIndexedVariable)
 
 end
 
+function add_variable!(m::MPSGEModel, S::Auxiliary)
+    add_variable!(m, S; start = 0)
+end
 
 
 """
@@ -241,6 +247,9 @@ function build!(M::MPSGEModel)
     build_commodity_dictionary!(M)
     build_constraints!(M)
 
+
+
+
     return jump_model(M)
 end
 
@@ -260,6 +269,13 @@ function build_constraints!(M::MPSGEModel)
     @constraint(jm, income_balance[H = consumers(M)],
         get_variable(H) - (sum(endowment(H,C)*get_variable(C) for C∈commodities(M) if endowment(H,C)!=0) - sum(tau(S,H)*get_variable(S) for S∈production_sectors(M) if tau(S,H)!=0; init=0)) ⟂ get_variable(H)
     );
+
+    aux_cons = aux_constraints(M)
+
+    @constraint(jm, auxiliary_constraints[A∈keys(aux_cons)],
+        constraint(aux_cons[A]) ⟂ get_variable(A)
+    )
+
 
 end
 
