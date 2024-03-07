@@ -205,10 +205,10 @@ struct MPSGEExpr <: abstractMPSGEExpr
     args::Vector{Union{Real,ScalarParameter,abstractMPSGEExpr}}
 end
 
-const MPSGEquantity = Union{Real,MPSGE_MP.MPSGEScalarVariable,MPSGEExpr}
-const _MPSGEquantity = Union{MPSGE_MP.MPSGEScalarVariable,MPSGEExpr}
+const MPSGEquantity = Union{Real,MPSGEScalarVariable,MPSGEExpr}
+const _MPSGEquantity = Union{MPSGEScalarVariable,MPSGEExpr}
 
-value(x::abstractMPSGEExpr) = value(MPSGE_MP._get_parameter_value(x))
+value(x::abstractMPSGEExpr) = value(_get_parameter_value(x))
 
 
 Base.:+(x::MPSGEquantity,y::_MPSGEquantity) = MPSGEExpr(:+, [x, y])
