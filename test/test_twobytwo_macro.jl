@@ -6,10 +6,10 @@
     # Here again, parameter values are doubled and input data halved from MPSGE version 
     
     @parameters(m, begin
-        inputcoeff, 2 * 25
-        endow, 2 * 35
-        elascoeff, 2 * .5
-        outputmult, 2 * 75
+        inputcoeff, 2
+        endow, 2
+        elascoeff, 2
+        outputmult, 2
     end)
     
     @sector(m, X)
@@ -29,7 +29,7 @@
             ScalarOutput(PX, 100)
         ]), 
         ScalarNest(:s; elasticity = 1, children = [
-            ScalarInput(PL, inputcoeff), 
+            ScalarInput(PL, inputcoeff * 25), 
             ScalarInput(PK, 50)
         ])
     )
@@ -38,7 +38,7 @@
         ScalarNest(:t; elasticity = 0, children = [
             ScalarOutput(PY, 50)
         ]), 
-        ScalarNest(:s; elasticity = elascoeff, children = [
+        ScalarNest(:s; elasticity = elascoeff * .5, children = [
             ScalarInput(PL, 20), 
             ScalarInput(PK, 30)
         ])
@@ -46,7 +46,7 @@
 
     @production(m, U, 
         ScalarNest(:t; elasticity = 0, children = [
-            ScalarOutput(PU, outputmult)
+            ScalarOutput(PU, outputmult * 75)
         ]), 
         ScalarNest(:s; elasticity = 1, children = [
             ScalarInput(PX, 100), 
@@ -57,7 +57,7 @@
     @demand(m, RA, 
         [ScalarDem(PU, 150)], 
         [
-            ScalarEndowment(PL, endow), 
+            ScalarEndowment(PL, endow * 35), 
             ScalarEndowment(PK, 80)
         ]
     )
@@ -87,7 +87,7 @@
     @test value(compensated_demand(U,PY)) ≈ two_by_two_scalar_results["DY.L","benchmark"]#    50.
 
     fix(PX, 1)
-    set_value!(endow, 2.2 *35)
+    set_value!(endow, 2.2)
     solve!(m)
 
     @test value(X) ≈ two_by_two_scalar_results["X.L","PX=1"]#    1.04880885
@@ -136,8 +136,7 @@ end
 
     m = MPSGEModel()
 
-    @parameter(m, diff, 20.0)
-    @parameter(m, diff2, 100.0)
+    @parameter(m, diff, 0.0)
     @parameter(m, sub_elas_a, 1.)
     @parameter(m, sub_elas_b, 1.)
     @parameter(m, sub_elas_w, 1.)
@@ -171,7 +170,7 @@ end
 
     @production(m, B, 
         ScalarNest(:t; elasticity = t_elas_b, children = [
-            ScalarOutput(PX, diff), 
+            ScalarOutput(PX, diff + 20), 
             ScalarOutput(PY, 80)
         ]),
         ScalarNest(:s; elasticity = sub_elas_b, children = [
@@ -186,7 +185,7 @@ end
             ScalarOutput(PW, 200.0)
         ]),
         ScalarNest(:s; elasticity = sub_elas_w, children = [
-            ScalarInput(PX, diff2), 
+            ScalarInput(PX, diff + 100), 
             ScalarInput(PY, 100.0)
         ])
     )
@@ -229,8 +228,7 @@ end
     @test value(compensated_demand(W,PW, :t))  ≈ -two_by_two_scalar_results["SW.L","benchmark"]#    100.
     @test value(demand(CONS,PW)) ≈ two_by_two_scalar_results["DW.L","benchmark"]#    100.
 
-    set_value!(diff, 10.0 + 20)
-    set_value!(diff2, 10.0 + 100)
+    set_value!(diff, 10.0)
     # set_value!(CONS, 200.0)
     fix(CONS, 200)
     solve!(m)
@@ -373,8 +371,7 @@ end
     "NOTE!! When GAMS version with s:0 for all 3 sectors is not run !FIRST!, these results don't all match. That is, if other sub elasticites were run first,
     and then changed to s:0, GAMS MPSGE gets different results than it does if it starts at s:0. MPSGE.jl does not change results based on the order."
 
-    set_value!(diff, 20)
-    set_value!(diff2, 100)
+    set_value!(diff, 0)
     set_value!(sub_elas_a, 0.0)
     set_value!(sub_elas_b, 0.)
     set_value!(sub_elas_w, 0.)
@@ -405,8 +402,7 @@ end
     @test value(compensated_demand(W,PW, :t))  ≈ -two_by_two_scalar_results["SW.L","benchmark"]#    100.
     @test value(demand(CONS,PW)) ≈ two_by_two_scalar_results["DW.L","benchmark"]#    100.
 
-    set_value!(diff, 10.0 + 20)
-    set_value!(diff2, 10.0 + 100)
+    set_value!(diff, 10.0)
     fix(CONS, 200)
     fix(PW, 1)
     set_value!(sub_elas_a, 1.5)
@@ -549,8 +545,7 @@ end
     # Re-set with CES Substitution Elasticities
     m = MPSGEModel()
 
-    @parameter(m, diff, 20.0)
-    @parameter(m, diff2, 100.0)
+    @parameter(m, diff, 0)
     @parameter(m, sub_elas_a, 1.5)
     @parameter(m, sub_elas_b, 2.)
     @parameter(m, sub_elas_w, .5)
@@ -583,7 +578,7 @@ end
 
     @production(m, B, 
         ScalarNest(:t; elasticity = t_elas_b, children = [
-            ScalarOutput(PX, diff), 
+            ScalarOutput(PX, diff+20), 
             ScalarOutput(PY, 80)
         ]),
         ScalarNest(:s; elasticity = sub_elas_b, children = [
@@ -597,7 +592,7 @@ end
             ScalarOutput(PW, 200.0)
         ]),
         ScalarNest(:s; elasticity = sub_elas_w, children = [
-            ScalarInput(PX, diff2), 
+            ScalarInput(PX, diff + 100), 
             ScalarInput(PY, 100.0)
         ])
     )
@@ -636,8 +631,7 @@ end
     @test value(compensated_demand(W,PW, :t))  ≈ -two_by_two_scalar_results["SW.L","benchmark"]#    100.
     @test value(demand(CONS,PW)) ≈ two_by_two_scalar_results["DW.L","benchmark"]#    100.
 
-    set_value!(diff, 10.0 + 20)
-    set_value!(diff2, 10.0 + 100)
+    set_value!(diff, 10.0)
     fix(PW, 1)
     fix(CONS, 200)
     solve!(m)

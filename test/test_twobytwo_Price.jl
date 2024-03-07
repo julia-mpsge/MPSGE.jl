@@ -1,5 +1,3 @@
-
-#=
 @testset "TWOBYTWO (functional version , with non-1 prices in Inputs)" begin
     using XLSX, MPSGE_MP.JuMP.Containers
     import JuMP
@@ -11,7 +9,7 @@
     m = MPSGEModel()
     # Here parameter values are doubled and input data halved from MPSGE version 
     @parameters(m, begin
-        endow, 1 * 74
+        endow, 1
         esub_x, 1
         esub_y, 1
         esub_u, 1
@@ -69,7 +67,7 @@
     @demand(m, RA, 
         [ScalarDem(PU,164)],
         [
-            ScalarEndowment(PL, endow), 
+            ScalarEndowment(PL, endow * 74), 
             ScalarEndowment(PK, 80)
         ]
     )
@@ -102,7 +100,7 @@
     @test value(demand(RA, PU)) ≈ two_by_two_PriceinInput["DU","benchmark"]#  164
     # @test value(m._jump_model[:]) ≈ two_by_two_PriceinInput["CWI","benchmark"]#  1.09333333
 
-    set_value!(endow,1.1 * 74)
+    set_value!(endow, 1.1)
     solve!(m)
 
     # RA=157
@@ -242,7 +240,7 @@ end
     m = MPSGEModel()
     # Here parameter values are doubled and input data halved from MPSGE version
     @parameters(m, begin
-        endow, 1 * 54
+        endow, 1
         esub_x, 1
         esub_y, 1
         esub_u, 1
@@ -300,7 +298,7 @@ end
     @demand(m, RA, 
         [ScalarDem(PU,154)],
         [
-            ScalarEndowment(PL, endow), 
+            ScalarEndowment(PL, endow * 54), 
             ScalarEndowment(PK, 80)
         ]
     )
@@ -462,8 +460,6 @@ end
 
 
 
-=#
-
 @testset "TWOBYTWO (functional version , with non-1 prices in Demand)" begin
     using XLSX, MPSGE_MP.JuMP.Containers
     import JuMP
@@ -475,7 +471,7 @@ end
     m = MPSGEModel()
 
     @parameters(m, begin
-        endow, 54
+        endow, 1
         esub_x, 1
         esub_y, 1
         esub_u, 1
@@ -539,7 +535,7 @@ end
             ScalarDem(PY, 10)    
         ],
         [
-            ScalarEndowment(PL, endow), 
+            ScalarEndowment(PL, endow * 54), 
             ScalarEndowment(PK, 80)
         ],
         elasticity = esub_ra
