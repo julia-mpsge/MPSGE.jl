@@ -56,6 +56,6 @@ export  build!, compensated_demand_dictionary, compensated_demand, tau,
 export generate_report, solve!
 
 #Convenience
-export value, fix, unfix
+export value, fix, unfix, set_start_value
 
 end

@@ -7,3 +7,5 @@ function JuMP.unfix(X::MPSGEScalarVariable)
     JuMP.set_lower_bound(get_variable(X),0)
 end
 
+
+JuMP.set_start_value(X::MPSGEScalarVariable, val::Real) = JuMP.set_start_value(get_variable(X), val)
