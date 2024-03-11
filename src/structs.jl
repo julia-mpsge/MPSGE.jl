@@ -259,6 +259,8 @@ Base.:/(x::_MPSGEquantity,y::Real) = MPSGEExpr(:/, [x, y])
 Base.:^(x::MPSGEquantity,y::_MPSGEquantity) = MPSGEExpr(:^, [x, y])
 Base.:^(x::_MPSGEquantity,y::Real) = MPSGEExpr(:^, [x, y])
 
+Base.:-(x::_MPSGEquantity) = MPSGE_MP.MPSGEExpr(:-, [x])
+
 
 ####################
 ## Tree Structure ##
