@@ -49,7 +49,11 @@ end
 ## Expressions ##
 #################
 function Base.show(io::IO, e::abstractMPSGEExpr)
-    print(io, join(["($a)" for a∈e.args], " $(e.head) "))
+    if e.head == :- && length(e.args) == 1
+        print(io, "-($(e.args[1]))")
+    else
+        print(io, join(["($a)" for a∈e.args], " $(e.head) "))
+    end
 end
 
 ########################

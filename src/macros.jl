@@ -87,6 +87,16 @@ macro parameters(model, block)
 end
 
 
+macro auxiliary(model, name, kwargs...)
+    constr_call = :(add_auxiliary!($(esc(model)),$(QuoteNode(name))))
+    _add_kw_args(constr_call, kwargs)
+    return :($(esc(name)) = $constr_call)
+end
+
+macro auxiliaries(model, block)
+    return _plural_macro_code(model, block, Symbol("@auxiliary"))
+end
+
 macro production(model, sector, output, input)
     constr_call = :(add_production!($(esc(model)), $(esc(sector)), $(esc(output)), $(esc(input))))
     #_add_kw_args(constr_call, kwargs)
@@ -97,5 +107,13 @@ end
 macro demand(model, consumer, demands, endowments, kwargs...)
     constr_call = :(add_demand!($(esc(model)), $(esc(consumer)), $(esc(demands)), $(esc(endowments))))
     _add_kw_args(constr_call, kwargs)
+    return :($constr_call)
+end
+
+
+
+macro aux_constraint(model, A, constraint)
+    constr_call = :(add_aux_constraint!($(esc(model)), $(esc(A)), $(esc(constraint))))
+    #_add_kw_args(constr_call, kwargs)
     return :($constr_call)
 end
