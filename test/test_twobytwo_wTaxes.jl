@@ -1349,7 +1349,7 @@ end
     
 end
 
-#=
+
 
 @testset "TWObyTWO_wAuxinDemand" begin
     using XLSX, MPSGE_MP.JuMP.Containers
@@ -1357,35 +1357,79 @@ end
     
     # A replication of an adapted version (taking out non-1 prices) of the Markusen MS_8s model, with Auxiliary Variable/Constraint in the Demand function: TwobyTwo_AuxinDemand.gms
     m = MPSGEModel()
-    # Here parameter values are doubled and input data halved from MPSGE version       
-    tx  = add!(m, Parameter(:tx, value=0.1))
-    ty  = add!(m, Parameter(:ty, value=0.))
-    tlx = add!(m, Parameter(:tlx, value=0.))
-    tkx = add!(m, Parameter(:tkx, value=0.))
-    uo  = add!(m, Parameter(:uo, value=0.2)) #Initial unemployment rate
+    # Here parameter values are doubled and input data halved from MPSGE version
+    @parameters(m, begin
+        tx, .1
+        ty, 0
+        tlx, 0
+        tkx, 0
+        uo, 0.2, (description = "Initial unemployment rate",)
+    end)       
     
-    X = add!(m, Sector(:X))
-    Y = add!(m, Sector(:Y))
-    W = add!(m, Sector(:W))
+    @sectors(m,begin
+        X
+        Y
+        W
+    end)
     
-    PX = add!(m, Commodity(:PX))
-    PY = add!(m, Commodity(:PY))
-    PW = add!(m, Commodity(:PW))
-    PL = add!(m, Commodity(:PL))
-    PK = add!(m, Commodity(:PK))
+    @commodities(m, begin
+        PX
+        PY
+        PW
+        PL
+        PK
+    end)
     
-    CONS = add!(m, Consumer(:CONS, benchmark=200.))
+    @consumer(m, CONS)
     
-    U = add!(m, Aux(:U, benchmark=0.2))
-    add!(m, Production(X, 0, 1.0, [ScalarOutput(PX, 100, taxes=[Tax(:(1.0*$tx),CONS)])], [ScalarInput(PK, 50, taxes=[Tax(:($tkx*1.),CONS)]), ScalarInput(PL, 40)]))
-    add!(m, Production(Y, 0, 1.0, [ScalarOutput(PY, 100, taxes=[Tax(:(1.0*$ty),CONS)])], [ScalarInput(PL, 60), ScalarInput(PK, 40)]))
-    add!(m, Production(W, 0, 1.0, [ScalarOutput(PW, 200.)], [ScalarInput(PX, 100), ScalarInput(PY, 100)]))
+    @auxiliary(m, U) #benchmark = .2
     
-    add!(m, DemandFunction(CONS, 1., [ScalarDem(PW,200.)], [ScalarEndowment(PL, 120.), ScalarEndowment(PL, :(-80/(1-$uo)*$U)), ScalarEndowment(PK, 90)]))
-    add!(m, AuxConstraint(U, :($PL==$PW)))
-
-    avm = algebraic_version(m)
-    @test typeof(avm) == MPSGE.AlgebraicWrapper
+    #@parameter(m, U, 0.2)
+    
+    @production(m, X,
+        ScalarNest(:t; elasticity = 0, children = [
+            ScalarOutput(PX, 100, taxes = [Tax(CONS, tx)])
+        ]),
+        ScalarNest(:s; elasticity = 1, children = [
+            ScalarInput(PK, 50, taxes = [Tax(CONS,tkx)])
+            ScalarInput(PL, 40)
+        ])
+    )
+    
+    @production(m, Y, 
+        ScalarNest(:t; elasticity = 0, children = [
+            ScalarOutput(PY, 100, taxes = [Tax(CONS, ty)])
+        ]),
+        ScalarNest(:s; elasticity = 1, children = [
+            ScalarInput(PL, 60), 
+            ScalarInput(PK, 40)
+        ])
+    )
+    
+    @production(m, W, 
+        ScalarNest(:t; elasticity = 0, children = [
+            ScalarOutput(PW, 200)
+        ]),
+        ScalarNest(:s; elasticity = 1, children = [
+            ScalarInput(PX, 100), 
+            ScalarInput(PY, 100)
+        ])
+    )
+    
+    @demand(m, CONS,
+        [ScalarDem(PW,200)],
+        [ 
+            ScalarEndowment(PL, 120 + -80/(1-uo)*U),
+            ScalarEndowment(PK, 90)
+        ]
+    )
+    
+    @aux_constraint(m, U, PL - PW)
+    
+    build!(m)
+    
+    set_start_value(U,.2)
+    
 
     solve!(m)
 
@@ -1395,388 +1439,467 @@ end
     
     solve!(m, cumulative_iteration_limit=0)
 
-# benchmark
-@test value(X) ≈ two_by_two_AuxinDemand["X.L","benchmark"]#  1
-@test value(Y) ≈ two_by_two_AuxinDemand["Y.L","benchmark"]#  1
-@test value(W) ≈ two_by_two_AuxinDemand["W.L","benchmark"]#  1
-@test value(PX) ≈ two_by_two_AuxinDemand["PX.L","benchmark"]#  1
-@test value(PY) ≈ two_by_two_AuxinDemand["PY.L","benchmark"]#  1
-@test value(PW) ≈ two_by_two_AuxinDemand["PW.L","benchmark"]#  1
-@test value(PL) ≈ two_by_two_AuxinDemand["PL.L","benchmark"]#  1
-@test value(PK) ≈ two_by_two_AuxinDemand["PK.L","benchmark"]#  1
-@test value(U) ≈ two_by_two_AuxinDemand["U.L","benchmark"]#  0.2
-@test value(compensated_demand(X, PX, :t)) ≈ -two_by_two_AuxinDemand["SXX.L","benchmark"]#  100
-@test value(compensated_demand(Y, PY, :t)) ≈ -two_by_two_AuxinDemand["SYY.L","benchmark"]#  100
-@test value(compensated_demand(W, PW, :t)) ≈ -two_by_two_AuxinDemand["SWW.L","benchmark"]#  200
-@test value(compensated_demand(X, PK)) ≈ two_by_two_AuxinDemand["DKX.L","benchmark"]#  50
-@test value(compensated_demand(X, PL)) ≈ two_by_two_AuxinDemand["DLX.L","benchmark"]#  40
-@test value(compensated_demand(Y, PL)) ≈ two_by_two_AuxinDemand["DLY.L","benchmark"]#  60
-@test value(compensated_demand(Y, PK)) ≈ two_by_two_AuxinDemand["DKY.L","benchmark"]#  40
-@test value(compensated_demand(W, PX)) ≈ two_by_two_AuxinDemand["DXW.L","benchmark"]#  100
-@test value(compensated_demand(W, PY)) ≈ two_by_two_AuxinDemand["DYW.L","benchmark"]#  100
-@test value(m._jump_model[Symbol("CONS")]) ≈ two_by_two_AuxinDemand["CONS.L","benchmark"]#  200
-@test value(demand(CONS, PW)) ≈ two_by_two_AuxinDemand["CWCONS.L","benchmark"]#  200
+    # benchmark
+    @test value(X) ≈ two_by_two_AuxinDemand["X.L","benchmark"]#  1
+    @test value(Y) ≈ two_by_two_AuxinDemand["Y.L","benchmark"]#  1
+    @test value(W) ≈ two_by_two_AuxinDemand["W.L","benchmark"]#  1
+    @test value(PX) ≈ two_by_two_AuxinDemand["PX.L","benchmark"]#  1
+    @test value(PY) ≈ two_by_two_AuxinDemand["PY.L","benchmark"]#  1
+    @test value(PW) ≈ two_by_two_AuxinDemand["PW.L","benchmark"]#  1
+    @test value(PL) ≈ two_by_two_AuxinDemand["PL.L","benchmark"]#  1
+    @test value(PK) ≈ two_by_two_AuxinDemand["PK.L","benchmark"]#  1
+    @test value(U) ≈ two_by_two_AuxinDemand["U.L","benchmark"]#  0.2
+    @test value(compensated_demand(X, PX, :t)) ≈ -two_by_two_AuxinDemand["SXX.L","benchmark"]#  100
+    @test value(compensated_demand(Y, PY, :t)) ≈ -two_by_two_AuxinDemand["SYY.L","benchmark"]#  100
+    @test value(compensated_demand(W, PW, :t)) ≈ -two_by_two_AuxinDemand["SWW.L","benchmark"]#  200
+    @test value(compensated_demand(X, PK)) ≈ two_by_two_AuxinDemand["DKX.L","benchmark"]#  50
+    @test value(compensated_demand(X, PL)) ≈ two_by_two_AuxinDemand["DLX.L","benchmark"]#  40
+    @test value(compensated_demand(Y, PL)) ≈ two_by_two_AuxinDemand["DLY.L","benchmark"]#  60
+    @test value(compensated_demand(Y, PK)) ≈ two_by_two_AuxinDemand["DKY.L","benchmark"]#  40
+    @test value(compensated_demand(W, PX)) ≈ two_by_two_AuxinDemand["DXW.L","benchmark"]#  100
+    @test value(compensated_demand(W, PY)) ≈ two_by_two_AuxinDemand["DYW.L","benchmark"]#  100
+    @test value(CONS) ≈ two_by_two_AuxinDemand["CONS.L","benchmark"]#  200
+    @test value(demand(CONS, PW)) ≈ two_by_two_AuxinDemand["CWCONS.L","benchmark"]#  200
 
-set_value!(U, .1)
-    set_value!(CONS,210.)
-    set_fixed!(CONS,true)
+    set_start_value(U, .1)
+    fix(CONS, 210)
     solve!(m)
 
-# UnEmp=.1
-@test value(X) ≈ two_by_two_AuxinDemand["X.L","UnEmp=.1"]#  1
-@test value(Y) ≈ two_by_two_AuxinDemand["Y.L","UnEmp=.1"]#  1
-@test value(W) ≈ two_by_two_AuxinDemand["W.L","UnEmp=.1"]#  1
-@test value(PX) ≈ two_by_two_AuxinDemand["PX.L","UnEmp=.1"]#  1.05
-@test value(PY) ≈ two_by_two_AuxinDemand["PY.L","UnEmp=.1"]#  1.05
-@test value(PW) ≈ two_by_two_AuxinDemand["PW.L","UnEmp=.1"]#  1.05
-@test value(PL) ≈ two_by_two_AuxinDemand["PL.L","UnEmp=.1"]#  1.05
-@test value(PK) ≈ two_by_two_AuxinDemand["PK.L","UnEmp=.1"]#  1.05
-@test value(U) ≈ two_by_two_AuxinDemand["U.L","UnEmp=.1"]#  0.2
-@test value(compensated_demand(X, PX, :t)) ≈ -two_by_two_AuxinDemand["SXX.L","UnEmp=.1"]#  100
-@test value(compensated_demand(Y, PY, :t)) ≈ -two_by_two_AuxinDemand["SYY.L","UnEmp=.1"]#  100
-@test value(compensated_demand(W, PW, :t)) ≈ -two_by_two_AuxinDemand["SWW.L","UnEmp=.1"]#  200
-@test value(compensated_demand(X, PK)) ≈ two_by_two_AuxinDemand["DKX.L","UnEmp=.1"]#  50
-@test value(compensated_demand(X, PL)) ≈ two_by_two_AuxinDemand["DLX.L","UnEmp=.1"]#  40
-@test value(compensated_demand(Y, PL)) ≈ two_by_two_AuxinDemand["DLY.L","UnEmp=.1"]#  60
-@test value(compensated_demand(Y, PK)) ≈ two_by_two_AuxinDemand["DKY.L","UnEmp=.1"]#  40
-@test value(compensated_demand(W, PX)) ≈ two_by_two_AuxinDemand["DXW.L","UnEmp=.1"]#  100
-@test value(compensated_demand(W, PY)) ≈ two_by_two_AuxinDemand["DYW.L","UnEmp=.1"]#  100
-@test value(m._jump_model[Symbol("CONS")]) ≈ two_by_two_AuxinDemand["CONS.L","UnEmp=.1"]#  210
-@test value(demand(CONS, PW)) ≈ two_by_two_AuxinDemand["CWCONS.L","UnEmp=.1"]#  200
+    # UnEmp=.1
+    @test value(X) ≈ two_by_two_AuxinDemand["X.L","UnEmp=.1"]#  1
+    @test value(Y) ≈ two_by_two_AuxinDemand["Y.L","UnEmp=.1"]#  1
+    @test value(W) ≈ two_by_two_AuxinDemand["W.L","UnEmp=.1"]#  1
+    @test value(PX) ≈ two_by_two_AuxinDemand["PX.L","UnEmp=.1"]#  1.05
+    @test value(PY) ≈ two_by_two_AuxinDemand["PY.L","UnEmp=.1"]#  1.05
+    @test value(PW) ≈ two_by_two_AuxinDemand["PW.L","UnEmp=.1"]#  1.05
+    @test value(PL) ≈ two_by_two_AuxinDemand["PL.L","UnEmp=.1"]#  1.05
+    @test value(PK) ≈ two_by_two_AuxinDemand["PK.L","UnEmp=.1"]#  1.05
+    @test value(U) ≈ two_by_two_AuxinDemand["U.L","UnEmp=.1"]#  0.2
+    @test value(compensated_demand(X, PX, :t)) ≈ -two_by_two_AuxinDemand["SXX.L","UnEmp=.1"]#  100
+    @test value(compensated_demand(Y, PY, :t)) ≈ -two_by_two_AuxinDemand["SYY.L","UnEmp=.1"]#  100
+    @test value(compensated_demand(W, PW, :t)) ≈ -two_by_two_AuxinDemand["SWW.L","UnEmp=.1"]#  200
+    @test value(compensated_demand(X, PK)) ≈ two_by_two_AuxinDemand["DKX.L","UnEmp=.1"]#  50
+    @test value(compensated_demand(X, PL)) ≈ two_by_two_AuxinDemand["DLX.L","UnEmp=.1"]#  40
+    @test value(compensated_demand(Y, PL)) ≈ two_by_two_AuxinDemand["DLY.L","UnEmp=.1"]#  60
+    @test value(compensated_demand(Y, PK)) ≈ two_by_two_AuxinDemand["DKY.L","UnEmp=.1"]#  40
+    @test value(compensated_demand(W, PX)) ≈ two_by_two_AuxinDemand["DXW.L","UnEmp=.1"]#  100
+    @test value(compensated_demand(W, PY)) ≈ two_by_two_AuxinDemand["DYW.L","UnEmp=.1"]#  100
+    @test value(CONS) ≈ two_by_two_AuxinDemand["CONS.L","UnEmp=.1"]#  210
+    @test value(demand(CONS, PW)) ≈ two_by_two_AuxinDemand["CWCONS.L","UnEmp=.1"]#  200
+        
+
     
-set_value!(tkx, 0.25)
-set_value!(tx, 0.0)
-set_fixed!(CONS,false)
-set_fixed!(PX,true)
-solve!(m)
+    set_value!(tkx, 0.25)
+    set_value!(tx, 0.0)
+    unfix(CONS)
+    fix(PX, 1)
+    solve!(m)
 
-# TKX=0.25
-@test value(X) ≈ two_by_two_AuxinDemand["X.L","TKX=0.25"]#  1.0371253
-@test value(Y) ≈ two_by_two_AuxinDemand["Y.L","TKX=0.25"]#  1.05340908
-@test value(W) ≈ two_by_two_AuxinDemand["W.L","TKX=0.25"]#  1.04523548
-@test value(PX) ≈ two_by_two_AuxinDemand["PX.L","TKX=0.25"]#  1
-@test value(PY) ≈ two_by_two_AuxinDemand["PY.L","TKX=0.25"]#  0.98454183
-@test value(PW) ≈ two_by_two_AuxinDemand["PW.L","TKX=0.25"]#  0.99224081
-@test value(PL) ≈ two_by_two_AuxinDemand["PL.L","TKX=0.25"]#  0.99224081
-@test value(PK) ≈ two_by_two_AuxinDemand["PK.L","TKX=0.25"]#  0.97310522
-@test value(U) ≈ two_by_two_AuxinDemand["U.L","TKX=0.25"]#  0.10830961
-@test value(compensated_demand(X, PX, :t)) ≈ -two_by_two_AuxinDemand["SXX.L","TKX=0.25"]#  100
-@test value(compensated_demand(Y, PY, :t)) ≈ -two_by_two_AuxinDemand["SYY.L","TKX=0.25"]#  100
-@test value(compensated_demand(W, PW, :t)) ≈ -two_by_two_AuxinDemand["SWW.L","TKX=0.25"]#  200
-@test value(compensated_demand(X, PK)) ≈ two_by_two_AuxinDemand["DKX.L","TKX=0.25"]#  45.67280459
-@test value(compensated_demand(X, PL)) ≈ two_by_two_AuxinDemand["DLX.L","TKX=0.25"]#  44.79199395
-@test value(compensated_demand(Y, PL)) ≈ two_by_two_AuxinDemand["DLY.L","TKX=0.25"]#  59.53444871
-@test value(compensated_demand(Y, PK)) ≈ two_by_two_AuxinDemand["DKY.L","TKX=0.25"]#  40.4701079
-@test value(compensated_demand(W, PX)) ≈ two_by_two_AuxinDemand["DXW.L","TKX=0.25"]#  99.22408119
-@test value(compensated_demand(W, PY)) ≈ two_by_two_AuxinDemand["DYW.L","TKX=0.25"]#  100.782
-@test value(m._jump_model[Symbol("CONS")]) ≈ two_by_two_AuxinDemand["CONS.L","TKX=0.25"]#  207.4251
-@test value(demand(CONS, PW)) ≈ two_by_two_AuxinDemand["CWCONS.L","TKX=0.25"]#  209.0471
+    # TKX=0.25
+    @test value(X) ≈ two_by_two_AuxinDemand["X.L","TKX=0.25"]#  1.0371253
+    @test value(Y) ≈ two_by_two_AuxinDemand["Y.L","TKX=0.25"]#  1.05340908
+    @test value(W) ≈ two_by_two_AuxinDemand["W.L","TKX=0.25"]#  1.04523548
+    @test value(PX) ≈ two_by_two_AuxinDemand["PX.L","TKX=0.25"]#  1
+    @test value(PY) ≈ two_by_two_AuxinDemand["PY.L","TKX=0.25"]#  0.98454183
+    @test value(PW) ≈ two_by_two_AuxinDemand["PW.L","TKX=0.25"]#  0.99224081
+    @test value(PL) ≈ two_by_two_AuxinDemand["PL.L","TKX=0.25"]#  0.99224081
+    @test value(PK) ≈ two_by_two_AuxinDemand["PK.L","TKX=0.25"]#  0.97310522
+    @test value(U) ≈ two_by_two_AuxinDemand["U.L","TKX=0.25"]#  0.10830961
+    @test value(compensated_demand(X, PX, :t)) ≈ -two_by_two_AuxinDemand["SXX.L","TKX=0.25"]#  100
+    @test value(compensated_demand(Y, PY, :t)) ≈ -two_by_two_AuxinDemand["SYY.L","TKX=0.25"]#  100
+    @test value(compensated_demand(W, PW, :t)) ≈ -two_by_two_AuxinDemand["SWW.L","TKX=0.25"]#  200
+    @test value(compensated_demand(X, PK)) ≈ two_by_two_AuxinDemand["DKX.L","TKX=0.25"]#  45.67280459
+    @test value(compensated_demand(X, PL)) ≈ two_by_two_AuxinDemand["DLX.L","TKX=0.25"]#  44.79199395
+    @test value(compensated_demand(Y, PL)) ≈ two_by_two_AuxinDemand["DLY.L","TKX=0.25"]#  59.53444871
+    @test value(compensated_demand(Y, PK)) ≈ two_by_two_AuxinDemand["DKY.L","TKX=0.25"]#  40.4701079
+    @test value(compensated_demand(W, PX)) ≈ two_by_two_AuxinDemand["DXW.L","TKX=0.25"]#  99.22408119
+    @test value(compensated_demand(W, PY)) ≈ two_by_two_AuxinDemand["DYW.L","TKX=0.25"]#  100.782
+    @test value(CONS) ≈ two_by_two_AuxinDemand["CONS.L","TKX=0.25"]#  207.4251
+    @test value(demand(CONS, PW)) ≈ two_by_two_AuxinDemand["CWCONS.L","TKX=0.25"]#  209.0471
 
-set_value!(ty, 0.5)
-solve!(m)
+    set_value!(ty, 0.5)
+    solve!(m)
 
-# &TY=.5
-@test value(X) ≈ two_by_two_AuxinDemand["X.L","&TY=.5"]#  0.98447088
-@test value(Y) ≈ two_by_two_AuxinDemand["Y.L","&TY=.5"]#  0.44661553
-@test value(W) ≈ two_by_two_AuxinDemand["W.L","&TY=.5"]#  0.66308369
-@test value(PX) ≈ two_by_two_AuxinDemand["PX.L","&TY=.5"]#  1
-@test value(PY) ≈ two_by_two_AuxinDemand["PY.L","&TY=.5"]#  2.20429163
-@test value(PW) ≈ two_by_two_AuxinDemand["PW.L","&TY=.5"]#  1.4846857
-@test value(PL) ≈ two_by_two_AuxinDemand["PL.L","&TY=.5"]#  1.4846857
-@test value(PK) ≈ two_by_two_AuxinDemand["PK.L","&TY=.5"]#  0.70492977
-@test value(U) ≈ two_by_two_AuxinDemand["U.L","&TY=.5"]#  0.70637103
-@test value(compensated_demand(X, PX, :t)) ≈ -two_by_two_AuxinDemand["SXX.L","&TY=.5"]#  100
-@test value(compensated_demand(Y, PY, :t)) ≈ -two_by_two_AuxinDemand["SYY.L","&TY=.5"]#  100
-@test value(compensated_demand(W, PW, :t)) ≈ -two_by_two_AuxinDemand["SWW.L","&TY=.5"]#  200
-@test value(compensated_demand(X, PK)) ≈ two_by_two_AuxinDemand["DKX.L","&TY=.5"]#  63.04804615
-@test value(compensated_demand(X, PL)) ≈ two_by_two_AuxinDemand["DLX.L","&TY=.5"]#  29.9352546
-@test value(compensated_demand(Y, PL)) ≈ two_by_two_AuxinDemand["DLY.L","&TY=.5"]#  44.54057096
-@test value(compensated_demand(Y, PK)) ≈ two_by_two_AuxinDemand["DKY.L","&TY=.5"]#  62.53932609
-@test value(compensated_demand(W, PX)) ≈ two_by_two_AuxinDemand["DXW.L","&TY=.5"]#  148.4686
-@test value(compensated_demand(W, PY)) ≈ two_by_two_AuxinDemand["DYW.L","&TY=.5"]#  67.35432289
-@test value(m._jump_model[Symbol("CONS")]) ≈ two_by_two_AuxinDemand["CONS.L","&TY=.5"]#  196.8942
-@test value(demand(CONS, PW)) ≈ two_by_two_AuxinDemand["CWCONS.L","&TY=.5"]#  132.6167
+    # &TY=.5
+    @test value(X) ≈ two_by_two_AuxinDemand["X.L","&TY=.5"]#  0.98447088
+    @test value(Y) ≈ two_by_two_AuxinDemand["Y.L","&TY=.5"]#  0.44661553
+    @test value(W) ≈ two_by_two_AuxinDemand["W.L","&TY=.5"]#  0.66308369
+    @test value(PX) ≈ two_by_two_AuxinDemand["PX.L","&TY=.5"]#  1
+    @test value(PY) ≈ two_by_two_AuxinDemand["PY.L","&TY=.5"]#  2.20429163
+    @test value(PW) ≈ two_by_two_AuxinDemand["PW.L","&TY=.5"]#  1.4846857
+    @test value(PL) ≈ two_by_two_AuxinDemand["PL.L","&TY=.5"]#  1.4846857
+    @test value(PK) ≈ two_by_two_AuxinDemand["PK.L","&TY=.5"]#  0.70492977
+    @test value(U) ≈ two_by_two_AuxinDemand["U.L","&TY=.5"]#  0.70637103
+    @test value(compensated_demand(X, PX, :t)) ≈ -two_by_two_AuxinDemand["SXX.L","&TY=.5"]#  100
+    @test value(compensated_demand(Y, PY, :t)) ≈ -two_by_two_AuxinDemand["SYY.L","&TY=.5"]#  100
+    @test value(compensated_demand(W, PW, :t)) ≈ -two_by_two_AuxinDemand["SWW.L","&TY=.5"]#  200
+    @test value(compensated_demand(X, PK)) ≈ two_by_two_AuxinDemand["DKX.L","&TY=.5"]#  63.04804615
+    @test value(compensated_demand(X, PL)) ≈ two_by_two_AuxinDemand["DLX.L","&TY=.5"]#  29.9352546
+    @test value(compensated_demand(Y, PL)) ≈ two_by_two_AuxinDemand["DLY.L","&TY=.5"]#  44.54057096
+    @test value(compensated_demand(Y, PK)) ≈ two_by_two_AuxinDemand["DKY.L","&TY=.5"]#  62.53932609
+    @test value(compensated_demand(W, PX)) ≈ two_by_two_AuxinDemand["DXW.L","&TY=.5"]#  148.4686
+    @test value(compensated_demand(W, PY)) ≈ two_by_two_AuxinDemand["DYW.L","&TY=.5"]#  67.35432289
+    @test value(CONS) ≈ two_by_two_AuxinDemand["CONS.L","&TY=.5"]#  196.8942
+    @test value(demand(CONS, PW)) ≈ two_by_two_AuxinDemand["CWCONS.L","&TY=.5"]#  132.6167
 
-set_value!(tkx, 0.0)
-solve!(m)
+    set_value!(tkx, 0.0)
+    solve!(m)
 
-# TY=0.5
-@test value(X) ≈ two_by_two_AuxinDemand["X.L","TY=0.5"]#  1.00693677
-@test value(Y) ≈ two_by_two_AuxinDemand["Y.L","TY=0.5"]#  0.41177381
-@test value(W) ≈ two_by_two_AuxinDemand["W.L","TY=0.5"]#  0.64391785
-@test value(PX) ≈ two_by_two_AuxinDemand["PX.L","TY=0.5"]#  1
-@test value(PY) ≈ two_by_two_AuxinDemand["PY.L","TY=0.5"]#  2.44536378
-@test value(PW) ≈ two_by_two_AuxinDemand["PW.L","TY=0.5"]#  1.5637659
-@test value(PL) ≈ two_by_two_AuxinDemand["PL.L","TY=0.5"]#  1.5637659
-@test value(PK) ≈ two_by_two_AuxinDemand["PK.L","TY=0.5"]#  0.84532963
-@test value(U) ≈ two_by_two_AuxinDemand["U.L","TY=0.5"]#  0.72063894
-@test value(compensated_demand(X, PX, :t)) ≈ -two_by_two_AuxinDemand["SXX.L","TY=0.5"]#  100
-@test value(compensated_demand(Y, PY, :t)) ≈ -two_by_two_AuxinDemand["SYY.L","TY=0.5"]#  100
-@test value(compensated_demand(W, PW, :t)) ≈ -two_by_two_AuxinDemand["SWW.L","TY=0.5"]#  200
-@test value(compensated_demand(X, PK)) ≈ two_by_two_AuxinDemand["DKX.L","TY=0.5"]#  65.7205822
-@test value(compensated_demand(X, PL)) ≈ two_by_two_AuxinDemand["DLX.L","TY=0.5"]#  28.42141815
-@test value(compensated_demand(Y, PL)) ≈ two_by_two_AuxinDemand["DLY.L","TY=0.5"]#  46.91297691
-@test value(compensated_demand(Y, PK)) ≈ two_by_two_AuxinDemand["DKY.L","TY=0.5"]#  57.85586329
-@test value(compensated_demand(W, PX)) ≈ two_by_two_AuxinDemand["DXW.L","TY=0.5"]#  156.3766
-@test value(compensated_demand(W, PY)) ≈ two_by_two_AuxinDemand["DYW.L","TY=0.5"]#  63.94819083
-@test value(m._jump_model[Symbol("CONS")]) ≈ two_by_two_AuxinDemand["CONS.L","TY=0.5"]#  201.3874
-@test value(demand(CONS, PW)) ≈ two_by_two_AuxinDemand["CWCONS.L","TY=0.5"]#  128.7836
+    # TY=0.5
+    @test value(X) ≈ two_by_two_AuxinDemand["X.L","TY=0.5"]#  1.00693677
+    @test value(Y) ≈ two_by_two_AuxinDemand["Y.L","TY=0.5"]#  0.41177381
+    @test value(W) ≈ two_by_two_AuxinDemand["W.L","TY=0.5"]#  0.64391785
+    @test value(PX) ≈ two_by_two_AuxinDemand["PX.L","TY=0.5"]#  1
+    @test value(PY) ≈ two_by_two_AuxinDemand["PY.L","TY=0.5"]#  2.44536378
+    @test value(PW) ≈ two_by_two_AuxinDemand["PW.L","TY=0.5"]#  1.5637659
+    @test value(PL) ≈ two_by_two_AuxinDemand["PL.L","TY=0.5"]#  1.5637659
+    @test value(PK) ≈ two_by_two_AuxinDemand["PK.L","TY=0.5"]#  0.84532963
+    @test value(U) ≈ two_by_two_AuxinDemand["U.L","TY=0.5"]#  0.72063894
+    @test value(compensated_demand(X, PX, :t)) ≈ -two_by_two_AuxinDemand["SXX.L","TY=0.5"]#  100
+    @test value(compensated_demand(Y, PY, :t)) ≈ -two_by_two_AuxinDemand["SYY.L","TY=0.5"]#  100
+    @test value(compensated_demand(W, PW, :t)) ≈ -two_by_two_AuxinDemand["SWW.L","TY=0.5"]#  200
+    @test value(compensated_demand(X, PK)) ≈ two_by_two_AuxinDemand["DKX.L","TY=0.5"]#  65.7205822
+    @test value(compensated_demand(X, PL)) ≈ two_by_two_AuxinDemand["DLX.L","TY=0.5"]#  28.42141815
+    @test value(compensated_demand(Y, PL)) ≈ two_by_two_AuxinDemand["DLY.L","TY=0.5"]#  46.91297691
+    @test value(compensated_demand(Y, PK)) ≈ two_by_two_AuxinDemand["DKY.L","TY=0.5"]#  57.85586329
+    @test value(compensated_demand(W, PX)) ≈ two_by_two_AuxinDemand["DXW.L","TY=0.5"]#  156.3766
+    @test value(compensated_demand(W, PY)) ≈ two_by_two_AuxinDemand["DYW.L","TY=0.5"]#  63.94819083
+    @test value(CONS) ≈ two_by_two_AuxinDemand["CONS.L","TY=0.5"]#  201.3874
+    @test value(demand(CONS, PW)) ≈ two_by_two_AuxinDemand["CWCONS.L","TY=0.5"]#  128.7836
+
+    
 
 end
+
+
+
 
 @testset "TWObyTWO_wAuxinInputs" begin
-using XLSX, MPSGE_MP.JuMP.Containers
-import JuMP
-gams_results = XLSX.readxlsx(joinpath(@__DIR__, "MPSGEresults.xlsx"))
-a_table = gams_results["two_by_two_AuxinInput"][:]  # Generated from TwoByTwo_Scalar_Algeb-MPSGE.gms
-two_by_two_AuxinInput = DenseAxisArray(a_table[2:end,2:end],a_table[2:end,1],a_table[1,2:end])
-    
-# A replication of the Markusen M2_3S model, with Auxiliary constraint in associated with Inputs: AuxinProdTest.gms
+    using XLSX, MPSGE_MP.JuMP.Containers
+    import JuMP
+    gams_results = XLSX.readxlsx(joinpath(@__DIR__, "MPSGEresults.xlsx"))
+    a_table = gams_results["two_by_two_AuxinInput"][:]  # Generated from TwoByTwo_Scalar_Algeb-MPSGE.gms
+    two_by_two_AuxinInput = DenseAxisArray(a_table[2:end,2:end],a_table[2:end,1],a_table[1,2:end])
+        
+    # A replication of the Markusen M2_3S model, with Auxiliary constraint in associated with Inputs: AuxinProdTest.gms
 
-m = MPSGEModel()
-# A set up to test N: Endogenous taxes (and M: the multiplier), the Auxiliary Variable in Production blocks (applied to Inputs or Outputs)       
-txl = add!(m,Parameter(:txl, value=0.2))
-txk = add!(m,Parameter(:txk, value=0.2))
+    m = MPSGEModel()
+    # A set up to test N: Endogenous taxes (and M: the multiplier), the Auxiliary Variable in Production blocks (applied to Inputs or Outputs)       
+    @parameters(m, begin
+        txl, 0.2
+        txk, 0.2
+    end)       
 
-X = add!(m, Sector(:X))
-Y = add!(m, Sector(:Y))
-W = add!(m, Sector(:W))
-TL = add!(m, Sector(:TL))
-TK = add!(m, Sector(:TK))
+    @sectors(m,begin
+        X
+        Y
+        W
+        TL
+        TK
+    end)
 
-PX = add!(m, Commodity(:PX))
-PY = add!(m, Commodity(:PY))
-PW = add!(m, Commodity(:PW))
-PL = add!(m, Commodity(:PL))
-PK = add!(m, Commodity(:PK))
-PKS = add!(m, Commodity(:PKS))
-PLS = add!(m, Commodity(:PLS))
+    @commodities(m, begin
+        PX
+        PY
+        PW
+        PL
+        PK
+        PKS
+        PLS
+    end)
 
-CONS = add!(m, Consumer(:CONS, benchmark=340.))
+    @consumer(m, CONS)
 
-TAU = add!(m, Aux(:TAU, benchmark=1.0))
+    @auxiliary(m, TAU) #benchmark = .2
 
-add!(m, Production(X, 0, 1.0, [ScalarOutput(PX, 120.)], [ScalarInput(PLS, 48), ScalarInput(PKS, 72)]))
-add!(m, Production(Y, 0, 1.0, [ScalarOutput(PY, 120.)], [ScalarInput(PLS, 72), ScalarInput(PKS, 48)]))
-add!(m, Production(W, 0, 0.7, [ScalarOutput(PW, 340.)], [ScalarInput(Nest(:AW,1.0,240.,[ScalarInput(PX, 120), ScalarInput(PY, 120)]),240.), ScalarInput(PL,100.)]))
+    #@parameter(m, U, 0.2)
 
-add!(m, Production(TL, 0., 1.0, [ScalarOutput(PLS, 120.)], [ScalarInput(PL, 100., taxes=[Tax(:(1.0*$txl*$TAU),CONS)])]))
-add!(m, Production(TK, 0., 1.0, [ScalarOutput(PKS, 120.)], [ScalarInput(PK, 100., taxes=[Tax(:(1.0*$txk*$TAU),CONS)])]))
+    @production(m, X,
+        ScalarNest(:t; elasticity = 0, children = [
+            ScalarOutput(PX, 120)
+        ]),
+        ScalarNest(:s; elasticity = 1, children = [
+            ScalarInput(PLS, 48),
+            ScalarInput(PKS, 72)
+        ])
+    )
 
-add!(m, DemandFunction(CONS, 1., [ScalarDem(PW,340.)], [ScalarEndowment(PL, 200.), ScalarEndowment(PK, 100)]))
-add!(m, AuxConstraint(TAU, :($W*$PW*340 - $PL * 200 - $PK * 100  == 40 * ($PX + $PY)/2)))
+    @production(m, Y, 
+        ScalarNest(:t; elasticity = 0, children = [
+            ScalarOutput(PY, 120)
+        ]),
+        ScalarNest(:s; elasticity = 1, children = [
+            ScalarInput(PLS, 72), 
+            ScalarInput(PKS, 48)
+        ])
+    )
 
-fix(CONS, 1)
-solve!(m, cumulative_iteration_limit=0)
+    @production(m, W, 
+        ScalarNest(:t; elasticity = 0, children = [
+            ScalarOutput(PW, 340)
+        ]),
+        ScalarNest(:s; elasticity = .7, children = [
+            ScalarInput(PL, 100),
+            ScalarNest(:AW; elasticity = 1, children = [
+                ScalarInput(PX, 120),
+                ScalarInput(PY, 120)
+            ])
+        ])
+    )
 
-avm = algebraic_version(m)
-@test typeof(avm) == MPSGE.AlgebraicWrapper
 
-# benchmark
-@test value(X) ≈ two_by_two_AuxinInput["X","benchmark"]#  1
-@test value(Y) ≈ two_by_two_AuxinInput["Y","benchmark"]#  1
-@test value(W) ≈ two_by_two_AuxinInput["W","benchmark"]#  1
-@test value(TL) ≈ two_by_two_AuxinInput["TL","benchmark"]#  1
-@test value(TK) ≈ two_by_two_AuxinInput["TK","benchmark"]#  1
-@test value(PX) ≈ two_by_two_AuxinInput["PX","benchmark"]#  1
-@test value(PY) ≈ two_by_two_AuxinInput["PY","benchmark"]#  1
-@test value(PW) ≈ two_by_two_AuxinInput["PW","benchmark"]#  1
-@test value(PL) ≈ two_by_two_AuxinInput["PL","benchmark"]#  1
-@test value(PK) ≈ two_by_two_AuxinInput["PK","benchmark"]#  1
-@test value(PKS) ≈ two_by_two_AuxinInput["PKS","benchmark"]#  1
-@test value(PLS) ≈ two_by_two_AuxinInput["PLS","benchmark"]#  1
-@test value(TAU) ≈ two_by_two_AuxinInput["TAU","benchmark"]#  1
-@test value(compensated_demand(X, PX, :t)) ≈ -two_by_two_AuxinInput["SXX","benchmark"]#  120
-@test value(compensated_demand(Y, PY, :t)) ≈ -two_by_two_AuxinInput["SYY","benchmark"]#  120
-@test value(compensated_demand(W, PW, :t)) ≈ -two_by_two_AuxinInput["SWW","benchmark"]#  340
-@test value(compensated_demand(TL, PLS, :t)) ≈ -two_by_two_AuxinInput["SLSTL","benchmark"]#  120
-@test value(compensated_demand(TK, PKS, :t)) ≈ -two_by_two_AuxinInput["SKSTK","benchmark"]#  120
-@test value(compensated_demand(X, PLS)) ≈ two_by_two_AuxinInput["DLSX","benchmark"]#  48
-@test value(compensated_demand(X, PKS)) ≈ two_by_two_AuxinInput["DKSX","benchmark"]#  72
-@test value(compensated_demand(Y, PLS)) ≈ two_by_two_AuxinInput["DLSY","benchmark"]#  72
-@test value(compensated_demand(Y, PKS)) ≈ two_by_two_AuxinInput["DKSY","benchmark"]#  48
-# @test value(m._jump_model[Symbol("PX†W→AW")]) ≈ two_by_two_AuxinInput["DXW","benchmark"]#  120# Not clear how to report equivalent values from nests in GAMS
-# @test value(m._jump_model[Symbol("PY†W→AW")]) ≈ two_by_two_AuxinInput["DYW","benchmark"]#  120# Not clear how to report equivalent values from nests in GAMS
-@test value(compensated_demand(W, PL)) ≈ two_by_two_AuxinInput["DLW","benchmark"]#  100
-@test value(compensated_demand(TL, PL)) ≈ two_by_two_AuxinInput["DLTL","benchmark"]#  100
-@test value(compensated_demand(TK, PK)) ≈ two_by_two_AuxinInput["DKTK","benchmark"]#  100
-@test value(CONS) ≈ two_by_two_AuxinInput["CONS","benchmark"]#  340
-@test value(m._jump_model[:PWρCONS]) ≈ two_by_two_AuxinInput["CWCONS","benchmark"]#  340
+    @production(m, TL,
+        ScalarNest(:t; elasticity = 0, children = [
+            ScalarOutput(PLS, 120.)
+        ]), 
+        ScalarNest(:s; elasticity = 1, children = [
+            ScalarInput(PL, 100., taxes=[Tax(CONS, txl*TAU)])
+        ])
+            
+    )
+            
+    @production(m, TK,
+        ScalarNest(:t; elasticity = 0, children = [
+            ScalarOutput(PKS, 120.)
+        ]), 
+        ScalarNest(:s; elasticity = 1, children = [
+            ScalarInput(PK, 100., taxes=[Tax(CONS, txk*TAU)])
+        ])
+            
+    )    
+            
 
-set_value!(txl, 0.15)
-set_value!(txk, 0.25)
-solve!(m)
-# L.15,K.25
-@test value(X) ≈ two_by_two_AuxinInput["X","L.15,K.25"]#  1.0063876
-@test value(Y) ≈ two_by_two_AuxinInput["Y","L.15,K.25"]#  1.0095966
-@test value(W) ≈ two_by_two_AuxinInput["W","L.15,K.25"]#  1.000835
-@test value(TL) ≈ two_by_two_AuxinInput["TL","L.15,K.25"]#  1.0160455
-@test value(TK) ≈ two_by_two_AuxinInput["TK","L.15,K.25"]#  1
-@test value(PX) ≈ two_by_two_AuxinInput["PX","L.15,K.25"]#  0.9906237
-@test value(PY) ≈ two_by_two_AuxinInput["PY","L.15,K.25"]#  0.9874749
-@test value(PW) ≈ two_by_two_AuxinInput["PW","L.15,K.25"]#  0.9991657
-@test value(PL) ≈ two_by_two_AuxinInput["PL","L.15,K.25"]#  1.0237433
-@test value(PK) ≈ two_by_two_AuxinInput["PK","L.15,K.25"]#  0.9568937
-@test value(PKS) ≈ two_by_two_AuxinInput["PKS","L.15,K.25"]#  0.9969513
-@test value(PLS) ≈ two_by_two_AuxinInput["PLS","L.15,K.25"]#  0.9812074
-@test value(TAU) ≈ two_by_two_AuxinInput["TAU","L.15,K.25"]#  1.0009382
-@test value(compensated_demand(X, PX, :t)) ≈ -two_by_two_AuxinInput["SXX","L.15,K.25"]#  120
-@test value(compensated_demand(Y, PY, :t)) ≈ -two_by_two_AuxinInput["SYY","L.15,K.25"]#  120
-@test value(compensated_demand(W, PW, :t)) ≈ -two_by_two_AuxinInput["SWW","L.15,K.25"]#  340
-@test value(compensated_demand(TL, PLS, :t)) ≈ -two_by_two_AuxinInput["SLSTL","L.15,K.25"]#  120
-@test value(compensated_demand(TK, PKS, :t)) ≈ -two_by_two_AuxinInput["SKSTK","L.15,K.25"]#  120
-@test value(compensated_demand(X, PLS)) ≈ two_by_two_AuxinInput["DLSX","L.15,K.25"]#  48.4606391
-@test value(compensated_demand(X, PKS)) ≈ two_by_two_AuxinInput["DKSX","L.15,K.25"]#  71.5430136
-@test value(compensated_demand(Y, PLS)) ≈ two_by_two_AuxinInput["DLSY","L.15,K.25"]#  72.4599054
-@test value(compensated_demand(Y, PKS)) ≈ two_by_two_AuxinInput["DKSY","L.15,K.25"]#  47.5437395
-# @test value(m._jump_model[Symbol("PX†W→AW")]) ≈ two_by_two_AuxinInput["DXW","L.15,K.25"]#  120.6657499# Not clear how to report equivalent values from nests in GAMS
-# @test value(m._jump_model[Symbol("PY†W→AW")]) ≈ two_by_two_AuxinInput["DYW","L.15,K.25"]#  121.0505173# Not clear how to report equivalent values from nests in GAMS
-@test value(compensated_demand(W, PL)) ≈ two_by_two_AuxinInput["DLW","L.15,K.25"]#  98.3133534
-@test value(compensated_demand(TL, PL)) ≈ two_by_two_AuxinInput["DLTL","L.15,K.25"]#  100
-@test value(compensated_demand(TK, PK)) ≈ two_by_two_AuxinInput["DKTK","L.15,K.25"]#  100
-@test value(CONS) ≈ two_by_two_AuxinInput["CONS","L.15,K.25"]#  340
-@test value(m._jump_model[:PWρCONS]) ≈ two_by_two_AuxinInput["CWCONS","L.15,K.25"]#  340.2839092
+        
 
-set_value!(CONS,339.5832292)
-set_value!(txl, 0.1)
-set_value!(txk, 0.3)
-solve!(m)
-# L.1,K.3
-@test value(X) ≈ two_by_two_AuxinInput["X","L.1,K.3"]#  1.0126853
-@test value(Y) ≈ two_by_two_AuxinInput["Y","L.1,K.3"]#  1.0190881
-@test value(W) ≈ two_by_two_AuxinInput["W","L.1,K.3"]#  1.0014491
-@test value(TL) ≈ two_by_two_AuxinInput["TL","L.1,K.3"]#  1.0320155
-@test value(TK) ≈ two_by_two_AuxinInput["TK","L.1,K.3"]#  1
-@test value(PX) ≈ two_by_two_AuxinInput["PX","L.1,K.3"]#  0.9802336
-@test value(PY) ≈ two_by_two_AuxinInput["PY","L.1,K.3"]#  0.9740749
-@test value(PW) ≈ two_by_two_AuxinInput["PW","L.1,K.3"]#  0.997329
-@test value(PL) ≈ two_by_two_AuxinInput["PL","L.1,K.3"]#  1.0469473
-@test value(PK) ≈ two_by_two_AuxinInput["PK","L.1,K.3"]#  0.9110759
-@test value(PKS) ≈ two_by_two_AuxinInput["PKS","L.1,K.3"]#  0.9926681
-@test value(PLS) ≈ two_by_two_AuxinInput["PLS","L.1,K.3"]#  0.9618733
-@test value(TAU) ≈ two_by_two_AuxinInput["TAU","L.1,K.3"]#  1.0248901
-@test value(compensated_demand(X, PX, :t)) ≈ -two_by_two_AuxinInput["SXX","L.1,K.3"]#  120
-@test value(compensated_demand(Y, PY, :t)) ≈ -two_by_two_AuxinInput["SYY","L.1,K.3"]#  120
-@test value(compensated_demand(W, PW, :t)) ≈ -two_by_two_AuxinInput["SWW","L.1,K.3"]#  340
-@test value(compensated_demand(TL, PLS, :t)) ≈ -two_by_two_AuxinInput["SLSTL","L.1,K.3"]#  120
-@test value(compensated_demand(TK, PKS, :t)) ≈ -two_by_two_AuxinInput["SKSTK","L.1,K.3"]#  120
-@test value(compensated_demand(X, PLS)) ≈ two_by_two_AuxinInput["DLSX","L.1,K.3"]#  48.916229
-@test value(compensated_demand(X, PKS)) ≈ two_by_two_AuxinInput["DKSX","L.1,K.3"]#  71.0981022
-@test value(compensated_demand(Y, PLS)) ≈ two_by_two_AuxinInput["DLSY","L.1,K.3"]#  72.9133386
-@test value(compensated_demand(Y, PKS)) ≈ two_by_two_AuxinInput["DKSY","L.1,K.3"]#  47.1009325
-# @test value(m._jump_model[Symbol("PX†W→AW")]) ≈ two_by_two_AuxinInput["DXW","L.1,K.3"]#  121.3463868# Not clear how to report equivalent values from nests in GAMS
-# @test value(m._jump_model[Symbol("PY†W→AW")]) ≈ two_by_two_AuxinInput["DYW","L.1,K.3"]#  122.1136165# Not clear how to report equivalent values from nests in GAMS
-@test value(compensated_demand(W, PL)) ≈ two_by_two_AuxinInput["DLW","L.1,K.3"]#  96.6583816
-@test value(compensated_demand(TL, PL)) ≈ two_by_two_AuxinInput["DLTL","L.1,K.3"]#  100
-@test value(compensated_demand(TK, PK)) ≈ two_by_two_AuxinInput["DKTK","L.1,K.3"]#  100
-@test value(CONS) ≈ two_by_two_AuxinInput["CONS","L.1,K.3"]#  339.5832292
-@test value(m._jump_model[:PWρCONS]) ≈ two_by_two_AuxinInput["CWCONS","L.1,K.3"]#  340.492697
+    @demand(m, CONS,
+        [ScalarDem(PW,340)],
+        [ 
+            ScalarEndowment(PL, 200.),
+            ScalarEndowment(PK, 100)
+        ]
+    )
 
-set_value!(CONS,338.7151989)
-set_value!(txl, 0.05)
-set_value!(txk, 0.35)
-solve!(m)
-# L.05,K.35
-@test value(X) ≈ two_by_two_AuxinInput["X","L.05,K.35"]#  1.0193022
-@test value(Y) ≈ two_by_two_AuxinInput["Y","L.05,K.35"]#  1.0290926
-@test value(W) ≈ two_by_two_AuxinInput["W","L.05,K.35"]#  1.0018622
-@test value(TL) ≈ two_by_two_AuxinInput["TL","L.05,K.35"]#  1.0489564
-@test value(TK) ≈ two_by_two_AuxinInput["TK","L.05,K.35"]#  1
-@test value(PX) ≈ two_by_two_AuxinInput["PX","L.05,K.35"]#  0.9681687
-@test value(PY) ≈ two_by_two_AuxinInput["PY","L.05,K.35"]#  0.958958
-@test value(PW) ≈ two_by_two_AuxinInput["PW","L.05,K.35"]#  0.9943695
-@test value(PL) ≈ two_by_two_AuxinInput["PL","L.05,K.35"]#  1.0711352
-@test value(PK) ≈ two_by_two_AuxinInput["PK","L.05,K.35"]#  0.8594563
-@test value(PKS) ≈ two_by_two_AuxinInput["PKS","L.05,K.35"]#  0.9868565
-@test value(PLS) ≈ two_by_two_AuxinInput["PLS","L.05,K.35"]#  0.9407985
-@test value(TAU) ≈ two_by_two_AuxinInput["TAU","L.05,K.35"]#  1.0796579
-@test value(compensated_demand(X, PX, :t)) ≈ -two_by_two_AuxinInput["SXX","L.05,K.35"]#  120
-@test value(compensated_demand(Y, PY, :t)) ≈ -two_by_two_AuxinInput["SYY","L.05,K.35"]#  120
-@test value(compensated_demand(W, PW, :t)) ≈ -two_by_two_AuxinInput["SWW","L.05,K.35"]#  340
-@test value(compensated_demand(TL, PLS, :t)) ≈ -two_by_two_AuxinInput["SLSTL","L.05,K.35"]#  120
-@test value(compensated_demand(TK, PKS, :t)) ≈ -two_by_two_AuxinInput["SKSTK","L.05,K.35"]#  120
-@test value(compensated_demand(X, PLS)) ≈ two_by_two_AuxinInput["DLSX","L.05,K.35"]#  49.3964451
-@test value(compensated_demand(X, PKS)) ≈ two_by_two_AuxinInput["DKSX","L.05,K.35"]#  70.6365574
-@test value(compensated_demand(Y, PLS)) ≈ two_by_two_AuxinInput["DLSY","L.05,K.35"]#  73.3897601
-@test value(compensated_demand(Y, PKS)) ≈ two_by_two_AuxinInput["DKSY","L.05,K.35"]#  46.6430327
-# @test value(m._jump_model[Symbol("PX†W→AW")]) ≈ two_by_two_AuxinInput["DXW","L.05,K.35"]#  122.0889143# Not clear how to report equivalent values from nests in GAMS
-# @test value(m._jump_model[Symbol("PY†W→AW")]) ≈ two_by_two_AuxinInput["DYW","L.05,K.35"]#  123.2615764# Not clear how to report equivalent values from nests in GAMS
-@test value(compensated_demand(W, PL)) ≈ two_by_two_AuxinInput["DLW","L.05,K.35"]#  94.9275888
-@test value(compensated_demand(TL, PL)) ≈ two_by_two_AuxinInput["DLTL","L.05,K.35"]#  100
-@test value(compensated_demand(TK, PK)) ≈ two_by_two_AuxinInput["DKTK","L.05,K.35"]#  100
-@test value(CONS) ≈ two_by_two_AuxinInput["CONS","L.05,K.35"]#  338.7151989
-@test value(m._jump_model[:PWρCONS]) ≈ two_by_two_AuxinInput["CWCONS","L.05,K.35"]#  340.6331441
+    @aux_constraint(m, TAU, 
+        W*PW*340 - PL * 200 - PK * 100  - 40 * (PX + PY)/2
+    )
 
-set_value!(CONS,337.2894147)
-set_value!(txl, 0.)
-set_value!(txk, 0.4)
-solve!(m)
-# L.0,K.4
-@test value(X) ≈ two_by_two_AuxinInput["X","L.0,K.4"]#  1.0269283
-@test value(Y) ≈ two_by_two_AuxinInput["Y","L.0,K.4"]#  1.0406632
-@test value(W) ≈ two_by_two_AuxinInput["W","L.0,K.4"]#  1.0020312
-@test value(TL) ≈ two_by_two_AuxinInput["TL","L.0,K.4"]#  1.0686865
-@test value(TK) ≈ two_by_two_AuxinInput["TK","L.0,K.4"]#  1
-@test value(PX) ≈ two_by_two_AuxinInput["PX","L.0,K.4"]#  0.9531893
-@test value(PY) ≈ two_by_two_AuxinInput["PY","L.0,K.4"]#  0.9406089
-@test value(PW) ≈ two_by_two_AuxinInput["PW","L.0,K.4"]#  0.9900167
-@test value(PL) ≈ two_by_two_AuxinInput["PL","L.0,K.4"]#  1.0991329
-@test value(PK) ≈ two_by_two_AuxinInput["PK","L.0,K.4"]#  0.7958688
-@test value(PKS) ≈ two_by_two_AuxinInput["PKS","L.0,K.4"]#  0.978857
-@test value(PLS) ≈ two_by_two_AuxinInput["PLS","L.0,K.4"]#  0.915944
-@test value(TAU) ≈ two_by_two_AuxinInput["TAU","L.0,K.4"] atol=1.0e-6 #  1.1897678 May be related to numerical precision on copying the fix value for CONS 
-@test value(compensated_demand(X, PX, :t)) ≈ -two_by_two_AuxinInput["SXX","L.0,K.4"]#  120
-@test value(compensated_demand(Y, PY, :t)) ≈ -two_by_two_AuxinInput["SYY","L.0,K.4"]#  120
-@test value(compensated_demand(W, PW, :t)) ≈ -two_by_two_AuxinInput["SWW","L.0,K.4"]#  340
-@test value(compensated_demand(TL, PLS, :t)) ≈ -two_by_two_AuxinInput["SLSTL","L.0,K.4"]#  120
-@test value(compensated_demand(TK, PKS, :t)) ≈ -two_by_two_AuxinInput["SKSTK","L.0,K.4"]#  120
-@test value(compensated_demand(X, PLS)) ≈ two_by_two_AuxinInput["DLSX","L.0,K.4"]#  49.9518331
-@test value(compensated_demand(X, PKS)) ≈ two_by_two_AuxinInput["DKSX","L.0,K.4"]#  70.1120019
-@test value(compensated_demand(Y, PLS)) ≈ two_by_two_AuxinInput["DLSY","L.0,K.4"]#  73.9388387
-@test value(compensated_demand(Y, PKS)) ≈ two_by_two_AuxinInput["DKSY","L.0,K.4"]#  46.1244334
-# @test value(m._jump_model[Symbol("PX†W→AW")]) ≈ two_by_two_AuxinInput["DXW","L.0,K.4"]#  122.9815938# Not clear how to report equivalent values from nests in GAMS
-# @test value(m._jump_model[Symbol("PY†W→AW")]) ≈ two_by_two_AuxinInput["DYW","L.0,K.4"]#  124.6264376# Not clear how to report equivalent values from nests in GAMS
-@test value(compensated_demand(W, PL)) ≈ two_by_two_AuxinInput["DLW","L.0,K.4"]#  92.9425627
-@test value(compensated_demand(TL, PL)) ≈ two_by_two_AuxinInput["DLTL","L.0,K.4"]#  100
-@test value(compensated_demand(TK, PK)) ≈ two_by_two_AuxinInput["DKTK","L.0,K.4"]#  100
-@test value(CONS) ≈ two_by_two_AuxinInput["CONS","L.0,K.4"]#  337.2894147
-@test value(m._jump_model[:PWρCONS]) ≈ two_by_two_AuxinInput["CWCONS","L.0,K.4"]#  340.6906185
 
-set_value!(CONS,335.0362347)
-set_value!(txl, -0.05)
-set_value!(txk, 0.45)
-solve!(m)
-# L-.05,K.45
-@test value(X) ≈ two_by_two_AuxinInput["X","L-.05,K.45"]#  1.0377546
-@test value(Y) ≈ two_by_two_AuxinInput["Y","L-.05,K.45"]#  1.0571631
-@test value(W) ≈ two_by_two_AuxinInput["W","L-.05,K.45"]#  1.0016777
-@test value(TL) ≈ two_by_two_AuxinInput["TL","L-.05,K.45"]#  1.0970758
-@test value(TK) ≈ two_by_two_AuxinInput["TK","L-.05,K.45"]#  1
-@test value(PX) ≈ two_by_two_AuxinInput["PX","L-.05,K.45"]#  0.9315541
-@test value(PY) ≈ two_by_two_AuxinInput["PY","L-.05,K.45"]#  0.9144517
-@test value(PW) ≈ two_by_two_AuxinInput["PW","L-.05,K.45"]#  0.9837502
-@test value(PL) ≈ two_by_two_AuxinInput["PL","L-.05,K.45"]#  1.1409856
-@test value(PK) ≈ two_by_two_AuxinInput["PK","L-.05,K.45"]#  0.69919
-@test value(PKS) ≈ two_by_two_AuxinInput["PKS","L-.05,K.45"]#  0.9667245
-@test value(PLS) ≈ two_by_two_AuxinInput["PLS","L-.05,K.45"]#  0.881183
-@test value(TAU) ≈ two_by_two_AuxinInput["TAU","L-.05,K.45"]#  1.4648042
-@test value(compensated_demand(X, PX, :t)) ≈ -two_by_two_AuxinInput["SXX","L-.05,K.45"]#  120
-@test value(compensated_demand(Y, PY, :t)) ≈ -two_by_two_AuxinInput["SYY","L-.05,K.45"]#  120
-@test value(compensated_demand(W, PW, :t)) ≈ -two_by_two_AuxinInput["SWW","L-.05,K.45"]#  340
-@test value(compensated_demand(TL, PLS, :t)) ≈ -two_by_two_AuxinInput["SLSTL","L-.05,K.45"]#  120
-@test value(compensated_demand(TK, PKS, :t)) ≈ -two_by_two_AuxinInput["SKSTK","L-.05,K.45"]#  120
-@test value(compensated_demand(X, PLS)) ≈ two_by_two_AuxinInput["DLSX","L-.05,K.45"]#  50.743827
-@test value(compensated_demand(X, PKS)) ≈ two_by_two_AuxinInput["DKSX","L-.05,K.45"]#  69.3805667
-@test value(compensated_demand(Y, PLS)) ≈ two_by_two_AuxinInput["DLSY","L-.05,K.45"]#  74.7183289
-@test value(compensated_demand(Y, PKS)) ≈ two_by_two_AuxinInput["DKSY","L-.05,K.45"]#  45.4045376
-# @test value(m._jump_model[Symbol("PX†W→AW")]) ≈ two_by_two_AuxinInput["DXW","L-.05,K.45"]#  124.3219708# Not clear how to report equivalent values from nests in GAMS
-# @test value(m._jump_model[Symbol("PY†W→AW")]) ≈ two_by_two_AuxinInput["DYW","L-.05,K.45"]#  126.6470893# Not clear how to report equivalent values from nests in GAMS
-@test value(compensated_demand(W, PL)) ≈ two_by_two_AuxinInput["DLW","L-.05,K.45"]#  90.1411886
-@test value(compensated_demand(TL, PL)) ≈ two_by_two_AuxinInput["DLTL","L-.05,K.45"]#  100
-@test value(compensated_demand(TK, PK)) ≈ two_by_two_AuxinInput["DKTK","L-.05,K.45"]#  100
-@test value(CONS) ≈ two_by_two_AuxinInput["CONS","L-.05,K.45"]#  335.0362347
-@test value(m._jump_model[:PWρCONS]) ≈ two_by_two_AuxinInput["CWCONS","L-.05,K.45"]#  340.5704246
+    build!(m)
+
+    set_start_value(TAU, 1)
+
+    fix(CONS, 340)
+    solve!(m, cumulative_iteration_limit=0)
+
+    # benchmark
+    @test value(X) ≈ two_by_two_AuxinInput["X","benchmark"]#  1
+    @test value(Y) ≈ two_by_two_AuxinInput["Y","benchmark"]#  1
+    @test value(W) ≈ two_by_two_AuxinInput["W","benchmark"]#  1
+    @test value(TL) ≈ two_by_two_AuxinInput["TL","benchmark"]#  1
+    @test value(TK) ≈ two_by_two_AuxinInput["TK","benchmark"]#  1
+    @test value(PX) ≈ two_by_two_AuxinInput["PX","benchmark"]#  1
+    @test value(PY) ≈ two_by_two_AuxinInput["PY","benchmark"]#  1
+    @test value(PW) ≈ two_by_two_AuxinInput["PW","benchmark"]#  1
+    @test value(PL) ≈ two_by_two_AuxinInput["PL","benchmark"]#  1
+    @test value(PK) ≈ two_by_two_AuxinInput["PK","benchmark"]#  1
+    @test value(PKS) ≈ two_by_two_AuxinInput["PKS","benchmark"]#  1
+    @test value(PLS) ≈ two_by_two_AuxinInput["PLS","benchmark"]#  1
+    @test value(TAU) ≈ two_by_two_AuxinInput["TAU","benchmark"]#  1
+    @test value(compensated_demand(X, PX, :t)) ≈ -two_by_two_AuxinInput["SXX","benchmark"]#  120
+    @test value(compensated_demand(Y, PY, :t)) ≈ -two_by_two_AuxinInput["SYY","benchmark"]#  120
+    @test value(compensated_demand(W, PW, :t)) ≈ -two_by_two_AuxinInput["SWW","benchmark"]#  340
+    @test value(compensated_demand(TL, PLS, :t)) ≈ -two_by_two_AuxinInput["SLSTL","benchmark"]#  120
+    @test value(compensated_demand(TK, PKS, :t)) ≈ -two_by_two_AuxinInput["SKSTK","benchmark"]#  120
+    @test value(compensated_demand(X, PLS)) ≈ two_by_two_AuxinInput["DLSX","benchmark"]#  48
+    @test value(compensated_demand(X, PKS)) ≈ two_by_two_AuxinInput["DKSX","benchmark"]#  72
+    @test value(compensated_demand(Y, PLS)) ≈ two_by_two_AuxinInput["DLSY","benchmark"]#  72
+    @test value(compensated_demand(Y, PKS)) ≈ two_by_two_AuxinInput["DKSY","benchmark"]#  48
+    # @test value(m._jump_model[Symbol("PX†W→AW")]) ≈ two_by_two_AuxinInput["DXW","benchmark"]#  120# Not clear how to report equivalent values from nests in GAMS
+    # @test value(m._jump_model[Symbol("PY†W→AW")]) ≈ two_by_two_AuxinInput["DYW","benchmark"]#  120# Not clear how to report equivalent values from nests in GAMS
+    @test value(compensated_demand(W, PL)) ≈ two_by_two_AuxinInput["DLW","benchmark"]#  100
+    @test value(compensated_demand(TL, PL)) ≈ two_by_two_AuxinInput["DLTL","benchmark"]#  100
+    @test value(compensated_demand(TK, PK)) ≈ two_by_two_AuxinInput["DKTK","benchmark"]#  100
+    @test value(CONS) ≈ two_by_two_AuxinInput["CONS","benchmark"]#  340
+    @test value(demand(CONS, PW)) ≈ two_by_two_AuxinInput["CWCONS","benchmark"]#  340
+
+    set_value!(txl, 0.15)
+    set_value!(txk, 0.25)
+    solve!(m)
+    # L.15,K.25
+    @test value(X) ≈ two_by_two_AuxinInput["X","L.15,K.25"]#  1.0063876
+    @test value(Y) ≈ two_by_two_AuxinInput["Y","L.15,K.25"]#  1.0095966
+    @test value(W) ≈ two_by_two_AuxinInput["W","L.15,K.25"]#  1.000835
+    @test value(TL) ≈ two_by_two_AuxinInput["TL","L.15,K.25"]#  1.0160455
+    @test value(TK) ≈ two_by_two_AuxinInput["TK","L.15,K.25"]#  1
+    @test value(PX) ≈ two_by_two_AuxinInput["PX","L.15,K.25"]#  0.9906237
+    @test value(PY) ≈ two_by_two_AuxinInput["PY","L.15,K.25"]#  0.9874749
+    @test value(PW) ≈ two_by_two_AuxinInput["PW","L.15,K.25"]#  0.9991657
+    @test value(PL) ≈ two_by_two_AuxinInput["PL","L.15,K.25"]#  1.0237433
+    @test value(PK) ≈ two_by_two_AuxinInput["PK","L.15,K.25"]#  0.9568937
+    @test value(PKS) ≈ two_by_two_AuxinInput["PKS","L.15,K.25"]#  0.9969513
+    @test value(PLS) ≈ two_by_two_AuxinInput["PLS","L.15,K.25"]#  0.9812074
+    @test value(TAU) ≈ two_by_two_AuxinInput["TAU","L.15,K.25"]#  1.0009382
+    @test value(compensated_demand(X, PX, :t)) ≈ -two_by_two_AuxinInput["SXX","L.15,K.25"]#  120
+    @test value(compensated_demand(Y, PY, :t)) ≈ -two_by_two_AuxinInput["SYY","L.15,K.25"]#  120
+    @test value(compensated_demand(W, PW, :t)) ≈ -two_by_two_AuxinInput["SWW","L.15,K.25"]#  340
+    @test value(compensated_demand(TL, PLS, :t)) ≈ -two_by_two_AuxinInput["SLSTL","L.15,K.25"]#  120
+    @test value(compensated_demand(TK, PKS, :t)) ≈ -two_by_two_AuxinInput["SKSTK","L.15,K.25"]#  120
+    @test value(compensated_demand(X, PLS)) ≈ two_by_two_AuxinInput["DLSX","L.15,K.25"]#  48.4606391
+    @test value(compensated_demand(X, PKS)) ≈ two_by_two_AuxinInput["DKSX","L.15,K.25"]#  71.5430136
+    @test value(compensated_demand(Y, PLS)) ≈ two_by_two_AuxinInput["DLSY","L.15,K.25"]#  72.4599054
+    @test value(compensated_demand(Y, PKS)) ≈ two_by_two_AuxinInput["DKSY","L.15,K.25"]#  47.5437395
+    # @test value(m._jump_model[Symbol("PX†W→AW")]) ≈ two_by_two_AuxinInput["DXW","L.15,K.25"]#  120.6657499# Not clear how to report equivalent values from nests in GAMS
+    # @test value(m._jump_model[Symbol("PY†W→AW")]) ≈ two_by_two_AuxinInput["DYW","L.15,K.25"]#  121.0505173# Not clear how to report equivalent values from nests in GAMS
+    @test value(compensated_demand(W, PL)) ≈ two_by_two_AuxinInput["DLW","L.15,K.25"]#  98.3133534
+    @test value(compensated_demand(TL, PL)) ≈ two_by_two_AuxinInput["DLTL","L.15,K.25"]#  100
+    @test value(compensated_demand(TK, PK)) ≈ two_by_two_AuxinInput["DKTK","L.15,K.25"]#  100
+    @test value(CONS) ≈ two_by_two_AuxinInput["CONS","L.15,K.25"]#  340
+    @test value(demand(CONS, PW)) ≈ two_by_two_AuxinInput["CWCONS","L.15,K.25"]#  340.2839092
+
+    fix(CONS,339.5832292)
+    set_value!(txl, 0.1)
+    set_value!(txk, 0.3)
+    solve!(m)
+    # L.1,K.3
+    @test value(X) ≈ two_by_two_AuxinInput["X","L.1,K.3"]#  1.0126853
+    @test value(Y) ≈ two_by_two_AuxinInput["Y","L.1,K.3"]#  1.0190881
+    @test value(W) ≈ two_by_two_AuxinInput["W","L.1,K.3"]#  1.0014491
+    @test value(TL) ≈ two_by_two_AuxinInput["TL","L.1,K.3"]#  1.0320155
+    @test value(TK) ≈ two_by_two_AuxinInput["TK","L.1,K.3"]#  1
+    @test value(PX) ≈ two_by_two_AuxinInput["PX","L.1,K.3"]#  0.9802336
+    @test value(PY) ≈ two_by_two_AuxinInput["PY","L.1,K.3"]#  0.9740749
+    @test value(PW) ≈ two_by_two_AuxinInput["PW","L.1,K.3"]#  0.997329
+    @test value(PL) ≈ two_by_two_AuxinInput["PL","L.1,K.3"]#  1.0469473
+    @test value(PK) ≈ two_by_two_AuxinInput["PK","L.1,K.3"]#  0.9110759
+    @test value(PKS) ≈ two_by_two_AuxinInput["PKS","L.1,K.3"]#  0.9926681
+    @test value(PLS) ≈ two_by_two_AuxinInput["PLS","L.1,K.3"]#  0.9618733
+    @test value(TAU) ≈ two_by_two_AuxinInput["TAU","L.1,K.3"]#  1.0248901
+    @test value(compensated_demand(X, PX, :t)) ≈ -two_by_two_AuxinInput["SXX","L.1,K.3"]#  120
+    @test value(compensated_demand(Y, PY, :t)) ≈ -two_by_two_AuxinInput["SYY","L.1,K.3"]#  120
+    @test value(compensated_demand(W, PW, :t)) ≈ -two_by_two_AuxinInput["SWW","L.1,K.3"]#  340
+    @test value(compensated_demand(TL, PLS, :t)) ≈ -two_by_two_AuxinInput["SLSTL","L.1,K.3"]#  120
+    @test value(compensated_demand(TK, PKS, :t)) ≈ -two_by_two_AuxinInput["SKSTK","L.1,K.3"]#  120
+    @test value(compensated_demand(X, PLS)) ≈ two_by_two_AuxinInput["DLSX","L.1,K.3"]#  48.916229
+    @test value(compensated_demand(X, PKS)) ≈ two_by_two_AuxinInput["DKSX","L.1,K.3"]#  71.0981022
+    @test value(compensated_demand(Y, PLS)) ≈ two_by_two_AuxinInput["DLSY","L.1,K.3"]#  72.9133386
+    @test value(compensated_demand(Y, PKS)) ≈ two_by_two_AuxinInput["DKSY","L.1,K.3"]#  47.1009325
+    # @test value(m._jump_model[Symbol("PX†W→AW")]) ≈ two_by_two_AuxinInput["DXW","L.1,K.3"]#  121.3463868# Not clear how to report equivalent values from nests in GAMS
+    # @test value(m._jump_model[Symbol("PY†W→AW")]) ≈ two_by_two_AuxinInput["DYW","L.1,K.3"]#  122.1136165# Not clear how to report equivalent values from nests in GAMS
+    @test value(compensated_demand(W, PL)) ≈ two_by_two_AuxinInput["DLW","L.1,K.3"]#  96.6583816
+    @test value(compensated_demand(TL, PL)) ≈ two_by_two_AuxinInput["DLTL","L.1,K.3"]#  100
+    @test value(compensated_demand(TK, PK)) ≈ two_by_two_AuxinInput["DKTK","L.1,K.3"]#  100
+    @test value(CONS) ≈ two_by_two_AuxinInput["CONS","L.1,K.3"]#  339.5832292
+    @test value(demand(CONS, PW)) ≈ two_by_two_AuxinInput["CWCONS","L.1,K.3"]#  340.492697
+
+    fix(CONS,338.7151989)
+    set_value!(txl, 0.05)
+    set_value!(txk, 0.35)
+    solve!(m)
+    # L.05,K.35
+    @test value(X) ≈ two_by_two_AuxinInput["X","L.05,K.35"]#  1.0193022
+    @test value(Y) ≈ two_by_two_AuxinInput["Y","L.05,K.35"]#  1.0290926
+    @test value(W) ≈ two_by_two_AuxinInput["W","L.05,K.35"]#  1.0018622
+    @test value(TL) ≈ two_by_two_AuxinInput["TL","L.05,K.35"]#  1.0489564
+    @test value(TK) ≈ two_by_two_AuxinInput["TK","L.05,K.35"]#  1
+    @test value(PX) ≈ two_by_two_AuxinInput["PX","L.05,K.35"]#  0.9681687
+    @test value(PY) ≈ two_by_two_AuxinInput["PY","L.05,K.35"]#  0.958958
+    @test value(PW) ≈ two_by_two_AuxinInput["PW","L.05,K.35"]#  0.9943695
+    @test value(PL) ≈ two_by_two_AuxinInput["PL","L.05,K.35"]#  1.0711352
+    @test value(PK) ≈ two_by_two_AuxinInput["PK","L.05,K.35"]#  0.8594563
+    @test value(PKS) ≈ two_by_two_AuxinInput["PKS","L.05,K.35"]#  0.9868565
+    @test value(PLS) ≈ two_by_two_AuxinInput["PLS","L.05,K.35"]#  0.9407985
+    @test value(TAU) ≈ two_by_two_AuxinInput["TAU","L.05,K.35"]#  1.0796579
+    @test value(compensated_demand(X, PX, :t)) ≈ -two_by_two_AuxinInput["SXX","L.05,K.35"]#  120
+    @test value(compensated_demand(Y, PY, :t)) ≈ -two_by_two_AuxinInput["SYY","L.05,K.35"]#  120
+    @test value(compensated_demand(W, PW, :t)) ≈ -two_by_two_AuxinInput["SWW","L.05,K.35"]#  340
+    @test value(compensated_demand(TL, PLS, :t)) ≈ -two_by_two_AuxinInput["SLSTL","L.05,K.35"]#  120
+    @test value(compensated_demand(TK, PKS, :t)) ≈ -two_by_two_AuxinInput["SKSTK","L.05,K.35"]#  120
+    @test value(compensated_demand(X, PLS)) ≈ two_by_two_AuxinInput["DLSX","L.05,K.35"]#  49.3964451
+    @test value(compensated_demand(X, PKS)) ≈ two_by_two_AuxinInput["DKSX","L.05,K.35"]#  70.6365574
+    @test value(compensated_demand(Y, PLS)) ≈ two_by_two_AuxinInput["DLSY","L.05,K.35"]#  73.3897601
+    @test value(compensated_demand(Y, PKS)) ≈ two_by_two_AuxinInput["DKSY","L.05,K.35"]#  46.6430327
+    # @test value(m._jump_model[Symbol("PX†W→AW")]) ≈ two_by_two_AuxinInput["DXW","L.05,K.35"]#  122.0889143# Not clear how to report equivalent values from nests in GAMS
+    # @test value(m._jump_model[Symbol("PY†W→AW")]) ≈ two_by_two_AuxinInput["DYW","L.05,K.35"]#  123.2615764# Not clear how to report equivalent values from nests in GAMS
+    @test value(compensated_demand(W, PL)) ≈ two_by_two_AuxinInput["DLW","L.05,K.35"]#  94.9275888
+    @test value(compensated_demand(TL, PL)) ≈ two_by_two_AuxinInput["DLTL","L.05,K.35"]#  100
+    @test value(compensated_demand(TK, PK)) ≈ two_by_two_AuxinInput["DKTK","L.05,K.35"]#  100
+    @test value(CONS) ≈ two_by_two_AuxinInput["CONS","L.05,K.35"]#  338.7151989
+    @test value(demand(CONS, PW)) ≈ two_by_two_AuxinInput["CWCONS","L.05,K.35"]#  340.6331441
+
+    fix(CONS,337.2894147)
+    set_value!(txl, 0.)
+    set_value!(txk, 0.4)
+    solve!(m)
+    # L.0,K.4
+    @test value(X) ≈ two_by_two_AuxinInput["X","L.0,K.4"]#  1.0269283
+    @test value(Y) ≈ two_by_two_AuxinInput["Y","L.0,K.4"]#  1.0406632
+    @test value(W) ≈ two_by_two_AuxinInput["W","L.0,K.4"]#  1.0020312
+    @test value(TL) ≈ two_by_two_AuxinInput["TL","L.0,K.4"]#  1.0686865
+    @test value(TK) ≈ two_by_two_AuxinInput["TK","L.0,K.4"]#  1
+    @test value(PX) ≈ two_by_two_AuxinInput["PX","L.0,K.4"]#  0.9531893
+    @test value(PY) ≈ two_by_two_AuxinInput["PY","L.0,K.4"]#  0.9406089
+    @test value(PW) ≈ two_by_two_AuxinInput["PW","L.0,K.4"]#  0.9900167
+    @test value(PL) ≈ two_by_two_AuxinInput["PL","L.0,K.4"]#  1.0991329
+    @test value(PK) ≈ two_by_two_AuxinInput["PK","L.0,K.4"]#  0.7958688
+    @test value(PKS) ≈ two_by_two_AuxinInput["PKS","L.0,K.4"]#  0.978857
+    @test value(PLS) ≈ two_by_two_AuxinInput["PLS","L.0,K.4"]#  0.915944
+    @test value(TAU) ≈ two_by_two_AuxinInput["TAU","L.0,K.4"] atol=1.0e-6 #  1.1897678 May be related to numerical precision on copying the fix value for CONS 
+    @test value(compensated_demand(X, PX, :t)) ≈ -two_by_two_AuxinInput["SXX","L.0,K.4"]#  120
+    @test value(compensated_demand(Y, PY, :t)) ≈ -two_by_two_AuxinInput["SYY","L.0,K.4"]#  120
+    @test value(compensated_demand(W, PW, :t)) ≈ -two_by_two_AuxinInput["SWW","L.0,K.4"]#  340
+    @test value(compensated_demand(TL, PLS, :t)) ≈ -two_by_two_AuxinInput["SLSTL","L.0,K.4"]#  120
+    @test value(compensated_demand(TK, PKS, :t)) ≈ -two_by_two_AuxinInput["SKSTK","L.0,K.4"]#  120
+    @test value(compensated_demand(X, PLS)) ≈ two_by_two_AuxinInput["DLSX","L.0,K.4"]#  49.9518331
+    @test value(compensated_demand(X, PKS)) ≈ two_by_two_AuxinInput["DKSX","L.0,K.4"]#  70.1120019
+    @test value(compensated_demand(Y, PLS)) ≈ two_by_two_AuxinInput["DLSY","L.0,K.4"]#  73.9388387
+    @test value(compensated_demand(Y, PKS)) ≈ two_by_two_AuxinInput["DKSY","L.0,K.4"]#  46.1244334
+    # @test value(m._jump_model[Symbol("PX†W→AW")]) ≈ two_by_two_AuxinInput["DXW","L.0,K.4"]#  122.9815938# Not clear how to report equivalent values from nests in GAMS
+    # @test value(m._jump_model[Symbol("PY†W→AW")]) ≈ two_by_two_AuxinInput["DYW","L.0,K.4"]#  124.6264376# Not clear how to report equivalent values from nests in GAMS
+    @test value(compensated_demand(W, PL)) ≈ two_by_two_AuxinInput["DLW","L.0,K.4"]#  92.9425627
+    @test value(compensated_demand(TL, PL)) ≈ two_by_two_AuxinInput["DLTL","L.0,K.4"]#  100
+    @test value(compensated_demand(TK, PK)) ≈ two_by_two_AuxinInput["DKTK","L.0,K.4"]#  100
+    @test value(CONS) ≈ two_by_two_AuxinInput["CONS","L.0,K.4"]#  337.2894147
+    @test value(demand(CONS, PW)) ≈ two_by_two_AuxinInput["CWCONS","L.0,K.4"]#  340.6906185
+
+    fix(CONS,335.0362347)
+    set_value!(txl, -0.05)
+    set_value!(txk, 0.45)
+    solve!(m)
+    # L-.05,K.45
+    @test value(X) ≈ two_by_two_AuxinInput["X","L-.05,K.45"]#  1.0377546
+    @test value(Y) ≈ two_by_two_AuxinInput["Y","L-.05,K.45"]#  1.0571631
+    @test value(W) ≈ two_by_two_AuxinInput["W","L-.05,K.45"]#  1.0016777
+    @test value(TL) ≈ two_by_two_AuxinInput["TL","L-.05,K.45"]#  1.0970758
+    @test value(TK) ≈ two_by_two_AuxinInput["TK","L-.05,K.45"]#  1
+    @test value(PX) ≈ two_by_two_AuxinInput["PX","L-.05,K.45"]#  0.9315541
+    @test value(PY) ≈ two_by_two_AuxinInput["PY","L-.05,K.45"]#  0.9144517
+    @test value(PW) ≈ two_by_two_AuxinInput["PW","L-.05,K.45"]#  0.9837502
+    @test value(PL) ≈ two_by_two_AuxinInput["PL","L-.05,K.45"]#  1.1409856
+    @test value(PK) ≈ two_by_two_AuxinInput["PK","L-.05,K.45"]#  0.69919
+    @test value(PKS) ≈ two_by_two_AuxinInput["PKS","L-.05,K.45"]#  0.9667245
+    @test value(PLS) ≈ two_by_two_AuxinInput["PLS","L-.05,K.45"]#  0.881183
+    @test value(TAU) ≈ two_by_two_AuxinInput["TAU","L-.05,K.45"]#  1.4648042
+    @test value(compensated_demand(X, PX, :t)) ≈ -two_by_two_AuxinInput["SXX","L-.05,K.45"]#  120
+    @test value(compensated_demand(Y, PY, :t)) ≈ -two_by_two_AuxinInput["SYY","L-.05,K.45"]#  120
+    @test value(compensated_demand(W, PW, :t)) ≈ -two_by_two_AuxinInput["SWW","L-.05,K.45"]#  340
+    @test value(compensated_demand(TL, PLS, :t)) ≈ -two_by_two_AuxinInput["SLSTL","L-.05,K.45"]#  120
+    @test value(compensated_demand(TK, PKS, :t)) ≈ -two_by_two_AuxinInput["SKSTK","L-.05,K.45"]#  120
+    @test value(compensated_demand(X, PLS)) ≈ two_by_two_AuxinInput["DLSX","L-.05,K.45"]#  50.743827
+    @test value(compensated_demand(X, PKS)) ≈ two_by_two_AuxinInput["DKSX","L-.05,K.45"]#  69.3805667
+    @test value(compensated_demand(Y, PLS)) ≈ two_by_two_AuxinInput["DLSY","L-.05,K.45"]#  74.7183289
+    @test value(compensated_demand(Y, PKS)) ≈ two_by_two_AuxinInput["DKSY","L-.05,K.45"]#  45.4045376
+    # @test value(m._jump_model[Symbol("PX†W→AW")]) ≈ two_by_two_AuxinInput["DXW","L-.05,K.45"]#  124.3219708# Not clear how to report equivalent values from nests in GAMS
+    # @test value(m._jump_model[Symbol("PY†W→AW")]) ≈ two_by_two_AuxinInput["DYW","L-.05,K.45"]#  126.6470893# Not clear how to report equivalent values from nests in GAMS
+    @test value(compensated_demand(W, PL)) ≈ two_by_two_AuxinInput["DLW","L-.05,K.45"]#  90.1411886
+    @test value(compensated_demand(TL, PL)) ≈ two_by_two_AuxinInput["DLTL","L-.05,K.45"]#  100
+    @test value(compensated_demand(TK, PK)) ≈ two_by_two_AuxinInput["DKTK","L-.05,K.45"]#  100
+    @test value(CONS) ≈ two_by_two_AuxinInput["CONS","L-.05,K.45"]#  335.0362347
+    @test value(demand(CONS, PW)) ≈ two_by_two_AuxinInput["CWCONS","L-.05,K.45"]#  340.5704246
 end
+
+
+
+
 
 @testset "TWObyTWO_wAuxinOutputs" begin
     using XLSX, MPSGE_MP.JuMP.Containers
@@ -1784,118 +1907,171 @@ end
     gams_results = XLSX.readxlsx(joinpath(@__DIR__, "MPSGEresults.xlsx"))
     a_table = gams_results["two_by_two_AuxinOutput"][:]  # Generated from AuxinOutputTest.gms
     two_by_two_AuxinOutput = DenseAxisArray(a_table[2:end,2:end],a_table[2:end,1],a_table[1,2:end])
+        
+    m = MPSGEModel()
+    # A set up to test N: Endogenous taxes (and M: the multiplier), the Auxiliary Variable in Production blocks (applied to Outputs)       
     
-m = MPSGEModel()
-# A set up to test N: Endogenous taxes (and M: the multiplier), the Auxiliary Variable in Production blocks (applied to Outputs)       
+    @parameter(m, sigma, 9)       
+    
+    @sectors(m,begin
+        X
+        Y
+        W
+    end)
+    
+    @commodities(m, begin
+        PX
+        PY
+        PW
+        PL
+        PK
+    end)
+    
+    @consumer(m, CONS)
+    
+    @auxiliary(m, SHAREX) #benchmark = .5
+    @auxiliary(m, MARKUP, index = [[:a,:b]]) #benchmark = .2
+    
+    
+    @production(m, X,
+        ScalarNest(:t; elasticity = 0, children = [
+            ScalarOutput(PX, 80, taxes = [Tax(CONS, MARKUP[:a])])
+        ]),
+        ScalarNest(:s; elasticity = 1, children = [
+            ScalarInput(PL, 14),
+            ScalarInput(PK, 50)
+        ])
+    )
+    
+    @production(m, Y, 
+        ScalarNest(:t; elasticity = 0, children = [
+            ScalarOutput(PY, 100)
+        ]),
+        ScalarNest(:s; elasticity = 1, children = [
+            ScalarInput(PL, 60), 
+            ScalarInput(PK, 40)
+        ])
+    )
+    
+    @production(m, W, 
+        ScalarNest(:t; elasticity = 0, children = [
+            ScalarOutput(PW, 180)
+        ]),
+        ScalarNest(:s; elasticity = 9, children = [
+            ScalarInput(PX, 80),
+            ScalarInput(PY, 100)
+        ])
+    )
+    
+    @demand(m, CONS,
+        [ScalarDem(PW, 180)],
+        [ 
+            ScalarEndowment(PL, 74),
+            ScalarEndowment(PK, 90)
+        ]
+    )
+    
+    @aux_constraint(m, SHAREX, 
+        SHAREX - 100*PX*X / (100*PX*X + 100*PY*Y)
+    )
+    
+    @aux_constraint(m, MARKUP[:a],
+        (MARKUP[:a]) - 1 / (sigma - (sigma-1) * SHAREX)
+    )
+    
+    @aux_constraint(m, MARKUP[:b],
+        MARKUP[:b] - MARKUP[:b]
+    )
+    
+    
+    build!(m)
+    
+    set_start_value(SHAREX, .5)
+    
+    set_start_value(MARKUP[:a], .2)
+    set_start_value(MARKUP[:b], .2)
 
-sigma = add!(m,Parameter(:sigma, value=9.0))
-muindex = [:a, :b]
-X = add!(m, Sector(:X))
-Y = add!(m, Sector(:Y))
-W = add!(m, Sector(:W))
+    fix(CONS, 180)
+    solve!(m, cumulative_iteration_limit=0)
+    # benchmark
+    @test value(X) ≈ two_by_two_AuxinOutput["X","benchmark"]#  1
+    @test value(Y) ≈ two_by_two_AuxinOutput["Y","benchmark"]#  1
+    @test value(W) ≈ two_by_two_AuxinOutput["W","benchmark"]#  1
+    @test value(PX) ≈ two_by_two_AuxinOutput["PX","benchmark"]#  1
+    @test value(PY) ≈ two_by_two_AuxinOutput["PY","benchmark"]#  1
+    @test value(PW) ≈ two_by_two_AuxinOutput["PW","benchmark"]#  1
+    @test value(PL) ≈ two_by_two_AuxinOutput["PL","benchmark"]#  1
+    @test value(PK) ≈ two_by_two_AuxinOutput["PK","benchmark"]#  1
+    @test value(SHAREX) ≈ two_by_two_AuxinOutput["SHAREX","benchmark"]#  0.5
+    @test value(MARKUP[:a]) ≈ two_by_two_AuxinOutput["MARKUP","benchmark"]#  0.2
+    @test value(compensated_demand(X, PX, :t)) ≈ -two_by_two_AuxinOutput["SXX","benchmark"]#  80
+    @test value(compensated_demand(Y, PY, :t)) ≈ -two_by_two_AuxinOutput["SYY","benchmark"]#  100
+    @test value(compensated_demand(W, PW, :t)) ≈ -two_by_two_AuxinOutput["SWW","benchmark"]#  180
+    @test value(compensated_demand(X, PL)) ≈ two_by_two_AuxinOutput["DLX","benchmark"]#  14
+    @test value(compensated_demand(X, PK)) ≈ two_by_two_AuxinOutput["DKX","benchmark"]#  50
+    @test value(compensated_demand(Y, PL)) ≈ two_by_two_AuxinOutput["DLY","benchmark"]#  60
+    @test value(compensated_demand(Y, PK)) ≈ two_by_two_AuxinOutput["DKY","benchmark"]#  40
+    @test value(compensated_demand(W, PX)) ≈ two_by_two_AuxinOutput["DXW","benchmark"]#  80
+    @test value(compensated_demand(W, PY)) ≈ two_by_two_AuxinOutput["DYW","benchmark"]#  100
+    @test value(CONS) ≈ two_by_two_AuxinOutput["CONS","benchmark"]#  180
+    @test value(demand(CONS, PW)) ≈ two_by_two_AuxinOutput["CWCONS","benchmark"]#  180
 
-PX = add!(m, Commodity(:PX))
-PY = add!(m, Commodity(:PY))
-PW = add!(m, Commodity(:PW))
-PL = add!(m, Commodity(:PL))
-PK = add!(m, Commodity(:PK))
+    fix(CONS, 164.)
+    fix(MARKUP[:a], 0)
+    
+    solve!(m)
+    # S.5,M.FX=0
+    @test value(X) ≈ two_by_two_AuxinOutput["X","S.5,M.FX=0"]#  1.47532914
+    @test value(Y) ≈ two_by_two_AuxinOutput["Y","S.5,M.FX=0"]#  0.67462967
+    @test value(W) ≈ two_by_two_AuxinOutput["W","S.5,M.FX=0"]#  1.02198842
+    @test value(PX) ≈ two_by_two_AuxinOutput["PX","S.5,M.FX=0"]#  0.85587331
+    @test value(PY) ≈ two_by_two_AuxinOutput["PY","S.5,M.FX=0"]#  0.93361463
+    @test value(PW) ≈ two_by_two_AuxinOutput["PW","S.5,M.FX=0"]#  0.89150825
+    @test value(PL) ≈ two_by_two_AuxinOutput["PL","S.5,M.FX=0"]#  0.8092947
+    @test value(PK) ≈ two_by_two_AuxinOutput["PK","S.5,M.FX=0"]#  1.15680214
+    @test value(SHAREX) ≈ two_by_two_AuxinOutput["SHAREX","S.5,M.FX=0"] atol = 1e-7#  0.66719622
+    @test value(MARKUP[:a]) ≈0 # two_by_two_AuxinOutput["MARKUP","S.5,M.FX=0"]#  
+    @test value(compensated_demand(X, PX, :t)) ≈ -two_by_two_AuxinOutput["SXX","S.5,M.FX=0"]#  80
+    @test value(compensated_demand(Y, PY, :t)) ≈ -two_by_two_AuxinOutput["SYY","S.5,M.FX=0"]#  100
+    @test value(compensated_demand(W, PW, :t)) ≈ -two_by_two_AuxinOutput["SWW","S.5,M.FX=0"]#  180
+    @test value(compensated_demand(X, PL)) ≈ two_by_two_AuxinOutput["DLX","S.5,M.FX=0"]#  18.50720517
+    @test value(compensated_demand(X, PK)) ≈ two_by_two_AuxinOutput["DKX","S.5,M.FX=0"]#  46.2413409
+    @test value(compensated_demand(Y, PL)) ≈ two_by_two_AuxinOutput["DLY","S.5,M.FX=0"]#  69.21690976
+    @test value(compensated_demand(Y, PK)) ≈ two_by_two_AuxinOutput["DKY","S.5,M.FX=0"]#  32.28260394
+    @test value(compensated_demand(W, PX)) ≈ two_by_two_AuxinOutput["DXW","S.5,M.FX=0"]#  115.4869552
+    @test value(compensated_demand(W, PY)) ≈ two_by_two_AuxinOutput["DYW","S.5,M.FX=0"]#  66.01147878
+    @test value(CONS) ≈ two_by_two_AuxinOutput["CONS","S.5,M.FX=0"]#  164
+    @test value(demand(CONS, PW)) ≈ two_by_two_AuxinOutput["CWCONS","S.5,M.FX=0"]#  183.9579158
 
-CONS = add!(m, Consumer(:CONS, benchmark=180.))
 
-SHAREX = add!(m, Aux(:SHAREX, benchmark=0.5))
-MARKUP = add!(m, Aux(:MARKUP, indices=(muindex,), benchmark=0.2))
-
-add!(m, Production(X, 0, 1.0, [ScalarOutput(PX, 80., taxes=[Tax(:(1.0*$(MARKUP[:a])), CONS)])], [ScalarInput(PL, 14), ScalarInput(PK, 50)]))
-add!(m, Production(Y, 0, 1.0, [ScalarOutput(PY, 100.)],                             [ScalarInput(PL, 60), ScalarInput(PK, 40)]))
-add!(m, Production(W, 0, 9.0, [ScalarOutput(PW, 180.)], [ScalarInput(PX,80), ScalarInput(PY,100.)]))
-
-add!(m, DemandFunction(CONS, 1., [ScalarDem(PW,180.)], [ScalarEndowment(PL, 74.), ScalarEndowment(PK, 90)]))
-add!(m, AuxConstraint(SHAREX, :($SHAREX == 100*$PX*$X / (100*$PX*$X + 100*$PY*$Y))))
-add!(m, AuxConstraint(MARKUP[:a], :($(MARKUP[:a]) == 1 / ($sigma - ($sigma-1) * $SHAREX))))
-add!(m, AuxConstraint(MARKUP[:b], :(1+1 == 2))) #articificial constraint just to test fixing indexed Aux
-
-fix(CONS, 1)
-solve!(m, cumulative_iteration_limit=0)
-# benchmark
-@test value(X) ≈ two_by_two_AuxinOutput["X","benchmark"]#  1
-@test value(Y) ≈ two_by_two_AuxinOutput["Y","benchmark"]#  1
-@test value(W) ≈ two_by_two_AuxinOutput["W","benchmark"]#  1
-@test value(PX) ≈ two_by_two_AuxinOutput["PX","benchmark"]#  1
-@test value(PY) ≈ two_by_two_AuxinOutput["PY","benchmark"]#  1
-@test value(PW) ≈ two_by_two_AuxinOutput["PW","benchmark"]#  1
-@test value(PL) ≈ two_by_two_AuxinOutput["PL","benchmark"]#  1
-@test value(PK) ≈ two_by_two_AuxinOutput["PK","benchmark"]#  1
-@test value(SHAREX) ≈ two_by_two_AuxinOutput["SHAREX","benchmark"]#  0.5
-@test value(MARKUP[:a]) ≈ two_by_two_AuxinOutput["MARKUP","benchmark"]#  0.2
-@test value(compensated_demand(X, PX, :t)) ≈ -two_by_two_AuxinOutput["SXX","benchmark"]#  80
-@test value(compensated_demand(Y, PY, :t)) ≈ -two_by_two_AuxinOutput["SYY","benchmark"]#  100
-@test value(compensated_demand(W, PW, :t)) ≈ -two_by_two_AuxinOutput["SWW","benchmark"]#  180
-@test value(compensated_demand(X, PL)) ≈ two_by_two_AuxinOutput["DLX","benchmark"]#  14
-@test value(compensated_demand(X, PK)) ≈ two_by_two_AuxinOutput["DKX","benchmark"]#  50
-@test value(compensated_demand(Y, PL)) ≈ two_by_two_AuxinOutput["DLY","benchmark"]#  60
-@test value(compensated_demand(Y, PK)) ≈ two_by_two_AuxinOutput["DKY","benchmark"]#  40
-@test value(compensated_demand(W, PX)) ≈ two_by_two_AuxinOutput["DXW","benchmark"]#  80
-@test value(compensated_demand(W, PY)) ≈ two_by_two_AuxinOutput["DYW","benchmark"]#  100
-@test value(m._jump_model[Symbol("CONS")]) ≈ two_by_two_AuxinOutput["CONS","benchmark"]#  180
-@test value(demand(CONS, PW)) ≈ two_by_two_AuxinOutput["CWCONS","benchmark"]#  180
-
-set_value!(CONS,164.)
-set_value!(MARKUP[:a], 0.)
-fix(MARKUP[:a], 1)
-set_value!(SHAREX, 0.5)
-solve!(m)
-# S.5,M.FX=0
-@test value(X) ≈ two_by_two_AuxinOutput["X","S.5,M.FX=0"]#  1.47532914
-@test value(Y) ≈ two_by_two_AuxinOutput["Y","S.5,M.FX=0"]#  0.67462967
-@test value(W) ≈ two_by_two_AuxinOutput["W","S.5,M.FX=0"]#  1.02198842
-@test value(PX) ≈ two_by_two_AuxinOutput["PX","S.5,M.FX=0"]#  0.85587331
-@test value(PY) ≈ two_by_two_AuxinOutput["PY","S.5,M.FX=0"]#  0.93361463
-@test value(PW) ≈ two_by_two_AuxinOutput["PW","S.5,M.FX=0"]#  0.89150825
-@test value(PL) ≈ two_by_two_AuxinOutput["PL","S.5,M.FX=0"]#  0.8092947
-@test value(PK) ≈ two_by_two_AuxinOutput["PK","S.5,M.FX=0"]#  1.15680214
-@test value(SHAREX) ≈ two_by_two_AuxinOutput["SHAREX","S.5,M.FX=0"]#  0.66719622
-@test value(MARKUP[:a]) ≈0 # two_by_two_AuxinOutput["MARKUP","S.5,M.FX=0"]#  
-@test value(compensated_demand(X, PX, :t)) ≈ -two_by_two_AuxinOutput["SXX","S.5,M.FX=0"]#  80
-@test value(compensated_demand(Y, PY, :t)) ≈ -two_by_two_AuxinOutput["SYY","S.5,M.FX=0"]#  100
-@test value(compensated_demand(W, PW, :t)) ≈ -two_by_two_AuxinOutput["SWW","S.5,M.FX=0"]#  180
-@test value(compensated_demand(X, PL)) ≈ two_by_two_AuxinOutput["DLX","S.5,M.FX=0"]#  18.50720517
-@test value(compensated_demand(X, PK)) ≈ two_by_two_AuxinOutput["DKX","S.5,M.FX=0"]#  46.2413409
-@test value(compensated_demand(Y, PL)) ≈ two_by_two_AuxinOutput["DLY","S.5,M.FX=0"]#  69.21690976
-@test value(compensated_demand(Y, PK)) ≈ two_by_two_AuxinOutput["DKY","S.5,M.FX=0"]#  32.28260394
-@test value(compensated_demand(W, PX)) ≈ two_by_two_AuxinOutput["DXW","S.5,M.FX=0"]#  115.4869552
-@test value(compensated_demand(W, PY)) ≈ two_by_two_AuxinOutput["DYW","S.5,M.FX=0"]#  66.01147878
-@test value(m._jump_model[Symbol("CONS")]) ≈ two_by_two_AuxinOutput["CONS","S.5,M.FX=0"]#  164
-@test value(demand(CONS, PW)) ≈ two_by_two_AuxinOutput["CWCONS","S.5,M.FX=0"]#  183.9579158
-
-set_value!(CONS,214.5077935)
-set_value!(SHAREX, 0.2)
-fix(SHAREX, 1)
-unfix(MARKUP[:a])
-set_value!(MARKUP[:a], 0.5)
-solve!(m)
-# S.FX.2,M.5
-@test value(X) ≈ two_by_two_AuxinOutput["X","S.FX.2,M.5"]#  1.17202012
-@test value(Y) ≈ two_by_two_AuxinOutput["Y","S.FX.2,M.5"]#  0.8873001
-@test value(W) ≈ two_by_two_AuxinOutput["W","S.FX.2,M.5"]#  1.01275399
-@test value(PX) ≈ two_by_two_AuxinOutput["PX","S.FX.2,M.5"]#  1.15776045
-@test value(PY) ≈ two_by_two_AuxinOutput["PY","S.FX.2,M.5"]#  1.19412035
-@test value(PW) ≈ two_by_two_AuxinOutput["PW","S.FX.2,M.5"]#  1.17670232
-@test value(PL) ≈ two_by_two_AuxinOutput["PL","S.FX.2,M.5"]#  1.136618
-@test value(PK) ≈ two_by_two_AuxinOutput["PK","S.FX.2,M.5"]#  1.28587413
-@test value(SHAREX) ≈ two_by_two_AuxinOutput["SHAREX","S.FX.2,M.5"]#  0.2
-@test value(MARKUP[:a]) ≈ two_by_two_AuxinOutput["MARKUP","S.FX.2,M.5"]#  0.13513514
-@test value(compensated_demand(X, PX, :t)) ≈ -two_by_two_AuxinOutput["SXX","S.FX.2,M.5"]#  80
-@test value(compensated_demand(Y, PY, :t)) ≈ -two_by_two_AuxinOutput["SYY","S.FX.2,M.5"]#  100
-@test value(compensated_demand(W, PW, :t)) ≈ -two_by_two_AuxinOutput["SWW","S.FX.2,M.5"]#  180
-@test value(compensated_demand(X, PL)) ≈ two_by_two_AuxinOutput["DLX","S.FX.2,M.5"]#  15.41666668
-@test value(compensated_demand(X, PK)) ≈ two_by_two_AuxinOutput["DKX","S.FX.2,M.5"]#  48.66856253
-@test value(compensated_demand(Y, PL)) ≈ two_by_two_AuxinOutput["DLY","S.FX.2,M.5"]#  63.03544503
-@test value(compensated_demand(Y, PK)) ≈ two_by_two_AuxinOutput["DKY","S.FX.2,M.5"]#  37.14579281
-@test value(compensated_demand(W, PX)) ≈ two_by_two_AuxinOutput["DXW","S.FX.2,M.5"]#  92.58083471
-@test value(compensated_demand(W, PY)) ≈ two_by_two_AuxinOutput["DYW","S.FX.2,M.5"]#  87.6125997
-@test value(m._jump_model[Symbol("CONS")]) ≈ two_by_two_AuxinOutput["CONS","S.FX.2,M.5"]#  214.5077935
-@test value(demand(CONS, PW)) ≈ two_by_two_AuxinOutput["CWCONS","S.FX.2,M.5"]#  182.2957177
+    fix(CONS,214.5077935)
+    #set_value!(SHAREX, 0.2)
+    fix(SHAREX, .2)
+    unfix(MARKUP[:a])
+    set_start_value(MARKUP[:a], 0.5)
+    solve!(m)
+    # S.FX.2,M.5
+    @test value(X) ≈ two_by_two_AuxinOutput["X","S.FX.2,M.5"]#  1.17202012
+    @test value(Y) ≈ two_by_two_AuxinOutput["Y","S.FX.2,M.5"]#  0.8873001
+    @test value(W) ≈ two_by_two_AuxinOutput["W","S.FX.2,M.5"]#  1.01275399
+    @test value(PX) ≈ two_by_two_AuxinOutput["PX","S.FX.2,M.5"]#  1.15776045
+    @test value(PY) ≈ two_by_two_AuxinOutput["PY","S.FX.2,M.5"]#  1.19412035
+    @test value(PW) ≈ two_by_two_AuxinOutput["PW","S.FX.2,M.5"]#  1.17670232
+    @test value(PL) ≈ two_by_two_AuxinOutput["PL","S.FX.2,M.5"]#  1.136618
+    @test value(PK) ≈ two_by_two_AuxinOutput["PK","S.FX.2,M.5"]#  1.28587413
+    @test value(SHAREX) ≈ two_by_two_AuxinOutput["SHAREX","S.FX.2,M.5"]#  0.2
+    @test value(MARKUP[:a]) ≈ two_by_two_AuxinOutput["MARKUP","S.FX.2,M.5"]#  0.13513514
+    @test value(compensated_demand(X, PX, :t)) ≈ -two_by_two_AuxinOutput["SXX","S.FX.2,M.5"]#  80
+    @test value(compensated_demand(Y, PY, :t)) ≈ -two_by_two_AuxinOutput["SYY","S.FX.2,M.5"]#  100
+    @test value(compensated_demand(W, PW, :t)) ≈ -two_by_two_AuxinOutput["SWW","S.FX.2,M.5"]#  180
+    @test value(compensated_demand(X, PL)) ≈ two_by_two_AuxinOutput["DLX","S.FX.2,M.5"]#  15.41666668
+    @test value(compensated_demand(X, PK)) ≈ two_by_two_AuxinOutput["DKX","S.FX.2,M.5"]#  48.66856253
+    @test value(compensated_demand(Y, PL)) ≈ two_by_two_AuxinOutput["DLY","S.FX.2,M.5"]#  63.03544503
+    @test value(compensated_demand(Y, PK)) ≈ two_by_two_AuxinOutput["DKY","S.FX.2,M.5"]#  37.14579281
+    @test value(compensated_demand(W, PX)) ≈ two_by_two_AuxinOutput["DXW","S.FX.2,M.5"]#  92.58083471
+    @test value(compensated_demand(W, PY)) ≈ two_by_two_AuxinOutput["DYW","S.FX.2,M.5"]#  87.6125997
+    @test value(CONS) ≈ two_by_two_AuxinOutput["CONS","S.FX.2,M.5"]#  214.5077935
+    @test value(demand(CONS, PW)) ≈ two_by_two_AuxinOutput["CWCONS","S.FX.2,M.5"]#  182.2957177
 
 end
 
-=#
