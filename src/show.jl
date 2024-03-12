@@ -245,7 +245,7 @@ Can be combined and applied iteratively.
 """
 function generate_name(m::Model, s::Union{SectorRef,ConsumerRef}, c::CommodityRef, type::String)
     if type=="o"
-        sym = Symbol("$(get_name(c))‡‡$(get_name(s))")
+        sym = Symbol("$(get_name(c))‡$(get_name(s))")
     elseif type=="i"
         sym = Symbol("$(get_name(c))†$(get_name(s))")
     elseif type=="fd"
@@ -260,11 +260,11 @@ end
 
 function generate_name(m::Model, s::Symbol, commod_or_nest::Symbol, type::String)
     if type=="o"
-        sym = Symbol("$(commod_or_nest)‡‡$(s)")
+        sym = Symbol("$(commod_or_nest)‡$(s)")
     elseif type=="i"
-        sym = Symbol("$(commod_or_nest)†$(get_name(s))")
+        sym = Symbol("$(commod_or_nest)†$(s)")
     elseif type=="fd"
-        sym = Symbol("$(commod_or_nest)ρ$(get_name(s))")
+        sym = Symbol("$(commod_or_nest)ρ$(s)")
     elseif type=="n"
         sym = Symbol("$(s)→$(commod_or_nest)")
      else 

@@ -54,13 +54,19 @@
 
     avm2 = algebraic_version(m)
     @test typeof(avm2) == MPSGE.AlgebraicWrapper
-    vr = var_report(m, decimals=16, mdecimals=5) #default is formated for CSV
-    df_vr = var_report(m)
+    df_vr = var_report(m, decimals=16, mdecimals=5);
     @test typeof(df_vr) == DataFrames.DataFrame
+    @test PATH_var(m, 5) == ("X", 1.0)
+    @test generate_name(m, X, PX, "o") == Symbol("PX‡X")
+    @test generate_name(m, X, PL, "i") == Symbol("PL†X")
+    @test generate_name(m, RA, PU, "fd") == Symbol("PUρRA")
+    @test generate_name(m, :X, :PX, "o")[1] == Symbol("PX‡X")
+    @test generate_name(m, :X, :PL, "i")[1] == Symbol("PL†X")
+    @test generate_name(m, :RA, :PU, "fd")[1] == Symbol("PUρRA")
 
     # For now just run these functions, we might add tests for the results
     # at a later point
-    repr(MIME("text/plain"), vr)
+    repr(MIME("text/plain"), df_vr)
     repr(MIME("text/plain"), m)
     repr(MIME("text/plain"), avm2)
     repr(MIME("text/latex"), avm2)
