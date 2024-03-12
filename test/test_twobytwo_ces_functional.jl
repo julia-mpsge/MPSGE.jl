@@ -63,6 +63,8 @@
     @test generate_name(m, :X, :PX, "o")[1] == Symbol("PX‡X")
     @test generate_name(m, :X, :PL, "i")[1] == Symbol("PL†X")
     @test generate_name(m, :RA, :PU, "fd")[1] == Symbol("PUρRA")
+    @test generate_name(m, X, PX, "d") == println("options are \"o\" for output, \"i\" for input, or \"fd\" for final_demand")
+    @test generate_name(m, X, PX, "d") === nothing
 
     # For now just run these functions, we might add tests for the results
     # at a later point
