@@ -279,14 +279,6 @@ end
 """
 For exporting to csv, use keyword argument bom=true for the symbols
 
-
-
-
-for i in keys(object_dictionary(jm)), 
-if isa JuMP.NonlinearExpr # these are the implicit constraint_values
-.func[2].arg[1]
-else isa JuMP.VariableRef
-
 """
 
 function var_report(m::Model, implicit::Bool=false; decimals::Int = 15, mdecimals::Int = 12)
