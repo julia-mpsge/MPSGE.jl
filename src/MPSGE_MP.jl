@@ -2,7 +2,7 @@ module MPSGE_MP
 
 using JuMP, DataFrames, PATHSolver
 
-import JuMP:fix,value
+import JuMP.Containers:DenseAxisArray
 
 include("structs.jl")
 include("show.jl")
