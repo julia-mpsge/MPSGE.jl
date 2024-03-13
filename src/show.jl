@@ -41,9 +41,19 @@ function Base.show(io::IO,S::MPSGEScalarVariable)
     end
 end
 
-function Base.show(io::IO,S::MPSGEIndexedVariable) #This could be smarter
+
+function Base.show(io::IO, S::MPSGEIndexedVariable)#This could be smarter
     print(io,S.subsectors)
 end
+function Base.show_nd(io::IO, S::MPSGEIndexedVariable)#This could be smarter
+    print(io,S.subsectors)
+end
+
+
+function Base.print_array(io::IO, X::MPSGEIndexedVariable)
+    return Base.print_array(io, X.subsectors)
+end
+
 
 #################
 ## Expressions ##
