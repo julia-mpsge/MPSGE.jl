@@ -27,35 +27,23 @@
     
     @consumer(m, RA)
 
-    @production(m, X, 
-        ScalarNest(:t; elasticity = 0, children = [
-            ScalarOutput(PX,100)
-        ]),
-        ScalarNest(:s; elasticity = .5, children = [
-            ScalarInput(PL, 25 * inputcoeff), 
-            ScalarInput(PK, 50)
-        ])
-    )
+    @production(m, X, [t = 0, s = .5], begin
+        @Output(PX,100, t)
+        @Input(PL, 25 * inputcoeff, s)
+        @Input(PK, 50, s)
+    end)
 
-    @production(m, Y,
-        ScalarNest(:t; elasticity = 0, children = [
-            ScalarOutput(PY,50)
-        ]),
-        ScalarNest(:s; elasticity = .3 * elascoeff, children = [
-            ScalarInput(PL, 20), 
-            ScalarInput(PK, 30)
-        ])
-    )
+    @production(m, Y, [t = 0, s = .3*elascoeff], begin
+        @Output(PY,50, t)
+        @Input(PL, 20, s) 
+        @Input(PK, 30, s)
+    end)
 
-    @production(m, U, 
-        ScalarNest(:t; elasticity = 0, children = [
-            ScalarOutput(PU, 75 * outputmult)
-        ]),
-        ScalarNest(:s; elasticity = 1, children = [
-            ScalarInput(PX, 100), 
-            ScalarInput(PY, 50)
-        ])
-    )
+    @production(m, U, [t = 0, s = 1], begin
+        @Output(PU, 75 * outputmult, t)
+        @Input(PX, 100, s)
+        @Input(PY, 50,  s)
+    end)
 
     @demand(m, RA,
         [ScalarDem(PU,150)],

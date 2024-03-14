@@ -85,44 +85,29 @@
        UR, (description = "Unemployment rate",)
    end)
    
-   @production(m, Y,
-       ScalarNest(:t; elasticity = etadx, children = [
-           ScalarOutput(PD, d0), 
-           ScalarOutput(PX, x0, taxes=[Tax(GOVT, tx)], reference_price=px0)
-       ]),
-       ScalarNest(:s; elasticity = esubkl, children = [
-           ScalarInput(RK, kd0, taxes=[Tax(GOVT, tk)], reference_price=rr0), 
-           ScalarInput(PL, ly0, taxes=[Tax(GOVT, tl+TAU_TL)], reference_price=pl0)
-       ])
-   )
+   @production(m, Y, [t = etadx, s = esubkl], begin   
+        @Output(PD, d0, t)
+        @Output(PX, x0, t, taxes=[Tax(GOVT, tx)], reference_price=px0)
+        @Input(RK, kd0, s, taxes=[Tax(GOVT, tk)], reference_price=rr0)
+        @Input(PL, ly0, s, taxes=[Tax(GOVT, tl+TAU_TL)], reference_price=pl0)
+
+    end)
    
-   @production(m, A, 
-       ScalarNest(:t; elasticity = 0, children = [
-           ScalarOutput(PA, a0, taxes=[Tax(GOVT, ta)])
-       ]),
-       ScalarNest(:s; elasticity = sigmadm, children = [
-           ScalarInput(PD, d0), 
-           ScalarInput(PM, m0, taxes=[Tax(GOVT, TM)], reference_price=pm0)
-       ])
-   )
+   @production(m, A, [t = 0, s = sigmadm], begin
+        @Output(PA, a0, t, taxes=[Tax(GOVT, ta)])
+        @Input(PD, d0, s)
+        @Input(PM, m0, s, taxes=[Tax(GOVT, TM)], reference_price=pm0)
+    end)
    
-   @production(m, M, 
-       ScalarNest(:t; elasticity = 0, children = [
-           ScalarOutput(PM,m0)
-       ]),
-       ScalarNest(:s; elasticity = 1, children = [
-           ScalarInput(PFX, pwm*m0)
-       ])
-   )
+   @production(m, M, [t = 0, s = 1], begin
+           @Output(PM,m0, t)
+           @Input(PFX, pwm*m0, s)
+    end)
    
-   @production(m, X, 
-       ScalarNest(:t; elasticity = 0, children = [
-           ScalarOutput(PFX, pwx*x0)
-       ]),
-       ScalarNest(:s; elasticity = 1, children = [
-           ScalarInput(PX, x0)
-       ])
-   )
+   @production(m, X, [t = 0, s = 1], begin
+        @Output(PFX, pwx*x0, t)
+        @Input(PX, x0, s)
+    end)
    
    
    @aux_constraint(m, UR, PL - PA)

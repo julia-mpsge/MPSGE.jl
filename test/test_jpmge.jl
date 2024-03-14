@@ -27,15 +27,11 @@
     @consumer(M, Y)
 
     for j∈secs
-        @production(M, X[j],
-            ScalarNest(:t; elasticity = 1, children = [
-                ScalarOutput(P[i], make0[i,j]) for i∈goods
-            ]),
-            ScalarNest(:s; elasticity = 1, children = [
-                [ScalarInput(P[i], use0[i,j]) for i∈goods];
-                [ScalarInput(PF[f],fd0[f,j] ) for f∈factors]
-            ])
-        )
+        @production(M, X[j], [t = 1, s = 1], begin
+            [@Output(P[i], make0[i,j], t) for i∈goods]...
+            [@Input(P[i], use0[i,j], s) for i∈goods]...
+            [@Input(PF[f],fd0[f,j], s ) for f∈factors]...
+        end)
     end
 
 
@@ -195,15 +191,11 @@ end
 
 
     for j∈secs
-        @production(M, X[j],
-            ScalarNest(:t; elasticity = 1, children = [
-                ScalarOutput(P[i], make0[i,j]) for i∈goods
-            ]),
-            ScalarNest(:s; elasticity = 1, children = [
-                [ScalarInput(P[i], use0[i,j]) for i∈goods];
-                [ScalarInput(PF[f],fd0[f,j] ) for f∈factors]
-            ])
-        )
+        @production(M, X[j], [ t = 1, s = 1], begin
+            [@Output(P[i], make0[i,j], t) for i∈goods]...
+            [@Input(P[i], use0[i,j], s) for i∈goods]...
+            [@Input(PF[f],fd0[f,j], s) for f∈factors]...
+        end)
     end
 
     @demand(M, Y, 
@@ -364,15 +356,11 @@ end
 
 
     for j∈secs
-        @production(M, X[j],
-            ScalarNest(:t; elasticity = 1, children = [
-                ScalarOutput(P[i], make0[i,j]) for i∈goods
-            ]),
-            ScalarNest(:s; elasticity = 1, children = [
-                [ScalarInput(P[i], use0[i,j]) for i∈goods];
-                [ScalarInput(PF[f],fd0[f,j] ) for f∈factors]
-            ])
-        )
+        @production(M, X[j], [t = 1, s = 1], begin
+            [@Output(P[i], make0[i,j], t) for i∈goods]...
+            [@Input(P[i], use0[i,j], s) for i∈goods]...
+            [@Input(PF[f],fd0[f,j], s) for f∈factors]...
+        end)
     end
 
     @demand(M, Y, 

@@ -27,36 +27,24 @@
     
     @consumer(m, RA)
     
-    @production(m, X,
-        ScalarNest(:t; elasticity = 0, children = [
-            ScalarOutput(PX, 100., taxes=[Tax(RA, otax)])
-        ]),
-        ScalarNest(:s; elasticity = esub_x, children = [
-            ScalarInput(PL, 50.), 
-            ScalarInput(PK,50.)
-        ])
-    )
+    @production(m, X, [t=0, s = esub_x], begin
+        @Output(PX, 100, t, taxes=[Tax(RA, otax)])
+        @Input(PL, 50, s)
+        @Input(PK, 50, s)
+    end)
 
 
-    @production(m, Y, 
-        ScalarNest(:t; elasticity = 0, children = [
-            ScalarOutput(PY, 50.)
-        ]),
-        ScalarNest(:s; elasticity = esub_y, children = [
-            ScalarInput(PL, 20.), 
-            ScalarInput(PK,30.)
-        ])
-    )
+    @production(m, Y, [t = 0, s = esub_y], begin
+        @Output(PY, 50, t)
+        @Input(PL, 20, s) 
+        @Input(PK, 30, s)
+    end)
 
-    @production(m, U,
-        ScalarNest(:t; elasticity = 0, children = [
-            ScalarOutput(PU,150)
-        ]),
-        ScalarNest(:s; elasticity = 1, children = [
-            ScalarInput(PX, 100.), 
-            ScalarInput(PY,50.)
-        ])
-    )
+    @production(m, U, [t = 0, s = 1], begin    
+        @Output(PU,150, t)
+        @Input(PX, 100, s) 
+        @Input(PY, 50,  s)
+    end)
 
     @demand(m, RA, 
         [ScalarDem(PU, 150. )], 
@@ -312,35 +300,24 @@ end
     
     @consumer(m, RA, index = [consumers])
     
-    @production(m, X,
-        ScalarNest(:t; elasticity = 0, children = [
-            ScalarOutput(PX, 100., taxes=[Tax(RA[:a], otaxa)])
-        ]),
-        ScalarNest(:s; elasticity = esub_x, children = [
-            ScalarInput(PL, 50.), 
-            ScalarInput(PK,50.)
-        ])
-    )
+    @production(m, X, [t = 0, s = esub_x], begin
+        @Output(PX, 100, t, taxes=[Tax(RA[:a], otaxa)])
+        @Input(PL, 50, s) 
+        @Input(PK, 50, s)
+    end)
     
-    @production(m, Y, 
-        ScalarNest(:t; elasticity = 0, children = [
-            ScalarOutput(PY, 50, taxes = [Tax(RA[:b], otaxb)])
-        ]),
-        ScalarNest(:s; elasticity = esub_y, children = [
-            ScalarInput(PL, 20.), 
-            ScalarInput(PK,30.)
-        ])
-    )
+    @production(m, Y, [t = 0, s = esub_y], begin
+        @Output(PY, 50, t, taxes = [Tax(RA[:b], otaxb)])
+        @Input(PL, 20, s) 
+        @Input(PK, 30, s)
+    end)
     
-    @production(m, U,
-        ScalarNest(:t; elasticity = 0, children = [
-            ScalarOutput(PU,150)
-        ]),
-        ScalarNest(:s; elasticity = 1, children = [
-            ScalarInput(PX, 100.), 
-            ScalarInput(PY,50.)
-        ])
-    )
+    @production(m, U, [t = 0, s = 1], begin
+        @Output(PU,150, t)
+        @Input(PX, 100, s) 
+        @Input(PY, 50,  s)
+    end)
+
     for r in consumers
         @demand(m, RA[r], 
             [ScalarDem(PU, 75. )], 
@@ -721,38 +698,26 @@ end
     
     @consumer(m, CONS)
     
-    @production(m, A,
-        ScalarNest(:t; elasticity = t_elas_a, children = [
-            ScalarOutput(PX, 80, taxes=[Tax(CONS, otax1)]), 
-            ScalarOutput(PY, 20, taxes=[Tax(CONS, otax2)])
-        ]),
-        ScalarNest(:s; elasticity = sub_elas_a, children = [
-            ScalarInput(PL, 40, taxes=[Tax(CONS, itax)]), 
-            ScalarInput(PK, 60, taxes=[Tax(CONS, itax)])
-        ])
-    )
+    @production(m, A, [t = t_elas_a, s = sub_elas_a], begin
+        @Output(PX, 80, t, taxes=[Tax(CONS, otax1)]) 
+        @Output(PY, 20, t, taxes=[Tax(CONS, otax2)])
+        @Input(PL, 40, s, taxes=[Tax(CONS, itax)])
+        @Input(PK, 60, s, taxes=[Tax(CONS, itax)])
+    end)
 
-    @production(m, B,
-        ScalarNest(:t; elasticity = t_elas_b, children = [
-            ScalarOutput(PX, 20, taxes=[Tax(CONS, otax3)]),
-            ScalarOutput(PY, 80, taxes=[Tax(CONS, otax4)])
-        ]),
-        ScalarNest(:s; elasticity = sub_elas_b, children = [
-            ScalarInput(PL, 60), 
-            ScalarInput(PK, 40)
-        ])
-    )
+    @production(m, B, [t = t_elas_b, s = sub_elas_b], begin
+        @Output(PX, 20, t, taxes=[Tax(CONS, otax3)])
+        @Output(PY, 80, t, taxes=[Tax(CONS, otax4)])
+        @Input(PL, 60, s)
+        @Input(PK, 40, s)
+    end)
             
 
-    @production(m, W, 
-        ScalarNest(:t; elasticity = 0, children = [
-            ScalarOutput(PW, 200.0)
-        ]),
-        ScalarNest(:s; elasticity = sub_elas_w, children = [
-            ScalarInput(PX, 100.0), 
-            ScalarInput(PY, 100.0)
-        ])
-    )
+    @production(m, W, [t = 0, s = sub_elas_w], begin
+        @Output(PW, 200, t)
+        @Input(PX, 100, s) 
+        @Input(PY, 100, s)
+    end)
 
 
     @demand(m, CONS, 
@@ -1386,35 +1351,23 @@ end
     
     #@parameter(m, U, 0.2)
     
-    @production(m, X,
-        ScalarNest(:t; elasticity = 0, children = [
-            ScalarOutput(PX, 100, taxes = [Tax(CONS, tx)])
-        ]),
-        ScalarNest(:s; elasticity = 1, children = [
-            ScalarInput(PK, 50, taxes = [Tax(CONS,tkx)])
-            ScalarInput(PL, 40)
-        ])
-    )
+    @production(m, X, [t = 0, s = 1], begin
+            @Output(PX, 100, t, taxes = [Tax(CONS, tx)])
+            @Input(PK, 50, s, taxes = [Tax(CONS,tkx)])
+            @Input(PL, 40, s)
+    end)
     
-    @production(m, Y, 
-        ScalarNest(:t; elasticity = 0, children = [
-            ScalarOutput(PY, 100, taxes = [Tax(CONS, ty)])
-        ]),
-        ScalarNest(:s; elasticity = 1, children = [
-            ScalarInput(PL, 60), 
-            ScalarInput(PK, 40)
-        ])
-    )
+    @production(m, Y, [t = 0, s = 1], begin
+        @Output(PY, 100, t, taxes = [Tax(CONS, ty)])
+        @Input(PL, 60, s) 
+        @Input(PK, 40, s)
+    end)
     
-    @production(m, W, 
-        ScalarNest(:t; elasticity = 0, children = [
-            ScalarOutput(PW, 200)
-        ]),
-        ScalarNest(:s; elasticity = 1, children = [
-            ScalarInput(PX, 100), 
-            ScalarInput(PY, 100)
-        ])
-    )
+    @production(m, W, [t = 0, s = 1], begin
+        @Output(PW, 200, t)
+        @Input(PX, 100, s) 
+        @Input(PY, 100, s)
+    end)
     
     @demand(m, CONS,
         [ScalarDem(PW,200)],
@@ -1614,63 +1567,36 @@ end
 
     #@parameter(m, U, 0.2)
 
-    @production(m, X,
-        ScalarNest(:t; elasticity = 0, children = [
-            ScalarOutput(PX, 120)
-        ]),
-        ScalarNest(:s; elasticity = 1, children = [
-            ScalarInput(PLS, 48),
-            ScalarInput(PKS, 72)
-        ])
-    )
+    @production(m, X, [t = 0, s = 1], begin
+        @Output(PX, 120, t)
+        @Input(PLS, 48, s)
+        @Input(PKS, 72, s)
+    end)
 
-    @production(m, Y, 
-        ScalarNest(:t; elasticity = 0, children = [
-            ScalarOutput(PY, 120)
-        ]),
-        ScalarNest(:s; elasticity = 1, children = [
-            ScalarInput(PLS, 72), 
-            ScalarInput(PKS, 48)
-        ])
-    )
+    @production(m, Y, [t = 0, s = 1], begin
+        @Output(PY, 120, t)
+        @Input(PLS, 72, s) 
+        @Input(PKS, 48, s)
+    end)
 
-    @production(m, W, 
-        ScalarNest(:t; elasticity = 0, children = [
-            ScalarOutput(PW, 340)
-        ]),
-        ScalarNest(:s; elasticity = .7, children = [
-            ScalarInput(PL, 100),
-            ScalarNest(:AW; elasticity = 1, children = [
-                ScalarInput(PX, 120),
-                ScalarInput(PY, 120)
-            ])
-        ])
-    )
+    @production(m, W, [t = 0, s = .7, AW => s = 1], begin
+        @Output(PW, 340, t)
+        @Input(PL, 100, s)
+        @Input(PX, 120, AW)
+        @Input(PY, 120, AW)
+    end)
 
 
-    @production(m, TL,
-        ScalarNest(:t; elasticity = 0, children = [
-            ScalarOutput(PLS, 120.)
-        ]), 
-        ScalarNest(:s; elasticity = 1, children = [
-            ScalarInput(PL, 100., taxes=[Tax(CONS, txl*TAU)])
-        ])
+    @production(m, TL, [t = 0, s = 1], begin
+        @Output(PLS, 120, t)
+        @Input(PL, 100, s, taxes=[Tax(CONS, txl*TAU)])
+    end)
             
-    )
+    @production(m, TK, [t = 0, s = 1], begin
+        @Output(PKS, 120, t)
+        @Input(PK, 100, s, taxes=[Tax(CONS, txk*TAU)])
+    end)    
             
-    @production(m, TK,
-        ScalarNest(:t; elasticity = 0, children = [
-            ScalarOutput(PKS, 120.)
-        ]), 
-        ScalarNest(:s; elasticity = 1, children = [
-            ScalarInput(PK, 100., taxes=[Tax(CONS, txk*TAU)])
-        ])
-            
-    )    
-            
-
-        
-
     @demand(m, CONS,
         [ScalarDem(PW,340)],
         [ 
@@ -1933,35 +1859,23 @@ end
     @auxiliary(m, MARKUP, index = [[:a,:b]]) #benchmark = .2
     
     
-    @production(m, X,
-        ScalarNest(:t; elasticity = 0, children = [
-            ScalarOutput(PX, 80, taxes = [Tax(CONS, MARKUP[:a])])
-        ]),
-        ScalarNest(:s; elasticity = 1, children = [
-            ScalarInput(PL, 14),
-            ScalarInput(PK, 50)
-        ])
-    )
+    @production(m, X, [t = 0, s = 1], begin
+        @Output(PX, 80, t, taxes = [Tax(CONS, MARKUP[:a])])
+        @Input(PL, 14, s)
+        @Input(PK, 50, s)
+    end)
     
-    @production(m, Y, 
-        ScalarNest(:t; elasticity = 0, children = [
-            ScalarOutput(PY, 100)
-        ]),
-        ScalarNest(:s; elasticity = 1, children = [
-            ScalarInput(PL, 60), 
-            ScalarInput(PK, 40)
-        ])
-    )
+    @production(m, Y, [t = 0, s = 1], begin
+        @Output(PY, 100, t)
+        @Input(PL, 60, s) 
+        @Input(PK, 40, s)
+    end)
     
-    @production(m, W, 
-        ScalarNest(:t; elasticity = 0, children = [
-            ScalarOutput(PW, 180)
-        ]),
-        ScalarNest(:s; elasticity = 9, children = [
-            ScalarInput(PX, 80),
-            ScalarInput(PY, 100)
-        ])
-    )
+    @production(m, W, [t = 0, s = 9], begin
+        @Output(PW, 180, t)
+        @Input(PX, 80,  s)
+        @Input(PY, 100, s)
+    end)
     
     @demand(m, CONS,
         [ScalarDem(PW, 180)],
