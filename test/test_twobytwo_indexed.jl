@@ -32,26 +32,18 @@
     @consumer(m, C, index = [consumers])
 
     for i in goods
-        @production(m, Y[i], 
-            ScalarNest(:t; elasticity = 0, children = [
-                ScalarOutput(PC[i], supply[i], taxes = [Tax(C[:ra], outax[i])])
-            ]),
-            ScalarNest(:s; elasticity = 1, children = [
-                ScalarInput(PF[:l], factor[i,:l], taxes=[Tax(C[:ra],intax[i])]), 
-                ScalarInput(PF[:k], factor[i,:k])
-            ])
-        )      
+        @production(m, Y[i], [t = 0, s = 1], begin
+            @Output(PC[i], supply[i],    t, taxes = [Tax(C[:ra], outax[i])])
+            @Input(PF[:l], factor[i,:l], s, taxes = [Tax(C[:ra], intax[i])]) 
+            @Input(PF[:k], factor[i,:k], s)
+        end)      
     end
 
-    @production(m, U, 
-        ScalarNest(:t; elasticity = 0, children = [
-            ScalarOutput(PU, 150)
-        ]),
-        ScalarNest(:s; elasticity = 1, children = [
-            ScalarInput(PC[:x], 100),
-            ScalarInput(PC[:y], 50)
-        ])
-    )
+    @production(m, U, [t = 0, s = 1], begin
+        @Output(PU, 150, t)
+        @Input(PC[:x], 100, s)
+        @Input(PC[:y], 50, s)
+    end)
     
     @demand(m, C[:ra],
         [ScalarDem(PU,150)],
@@ -234,25 +226,17 @@ end
 
 
     for i in goods
-        @production(m, Y[i], 
-            ScalarNest(:t; elasticity = 0, children = [
-                ScalarOutput(PC[i], supply[i])
-            ]),
-            ScalarNest(:s; elasticity = 1, children = [
-                ScalarInput(PF[:l], factor[i,:l]), 
-                ScalarInput(PF[:k], factor[i,:k])
-            ])
-        )      
+        @production(m, Y[i], [t = 0, s = 1], begin 
+            @Output(PC[i], supply[i], t)
+            @Input(PF[:l], factor[i,:l], s)
+            @Input(PF[:k], factor[i,:k], s)
+        end)      
     end
 
-    @production(m, U, 
-        ScalarNest(:t; elasticity = 0, children = [
-            ScalarOutput(PU, 150)
-        ]),
-        ScalarNest(:s; elasticity = 1, children = [
-            ScalarInput(PC[i], supply[i], reference_price = pricepci[i]) for i∈goods
-        ])
-    )
+    @production(m, U, [t = 0, s = 1], begin
+            @Output(PU, 150, t)
+            [@Input(PC[i], supply[i], s, reference_price = pricepci[i]) for i∈goods]...
+    end)
     
     @demand(m, C[:ra],
         [ScalarDem(PU,150)],
@@ -422,27 +406,17 @@ end
     @consumer(m, C, index = [consumers])
 
     for i in goods
-        @production(m, Y[i], 
-            ScalarNest(:t; elasticity = 0, children = [
-                ScalarOutput(PC[i], supply[i])
-            ]),
-            ScalarNest(:s; elasticity = 1, children = [
-                ScalarInput(PF[:l], factor[i,:l])
-                ScalarInput(PF[:k], factor[i,:k])
-            ])
-        )      
+        @production(m, Y[i], [t = 0, s = 1], begin
+            @Output(PC[i], supply[i], t)
+            @Input(PF[:l], factor[i,:l], s)
+            @Input(PF[:k], factor[i,:k], s)
+        end)      
     end
     
-    @production(m, U, 
-        ScalarNest(:t; elasticity = 0, children = [
-            ScalarOutput(PU, 150)
-        ]),
-        ScalarNest(:s; elasticity = 1, children = [
-            ScalarNest(:PCi; elasticity = 1, children = [
-                ScalarInput(PC[i], supply[i], reference_price = pricepci[i]) for i∈goods
-            ])
-        ])
-    )
+    @production(m, U, [t = 0, s = 1, PCi => s = 1], begin
+        @Output(PU, 150, t)
+        [@Input(PC[i], supply[i], PCi, reference_price = pricepci[i]) for i∈goods]...
+    end)
     
     @demand(m, C[:ra],
         [ScalarDem(PU,150)],
@@ -616,25 +590,17 @@ end
     @consumer(m, C, index = [consumers])
 
     for i in goods
-        @production(m, Y[i], 
-            ScalarNest(:t; elasticity = 0, children = [
-                ScalarOutput(PC[i], supply[i])
-            ]),
-            ScalarNest(:s; elasticity = 1, children = [
-                ScalarInput(PF[:l], factor[i,:l]), 
-                ScalarInput(PF[:k], factor[i,:k])
-            ])
-        )      
+        @production(m, Y[i], [t = 0, s = 1], begin
+            @Output(PC[i], supply[i], t)
+            @Input(PF[:l], factor[i,:l], s)
+            @Input(PF[:k], factor[i,:k], s)
+        end)      
     end
 
-    @production(m, U, 
-        ScalarNest(:t; elasticity = 0, children = [
-            ScalarOutput(PU[f], cons[f]) for f∈factors
-        ]),
-        ScalarNest(:s; elasticity = 1, children = [
-            ScalarInput(PC[i], supply[i]) for i∈goods
-        ])
-    )
+    @production(m, U, [t =0, s = 1], begin
+        [@Output(PU[f], cons[f],  t) for f∈factors]...
+        [@Input(PC[i], supply[i], s) for i∈goods]...
+    end)
 
     @demand(m, C[:ra],
         [ScalarDem(PU[f], cons[f]; reference_price = pricepu[f]) for f∈factors],

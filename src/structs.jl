@@ -26,9 +26,15 @@ abstract type AbstractNest end;
 ####################
 
 #Getters
-name(V::MPSGEVariable) = V.name
+base_name(V::MPSGEVariable) = V.name
+name(V::MPSGEVariable) = ismissing(subindex(V)) ? V.name : Symbol(V.name,"_",join(subindex(V),"_"))
 model(V::MPSGEVariable) = V.model
 description(V::MPSGEVariable) = V.description
+
+
+Base.getindex(S::MPSGEIndexedVariable, index...) = S.subsectors[index...]
+
+subindex(V::MPSGEVariable) = missing
 
 subindex(V::MPSGEScalarVariable) = V.subindex
 
@@ -319,13 +325,13 @@ quantity(N::AbstractNest) = base_quantity(N)
 base_quantity(N::AbstractNest) = sum(quantity(c) for c∈children(N); init=0)#_get_parameter_value(N.quantity)
 name(N::AbstractNest) = N.name
 children(N::AbstractNest) = N.children
-parent(N::AbstractNest) = ismissing(N.parent) ? N : N.parent
+parent(N::AbstractNest) = ismissing(N.parent) ? name(N) : N.parent
 elasticity(N::AbstractNest) = _get_parameter_value(N.elasticity)
 raw_elasticity(N::AbstractNest) = N.elasticity
 
 
 
-# Small Setter
+# Small Setter - Deprecated? 
 set_parent(child::AbstractNest,parent::AbstractNest) = (child.parent = parent)
 set_parent(child::ScalarNetput,parent::AbstractNest) = (child.parent = parent)
 
@@ -340,31 +346,33 @@ tax(T::Tax) = _get_parameter_value(T.tax)
 #isa(T.tax, Number) ? T.tax : get_variable(T.tax)
 
 
-mutable struct ScalarInput <: ScalarNetput
+struct ScalarInput <: ScalarNetput
     commodity::ScalarCommodity
     quantity::MPSGEquantity
     reference_price::MPSGEquantity
     taxes::Vector{Tax}
-    parent::Union{AbstractNest,Missing}
+    parent::Union{Symbol,Missing}
     ScalarInput(commodity::ScalarCommodity,
                 quantity::MPSGEquantity;
                 reference_price::MPSGEquantity=1,
-                taxes = []
-        ) = new(commodity,quantity,reference_price,taxes,missing)
+                taxes = [],
+                parent = :s
+        ) = new(commodity,quantity,reference_price,taxes,parent)
 end
 
 
-mutable struct ScalarOutput <: ScalarNetput
+struct ScalarOutput <: ScalarNetput
     commodity::ScalarCommodity
     quantity::MPSGEquantity
     reference_price::MPSGEquantity
     taxes::Vector{Tax}
-    parent::Union{AbstractNest,Missing}
+    parent::Union{Symbol,Missing}
     ScalarOutput(commodity::ScalarCommodity,
                  quantity::MPSGEquantity;
                  reference_price::MPSGEquantity=1,
-                 taxes = []
-        ) = new(commodity,quantity,reference_price,taxes,missing)
+                 taxes = [],
+                 parent = :t
+        ) = new(commodity,quantity,reference_price,taxes,parent)
 end
 
 
@@ -372,14 +380,25 @@ mutable struct ScalarNest <: AbstractNest
     name::Symbol
     elasticity::MPSGEquantity
     children::Vector{Union{ScalarNest,ScalarNetput}}
-    parent::Union{ScalarNest,Missing}
-    function ScalarNest(name::Symbol;elasticity::MPSGEquantity=0,children = [])  
-        N = new(name,elasticity,children, missing)
+    parent::Union{Symbol,Missing}
+    function ScalarNest(name::Symbol;parent::Union{Symbol,Missing} = missing, elasticity::MPSGEquantity=0,children = [])  
+        N = new(name,elasticity,children, parent)
         for child in children
             set_parent(child,N)
         end
         return N
     end
+end
+
+function add_child!(N::ScalarNest, child)
+    push!(N.children, child)
+end
+
+struct Node
+    name::Symbol
+    parent::Union{Symbol,Missing}
+    elasticity::MPSGE_MP.MPSGEquantity
+    Node(name::Symbol, elasticity; parent = missing) = new(name, parent, elasticity)
 end
 
 
@@ -389,22 +408,58 @@ end
 
 mutable struct ScalarProduction
     sector::ScalarSector
-    output::Union{Nothing,ScalarNest}
-    input::Union{Nothing,ScalarNest}
+    netput::Dict{ScalarCommodity, Vector{MPSGE_MP.Netput}}
+    nest_dict::Dict{Symbol, Any}
     nested_compensated_demand::Dict
     compensated_demand::Dict
     taxes::Dict
-    ScalarProduction(sector::ScalarSector,output::ScalarNest,input::ScalarNest) = new(sector,output,input, Dict(),Dict(),Dict())
+    function ScalarProduction(sector::ScalarSector, nodes::Vector{Node}, netputs::MPSGE_MP.ScalarNetput...)
+        netput_dict = Dict{ScalarCommodity, Vector{MPSGE_MP.Netput}}()
+        
+        for netput in netputs
+            if quantity(netput) == 0 #Pre prune, don't add if quantity starts at 0
+                continue
+            end
+            C = commodity(netput)
+            if !haskey(netput_dict, C)
+                netput_dict[C] = []
+            end
+            push!(netput_dict[C], netput)
+        end
+
+        nest_dict = Dict()
+        for node in nodes
+            nest_dict[node.name] = ScalarNest(node.name; parent = node.parent, elasticity = node.elasticity)
+            if !ismissing(node.parent)
+                add_child!(nest_dict[node.parent], nest_dict[node.name])
+            end
+        end
+        
+        for (_, netputs) in netput_dict
+            for netput ∈ netputs
+                add_child!(nest_dict[netput.parent], netput)
+            end
+        end
+
+
+        new(sector, netput_dict, nest_dict, Dict(), Dict(), Dict())
+    end
 end
 
 const Production = ScalarProduction
 
 
 sector(P::Production) = P.sector
-output(P::Production) = P.output
-input(P::Production) = P.input
+input(P::Production) = P.nest_dict[:s] #Temporary
+output(P::Production) = P.nest_dict[:t] #Temporary
 taxes(P::Production) = P.taxes
+commodities(P::Production) = collect(keys(P.netput))
+commodity_netputs(P::Production) = collect(Iterators.flatten(values(P.netput)))
+commodity(P::Production, C::Commodity) = P.netput[C]
+netputs(P::Production) = P.netput
 
+parent(P::Production, T::ScalarNest) = P.nest_dict[parent(T)]
+parent(P::Production, T::ScalarNetput) = P.nest_dict[parent(T)]
 
 
 ########################

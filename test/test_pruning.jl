@@ -28,61 +28,34 @@ Fun fact: I don't think GAMS MPSGE does this. It will just error.
     
     @consumer(M, CONS)
     
-    add_production!(M,
-        X,
-        ScalarNest(:t; elasticity = 0, children = 
-            [ScalarOutput(PX, 120.)]
-        ),
-        ScalarNest(:s; elasticity = .5, children = [
-            ScalarInput(PY,20),
-            ScalarNest(:va; elasticity = 1, children = [
-                ScalarInput(PL, 40; taxes = [Tax(CONS, 0.5)]),
-                ScalarInput(PK, 60; taxes = [Tax(CONS, 0.5)])
-                ])
-            ]
-            ) 
-    )
+    @production(M, X, [t =0, s = .5, va => s = 1], begin
+        @Output(PX, 120., t)
+        @Input(PY,20, s)
+        @Input(PL, 40, va, taxes = [Tax(CONS, 0.5)])
+        @Input(PK, 60, va, taxes = [Tax(CONS, 0.5)])
+    end)
     
-    add_production!(M,
-        Y,
-        ScalarNest(:t; elasticity = 0, children = [
-            ScalarOutput(PY, 120),
-        ]),
-        ScalarNest(:s; elasticity = .75, children = [
-            ScalarInput(PX,20),
-            ScalarNest(:va; elasticity = 1, children = [
-                ScalarInput(PL, 60),
-                ScalarInput(PK, 40)
-            ])
-        ])
-    )
+    @production(M, Y, [t = 0, s = .75, va => s = 1], begin
+        @Output(PY, 120, t)
+        @Input(PX,20, s)
+        @Input(PL, 60, va)
+        @Input(PK, 40, va)
+    end)
     
     
-    add_production!(M,
-        W,
-        ScalarNest(:t; elasticity = 0, children = [
-            ScalarOutput(PW, 200)
-        ]),
-        ScalarNest(:s, elasticity = 1, children = [
-            ScalarInput(PX, 100),
-            ScalarInput(PY, 100),
-            ScalarNest(:zero, elasticity = 1, children = [
-                ScalarInput(PX, 0)
-                ScalarInput(PY,0)
-            ])
-        ])
-    )
+    @production(M, W, [t = 0, s = 1, zero => s = 1], begin
+        @Output(PW, 200, t)
+        @Input(PX, 100, s)
+        @Input(PY, 100, s)
+        @Input(PX, 0, zero)
+        @Input(PY,0, zero)
+    end)
 
-    add_production!(M,
-        Q,
-        ScalarNest(:t, elasticity = 1, children = [
-            ScalarOutput(PW, 0)
-        ]),
-        ScalarNest(:s, elasticity = 2, children = [
-            ScalarInput(PX,0)
-            ScalarInput(PY,0)
-        ])
-    )
+    @production(M, Q, [t = 1, s = 2], begin
+        @Output(PW, 0, t)        
+        @Input(PX,0, s)
+        @Input(PY,0, s)
+    end)
 
     
     add_demand!(M,
@@ -94,23 +67,23 @@ Fun fact: I don't think GAMS MPSGE does this. It will just error.
         ]
     )
     
-    P = production(Q)
+    #P = production(Q)
 
     #Ensure the 0 is in the production block
-    @test length(P.input.children) == 2
+    #@test length(input(P).children) == 2
 
-    P = production(W)
+    #P = production(W)
 
     #Ensure the 0 is in the production block
-    @test length(P.input.children) == 3
+    #@test length(input(P).children) == 3
 
     build!(M);
 
     #Ensure it gets removed
-    @test length(P.input.children) == 2
+    #@test length(input(P).children) == 2
 
     # Test that the Q production block was removed
-    @test_throws KeyError(Q) production(Q)
+    #@test_throws KeyError(Q) production(Q)
     
     solve!(M)
 

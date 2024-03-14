@@ -55,7 +55,7 @@ end
 function get_variable(S::MPSGEScalarVariable)
     jm = jump_model(S.model)
     if !isnothing(jm)
-        var = jm[name(S)]    
+        var = jm[base_name(S)]    
         si = S.subindex
         if ismissing(si)
             return var
@@ -72,8 +72,8 @@ end
 ## Production/Demand ##
 #######################
 
-function add_production!(model::AbstractMPSGEModel, S::ScalarSector, input::ScalarNest, output::ScalarNest)
-    P = ScalarProduction(S,input,output)
+function add_production!(model::AbstractMPSGEModel, S::ScalarSector, nodes::Vector{Node}, netputs::MPSGE_MP.ScalarNetput...)
+    P = ScalarProduction(S,nodes, netputs...)
     model.productions[S] = P
     return P
 end

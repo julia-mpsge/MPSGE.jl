@@ -26,7 +26,7 @@ export  MPSGEModel,
         Tax, ScalarInput, ScalarOutput,
         ScalarNest, ScalarProduction,
         ScalarDem, ScalarEndowment, ScalarDemand,
-        ScalarAuxConstraint
+        ScalarAuxConstraint, Node
 
 #Struct access
 export  name, quantity, production, jump_model, sectors, commodities,
@@ -46,7 +46,8 @@ export  @sector,    @sectors,
         @parameter, @parameters,
         @auxiliary, @auxiliaries,
         @production, @demand,
-        @aux_constraint
+        @aux_constraint,
+        @Output, @Input
 
 #Building
 export  build!, compensated_demand_dictionary, compensated_demand, tau, 

@@ -18,17 +18,17 @@ function find_levels(T::ScalarNest)
     return out
 end
 
-
+#Can be greatly simplified
 function build_nested_compensated_demand!(P::ScalarProduction)
-    for level in reverse(find_levels(P.input))
+    for level in reverse(find_levels(input(P)))
         for T in level
-            P.nested_compensated_demand[T,parent(T)] = build_nested_compensated_demand(P,T,-1)
+            P.nested_compensated_demand[name(T),parent(T)] = build_nested_compensated_demand(P,T,-1)
         end
     end 
 
-    for level in reverse(find_levels(P.output))
+    for level in reverse(find_levels(output(P)))
         for T in level
-            P.nested_compensated_demand[T,parent(T)] = build_nested_compensated_demand(P,T,1)
+            P.nested_compensated_demand[name(T),parent(T)] = build_nested_compensated_demand(P,T,1)
         end
     end
 
@@ -59,25 +59,27 @@ function build_nested_compensated_demand(P::ScalarProduction,T::ScalarNetput, si
 end
 
 function cobb_douglass(P::ScalarProduction, T::ScalarNest, sign)
-    return prod(P.nested_compensated_demand[child,T]^(quantity(child)/quantity(T)) for child in children(T); init=1)
+    return prod(P.nested_compensated_demand[name(child),name(T)]^(quantity(child)/quantity(T)) for child in children(T); init=1)
 end
 
 function CES(P::ScalarProduction, T::ScalarNest, sign::Int)
-    return sum(quantity(child)/quantity(T) * P.nested_compensated_demand[child,T]^(1+sign*elasticity(T)) for child in children(T); init=0) ^ (1/(1+sign*elasticity(T)))
+    return sum(quantity(child)/quantity(T) * P.nested_compensated_demand[name(child),name(T)]^(1+sign*elasticity(T)) for child in children(T); init=0) ^ (1/(1+sign*elasticity(T)))
 end
 
-
+#Needs a major refactor
 function build_compensated_demand!(P::ScalarProduction)
 
     build_nested_compensated_demand!(P)
 
-    prod_commodities = ScalarNetput[e for level∈find_levels(P.input) for e∈level if e isa ScalarNetput]
-    append!(prod_commodities,[e for level∈find_levels(P.output) for e∈level if e isa ScalarNetput])
+    prod_commodities = ScalarNetput[e for level∈find_levels(input(P)) for e∈level if e isa ScalarNetput]
+    append!(prod_commodities,[e for level∈find_levels(output(P)) for e∈level if e isa ScalarNetput])
+
+    #prod_commodities = commodity_netputs(P) #not exactly what I want ...
 
     #T = prod_commodities[1]
     for T∈prod_commodities
         C = commodity(T)
-        nest = name(parent(T))
+        nest = parent(T)
 
         sign = T isa ScalarInput ? -1 : 1
 
@@ -98,11 +100,11 @@ function build_compensated_demand!(P::ScalarProduction)
 
         #build a vector of 2-tuples chaining from the leaf to the root
         nest_list = []
-        while T != parent(T)
-            push!(nest_list, (T,parent(T)))
-            T = parent(T)
+        while name(T) != name(parent(P,T))
+            push!(nest_list, (T,parent(P,T)))
+            T = parent(P,T)
         end
-        P.compensated_demand[C][nest] = -sign * quantity * prod((P.nested_compensated_demand[parent_T,parent(parent_T)]/P.nested_compensated_demand[T,parent(T)])^(-sign*elasticity(parent_T)) for (T,parent_T)∈nest_list  if elasticity(parent_T)!=0; init = 1)
+        P.compensated_demand[C][nest] = -sign * quantity * prod((P.nested_compensated_demand[name(parent_T), parent(parent_T)]/P.nested_compensated_demand[name(T),parent(T)])^(-sign*elasticity(parent_T)) for (T,parent_T)∈nest_list  if elasticity(parent_T)!=0; init = 1)
     end
 end
 
