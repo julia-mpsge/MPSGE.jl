@@ -98,7 +98,10 @@ macro auxiliaries(model, block)
 end
 
 macro production(model, sector, nodes, netputs...)
-    constr_call = :(add_production!($(esc(model)), $(esc(sector)), $(esc(nodes)), $netputs...))
+    constr_call = :(add_production!($(esc(model)), $(esc(sector)), $(esc(nodes))))
+    for netput in netputs
+        push!(constr_call.args, esc(netput))
+    end
     #_add_kw_args(constr_call, kwargs)
     return :($constr_call)
 end
