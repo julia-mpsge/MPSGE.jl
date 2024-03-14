@@ -397,6 +397,9 @@ mutable struct ScalarProduction
         netput_dict = Dict{ScalarCommodity, Vector{MPSGE_MP.Netput}}()
         
         for netput in netputs
+            if quantity(netput) == 0 #Pre prune, don't add if quantity starts at 0
+                continue
+            end
             C = commodity(netput)
             if !haskey(netput_dict, C)
                 netput_dict[C] = []
