@@ -32,10 +32,7 @@ model(V::MPSGEVariable) = V.model
 description(V::MPSGEVariable) = V.description
 
 
-Base.getindex(S::MPSGEIndexedVariable, index...) = S.subsectors[index...]
-
 subindex(V::MPSGEVariable) = missing
-
 subindex(V::MPSGEScalarVariable) = V.subindex
 
 # Indexed Getters
