@@ -14,16 +14,18 @@ function prune!(T::MPSGE_MP.ScalarNest)
     return T
 end
 
+
+#Needs a massive fix
 function prune!(P::MPSGE_MP.Production)
-    P.input = prune!(P.input)
-    P.output = prune!(P.output)
-    if isnothing(P.input) && isnothing(P.output)
+    P.nest_dict[:s] = prune!(input(P))
+    P.nest_dict[:t] = prune!(output(P))
+    if isnothing(input(P)) && isnothing(output(P))
         S = sector(P)
         M = MPSGE_MP.model(S)
         delete!(M.productions,S)
         return nothing
     end
-    @assert !isnothing(P.input) && !isnothing(P.output) "Production block for $(sector(P)) has a 0 quantity in either output or input, but not both."
+    @assert !isnothing(input(P)) && !isnothing(output(P)) "Production block for $(sector(P)) has a 0 quantity in either output or input, but not both."
     return P
 end
 
