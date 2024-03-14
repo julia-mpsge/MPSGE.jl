@@ -1,6 +1,6 @@
 name = "MPSGE"
 uuid = "d5dc2f44-7ae2-49e9-bc77-b47b6bca565d"
-version = "0.4.0-DEV"
+version = "0.4.0"
 
 [deps]
 JuMP = "4076af6c-e467-56ae-b986-b466b2749572"
