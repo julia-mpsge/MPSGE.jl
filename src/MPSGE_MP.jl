@@ -26,7 +26,7 @@ export  MPSGEModel,
         Tax, ScalarInput, ScalarOutput,
         ScalarNest, ScalarProduction,
         ScalarDem, ScalarEndowment, ScalarDemand,
-        ScalarAuxConstraint
+        ScalarAuxConstraint, Node
 
 #Struct access
 export  name, quantity, production, jump_model, sectors, commodities,
