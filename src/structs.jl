@@ -24,12 +24,14 @@ abstract type AbstractNest end;
 ####################
 
 #Getters
-name(V::MPSGEVariable) = V.name
+base_name(V::MPSGEVariable) = V.name
+name(V::MPSGEVariable) = ismissing(subindex(V)) ? V.name : Symbol(V.name,"_",join(subindex(V),"_"))
 model(V::MPSGEVariable) = V.model
 description(V::MPSGEVariable) = V.description
 
 Base.getindex(S::MPSGEIndexedVariable, index...) = S.subsectors[index...]
 
+subindex(V::MPSGEVariable) = missing
 subindex(V::MPSGEScalarVariable) = V.subindex
 
 
