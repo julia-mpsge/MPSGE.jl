@@ -238,6 +238,18 @@ function Base.show(io::IO, E::Endowment)
 end
 
 """
+    generate_name(::Model, Sector or Consumer name, Commodity,  )
+    Function that outputs a dataframe with all model variables, their value, and margin of the associated constraint (if not fixed)
+### Options
+    implicit=true (default=false) to include all implicit 'variables'/named expressions
+    keyword arguments:
+    demimals=::Int    set the max decimals for the variable value
+    mdecimals=::Int   set the max decimals for the margin value from the variable's complementary constraint equation
+### Example
+```julia-repl
+julia> 
+```
+
 A function to return the internal names of generated 'implicit' variables, combinations of a Sector or Consumer, and a commodity,
 and a string argument for outputs/compensated supply="o", inputs/compensated demand ="i", final demand ="fd".
 Or for a nested sector, symbols for the top level sector and nest name.
@@ -277,8 +289,25 @@ function generate_name(m::Model, s::Symbol, commod_or_nest::Symbol, type::String
 end
 
 """
-For exporting to csv, use keyword argument bom=true for the symbols
-
+    var_report(::Model, implicit::Boolean; keywordargs)
+    Function that outputs a dataframe with all model variables, their value, and margin of the associated constraint (if not fixed)
+### Options
+    implicit=true (default=false) to include all implicit 'variables'/named expressions
+    keyword arguments:
+    demimals=::Int    set the max decimals for the variable value
+    mdecimals=::Int   set the max decimals for the margin value from the variable's complementary constraint equation
+### Example
+```julia-repl
+julia> var_report(model, true; decimals=4)
+15×3 DataFrame
+ Row │ var            value    margin    
+     │ GenericV…      Float64  Float64?  
+─────┼───────────────────────────────────
+   1 │ endow              1.1  missing   
+  ⋮  │       ⋮           ⋮         ⋮
+   7 │ X              1.0469  -1.4983e-8
+```
+Note: For exporting dataframe to csv, use keyword argument bom=true for the symbols
 """
 
 function var_report(m::Model, implicit::Bool=false; decimals::Int = 15, mdecimals::Int = 12)
