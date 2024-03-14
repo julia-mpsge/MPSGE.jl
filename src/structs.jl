@@ -6,8 +6,10 @@ abstract type AbstractMPSGEModel end
 
 abstract type MPSGEVariable end
 
-abstract type MPSGEIndexedVariable <: MPSGEVariable end
+#abstract type MPSGEIndexedVariable <: MPSGEVariable end
 abstract type MPSGEScalarVariable <: MPSGEVariable end
+
+abstract type MPSGEIndexedVariable{T,N} <: AbstractArray{T,N} end
 
 abstract type abstractMPSGEExpr end
 
@@ -29,14 +31,30 @@ name(V::MPSGEVariable) = ismissing(subindex(V)) ? V.name : Symbol(V.name,"_",joi
 model(V::MPSGEVariable) = V.model
 description(V::MPSGEVariable) = V.description
 
+
 Base.getindex(S::MPSGEIndexedVariable, index...) = S.subsectors[index...]
 
 subindex(V::MPSGEVariable) = missing
+
 subindex(V::MPSGEScalarVariable) = V.subindex
 
+# Indexed Getters
+name(V::MPSGEIndexedVariable) = V.name
+model(V::MPSGEIndexedVariable) = V.model
+description(V::MPSGEIndexedVariable) = V.description
+subvariables(V::MPSGEIndexedVariable) = V.subsectors
 
 
 
+# Abstract array interface
+Base.getindex(V::MPSGEIndexedVariable, index...) = V.subsectors[index...]
+Base.getindex(A::MPSGEIndexedVariable, idx::CartesianIndex) = A.subsectors[idx]
+
+Base.axes(A::MPSGEIndexedVariable) = axes(subvariables(A))
+Base.CartesianIndices(A::MPSGEIndexedVariable) = CartesianIndices(subvariables(A))
+Base.size(V::MPSGEIndexedVariable) = size(subvariables(V))
+Base.length(V::MPSGEIndexedVariable) = length(subvariables(V))
+Broadcast.broadcastable(V::MPSGEIndexedVariable) = subvariables(V)
 
 struct ScalarSector <: MPSGEScalarVariable
     model::AbstractMPSGEModel
@@ -50,10 +68,10 @@ struct ScalarSector <: MPSGEScalarVariable
     ScalarSector(model::AbstractMPSGEModel,name::Symbol,subindex; description = "") = new(model,name,subindex,description)
 end
 
-struct IndexedSector <: MPSGEIndexedVariable
+struct IndexedSector{N} <: MPSGEIndexedVariable{ScalarSector,N}
     model::AbstractMPSGEModel
     name::Symbol
-    subsectors::Any
+    subsectors::DenseAxisArray{ScalarSector,N}
     index::Any
     description::String
     function IndexedSector(model::AbstractMPSGEModel,name::Symbol,index; description = "") 
@@ -64,7 +82,7 @@ struct IndexedSector <: MPSGEIndexedVariable
         end
         
         sr = JuMP.Containers.DenseAxisArray(temp_array, index...)
-        S = new(model,name, sr, index, description)
+        S = new{length(index)}(model,name, sr, index, description)
         return S
     end
 end
@@ -84,10 +102,10 @@ struct ScalarCommodity <: MPSGEScalarVariable
     ScalarCommodity(model::AbstractMPSGEModel,name::Symbol,subindex; description = "") = new(model,name,subindex, description)
 end
 
-struct IndexedCommodity <: MPSGEIndexedVariable
+struct IndexedCommodity{N} <: MPSGEIndexedVariable{ScalarCommodity,N}
     model::AbstractMPSGEModel
     name::Symbol
-    subsectors::Any
+    subsectors::DenseAxisArray{ScalarCommodity,N}
     index::Any
     description::String
     function IndexedCommodity(model::AbstractMPSGEModel,name::Symbol,index; description = "") 
@@ -98,7 +116,7 @@ struct IndexedCommodity <: MPSGEIndexedVariable
         end
         
         sr = JuMP.Containers.DenseAxisArray(temp_array, index...)
-        S = new(model,name, sr, index, description)
+        S = new{length(index)}(model,name, sr, index, description)
         return S
     end
 end
@@ -119,10 +137,10 @@ struct ScalarConsumer <: MPSGEScalarVariable
     ScalarConsumer(model::AbstractMPSGEModel,name::Symbol,subindex; description = "") = new(model,name,subindex, description)
 end
 
-struct IndexedConsumer <: MPSGEIndexedVariable
+struct IndexedConsumer{N} <: MPSGEIndexedVariable{ScalarConsumer,N}
     model::AbstractMPSGEModel
     name::Symbol
-    subsectors::Any
+    subsectors::DenseAxisArray{ScalarConsumer,N}
     index::Any
     description::String
     function IndexedConsumer(model::AbstractMPSGEModel,name::Symbol,index; description = "") 
@@ -133,7 +151,7 @@ struct IndexedConsumer <: MPSGEIndexedVariable
         end
         
         sr = JuMP.Containers.DenseAxisArray(temp_array, index...)
-        S = new(model,name, sr, index, description)
+        S = new{length(index)}(model,name, sr, index, description)
         return S
     end
 end
@@ -151,10 +169,10 @@ mutable struct ScalarParameter <: MPSGEScalarVariable
 end
 
 
-struct IndexedParameter <: MPSGEIndexedVariable
+struct IndexedParameter{N} <: MPSGEIndexedVariable{ScalarParameter,N}
     model::AbstractMPSGEModel
     name::Symbol
-    subsectors::Any
+    subsectors::DenseAxisArray{ScalarParameter,N}
     index::Any
     description::String
     function IndexedParameter(model::AbstractMPSGEModel,name::Symbol,index, value::Number; description = "") 
@@ -165,7 +183,7 @@ struct IndexedParameter <: MPSGEIndexedVariable
         end
         
         sr = JuMP.Containers.DenseAxisArray(temp_array, index...)
-        S = new(model,name, sr, index, description)
+        S = new{length(index)}(model,name, sr, index, description)
         return S
     end
 
@@ -178,14 +196,14 @@ struct IndexedParameter <: MPSGEIndexedVariable
         end
         
         sr = JuMP.Containers.DenseAxisArray(temp_array, index...)
-        S = new(model,name, sr, index, description)
+        S = new{length(index)}(model,name, sr, index, description)
         return S
     end
 end
 
 const Parameter = Union{ScalarParameter,IndexedParameter}
 
-value(P::ScalarParameter) = P.value
+JuMP.value(P::ScalarParameter) = P.value
 
 function set_value!(P::ScalarParameter, value::Number)
     P.value = value
@@ -210,10 +228,10 @@ struct ScalarAuxiliary <: MPSGEScalarVariable
     ScalarAuxiliary(model::AbstractMPSGEModel,name::Symbol,subindex; description = "") = new(model,name,subindex, description)
 end
 
-struct IndexedAuxiliary <: MPSGEIndexedVariable
+struct IndexedAuxiliary{N} <: MPSGEIndexedVariable{ScalarAuxiliary,N}
     model::AbstractMPSGEModel
     name::Symbol
-    subsectors::Any
+    subsectors::DenseAxisArray{ScalarAuxiliary,N}
     index::Any
     description::String
     function IndexedAuxiliary(model::AbstractMPSGEModel,name::Symbol,index; description = "") 
@@ -224,7 +242,7 @@ struct IndexedAuxiliary <: MPSGEIndexedVariable
         end
         
         sr = JuMP.Containers.DenseAxisArray(temp_array, index...)
-        S = new(model,name, sr, index, description)
+        S = new{length(index)}(model,name, sr, index, description)
         return S
     end
 end
@@ -243,7 +261,7 @@ end
 const MPSGEquantity = Union{Real,MPSGEScalarVariable,MPSGEExpr}
 const _MPSGEquantity = Union{MPSGEScalarVariable,MPSGEExpr}
 
-value(x::abstractMPSGEExpr) = value(_get_parameter_value(x))
+JuMP.value(x::abstractMPSGEExpr) = value(_get_parameter_value(x))
 
 
 Base.:+(x::MPSGEquantity,y::_MPSGEquantity) = MPSGEExpr(:+, [x, y])

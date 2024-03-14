@@ -67,10 +67,6 @@ function get_variable(S::MPSGEScalarVariable)
 
 end
 
-function get_variable(S::MPSGEIndexedVariable)
-    return get_variable.(S.subsectors)
-end
-
 
 #######################
 ## Production/Demand ##

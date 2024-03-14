@@ -1,6 +1,6 @@
-value(X::MPSGEScalarVariable) = JuMP.value(get_variable(X))
+JuMP.value(X::MPSGEScalarVariable) = JuMP.value(get_variable(X)) #Issue if the model isn't defined
 
-fix(X::MPSGEScalarVariable, value::Real) = JuMP.fix(get_variable(X), value; force=true)
+JuMP.fix(X::MPSGEScalarVariable, value::Real) = JuMP.fix(get_variable(X), value; force=true)
 
 function JuMP.unfix(X::MPSGEScalarVariable) 
     JuMP.unfix(get_variable(X))
