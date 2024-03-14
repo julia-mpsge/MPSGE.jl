@@ -1,6 +1,6 @@
 name = "MPSGE"
 uuid = "d5dc2f44-7ae2-49e9-bc77-b47b6bca565d"
-version = "0.4.0-DEV"
+version = "0.4.0"
 
 [deps]
 CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
@@ -12,6 +12,7 @@ PrettyTables = "08abe8d2-0d0c-5749-adfa-8a2ac140af0d"
 
 [compat]
 DataFrames = "1"
+CSV = "0.10"
 JuMP = "1.15.1"
 MacroTools = "0.5"
 PATHSolver = "1.7.3"
