@@ -97,8 +97,8 @@ macro auxiliaries(model, block)
     return _plural_macro_code(model, block, Symbol("@auxiliary"))
 end
 
-macro production(model, sector, output, input)
-    constr_call = :(add_production!($(esc(model)), $(esc(sector)), $(esc(output)), $(esc(input))))
+macro production(model, sector, nodes, netputs...)
+    constr_call = :(add_production!($(esc(model)), $(esc(sector)), $(esc(nodes)), $netputs...))
     #_add_kw_args(constr_call, kwargs)
     return :($constr_call)
 end
