@@ -97,16 +97,6 @@ macro auxiliaries(model, block)
     return _plural_macro_code(model, block, Symbol("@auxiliary"))
 end
 
-macro production(model, sector, nodes, netputs...)
-    constr_call = :(add_production!($(esc(model)), $(esc(sector)), $(esc(nodes))))
-    for netput in netputs
-        push!(constr_call.args, esc(netput))
-    end
-    #_add_kw_args(constr_call, kwargs)
-    return :($constr_call)
-end
-
-
 macro demand(model, consumer, demands, endowments, kwargs...)
     constr_call = :(add_demand!($(esc(model)), $(esc(consumer)), $(esc(demands)), $(esc(endowments))))
     _add_kw_args(constr_call, kwargs)
@@ -117,6 +107,73 @@ end
 
 macro aux_constraint(model, A, constraint)
     constr_call = :(add_aux_constraint!($(esc(model)), $(esc(A)), $(esc(constraint))))
+    #_add_kw_args(constr_call, kwargs)
+    return :($constr_call)
+end
+
+#######################
+## Production Blocks ##
+#######################
+
+function _strip_value(nest)
+    value = nest.args[2]
+    if Meta.isexpr(value, :block)
+        value = value.args[2]
+    end
+    return value
+end
+
+function _strip_nest_name(nest)
+    parent = missing
+    name = nest.args[1]
+    if Meta.isexpr(name, :call)
+        parent = name.args[3]
+        name = name.args[2]
+    end
+    return parent, name
+end
+
+function _parse_nest(nest)
+    if !Meta.isexpr(nest, :(=))
+        error("Invalid syntax for nesting $nest. Required to have an = in "*
+        "statement. `s = 0` or `va => s = 0`."
+        )
+    end
+    value = _strip_value(nest)
+    parent, name = _strip_nest_name(nest)
+    if !ismissing(parent)
+        return :(MPSGE_MP.Node($(QuoteNode(name)), $(value); parent = $(QuoteNode(parent))))
+    else
+        return :(MPSGE_MP.Node($(QuoteNode(name)), $(value)))
+    end
+
+end
+
+macro Output(commodity, quantity, nest, kwargs...)
+    constr_call = :(ScalarOutput($(esc(commodity)), $(esc(quantity)); parent = $(QuoteNode(nest))))
+    _add_kw_args(constr_call, kwargs)
+    return :($constr_call)
+end
+
+
+macro Input(commodity, quantity, nest, kwargs...)
+    constr_call = :(ScalarInput($(esc(commodity)), $(esc(quantity)); parent = $(QuoteNode(nest))))
+    MPSGE_MP._add_kw_args(constr_call, kwargs)
+    return :($constr_call)
+end
+
+macro production(model, sector, nestings, netputs)
+    nodes = esc.(_parse_nest.(nestings.args))
+    node_expr = :([])
+    for node in nodes
+        push!(node_expr.args, node)
+    end
+    constr_call = :(add_production!($(esc(model)), $(esc(sector)),$node_expr))
+    for netput in netputs.args
+        if !isa(netput,LineNumberNode)
+            push!(constr_call.args, esc(netput))
+        end
+    end
     #_add_kw_args(constr_call, kwargs)
     return :($constr_call)
 end
