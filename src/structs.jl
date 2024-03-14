@@ -305,7 +305,7 @@ quantity(N::AbstractNest) = base_quantity(N)
 base_quantity(N::AbstractNest) = sum(quantity(c) for c∈children(N); init=0)#_get_parameter_value(N.quantity)
 name(N::AbstractNest) = N.name
 children(N::AbstractNest) = N.children
-parent(N::AbstractNest) = ismissing(N.parent) ? N : N.parent
+parent(N::AbstractNest) = ismissing(N.parent) ? name(N) : N.parent
 elasticity(N::AbstractNest) = _get_parameter_value(N.elasticity)
 raw_elasticity(N::AbstractNest) = N.elasticity
 
@@ -430,9 +430,13 @@ sector(P::Production) = P.sector
 input(P::Production) = P.nest_dict[:s] #Temporary
 output(P::Production) = P.nest_dict[:t] #Temporary
 taxes(P::Production) = P.taxes
+commodities(P::Production) = collect(keys(P.netput))
+commodity_netputs(P::Production) = collect(Iterators.flatten(values(P.netput)))
 commodity(P::Production, C::Commodity) = P.netput[C]
 netputs(P::Production) = P.netput
 
+parent(P::Production, T::ScalarNest) = P.nest_dict[parent(T)]
+parent(P::Production, T::ScalarNetput) = P.nest_dict[parent(T)]
 
 
 ########################
