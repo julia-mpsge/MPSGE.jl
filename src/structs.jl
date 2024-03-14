@@ -311,7 +311,7 @@ raw_elasticity(N::AbstractNest) = N.elasticity
 
 
 
-# Small Setter
+# Small Setter - Deprecated? 
 set_parent(child::AbstractNest,parent::AbstractNest) = (child.parent = parent)
 set_parent(child::ScalarNetput,parent::AbstractNest) = (child.parent = parent)
 
@@ -360,9 +360,9 @@ mutable struct ScalarNest <: AbstractNest
     name::Symbol
     elasticity::MPSGEquantity
     children::Vector{Union{ScalarNest,ScalarNetput}}
-    parent::Union{ScalarNest,Missing}
-    function ScalarNest(name::Symbol;elasticity::MPSGEquantity=0,children = [])  
-        N = new(name,elasticity,children, missing)
+    parent::Union{Symbol,Missing}
+    function ScalarNest(name::Symbol;parent::Union{Symbol,Missing} = missing, elasticity::MPSGEquantity=0,children = [])  
+        N = new(name,elasticity,children, parent)
         for child in children
             set_parent(child,N)
         end
@@ -406,7 +406,7 @@ mutable struct ScalarProduction
 
         nest_dict = Dict()
         for node in nodes
-            nest_dict[node.name] = ScalarNest(node.name; elasticity = node.elasticity)
+            nest_dict[node.name] = ScalarNest(node.name; parent = node.parent, elasticity = node.elasticity)
             if !ismissing(node.parent)
                 add_child!(nest_dict[node.parent], nest_dict[node.name])
             end
