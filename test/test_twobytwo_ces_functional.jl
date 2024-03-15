@@ -57,9 +57,9 @@
     df_vr = var_report(m, decimals=16, mdecimals=5);
     @test typeof(df_vr) == DataFrames.DataFrame
     @test PATH_var(m, 5) == ("X", 1.0)
-    @test generate_name(m, X, PX, "o") == Symbol("PX‡X")
-    @test generate_name(m, X, PL, "i") == Symbol("PL†X")
-    @test generate_name(m, RA, PU, "fd") == Symbol("PUρRA")
+    @test generate_name(m, X, PX, "o")[1] == Symbol("PX‡X")
+    @test generate_name(m, X, PL, "i")[1] == Symbol("PL†X")
+    @test generate_name(m, RA, PU, "fd")[1] == Symbol("PUρRA")
     @test generate_name(m, :X, :PX, "o")[1] == Symbol("PX‡X")
     @test generate_name(m, :X, :PL, "i")[1] == Symbol("PL†X")
     @test generate_name(m, :RA, :PU, "fd")[1] == Symbol("PUρRA")

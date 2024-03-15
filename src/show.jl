@@ -238,35 +238,38 @@ function Base.show(io::IO, E::Endowment)
 end
 
 """
-    generate_name(::Model, Sector or Consumer name, Commodity,  )
-    Function that outputs a dataframe with all model variables, their value, and margin of the associated constraint (if not fixed)
+    generate_name(::Model, Sector or Consumer name, Commodity or Nest, argument::String )
+    A function to return the internal names of generated 'implicit' variables, combinations of a Sector or Consumer, and a commodity or nest.
+    Outputs an array with a variable name as a Symbol (index [1]), its value (index [2]), and its associated expression (index [3]).
+    Can be combined and applied iteratively, for instance to generate the name of a nested compensated demand.
 ### Options
-    implicit=true (default=false) to include all implicit 'variables'/named expressions
-    keyword arguments:
-    demimals=::Int    set the max decimals for the variable value
-    mdecimals=::Int   set the max decimals for the margin value from the variable's complementary constraint equation
+    arguments:
+    the name of the MPSGE.jl model
+    A Sector or Consumer, can be SectorRef/ConsumerRref, or just their Symbols
+    A Commodity, can be a CommodityRef, or just its Symbol
+    A string with either "o" (an output = compensated supply), "i" (an input = compensated demand), "fd" (a final demand), or "n" (nest)
 ### Example
 ```julia-repl
-julia> 
+julia> generate_name(m,PL,Y,"i")[1]
+Symbol("PL†Y")
 ```
-
-A function to return the internal names of generated 'implicit' variables, combinations of a Sector or Consumer, and a commodity,
-and a string argument for outputs/compensated supply="o", inputs/compensated demand ="i", final demand ="fd".
-Or for a nested sector, symbols for the top level sector and nest name.
-Can be combined and applied iteratively.
 """
-function generate_name(m::Model, s::Union{SectorRef,ConsumerRef}, c::CommodityRef, type::String)
+function generate_name(m::Model, s::Union{SectorRef,ConsumerRef,Symbol}, c::Union{CommodityRef,Symbol}, type::String)
     if type=="o"
         sym = Symbol("$(get_name(c))‡$(get_name(s))")
     elseif type=="i"
         sym = Symbol("$(get_name(c))†$(get_name(s))")
     elseif type=="fd"
         sym = Symbol("$(get_name(c))ρ$(get_name(s))")
+    elseif type=="n"
+        sym = Symbol("$(s)→$(c)")
      else 
-        v = println("options are \"o\" for output, \"i\" for input, or \"fd\" for final_demand")
+        v = println("options are \"o\" for output, \"i\" for input, \"fd\" for final_demand, or v\"n\" for a nest")
         return v
     end
-    return sym
+    val = JuMP.value(m._jump_model[sym])
+    varref = m._jump_model[sym]
+    return [sym, val, varref]
 end
 
 
@@ -280,12 +283,12 @@ function generate_name(m::Model, s::Symbol, commod_or_nest::Symbol, type::String
     elseif type=="n"
         sym = Symbol("$(s)→$(commod_or_nest)")
      else 
-        v = println("options are \"o\" for output, \"i\" for input, \"fd\" for final_demand, or v\"n\" for final_demand")
+        v = println("options are \"o\" for output, \"i\" for input, \"fd\" for final_demand, or v\"n\" for a nest")
         return v
     end
     val = JuMP.value(m._jump_model[sym])
     varref = m._jump_model[sym]
-            return [sym, val, varref]
+    return [sym, val, varref]
 end
 
 """
