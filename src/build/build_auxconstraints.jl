@@ -17,5 +17,5 @@ function build_auxconstraints!(m::Model, jm)
 
         push!(m._nlexpressions.aux, (expr=jump_ex[ac_name], var=jump_var[ac_name]))
     end
-    @constraint(jm, aux[ac = jump_var_ind], jump_ex[ac] ⟂ jump_var[ac])
+    @constraint(jm, aux_cnstr[ac = jump_var_ind], jump_ex[ac] ⟂ jump_var[ac])
 end
