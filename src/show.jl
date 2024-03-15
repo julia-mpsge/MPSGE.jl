@@ -239,29 +239,31 @@ end
 
 """
     generate_name(::Model, Sector or Consumer name, Commodity or Nest, argument::String )
-    A function to return the internal names of generated 'implicit' variables, combinations of a Sector or Consumer, and a commodity or nest.
-    Outputs an array with a variable name as a Symbol (index [1]), its value (index [2]), and its associated expression (index [3]).
+    A function to return the internally generated names of 'implicit' variables, combinations of a Sector or Consumer, and a commodity or nest.
+    Outputs an array with a variable name as a Symbol (index [1]), its value (index [2]), and its associated expression (index [3]), or the VariableRef if a nest.
     Can be combined and applied iteratively, for instance to generate the name of a nested compensated demand.
 ### Options
     arguments:
     the name of the MPSGE.jl model
-    A Sector or Consumer, can be SectorRef/ConsumerRref, or just their Symbols
-    A Commodity, can be a CommodityRef, or just its Symbol
+    A Sector or Consumer: can be SectorRef/ConsumerRref, or just its Symbol (must be Symbol for a Nest).
+    A Commodity: can be a CommodityRef, or just its Symbol. If a Nest name, must be both Symbols.
     A string with either "o" (an output = compensated supply), "i" (an input = compensated demand), "fd" (a final demand), or "n" (nest)
 ### Example
 ```julia-repl
 julia> generate_name(m,PL,Y,"i")[1]
 Symbol("PL†Y")
+julia> generate_name(m,generate_name(m,:GOVT, :CN, "n")[1],:PD,"i")[1]
+Symbol("PD†GOVT→CN")
 ```
 """
-function generate_name(m::Model, s::Union{SectorRef,ConsumerRef,Symbol}, c::Union{CommodityRef,Symbol}, type::String)
-    if type=="o"
+function generate_name(m::Model, s::Union{SectorRef,ConsumerRef}, c::Union{CommodityRef}, imptype::String)
+    if imptype=="o"
         sym = Symbol("$(get_name(c))‡$(get_name(s))")
-    elseif type=="i"
+    elseif imptype=="i"
         sym = Symbol("$(get_name(c))†$(get_name(s))")
-    elseif type=="fd"
+    elseif imptype=="fd"
         sym = Symbol("$(get_name(c))ρ$(get_name(s))")
-    elseif type=="n"
+    elseif imptype=="n"
         sym = Symbol("$(s)→$(c)")
      else 
         v = println("options are \"o\" for output, \"i\" for input, \"fd\" for final_demand, or v\"n\" for a nest")
@@ -273,14 +275,14 @@ function generate_name(m::Model, s::Union{SectorRef,ConsumerRef,Symbol}, c::Unio
 end
 
 
-function generate_name(m::Model, s::Symbol, commod_or_nest::Symbol, type::String)
-    if type=="o"
+function generate_name(m::Model, s::Symbol, commod_or_nest::Symbol, imptype::String)
+    if imptype=="o"
         sym = Symbol("$(commod_or_nest)‡$(s)")
-    elseif type=="i"
+    elseif imptype=="i"
         sym = Symbol("$(commod_or_nest)†$(s)")
-    elseif type=="fd"
+    elseif imptype=="fd"
         sym = Symbol("$(commod_or_nest)ρ$(s)")
-    elseif type=="n"
+    elseif imptype=="n"
         sym = Symbol("$(s)→$(commod_or_nest)")
      else 
         v = println("options are \"o\" for output, \"i\" for input, \"fd\" for final_demand, or v\"n\" for a nest")
