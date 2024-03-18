@@ -435,8 +435,8 @@ mutable struct ScalarProduction
             push!(ordered_nests, nest_dict[node.name])
         end
 
-        _input = :s #missing
-        _output = :t #missing
+        _input = missing
+        _output = missing
 
         #Build the leaves
         for netput in netputs
@@ -446,25 +446,27 @@ mutable struct ScalarProduction
             push!(commodity_netputs, netput)
             add_child!(nest_dict[netput.parent], netput)
             
-            #if ismissing(input) && isa(netput, ScalarInput)
-            #    _parent = parent(netput)
-            #    while parent != parent(nest_dict[parent])#!ismissing(parent)
-            #        _parent = parent(nest_dict[_parent])
-            #    end
-            #    input = _parent
-            #end
+            if ismissing(_input) && isa(netput, ScalarInput)
+                _input = parent(netput)
+                while _input != parent(nest_dict[_input])#!ismissing(parent)
+                    _input = parent(nest_dict[_input])
+                end
+            end
             
-            #if ismissing(output) && isa(netput, ScalarOutput)
-            #    _parent = parent(netput)
-            #    while parent != parent(nest_dict[_parent])#!ismissing(parent)
-            #        _parent = parent(nest_dict[_parent])
-            #    end
-            #    output = _parent
-            #end
-
+            if ismissing(_output) && isa(netput, ScalarOutput)
+                _output = parent(netput)
+                while _output != parent(nest_dict[_output])#!ismissing(parent)
+                    _output = parent(nest_dict[_output])
+                end
+            end
 
         end
 
+
+        if ismissing(_input) || ismissing(_output)
+            _input = :t
+            _output = :s
+        end
 
         P = new(sector, commodity_netputs, ordered_nests, nest_dict, Dict(), Dict(), Dict(), _input, _output)
 
