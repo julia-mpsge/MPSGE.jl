@@ -405,41 +405,39 @@ end
 
 mutable struct ScalarProduction
     sector::ScalarSector
-    netput::Dict{ScalarCommodity, Vector{MPSGE_MP.Netput}}
+    commodity_netputs::Vector{ScalarNetput}
+    ordered_nests::Vector{ScalarNest}
     nest_dict::Dict{Symbol, Any}
     nested_compensated_demand::Dict
     compensated_demand::Dict
     taxes::Dict
     function ScalarProduction(sector::ScalarSector, nodes::Vector{Node}, netputs::MPSGE_MP.ScalarNetput...)
-        netput_dict = Dict{ScalarCommodity, Vector{MPSGE_MP.Netput}}()
-        
-        for netput in netputs
-            if quantity(netput) == 0 #Pre prune, don't add if quantity starts at 0
-                continue
-            end
-            C = commodity(netput)
-            if !haskey(netput_dict, C)
-                netput_dict[C] = []
-            end
-            push!(netput_dict[C], netput)
-        end
+        commodity_netputs = Vector{ScalarNetput}()#Dict{ScalarCommodity, Vector{MPSGE_MP.Netput}}()
+        ordered_nests = Vector{ScalarNest}()
 
+
+        #Build the non-leaf portion of the tree
         nest_dict = Dict()
         for node in nodes
             nest_dict[node.name] = ScalarNest(node.name; parent = node.parent, elasticity = node.elasticity)
             if !ismissing(node.parent)
                 add_child!(nest_dict[node.parent], nest_dict[node.name])
             end
+            push!(ordered_nests, nest_dict[node.name])
         end
-        
-        for (_, netputs) in netput_dict
-            for netput ∈ netputs
-                add_child!(nest_dict[netput.parent], netput)
+
+
+        #Build the leaves
+        for netput in netputs
+            if quantity(netput) == 0 #Pre prune, don't add if quantity starts at 0
+                continue
             end
+            push!(commodity_netputs, netput)
+            add_child!(nest_dict[netput.parent], netput)
         end
 
 
-        new(sector, netput_dict, nest_dict, Dict(), Dict(), Dict())
+        new(sector, commodity_netputs, ordered_nests, nest_dict, Dict(), Dict(), Dict())
     end
 end
 
@@ -451,9 +449,9 @@ input(P::Production) = P.nest_dict[:s] #Temporary
 output(P::Production) = P.nest_dict[:t] #Temporary
 taxes(P::Production) = P.taxes
 commodities(P::Production) = collect(keys(P.netput))
-commodity_netputs(P::Production) = collect(Iterators.flatten(values(P.netput)))
-commodity(P::Production, C::Commodity) = P.netput[C]
-netputs(P::Production) = P.netput
+commodity_netputs(P::Production) = P.commodity_netputs#collect(Iterators.flatten(values(P.netput)))
+#commodity(P::Production, C::Commodity) = P.netput[C]
+#Fnetputs(P::Production) = P.netput
 
 parent(P::Production, T::ScalarNest) = P.nest_dict[parent(T)]
 parent(P::Production, T::ScalarNetput) = P.nest_dict[parent(T)]
