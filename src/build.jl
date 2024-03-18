@@ -19,7 +19,7 @@ function build_nested_compensated_demand(P::ScalarProduction,T::ScalarNest, sign
         jm = jump_model(model(sector(P)))
 
         #This must be an explicit expression, otherwise it's evaluated now. 
-        return @expression(jm, JuMP.op_ifelse(
+        return @expression(jm, ifelse(
                     elasticity(T) * sign == -1,
                     cobb_douglass(P,T,sign), 
                     CES(P,T,sign)
@@ -58,7 +58,7 @@ function build_compensated_demand!(P::ScalarProduction)
 
         sign = netput_sign(T)#T isa ScalarInput ? -1 : 1
 
-        #build taxes
+        #build taxes - production constructor?
         for t in taxes(T)
             H = tax_agent(t)
             if H∉keys(P.taxes)
@@ -89,6 +89,8 @@ function build_compensated_demands!(M::MPSGEModel)
     end
 end
 
+
+#This should move to the production constructor 
 function build_commodity_dictionary!(M::MPSGEModel)
     M.commodities = Dict(C=>[] for C∈commodities(M))
     for S∈keys(M.productions)#sectors(M)

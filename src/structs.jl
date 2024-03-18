@@ -446,13 +446,15 @@ mutable struct ScalarProduction
             push!(commodity_netputs, netput)
             add_child!(nest_dict[netput.parent], netput)
             
-            if ismissing(_input) && isa(netput, ScalarInput) #Determine the root of the input tree
+            #Determine the root of the input tree
+            if ismissing(_input) && isa(netput, ScalarInput) 
                 _input = parent(netput)
                 while _input != parent(nest_dict[_input])#!ismissing(parent)
                     _input = parent(nest_dict[_input])
                 end
             end
             
+            #Determine the root of the output tree
             if ismissing(_output) && isa(netput, ScalarOutput)
                 _output = parent(netput)
                 while _output != parent(nest_dict[_output])#!ismissing(parent)
@@ -462,7 +464,7 @@ mutable struct ScalarProduction
 
         end
 
-
+        #It's possible there is no input/output tree. In this case set a default key value we can check for.
         if ismissing(_input) 
             _input = :missing
         end
@@ -473,6 +475,7 @@ mutable struct ScalarProduction
 
         P = new(sector, commodity_netputs, ordered_nests, nest_dict, Dict(), Dict(), Dict(), _input, _output)
 
+        # Set all the input nests to be inputs. 
         if _input != :missing
             T = input(P)
             to_set = [T]
@@ -492,13 +495,11 @@ const Production = ScalarProduction
 
 
 sector(P::Production) = P.sector
-input(P::Production) = P.nest_dict[P.input] #Temporary
-output(P::Production) = P.nest_dict[P.output] #Temporary
+input(P::Production) = P.nest_dict[P.input] 
+output(P::Production) = P.nest_dict[P.output]
 taxes(P::Production) = P.taxes
 commodities(P::Production) = collect(keys(P.netput))
-commodity_netputs(P::Production) = P.commodity_netputs#collect(Iterators.flatten(values(P.netput)))
-#commodity(P::Production, C::Commodity) = P.netput[C]
-#Fnetputs(P::Production) = P.netput
+commodity_netputs(P::Production) = P.commodity_netputs
 
 parent(P::Production, T::ScalarNest) = P.nest_dict[parent(T)]
 parent(P::Production, T::ScalarNetput) = P.nest_dict[parent(T)]
