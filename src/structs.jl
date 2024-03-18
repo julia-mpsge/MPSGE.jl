@@ -446,7 +446,7 @@ mutable struct ScalarProduction
             push!(commodity_netputs, netput)
             add_child!(nest_dict[netput.parent], netput)
             
-            if ismissing(_input) && isa(netput, ScalarInput)
+            if ismissing(_input) && isa(netput, ScalarInput) #Determine the root of the input tree
                 _input = parent(netput)
                 while _input != parent(nest_dict[_input])#!ismissing(parent)
                     _input = parent(nest_dict[_input])
@@ -463,19 +463,24 @@ mutable struct ScalarProduction
         end
 
 
-        if ismissing(_input) || ismissing(_output)
-            _input = :t
-            _output = :s
+        if ismissing(_input) 
+            _input = :missing
+        end
+
+        if ismissing(_output) 
+            _output = :missing
         end
 
         P = new(sector, commodity_netputs, ordered_nests, nest_dict, Dict(), Dict(), Dict(), _input, _output)
 
-        T = input(P)
-        to_set = [T]
-        while !isempty(to_set)
-            T = popfirst!(to_set)
-            T.input = true
-            append!(to_set, [e for e∈children(T) if isa(e,ScalarNest)])
+        if _input != :missing
+            T = input(P)
+            to_set = [T]
+            while !isempty(to_set)
+                T = popfirst!(to_set)
+                T.input = true
+                append!(to_set, [e for e∈children(T) if isa(e,ScalarNest)])
+            end
         end
         
         return P

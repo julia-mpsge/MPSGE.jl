@@ -17,6 +17,13 @@ end
 
 #Needs a massive fix
 function prune!(P::Production)
+    if P.input == :missing || P.output == :missing
+        S = sector(P)
+        M = model(S)
+        delete!(M.productions,S)
+        return nothing
+    end
+
     P.nest_dict[P.input] = !isnothing(input(P)) ? prune!(input(P)) : nothing
     P.nest_dict[P.output] = !isnothing(output(P)) ? prune!(output(P)) : nothing
     if isnothing(input(P)) && isnothing(output(P))
