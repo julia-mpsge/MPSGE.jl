@@ -1,35 +1,12 @@
-function find_levels(T::ScalarNest)
-    current_children = Any[[T]]
 
-    out = []
-    while current_children != Any[]
-        level = popfirst!(current_children)
-        push!(current_children,[])
-        push!(out,[])
-        for T∈level
-            push!(out[end],T)
-            append!(current_children[end], children(T))
-        end
-        if current_children[end] == []
-            pop!(current_children)
-        end
+function build_nested_compensated_demand!(P::ScalarProduction)
+    
+    for T ∈ commodity_netputs(P)
+        P.nested_compensated_demand[name(T),parent(T)] = build_nested_compensated_demand(P,T,-1)
     end
 
-    return out
-end
-
-#Can be greatly simplified
-function build_nested_compensated_demand!(P::ScalarProduction)
-    for level in reverse(find_levels(input(P)))
-        for T in level
-            P.nested_compensated_demand[name(T),parent(T)] = build_nested_compensated_demand(P,T,-1)
-        end
-    end 
-
-    for level in reverse(find_levels(output(P)))
-        for T in level
-            P.nested_compensated_demand[name(T),parent(T)] = build_nested_compensated_demand(P,T,1)
-        end
+    for T∈reverse(P.ordered_nests)
+        P.nested_compensated_demand[name(T),parent(T)] = build_nested_compensated_demand(P,T,-1)
     end
 
 end
