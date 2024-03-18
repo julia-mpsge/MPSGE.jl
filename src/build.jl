@@ -1,12 +1,14 @@
 
 function build_nested_compensated_demand!(P::ScalarProduction)
     
-    for T ∈ commodity_netputs(P)
-        P.nested_compensated_demand[name(T),parent(T)] = build_nested_compensated_demand(P,T,-1)
+    for T ∈ commodity_netputs(P) #The error is right here, it's the sign. It needs to change based on input/output
+        sign = netput_sign(T)
+        P.nested_compensated_demand[name(T),parent(T)] = build_nested_compensated_demand(P,T,sign)
     end
 
     for T∈reverse(P.ordered_nests)
-        P.nested_compensated_demand[name(T),parent(T)] = build_nested_compensated_demand(P,T,-1)
+        sign = netput_sign(T)
+        P.nested_compensated_demand[name(T),parent(T)] = build_nested_compensated_demand(P,T,sign)
     end
 
 end
@@ -48,14 +50,13 @@ function build_compensated_demand!(P::ScalarProduction)
 
     build_nested_compensated_demand!(P)
 
-    prod_commodities = commodity_netputs(P) #not exactly what I want ...
+    prod_commodities = commodity_netputs(P) 
 
-    #T = prod_commodities[1]
     for T∈prod_commodities
         C = commodity(T)
         nest = parent(T)
 
-        sign = T isa ScalarInput ? -1 : 1
+        sign = netput_sign(T)#T isa ScalarInput ? -1 : 1
 
         #build taxes
         for t in taxes(T)
