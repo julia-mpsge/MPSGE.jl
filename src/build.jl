@@ -71,10 +71,7 @@ function build_compensated_demand!(P::ScalarProduction)
 
     build_nested_compensated_demand!(P)
 
-    prod_commodities = ScalarNetput[e for level∈find_levels(input(P)) for e∈level if e isa ScalarNetput]
-    append!(prod_commodities,[e for level∈find_levels(output(P)) for e∈level if e isa ScalarNetput])
-
-    #prod_commodities = commodity_netputs(P) #not exactly what I want ...
+    prod_commodities = commodity_netputs(P) #not exactly what I want ...
 
     #T = prod_commodities[1]
     for T∈prod_commodities
