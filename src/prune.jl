@@ -1,4 +1,4 @@
-function prune!(T::MPSGE_MP.ScalarNetput)
+function prune!(T::ScalarNetput)
     if quantity(T) != 0
         return T
     else
@@ -6,22 +6,22 @@ function prune!(T::MPSGE_MP.ScalarNetput)
     end
 end
 
-function prune!(T::MPSGE_MP.ScalarNest)
+function prune!(T::ScalarNest)
     if quantity(T) == 0
         return nothing
     end
-    T.children = [e for e∈prune!.(MPSGE_MP.children(T)) if !isnothing(e)]
+    T.children = [e for e∈prune!.(children(T)) if !isnothing(e)]
     return T
 end
 
 
 #Needs a massive fix
-function prune!(P::MPSGE_MP.Production)
-    P.nest_dict[:s] = prune!(input(P))
-    P.nest_dict[:t] = prune!(output(P))
+function prune!(P::Production)
+    P.nest_dict[P.input] = !isnothing(input(P)) ? prune!(input(P)) : nothing
+    P.nest_dict[P.output] = !isnothing(output(P)) ? prune!(output(P)) : nothing
     if isnothing(input(P)) && isnothing(output(P))
         S = sector(P)
-        M = MPSGE_MP.model(S)
+        M = model(S)
         delete!(M.productions,S)
         return nothing
     end
