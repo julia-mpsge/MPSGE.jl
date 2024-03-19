@@ -45,13 +45,12 @@
         @Input(PC[:y], 50, s)
     end)
     
-    @demand(m, C[:ra],
-        [ScalarDem(PU,150)],
-        [
-            ScalarEndowment(PF[:l], endow[:l]), 
-            ScalarEndowment(PF[:k], endow[:k])
-        ]
-    )
+    @demand(m, C[:ra], begin
+            @final_demand(PU,150)
+        end,begin
+            @endowment(PF[:l], endow[:l])
+            @endowment(PF[:k], endow[:k]) 
+    end)
 
     solve!(m, cumulative_iteration_limit=0)
     gams_results = XLSX.readxlsx(joinpath(@__DIR__, "MPSGEresults.xlsx"))
@@ -238,13 +237,12 @@ end
             [@Input(PC[i], supply[i], s, reference_price = pricepci[i]) for i∈goods]...
     end)
     
-    @demand(m, C[:ra],
-        [ScalarDem(PU,150)],
-        [
-            ScalarEndowment(PF[:l], endow[:l]), 
-            ScalarEndowment(PF[:k], endow[:k])
-        ]
-    )
+    @demand(m, C[:ra], begin
+            @final_demand(PU,150)
+        end,begin
+            @endowment(PF[:l], endow[:l])
+            @endowment(PF[:k], endow[:k])
+    end)
 
     solve!(m, cumulative_iteration_limit=0)
 
@@ -418,13 +416,12 @@ end
         [@Input(PC[i], supply[i], PCi, reference_price = pricepci[i]) for i∈goods]...
     end)
     
-    @demand(m, C[:ra],
-        [ScalarDem(PU,150)],
-        [
-            ScalarEndowment(PF[:l], endow[:l]), 
-            ScalarEndowment(PF[:k], endow[:k])
-        ]
-    )
+    @demand(m, C[:ra], begin
+            @final_demand(PU,150)
+        end,begin
+            @endowment(PF[:l], endow[:l])
+            @endowment(PF[:k], endow[:k])
+    end)
 
     solve!(m, cumulative_iteration_limit=0)
 
@@ -602,10 +599,11 @@ end
         [@Input(PC[i], supply[i], s) for i∈goods]...
     end)
 
-    @demand(m, C[:ra],
-        [ScalarDem(PU[f], cons[f]; reference_price = pricepu[f]) for f∈factors],
-        [ScalarEndowment(PF[f], endow[f]) for f∈factors]
-    )
+    @demand(m, C[:ra], begin
+            [@final_demand(PU[f], cons[f], reference_price = pricepu[f]) for f∈factors]...
+        end, begin
+            [@endowment(PF[f], endow[f]) for f∈factors]...
+    end)
 
     solve!(m, cumulative_iteration_limit=0)
 

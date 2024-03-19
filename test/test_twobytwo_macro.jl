@@ -42,13 +42,12 @@
         @Input(PY, 50,  s)
     end)
 
-    @demand(m, RA, 
-        [ScalarDem(PU, 150)], 
-        [
-            ScalarEndowment(PL, endow * 35), 
-            ScalarEndowment(PK, 80)
-        ]
-    )
+    @demand(m, RA, begin
+            @final_demand(PU, 150)
+        end, begin
+            @endowment(PL, endow * 35)
+            @endowment(PK, 80)
+    end)
 
 
     solve!(m)
@@ -167,13 +166,12 @@ end
     end)
 
 
-    @demand(m, CONS, 
-        [ScalarDem(PW, 200.)], 
-        [
-            ScalarEndowment(PL, 100.0), 
-            ScalarEndowment(PK, 100.0)
-        ]
-    )
+    @demand(m, CONS, begin
+            @final_demand(PW, 200.)
+        end,begin
+            @endowment(PL, 100.0)
+            @endowment(PK, 100.0)
+    end)
 
     solve!(m, cumulative_iteration_limit=0)
 
@@ -562,13 +560,12 @@ end
     end)
 
 
-    @demand(m, CONS, 
-        [ScalarDem(PW, 200.)], 
-        [
-            ScalarEndowment(PL, 100.0), 
-            ScalarEndowment(PK, 100.0)
-        ]
-    )
+    @demand(m, CONS, begin
+            @final_demand(PW, 200.)
+        end,begin
+            @endowment(PL, 100.0)
+            @endowment(PK, 100.0)
+    end)
 
     solve!(m, cumulative_iteration_limit=0)
 

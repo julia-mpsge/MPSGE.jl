@@ -7,3 +7,8 @@
 
 
 [Documenation](https://mitchphillipson.github.io/MPSGE_MP.jl/dev/)
+
+
+Things to translate: 
+1. [Demand Theory and General Equilibrium](https://www.gams.com/solvers/mpsge/gentle.htm)
+2. [Simple Examples](https://www.gams.com/solvers/mpsge/markusen.htm)

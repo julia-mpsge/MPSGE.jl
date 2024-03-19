@@ -58,14 +58,12 @@ Fun fact: I don't think GAMS MPSGE does this. It will just error.
     end)
 
     
-    add_demand!(M,
-        CONS,
-        [ScalarDem(PW, 200)],
-        [
-            ScalarEndowment(PL,100),
-            ScalarEndowment(PK,100)
-        ]
-    )
+    @demand(M, CONS, begin
+            @final_demand(PW, 200)
+        end, begin
+            @endowment(PL,100)
+            @endowment(PK,100)
+    end)
     
     #P = production(Q)
 

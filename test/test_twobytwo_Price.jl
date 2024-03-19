@@ -52,13 +52,12 @@
             @Input(PY, 54,  s)
     end)
 
-    @demand(m, RA, 
-        [ScalarDem(PU,164)],
-        [
-            ScalarEndowment(PL, endow * 74), 
-            ScalarEndowment(PK, 80)
-        ]
-    )
+    @demand(m, RA, begin
+            @final_demand(PU,164)
+        end,begin
+            @endowment(PL, endow * 74)
+            @endowment(PK, 80)
+    end)
 
     build!(m)
 
@@ -271,13 +270,12 @@ end
         @Input(PY, 54, s)
     end)
 
-    @demand(m, RA, 
-        [ScalarDem(PU,154)],
-        [
-            ScalarEndowment(PL, endow * 54), 
-            ScalarEndowment(PK, 80)
-        ]
-    )
+    @demand(m, RA, begin
+            @final_demand(PU,154)
+        end,begin
+            @endowment(PL, endow * 54)
+            @endowment(PK, 80)
+    end)
 
     build!(m)
 
@@ -493,15 +491,13 @@ end
             @Input(PY, 44, s)
     end)
 
-    @demand(m, RA, 
-        [
-            ScalarDem(PU,124; reference_price = pr_Ud)
-            ScalarDem(PY, 10)    
-        ],
-        [
-            ScalarEndowment(PL, endow * 54), 
-            ScalarEndowment(PK, 80)
-        ],
+    @demand(m, RA, begin
+            @final_demand(PU,124, reference_price = pr_Ud)
+            @final_demand(PY, 10)    
+        end, begin
+            @endowment(PL, endow * 54)
+            @endowment(PK, 80)
+        end,
         elasticity = esub_ra
     )
 
