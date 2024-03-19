@@ -47,7 +47,8 @@ export  @sector,    @sectors,
         @auxiliary, @auxiliaries,
         @production, @demand,
         @aux_constraint,
-        @Output, @Input
+        @Output, @Input,
+        @final_demand, @endowment
 
 #Building
 export  build!, compensated_demand_dictionary, compensated_demand, tau, 

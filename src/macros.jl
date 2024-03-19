@@ -97,11 +97,6 @@ macro auxiliaries(model, block)
     return _plural_macro_code(model, block, Symbol("@auxiliary"))
 end
 
-macro demand(model, consumer, demands, endowments, kwargs...)
-    constr_call = :(add_demand!($(esc(model)), $(esc(consumer)), $(esc(demands)), $(esc(endowments))))
-    _add_kw_args(constr_call, kwargs)
-    return :($constr_call)
-end
 
 
 
@@ -175,5 +170,42 @@ macro production(model, sector, nestings, netputs)
         end
     end
     #_add_kw_args(constr_call, kwargs)
+    return :($constr_call)
+end
+
+
+###################
+## Demand Blocks ##
+###################
+
+macro final_demand(commodity, quantity, kwargs...)
+    constr_call = :(ScalarDem($(esc(commodity)), $(esc(quantity))))
+    _add_kw_args(constr_call, kwargs)
+    return :($constr_call)
+end
+
+macro endowment(commodity, quantity, kwargs...)
+    constr_call = :(ScalarEndowment($(esc(commodity)), $(esc(quantity))))
+    _add_kw_args(constr_call, kwargs)
+    return :($constr_call)
+end
+
+
+macro demand(model, consumer, demand_block, endowment_block, kwargs...)
+    local demands = :([])
+    local endows = :([])
+    for d∈demand_block.args
+        if !isa(d, LineNumberNode)
+            push!(demands.args, esc(d))
+        end
+    end
+    for e∈endowment_block.args
+        if !isa(e, LineNumberNode)
+            push!(endows.args, esc(e))
+        end
+    end
+    
+    constr_call = :(add_demand!($(esc(model)), $(esc(consumer)), $demands, $endows))
+    _add_kw_args(constr_call, kwargs)
     return :($constr_call)
 end
