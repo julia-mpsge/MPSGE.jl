@@ -84,7 +84,11 @@ function Base.show(io::IO,E::ScalarEndowment)
 end
 
 function Base.show(io::IO, D::ScalarDemand)
-    println(io,"\$Demand: $(consumer(D))")
+    first_line = "\$Demand: $(consumer(D))"
+    if elasticity(D) != 1
+        first_line *= " Elasticity: $(elasticity(D))"
+    end
+    println(io,first_line)
     for (_,d)∈D.demands
         println(io,"    $d")
     end
