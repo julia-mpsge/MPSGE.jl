@@ -45,13 +45,12 @@
         @Input(PY, 50,  s)
     end)
 
-    @demand(m, RA,
-        [ScalarDem(PU,150)],
-        [
-            ScalarEndowment(PL, 35 * endow), 
-            ScalarEndowment(PK, 80)
-        ]
-    )
+    @demand(m, RA, begin
+            @final_demand(PU,150)
+        end, begin
+            @endowment(PL, 35 * endow)
+            @endowment(PK, 80)
+    end)
 
 
     solve!(m)

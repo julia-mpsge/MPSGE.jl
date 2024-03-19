@@ -35,10 +35,12 @@
     end
 
 
-    @demand(M, Y, 
-        [ScalarDem(P[i], c0[i]) for i∈goods],
-        [ScalarEndowment(PF[j], endow[j]) for j∈factors]
-    );
+    @demand(M, Y, begin
+            [@final_demand(P[i], c0[i]) for i∈goods]...
+        end, begin
+            [@endowment(PF[j], endow[j]) for j∈factors]...
+        end
+    )
 
     solve!(M)
 
@@ -198,11 +200,13 @@ end
         end)
     end
 
-    @demand(M, Y, 
-        [ScalarDem(P[i], c0[i]) for i∈goods],
-        [ScalarEndowment(PF[j], endow[j]) for j∈factors],
-        elasticity = 0
-    );
+    @demand(M, Y, begin
+        [@final_demand(P[i], c0[i]) for i∈goods]...
+    end,begin
+        [@endowment(PF[j], endow[j]) for j∈factors]...
+    end,
+    elasticity = 0
+    )
 
 
     #@demand(m, Y, 0., [Demand(P[i], c0[i]) for i in goods], [Endowment(PF[:k], :($(endow[:k]) * $(e0[:k]))), Endowment(PF[:l], :($(endow[:l]) * $(e0[:l])))])
@@ -363,11 +367,13 @@ end
         end)
     end
 
-    @demand(M, Y, 
-        [ScalarDem(P[i], c0[i]) for i∈goods],
-        [ScalarEndowment(PF[j], endow[j]) for j∈factors],
+    @demand(M, Y, begin
+            [@final_demand(P[i], c0[i]) for i∈goods]...
+        end,begin
+            [@endowment(PF[j], endow[j]) for j∈factors]...
+        end,
         elasticity = 2
-    );
+    )
 
     solve!(M)
 

@@ -115,26 +115,24 @@
    @aux_constraint(m, TAU_TL, GOVT - PA*g0)
    
    
-   @demand(m, GOVT,
-       [ScalarDem(PA, 35.583)], #should this be a known number?
-       [
-           ScalarEndowment(PA, g0*TAU_LS + dtax),
-           ScalarEndowment(PFX, bopdef)
-       ],
+   @demand(m, GOVT, begin
+       @final_demand(PA, 35.583) #should this be a known number?
+    end,begin
+        @endowment(PA, g0*TAU_LS + dtax)
+        @endowment(PFX, bopdef)
+    end,
        elasticity = 0
    )
    
    
-   @demand(m, HH,
-       [
-           ScalarDem(PA, c0),
-           ScalarDem(PL, l0)
-       ],
-       [
-           ScalarEndowment(PA, -g0*TAU_LS - dtax - i0),
-           ScalarEndowment(RK, kd0),
-           ScalarEndowment(PL, (ly0+l0) - (ly0+l0)*UR), 
-       ],
+   @demand(m, HH, begin
+        @final_demand(PA, c0)
+        @final_demand(PL, l0)
+    end,begin   
+        @endowment(PA, -g0*TAU_LS - dtax - i0)
+        @endowment(RK, kd0)
+        @endowment(PL, (ly0+l0) - (ly0+l0)*UR)
+    end,
        elasticity = sigma
    )
    

@@ -46,13 +46,12 @@
         @Input(PY, 50,  s)
     end)
 
-    @demand(m, RA, 
-        [ScalarDem(PU, 150. )], 
-        [
-            ScalarEndowment(PL, endow*70), 
-            ScalarEndowment(PK, 80)
-        ]
-    )
+    @demand(m, RA, begin
+            @final_demand(PU, 150. )
+        end,begin
+            @endowment(PL, endow*70)
+            @endowment(PK, 80)
+    end)
 
     gams_results = XLSX.readxlsx(joinpath(@__DIR__, "MPSGEresults.xlsx"))
     a_table = gams_results["TwoxTwowOTax"][:]  # Generated from TwoByTwo_Scalar_wTax-MPSGE.gms
@@ -319,13 +318,12 @@ end
     end)
 
     for r in consumers
-        @demand(m, RA[r], 
-            [ScalarDem(PU, 75. )], 
-            [
-                ScalarEndowment(PL, endow*35), 
-                ScalarEndowment(PK, 40)
-            ]
-        )
+        @demand(m, RA[r], begin
+                @final_demand(PU, 75. )
+            end,begin
+                @endowment(PL, endow*35)
+                @endowment(PK, 40)
+        end)
     end
 
  
@@ -720,13 +718,12 @@ end
     end)
 
 
-    @demand(m, CONS, 
-        [ScalarDem(PW, 200.)], 
-        [
-            ScalarEndowment(PL, 100.0), 
-            ScalarEndowment(PK, 100.0)
-        ]
-    )
+    @demand(m, CONS, begin
+            @final_demand(PW, 200.)
+        end, begin
+            @endowment(PL, 100.0)
+            @endowment(PK, 100.0)
+    end)
     
     solve!(m, cumulative_iteration_limit=0)
 
@@ -1369,13 +1366,12 @@ end
         @Input(PY, 100, s)
     end)
     
-    @demand(m, CONS,
-        [ScalarDem(PW,200)],
-        [ 
-            ScalarEndowment(PL, 120 + -80/(1-uo)*U),
-            ScalarEndowment(PK, 90)
-        ]
-    )
+    @demand(m, CONS, begin
+            @final_demand(PW,200)
+        end, begin
+            @endowment(PL, 120 + -80/(1-uo)*U)
+            @endowment(PK, 90)
+    end)
     
     @aux_constraint(m, U, PL - PW)
     
@@ -1597,13 +1593,12 @@ end
         @Input(PK, 100, s, taxes=[Tax(CONS, txk*TAU)])
     end)    
             
-    @demand(m, CONS,
-        [ScalarDem(PW,340)],
-        [ 
-            ScalarEndowment(PL, 200.),
-            ScalarEndowment(PK, 100)
-        ]
-    )
+    @demand(m, CONS, begin
+            @final_demand(PW,340)
+        end,begin
+            @endowment(PL, 200.)
+            @endowment(PK, 100)
+    end)
 
     @aux_constraint(m, TAU, 
         W*PW*340 - PL * 200 - PK * 100  - 40 * (PX + PY)/2
@@ -1877,13 +1872,12 @@ end
         @Input(PY, 100, s)
     end)
     
-    @demand(m, CONS,
-        [ScalarDem(PW, 180)],
-        [ 
-            ScalarEndowment(PL, 74),
-            ScalarEndowment(PK, 90)
-        ]
-    )
+    @demand(m, CONS, begin
+            @final_demand(PW, 180)
+        end, begin
+            @endowment(PL, 74)
+            @endowment(PK, 90)
+    end)
     
     @aux_constraint(m, SHAREX, 
         SHAREX - 100*PX*X / (100*PX*X + 100*PY*Y)
