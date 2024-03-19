@@ -1,35 +1,14 @@
-function find_levels(T::ScalarNest)
-    current_children = Any[[T]]
 
-    out = []
-    while current_children != Any[]
-        level = popfirst!(current_children)
-        push!(current_children,[])
-        push!(out,[])
-        for T∈level
-            push!(out[end],T)
-            append!(current_children[end], children(T))
-        end
-        if current_children[end] == []
-            pop!(current_children)
-        end
+function build_nested_compensated_demand!(P::ScalarProduction)
+    
+    for T ∈ commodity_netputs(P) #The error is right here, it's the sign. It needs to change based on input/output
+        sign = netput_sign(T)
+        P.nested_compensated_demand[name(T),parent(T)] = build_nested_compensated_demand(P,T,sign)
     end
 
-    return out
-end
-
-#Can be greatly simplified
-function build_nested_compensated_demand!(P::ScalarProduction)
-    for level in reverse(find_levels(input(P)))
-        for T in level
-            P.nested_compensated_demand[name(T),parent(T)] = build_nested_compensated_demand(P,T,-1)
-        end
-    end 
-
-    for level in reverse(find_levels(output(P)))
-        for T in level
-            P.nested_compensated_demand[name(T),parent(T)] = build_nested_compensated_demand(P,T,1)
-        end
+    for T∈reverse(P.ordered_nests)
+        sign = netput_sign(T)
+        P.nested_compensated_demand[name(T),parent(T)] = build_nested_compensated_demand(P,T,sign)
     end
 
 end
@@ -40,7 +19,7 @@ function build_nested_compensated_demand(P::ScalarProduction,T::ScalarNest, sign
         jm = jump_model(model(sector(P)))
 
         #This must be an explicit expression, otherwise it's evaluated now. 
-        return @expression(jm, JuMP.op_ifelse(
+        return @expression(jm, ifelse(
                     elasticity(T) * sign == -1,
                     cobb_douglass(P,T,sign), 
                     CES(P,T,sign)
@@ -71,19 +50,15 @@ function build_compensated_demand!(P::ScalarProduction)
 
     build_nested_compensated_demand!(P)
 
-    prod_commodities = ScalarNetput[e for level∈find_levels(input(P)) for e∈level if e isa ScalarNetput]
-    append!(prod_commodities,[e for level∈find_levels(output(P)) for e∈level if e isa ScalarNetput])
+    prod_commodities = commodity_netputs(P) 
 
-    #prod_commodities = commodity_netputs(P) #not exactly what I want ...
-
-    #T = prod_commodities[1]
     for T∈prod_commodities
         C = commodity(T)
         nest = parent(T)
 
-        sign = T isa ScalarInput ? -1 : 1
+        sign = netput_sign(T)#T isa ScalarInput ? -1 : 1
 
-        #build taxes
+        #build taxes - production constructor?
         for t in taxes(T)
             H = tax_agent(t)
             if H∉keys(P.taxes)
@@ -114,6 +89,8 @@ function build_compensated_demands!(M::MPSGEModel)
     end
 end
 
+
+#This should move to the production constructor 
 function build_commodity_dictionary!(M::MPSGEModel)
     M.commodities = Dict(C=>[] for C∈commodities(M))
     for S∈keys(M.productions)#sectors(M)

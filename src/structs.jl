@@ -372,20 +372,27 @@ struct ScalarOutput <: ScalarNetput
         ) = new(commodity,quantity,reference_price,taxes,parent)
 end
 
+#sign = T isa ScalarInput ? -1 : 1
+netput_sign(I::ScalarInput) = -1
+netput_sign(I::ScalarOutput) = 1
+
 
 mutable struct ScalarNest <: AbstractNest
     name::Symbol
     elasticity::MPSGEquantity
     children::Vector{Union{ScalarNest,ScalarNetput}}
     parent::Union{Symbol,Missing}
+    input::Bool
     function ScalarNest(name::Symbol;parent::Union{Symbol,Missing} = missing, elasticity::MPSGEquantity=0,children = [])  
-        N = new(name,elasticity,children, parent)
+        N = new(name,elasticity,children, parent, false)
         for child in children
             set_parent(child,N)
         end
         return N
     end
 end
+
+netput_sign(T::ScalarNest) = T.input ? -1 : 1
 
 function add_child!(N::ScalarNest, child)
     push!(N.children, child)
@@ -405,41 +412,82 @@ end
 
 mutable struct ScalarProduction
     sector::ScalarSector
-    netput::Dict{ScalarCommodity, Vector{MPSGE_MP.Netput}}
+    commodity_netputs::Vector{ScalarNetput}
+    ordered_nests::Vector{ScalarNest}
     nest_dict::Dict{Symbol, Any}
     nested_compensated_demand::Dict
     compensated_demand::Dict
     taxes::Dict
+    input::Symbol
+    output::Symbol
     function ScalarProduction(sector::ScalarSector, nodes::Vector{Node}, netputs::MPSGE_MP.ScalarNetput...)
-        netput_dict = Dict{ScalarCommodity, Vector{MPSGE_MP.Netput}}()
-        
-        for netput in netputs
-            if quantity(netput) == 0 #Pre prune, don't add if quantity starts at 0
-                continue
-            end
-            C = commodity(netput)
-            if !haskey(netput_dict, C)
-                netput_dict[C] = []
-            end
-            push!(netput_dict[C], netput)
-        end
+        commodity_netputs = Vector{ScalarNetput}()#Dict{ScalarCommodity, Vector{MPSGE_MP.Netput}}()
+        ordered_nests = Vector{ScalarNest}()
 
+
+        #Build the non-leaf portion of the tree
         nest_dict = Dict()
         for node in nodes
             nest_dict[node.name] = ScalarNest(node.name; parent = node.parent, elasticity = node.elasticity)
             if !ismissing(node.parent)
                 add_child!(nest_dict[node.parent], nest_dict[node.name])
             end
+            push!(ordered_nests, nest_dict[node.name])
         end
-        
-        for (_, netputs) in netput_dict
-            for netput ∈ netputs
-                add_child!(nest_dict[netput.parent], netput)
+
+        _input = missing
+        _output = missing
+
+        #Build the leaves
+        for netput in netputs
+            if quantity(netput) == 0 #Pre prune, don't add if quantity starts at 0
+                continue
+            end
+            push!(commodity_netputs, netput)
+            add_child!(nest_dict[netput.parent], netput)
+            
+            #Determine the root of the input tree
+            if ismissing(_input) && isa(netput, ScalarInput) 
+                _input = parent(netput)
+                while _input != parent(nest_dict[_input])#!ismissing(parent)
+                    _input = parent(nest_dict[_input])
+                end
+            end
+            
+            #Determine the root of the output tree
+            if ismissing(_output) && isa(netput, ScalarOutput)
+                _output = parent(netput)
+                while _output != parent(nest_dict[_output])#!ismissing(parent)
+                    _output = parent(nest_dict[_output])
+                end
+            end
+
+        end
+
+        #It's possible there is no input/output tree. In this case set a default key value we can check for.
+        if ismissing(_input) 
+            _input = :missing
+        end
+
+        if ismissing(_output) 
+            _output = :missing
+        end
+
+        P = new(sector, commodity_netputs, ordered_nests, nest_dict, Dict(), Dict(), Dict(), _input, _output)
+
+        # Set all the input nests to be inputs. 
+        if _input != :missing
+            T = input(P)
+            to_set = [T]
+            while !isempty(to_set)
+                T = popfirst!(to_set)
+                T.input = true
+                append!(to_set, [e for e∈children(T) if isa(e,ScalarNest)])
             end
         end
+        
+        return P
 
-
-        new(sector, netput_dict, nest_dict, Dict(), Dict(), Dict())
     end
 end
 
@@ -447,13 +495,11 @@ const Production = ScalarProduction
 
 
 sector(P::Production) = P.sector
-input(P::Production) = P.nest_dict[:s] #Temporary
-output(P::Production) = P.nest_dict[:t] #Temporary
+input(P::Production) = P.nest_dict[P.input] 
+output(P::Production) = P.nest_dict[P.output]
 taxes(P::Production) = P.taxes
 commodities(P::Production) = collect(keys(P.netput))
-commodity_netputs(P::Production) = collect(Iterators.flatten(values(P.netput)))
-commodity(P::Production, C::Commodity) = P.netput[C]
-netputs(P::Production) = P.netput
+commodity_netputs(P::Production) = P.commodity_netputs
 
 parent(P::Production, T::ScalarNest) = P.nest_dict[parent(T)]
 parent(P::Production, T::ScalarNetput) = P.nest_dict[parent(T)]

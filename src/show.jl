@@ -35,7 +35,7 @@ end
 ###############
 
 function Base.show(io::IO,S::MPSGEScalarVariable)
-    print(io,name(S))
+    print(io,base_name(S))
     if !ismissing(subindex(S))
         print(io,subindex(S))
     end
