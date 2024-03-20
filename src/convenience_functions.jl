@@ -9,3 +9,4 @@ end
 
 
 JuMP.set_start_value(X::MPSGEScalarVariable, val::Real) = JuMP.set_start_value(get_variable(X), val)
+JuMP.start_value(H::ScalarConsumer) = start_value(get_variable(H))
