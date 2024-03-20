@@ -9,7 +9,7 @@ const _PAGES = [
     "Tutorials" => [
         "Getting Started" => ["Tutorials/getting_started/introduction.md"],
         "Basic Examples" => ["Tutorials/basic_examples/m1_mpsge.md"],
-        "Intermediate Examples" => ["Tutorials/intermediate_examples/m1_mpsge.md"],
+        "Intermediate Examples" => ["Tutorials/intermediate_examples/M22.md"],
     ],
     "How it works" => ["how_it_works.md"], 
     "Docstrings" => ["docs.md"],
