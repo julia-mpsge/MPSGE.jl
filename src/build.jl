@@ -277,12 +277,13 @@ function solve!(m::AbstractMPSGEModel; kwargs...)
         JuMP.set_attribute(jm, string(k), v)
     end
 
+    JuMP.set_optimizer(jm, PATHSolver.Optimizer)
 
     consumer = nothing
     #Check numinaire here
     if sum(is_fixed.(all_variables(jm))) == length(parameters(m)) #If there are no fixed variables other than parameters
-        (value, consumer) = maximum(zip(start_value.(consumers(m)), consumers(m)))
-        fix(consumer, value)
+        consumer = argmax(start_value, consumers(m))
+        fix(consumer, start_value(consumer))
     end
 
     JuMP.optimize!(jm)
