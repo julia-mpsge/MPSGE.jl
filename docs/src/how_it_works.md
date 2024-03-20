@@ -77,10 +77,14 @@ under nest ``n``.
 For commodity ``C`` and consumer ``H`` define ``E(H,C)`` to be the endowment quantity.
 This is taken to be 0 if there is no endowment for ``H`` and ``C``.
 
-Let ``q_C`` be the quantity of demand for commodity ``C`` in ``H`` consumer demand and
-``q = \sum_C q_C`` be the total demand. Define the demand function, ``D(H,C)``, as
+Let ``\sigma`` be the elasticity of demand, ``q_C`` be the quantity of demand for commodity ``C`` in ``H`` consumer demand,
+``q = \sum_C q_C`` be the total demand, and ``p_C`` be the reference price of the commodity. Define the demand function, ``D(H,C)``, as
 ```math
-    D(H,C) = \frac{q_C}{q}\cdot \frac{H}{C}
+D(H,C) = \frac{q_C}{q}\cdot \frac{H}{C}\cdot \left\{\begin{array}{cc}\frac{p_H\cdot\text{expenditure}(H)}{C}^{\sigma-1} & \sigma\ne1 \\ 1 & \text{otherwise} \end{array}\right.
+```
+where
+```math
+\text{expenditure}(H) = \left(\sum_{C\in\text{ demands}(H)} \frac{q_C\cdot C}{q\cdot p_C}\right)^{1/(1-\sigma)}
 ```
 
 ## Constraints
@@ -104,14 +108,4 @@ Let ``C`` be a commodity, then the market clearance condition is given by,
 Let ``H`` be a consumer, then the income balance condition is given by,
 ```math
 H - \left(\sum_{C\in\text{ Commodities}} E(H,C)\cdot C - \sum_{S\in\text{ Sectors}}\tau(S,H)\cdot S\right) \perp H
-```
-
-
-
-# Production Blocks
-
-Production blocks represent two trees: Input and output. 
-
-```
-Prod: A 
 ```
