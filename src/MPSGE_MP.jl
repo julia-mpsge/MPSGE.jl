@@ -23,15 +23,16 @@ export  MPSGEModel,
         ScalarConsumer,  IndexedConsumer,  Consumer, 
         ScalarParameter, IndexedParameter, Parameter,
         ScalarAuxiliary, IndexedAuxiliary, Auxiliary,
-        Tax, ScalarInput, ScalarOutput,
-        ScalarNest, ScalarProduction,
+        ScalarNest,      IndexedNest,      Nest,
+        Tax, Input, Output,
+        Node, ScalarProduction,
         ScalarDem, ScalarEndowment, ScalarDemand,
-        ScalarAuxConstraint, Node
+        ScalarAuxConstraint
 
 #Struct access
 export  name, quantity, production, jump_model, sectors, commodities,
         consumers, taxes, sector, commodity, consumer, description,
-        set_value!, value, auxiliaries, parameters
+        set_value!, value, auxiliaries, parameters, cost_function
 
 
 #Model

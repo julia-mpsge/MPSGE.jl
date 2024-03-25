@@ -101,36 +101,51 @@ end
 ####################
 ## Tree Structure ##
 ####################
-function nest_string(N::ScalarNest; tab_level=0)
-    out = ":$(name(N)) = $(elasticity(N))\n"
-    tab_level+=1
-    for child in N.children
-        out *= "  "^tab_level*"$(nest_string(child;tab_level = tab_level))\n"
-    end
-    #print(io,out)
-    return out
+Base.show(io::IO,T::Tax) = print(io,"A:$(tax_agent(T))    T:$(tax(T))")
+
+
+function Base.print_array(io::IO, X::IndexedNest)
+    return Base.print_array(io, X.subsectors)
 end
 
 
-function nest_string(N::ScalarNetput; tab_level=0)
-    if N isa ScalarInput
-        v = "I"
-    else
-        v = "O"
+function Base.show(io::IO, N::ScalarNest)
+    print(io, N.name)
+    if !ismissing(N.subindex)
+        print(io, N.subindex)
     end
-    out = "$v:$(commodity(N))    Q: $(base_quantity(N))"
-    if N.reference_price !=1
+end
+
+function Base.show(io::IO, N::Netput)
+    v = isa(N, Input) ? "I" : "O"
+    out = "$v:$(commodity(N))    Q:$(base_quantity(N))"
+    if reference_price(N) != 1
         out *= "    P:$(reference_price(N))"
     end
-    for tax in N.taxes
+    for tax in taxes(N)
         out *= "    $tax"
     end
+    print(io,out)
+end
+
+
+function node_string(N::Node; tab_level=0)
+    out = ":$(N.data) = $(elasticity(N))\n"
+    tab_level+=1
+    for child in N.children
+        out *= "  "^tab_level*"$(node_string(child;tab_level = tab_level))\n"
+    end
     return out
-end
 
-function Base.show(io::IO,N::ScalarNest)
-    print(io, nest_string(N))
 end
 
 
-Base.show(io::IO,T::Tax) = print(io,"A:$(tax_agent(T))    T:$(tax(T))")
+function node_string(N::Netput; tab_level=0)
+    return "$N"
+end
+
+
+
+function Base.show(io::IO,N::Node)
+    print(io, node_string(N))
+end

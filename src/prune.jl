@@ -1,4 +1,4 @@
-function prune!(T::ScalarNetput)
+function prune!(T::Netput)
     if quantity(T) != 0
         return T
     else
@@ -6,7 +6,7 @@ function prune!(T::ScalarNetput)
     end
 end
 
-function prune!(T::ScalarNest)
+function prune!(T::Node)
     if quantity(T) == 0
         return nothing
     end

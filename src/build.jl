@@ -33,7 +33,7 @@ function build_nested_compensated_demand(P::ScalarProduction,T::ScalarNest, sign
     end
 end
 
-function build_nested_compensated_demand(P::ScalarProduction,T::ScalarNetput, sign::Int)
+function build_nested_compensated_demand(P::ScalarProduction,T::Netput, sign::Int)
     return get_variable(commodity(T))*(1 - sign*sum(tax(t) for t in taxes(T); init=0))/reference_price(T)
 end
 

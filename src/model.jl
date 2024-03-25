@@ -72,7 +72,7 @@ end
 ## Production/Demand ##
 #######################
 
-function add_production!(model::AbstractMPSGEModel, S::ScalarSector, nodes::Vector{Node}, netputs::MPSGE_MP.ScalarNetput...)
+function add_production!(model::AbstractMPSGEModel, S::ScalarSector, nodes::Vector{Nest}, netputs::Netput...)
     P = ScalarProduction(S,nodes, netputs...)
     model.productions[S] = P
     return P
