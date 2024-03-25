@@ -43,9 +43,37 @@ function _plural_macro_code(model, block, macro_sym)
     return code
 end
 
+# This function heavily inspired by JuMP
+function _parse_ref_sets(c)
+    name = missing
+    index = :([])
+    index_vars = :([])
+    if Meta.isexpr(c, :ref)
+        name = c.args[1]
+        for arg in c.args[2:end]
+            if Meta.isexpr(arg, :kw)
+                push!(index.args, esc(arg.args[2]))
+                push!(index_vars.args, esc(arg.args[1]))
+            else isa(arg, Symbol)
+                push!(index.args, esc(arg))
+                push!(index_vars.args, missing)
+            end
+        end
+    else c isa Symbol
+        name = c
+    end
+    return [name, index, index_vars]
+end
+
+
 
 macro sector(model, name, kwargs...)
-    constr_call = :(add_sector!($(esc(model)),$(QuoteNode(name))))
+    name, index, _ = _parse_ref_sets(name)
+    if isempty(index.args) #This could be better
+        constr_call = :(add_sector!($(esc(model)),$(QuoteNode(name))))
+    else
+        constr_call = :(add_sector!($(esc(model)),$(QuoteNode(name)); index = $index))
+    end
     _add_kw_args(constr_call, kwargs)
     return :($(esc(name)) = $constr_call)
 end
@@ -56,10 +84,14 @@ macro sectors(model, block)
 end
 
 macro commodity(model, name, kwargs...)
-    constr_call = :(add_commodity!($(esc(model)),$(QuoteNode(name))))
+    name, index, _ = _parse_ref_sets(name)
+    if isempty(index.args) #This could be better
+        constr_call = :(add_commodity!($(esc(model)),$(QuoteNode(name))))
+    else
+        constr_call = :(add_commodity!($(esc(model)),$(QuoteNode(name)); index = $index))
+    end
     _add_kw_args(constr_call, kwargs)
     return :($(esc(name)) = $constr_call)
-
 end
 
 macro commodities(model, block)
@@ -67,7 +99,12 @@ macro commodities(model, block)
 end
 
 macro consumer(model, name, kwargs...)
-    constr_call = :(add_consumer!($(esc(model)),$(QuoteNode(name))))
+    name, index, _ = _parse_ref_sets(name)
+    if isempty(index.args) #This could be better
+        constr_call = :(add_consumer!($(esc(model)),$(QuoteNode(name))))
+    else
+        constr_call = :(add_consumer!($(esc(model)),$(QuoteNode(name)); index = $index))
+    end
     _add_kw_args(constr_call, kwargs)
     return :($(esc(name)) = $constr_call)
 end
@@ -77,7 +114,12 @@ macro consumers(model, block)
 end
 
 macro parameter(model, name, value, kwargs...)
-    constr_call = :(add_parameter!($(esc(model)),$(QuoteNode(name)), $(esc(value))))
+    name, index, _ = _parse_ref_sets(name)
+    if isempty(index.args) #This could be better
+        constr_call = :(add_parameter!($(esc(model)),$(QuoteNode(name)), $(esc(value))))
+    else
+        constr_call = :(add_parameter!($(esc(model)),$(QuoteNode(name)), $(esc(value)); index = $index))
+    end
     _add_kw_args(constr_call, kwargs)
     return :($(esc(name)) = $constr_call)
 end
@@ -88,7 +130,12 @@ end
 
 
 macro auxiliary(model, name, kwargs...)
-    constr_call = :(add_auxiliary!($(esc(model)),$(QuoteNode(name))))
+    name, index, _ = _parse_ref_sets(name)
+    if isempty(index.args) #This could be better
+        constr_call = :(add_auxiliary!($(esc(model)),$(QuoteNode(name))))
+    else
+        constr_call = :(add_auxiliary!($(esc(model)),$(QuoteNode(name)); index = $index))
+    end
     _add_kw_args(constr_call, kwargs)
     return :($(esc(name)) = $constr_call)
 end
@@ -96,8 +143,6 @@ end
 macro auxiliaries(model, block)
     return _plural_macro_code(model, block, Symbol("@auxiliary"))
 end
-
-
 
 
 macro aux_constraint(model, A, constraint)
