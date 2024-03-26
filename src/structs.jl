@@ -292,7 +292,7 @@ function _get_parameter_value(X::ScalarParameter)
     if !isnothing(jump_model(model(X)))
         return get_variable(X)
     end
-    return value(X)
+    return X#value(X)
 end
 
 
@@ -301,7 +301,7 @@ function _get_parameter_value(x::abstractMPSGEExpr)
 end
 
 function _get_parameter_value(x:: MPSGEScalarVariable)
-    return get_variable(x)
+    return x#get_variable(x)
 end
 
 
@@ -309,7 +309,7 @@ end
 ## Tree Structure ##
 ####################
 
-cost_function(N::Netput) = N.cost_function
+
 commodity(C::Netput) = C.commodity
 base_quantity(N::Netput) = _get_parameter_value(N.quantity)
 reference_price(N::Netput) = _get_parameter_value(N.reference_price)
@@ -318,7 +318,12 @@ taxes(N::Netput) = N.taxes
 name(N::Netput) = name(commodity(N))
 parent(N::Netput) = N.parent
 children(N::Netput) = []
-
+function cost_function(N::Netput)
+    C = commodity(N)
+    sign = N.netput_sign
+    rp = reference_price(N)
+    return C*(1-sign*sum(tax(t) for t∈taxes(N);init = 0))/rp
+end
 
 struct Tax
     agent::Consumer
@@ -342,6 +347,7 @@ end
 base_name(N::ScalarNest) = N.name
 name(N::ScalarNest) = ismissing(subindex(N)) ? N.name : Symbol(N.name,"_",join(subindex(N),"_"))
 elasticity(N::ScalarNest) = _get_parameter_value(N.elasticity)
+subindex(N::ScalarNest) = N.subindex
 
 struct IndexedNest{N} <: AbstractArray{ScalarNest, N}
     name::Symbol
@@ -371,6 +377,9 @@ end
 
 const Nest = Union{ScalarNest, IndexedNest}
 
+
+name(N::IndexedNest) = N.name
+
 Base.getindex(V::IndexedNest, index...) = V.subsectors[index...]
 Base.getindex(A::IndexedNest, idx::CartesianIndex) = A.subsectors[idx]
 
@@ -388,9 +397,9 @@ mutable struct Node
     cost_function::MPSGEquantity
     netput_sign::Int
     function Node(data::ScalarNest; children = [], netput_sign::Int = 1)
-        N = new(nothing, children, data, sum(cost_function(c) for c∈children), netput_sign) #Cost function wrong currently. Will fix
+        N = new(nothing, children, data, sum(cost_function(c) for c∈children; init=0), netput_sign) #Cost function wrong currently. Will fix
         for child in children 
-            set_parent(child, N)
+            set_parent!(child, N)
         end
         return N
     end
@@ -401,31 +410,45 @@ base_quantity(N::Node) = sum(quantity(c) for c∈children(N); init=0)#_get_param
 base_name(N::Node) = base_name(N.data)
 name(N::Node) = name(N.data)
 children(N::Node) = N.children
-parent(N::Node) = N.parent #isnothing(N.parent) ? name(N) : N.parent
+parents(N::Node) = N.parents
 elasticity(N::Node) = elasticity(N.data)
 raw_elasticity(N::Node) = N.elasticity
+parent(N::Node) = N.parent
 
 cost_function(N::Node) = N.cost_function
 #name(N::Node) = N.data.name
 #elasticity(N::Node) = N.data.elasticity
 
 
-# Small Setter - Deprecated? 
-set_parent(child::Node,   parent::Node) = (child.parent = parent)
-set_parent(child::Netput, parent::Node) = (child.parent = parent)
+
+function set_parent!(child::Node,   parent::Node; add_child=false) 
+    child.parent = parent
+    if add_child
+        push!(parent.children, child)
+    end
+end
+
+# Going to need to modify so child can be either scalar or indexed FUTURE
+function set_parent!(child::Netput, parent::Node; add_child=false) 
+    push!(child.parents, parent)
+    if add_child
+        push!(parent.children, child)
+    end
+end
     
 mutable struct Input <: Netput 
     commodity::ScalarCommodity
     quantity::MPSGEquantity
     reference_price::MPSGEquantity
     taxes::Vector{Tax}
-    parent::Union{Node, Nothing}
-    cost_function::MPSGEquantity
+    parents::Vector{Node}
+    #cost_function::MPSGEquantity
+    netput_sign::Int
     Input( commodity::ScalarCommodity,
             quantity::MPSGEquantity;
             reference_price::MPSGEquantity=1,
             taxes = [],
-    ) = new(commodity, quantity, reference_price, taxes, nothing, 1)
+    ) = new(commodity, quantity, reference_price, taxes, [], -1)
 end
 
 mutable struct Output <: Netput 
@@ -433,13 +456,14 @@ mutable struct Output <: Netput
     quantity::MPSGEquantity
     reference_price::MPSGEquantity
     taxes::Vector{Tax}
-    parent::Union{Node, Nothing}
-    cost_function::MPSGEquantity
+    parents::Vector{Node}
+    #cost_function::MPSGEquantity
+    netput_sign::Int
     Output(commodity::ScalarCommodity,
             quantity::MPSGEquantity;
             reference_price::MPSGEquantity=1,
             taxes = [],
-    ) = new(commodity, quantity, reference_price, taxes, nothing, 1)
+    ) = new(commodity, quantity, reference_price, taxes, [], 1)
 end
 
 
