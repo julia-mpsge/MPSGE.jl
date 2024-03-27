@@ -1,3 +1,7 @@
+####################################
+## Production Constructor Helpers ##
+####################################
+
 function create_node!(node_dict, child::ScalarNest, parent::ScalarNest)
     if !haskey(node_dict, child)
         node_dict[child] = []
@@ -43,6 +47,9 @@ function _add_netput!(netput_dict, node_dict, child::Netput, parent::IndexedNest
     _add_netput!.(Ref(netput_dict), Ref(node_dict), Ref(child), parent)
 end
 
+############################
+## Production Constructor ##
+############################
 
 function Production(
     sector::ScalarSector, 
@@ -85,6 +92,12 @@ function Production(
 
     netput_dict = Dict()
     for (child,parent_nest)∈netputs
+
+        # Prune, this will only give zero if the base quantity is 0 
+        if base_quantity(child) == 0
+            continue
+        end
+
         #Assume scalar input, for now
         if !haskey(netput_dict, commodity(child))
             netput_dict[commodity(child)] = []
@@ -100,7 +113,35 @@ function Production(
     input = node_dict[nest_dict[top_nests[input_ind]]][1]
     output = node_dict[nest_dict[top_nests[output_ind]]][1]
 
+    #Prune nodes that have no children. Is this necessary? YES
+    input = prune!(input)
+    output = prune!(output)
+
+    @assert !isnothing(input) && !isnothing(output) "Production block for $(sector) has a 0 quantity in either output or input, but not both."
+
     return Production(sector, netput_dict, Dict(), input, output)
 end
 
+#####################
+## Pruning Helpers ##
+#####################
 
+function prune!(T::Netput)
+    if quantity(T) != 0
+        return T
+    else
+        return nothing
+    end
+end
+
+function prune!(T::Node)
+    if quantity(T) == 0
+        return nothing
+    end
+    T.children = [e for e∈prune!.(children(T)) if !isnothing(e)]
+    return T
+end
+#remove_child!(parent::Node, child::Node)
+
+
+#remove_parent!(child::Node, parent::Node)

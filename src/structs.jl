@@ -474,8 +474,8 @@ struct Production
     sector::ScalarSector
     netputs::Dict{Commodity, Vector{MPSGE_MP.Netput}}
     compensated_demands::Dict{Commodity,Vector{MPSGE_MP.MPSGEquantity}}
-    input::Node
-    output::Node
+    input::Union{Node, Nothing}
+    output::Union{Node, Nothing}
 end
 
 sector(P::Production) = P.sector
