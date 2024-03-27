@@ -20,7 +20,7 @@ function create_node!(node_dict, child::Nest, parent::IndexedNest)
 end
 
 function _add_netput!(netput_dict, node_dict, child::Netput, parent::ScalarNest)
-    for node ∈ node_dict[parent]#nest_dict[name(parent)]]
+    for node ∈ node_dict[parent]
         set_parent!(child, node; add_child = true) 
 
         #Check netput signs match up the tree
@@ -28,7 +28,7 @@ function _add_netput!(netput_dict, node_dict, child::Netput, parent::ScalarNest)
         while !isnothing(p)
             if c.netput_sign != p.netput_sign
                 p.netput_sign = c.netput_sign
-                c,p = p, parent(p)
+                c,p = p, MPSGE_MP.parent(p)
             else
                 p = nothing
             end

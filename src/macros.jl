@@ -182,41 +182,66 @@ function _parse_nest(nest)
     value = _strip_value(nest)
     parent, name = _strip_nest_name(nest)
     if !ismissing(parent)
-        return :(MPSGE_MP.Node($(QuoteNode(name)), $(value); parent = $(QuoteNode(parent))))
+        return :(Node($(QuoteNode(name)), $(value); parent = $(QuoteNode(parent))))
     else
-        return :(MPSGE_MP.Node($(QuoteNode(name)), $(value)))
+        return :(Node($(QuoteNode(name)), $(value)))
     end
 
 end
 
 macro input(commodity, quantity, nest, kwargs...)
     constr_call = :(Input($(esc(commodity)), $(esc(quantity))))
-    MPSGE_MP._add_kw_args(constr_call, kwargs)
+    _add_kw_args(constr_call, kwargs)
     return :(($constr_call, $(QuoteNode(nest))))#@nest($nest,0)))
 end
 
 macro output(commodity, quantity, nest, kwargs...)
     constr_call = :(Output($(esc(commodity)), $(esc(quantity))))
-    MPSGE_MP._add_kw_args(constr_call, kwargs)
+    _add_kw_args(constr_call, kwargs)
     return :(($constr_call, $(QuoteNode(nest))))
 end
 
 
-
 macro production(model, sector, nestings, netputs)
-    nodes = esc.(_parse_nest.(nestings.args))
-    node_expr = :([])
-    for node in nodes
-        push!(node_expr.args, node)
-    end
-    constr_call = :(add_production!($(esc(model)), $(esc(sector)),$node_expr))
-    for netput in netputs.args
-        if !isa(netput,LineNumberNode)
-            push!(constr_call.args, esc(netput))
+
+    #nests
+    nests = :([])
+    top_nests = :([])
+    nest_connect = :([])
+    for nest in nestings.args
+        if !Meta.isexpr(nest, :(=))
+            error("Invalid syntax for nesting $nest. Required to have an = in "*
+            "statement. `s = 0` or `va => s = 0`."
+            )
+        end
+        elasticity = _strip_value(nest)
+        parent, nest = _strip_nest_name(nest)
+
+        name, index, _ = _parse_ref_sets(nest)
+    
+        if isempty(index.args)
+            push!(nests.args, :(ScalarNest($(QuoteNode(name)), $elasticity)))
+        else
+            push!(nests.args, :(IndexedNest($(QuoteNode(name)), $elasticity, $index)))
+        end
+    
+        if !ismissing(parent)
+            push!(nest_connect.args, :(($(QuoteNode(name)), $(QuoteNode(parent)))))
+        else
+            push!(top_nests.args, :($(QuoteNode(name))))
         end
     end
-    #_add_kw_args(constr_call, kwargs)
-    return :($constr_call)
+
+    #netputs
+    nets = :([])
+    for arg in netputs.args
+        if arg isa LineNumberNode
+            continue
+        end
+        push!(nets.args, esc(arg))
+    end
+
+    return :(add_production!($(esc(model)), Production($(esc(sector)), $nests, $top_nests, $nest_connect, $nets)))
 end
 
 
