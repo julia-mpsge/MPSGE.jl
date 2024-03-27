@@ -69,7 +69,7 @@ end
 ########################
 ## Production/Demands ##
 ########################
-function Base.show(io::IO,P::ScalarProduction)
+function Base.show(io::IO, P::Production)
     println(io,"\$Production: $(sector(P))")
     println(io,"$(output(P))")
     print(io,"$(input(P))")
