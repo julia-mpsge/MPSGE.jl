@@ -4,6 +4,8 @@ using JuMP, DataFrames, PATHSolver
 
 import JuMP.Containers:DenseAxisArray
 
+import OrderedCollections:OrderedDict
+
 include("structs.jl")
 include("show.jl")
 include("model.jl")
@@ -27,7 +29,7 @@ export  MPSGEModel,
         ScalarAuxiliary, IndexedAuxiliary, Auxiliary,
         ScalarNest,      IndexedNest,      Nest,
         Tax, Input, Output,
-        Node, Production,
+        Production,
         ScalarDem, ScalarEndowment, ScalarDemand,
         ScalarAuxConstraint
 
@@ -36,6 +38,8 @@ export  name, quantity, production, jump_model, sectors, commodities,
         consumers, taxes, sector, commodity, consumer, description,
         set_value!, value, auxiliaries, parameters#, cost_function
 
+#Production
+export cost_function, input, output
 
 #Model
 export  add_variable!, add!, add_sector!, add_commodity!, add_consumer!,
@@ -54,8 +58,8 @@ export  @sector,    @sectors,
         @final_demand, @endowment
 
 #Building
-export  build!, compensated_demand_dictionary, compensated_demand, tau, 
-        demand, endowment
+#export  build!, compensated_demand_dictionary, compensated_demand, tau, 
+#        demand, endowment
 
 #Reporting
 export generate_report, solve!
