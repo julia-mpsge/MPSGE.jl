@@ -4,7 +4,7 @@
 
 function create_node!(node_dict, child::ScalarNest, parent::ScalarNest)
     if !haskey(node_dict, child)
-        node_dict[child] = []
+        node_dict[child] = Node[]
     end
     for node ∈ node_dict[parent]
         N = Node(child)
@@ -76,7 +76,7 @@ function Production(
     end
 
     # Build the non-leaf portion of the tree
-    node_dict = Dict()
+    node_dict = OrderedDict{Nest,Vector{Node}}()
     for nest∈top_nests
         child = nest_dict[nest]
         node_dict[child] = [Node(child)]
@@ -119,6 +119,13 @@ function Production(
 
     @assert !isnothing(input) && !isnothing(output) "Production block for $(sector) has a 0 quantity in either output or input, but not both."
 
+    # Initialize cost functions
+    for nest∈reverse(collect(keys(node_dict)))
+        for node∈node_dict[nest]
+            build_cost_function!(node)
+        end
+    end
+
     return Production(sector, netput_dict, Dict(), input, output)
 end
 
@@ -141,7 +148,47 @@ function prune!(T::Node)
     T.children = [e for e∈prune!.(children(T)) if !isnothing(e)]
     return T
 end
-#remove_child!(parent::Node, child::Node)
 
+####################
+## Cost Functions ##
+####################
 
-#remove_parent!(child::Node, parent::Node)
+function cost_function(N::Netput)
+    C = commodity(N)
+    sign = N.netput_sign
+    rp = reference_price(N)
+    return C*(1-sign*sum(tax(t) for t∈taxes(N);init = 0))/rp
+end
+
+build_cost_function!(N::Netput) = nothing
+
+function build_cost_function!(N::Node)
+    #if !(isa(raw_elasticity(N), Real))
+
+        #jm = jump_model(model(sector(P)))
+
+        #This must be an explicit expression, otherwise it's evaluated now. 
+        #return @expression(jm, ifelse(
+        #            elasticity(T) * sign == -1,
+        #            cobb_douglass(P,T,sign), 
+        #            CES(P,T,sign)
+        #        ))
+    #end
+
+    sign = N.netput_sign
+    if elasticity(N)*sign == -1 #Cobb-Douglas is only on demand side with σ=1
+        N.cost_function = cobb_douglass(N)
+    else
+        N.cost_function = CES(N)
+    end
+end
+
+function cobb_douglass(N::Node)#P::ScalarProduction, T::ScalarNest, sign)
+    sign = N.netput_sign
+    return prod(cost_function(child)^(quantity(child)/quantity(N)) for child in children(N); init=1)
+end
+
+function CES(N::Node)#P::ScalarProduction, T::ScalarNest, sign::Int)
+    sign = N.netput_sign
+    return sum(quantity(child)/quantity(N) * cost_function(child)^(1+sign*elasticity(N)) for child in children(N); init=0) ^ (1/(1+sign*elasticity(N)))
+end

@@ -318,12 +318,7 @@ taxes(N::Netput) = N.taxes
 name(N::Netput) = name(commodity(N))
 parent(N::Netput) = N.parent
 children(N::Netput) = []
-function cost_function(N::Netput)
-    C = commodity(N)
-    sign = N.netput_sign
-    rp = reference_price(N)
-    return C*(1-sign*sum(tax(t) for t∈taxes(N);init = 0))/rp
-end
+
 
 struct Tax
     agent::Consumer
