@@ -189,18 +189,19 @@ function _parse_nest(nest)
 
 end
 
-macro Output(commodity, quantity, nest, kwargs...)
-    constr_call = :(ScalarOutput($(esc(commodity)), $(esc(quantity)); parent = $(QuoteNode(nest))))
-    _add_kw_args(constr_call, kwargs)
-    return :($constr_call)
-end
-
-
-macro Input(commodity, quantity, nest, kwargs...)
-    constr_call = :(ScalarInput($(esc(commodity)), $(esc(quantity)); parent = $(QuoteNode(nest))))
+macro input(commodity, quantity, nest, kwargs...)
+    constr_call = :(Input($(esc(commodity)), $(esc(quantity))))
     MPSGE_MP._add_kw_args(constr_call, kwargs)
-    return :($constr_call)
+    return :(($constr_call, $(QuoteNode(nest))))#@nest($nest,0)))
 end
+
+macro output(commodity, quantity, nest, kwargs...)
+    constr_call = :(Output($(esc(commodity)), $(esc(quantity))))
+    MPSGE_MP._add_kw_args(constr_call, kwargs)
+    return :(($constr_call, $(QuoteNode(nest))))
+end
+
+
 
 macro production(model, sector, nestings, netputs)
     nodes = esc.(_parse_nest.(nestings.args))
