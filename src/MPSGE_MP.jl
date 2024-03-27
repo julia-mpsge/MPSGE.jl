@@ -25,7 +25,7 @@ export  MPSGEModel,
         ScalarAuxiliary, IndexedAuxiliary, Auxiliary,
         ScalarNest,      IndexedNest,      Nest,
         Tax, Input, Output,
-        Node, ScalarProduction,
+        Node, Production,
         ScalarDem, ScalarEndowment, ScalarDemand,
         ScalarAuxConstraint
 
@@ -48,7 +48,7 @@ export  @sector,    @sectors,
         @auxiliary, @auxiliaries,
         @production, @demand,
         @aux_constraint,
-        @Output, @Input,
+        @output, @input,
         @final_demand, @endowment
 
 #Building
