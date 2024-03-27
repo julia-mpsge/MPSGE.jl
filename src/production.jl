@@ -4,7 +4,7 @@ function create_node!(node_dict, child::ScalarNest, parent::ScalarNest)
     end
     for node ∈ node_dict[parent]
         N = Node(child)
-        MPSGE_MP.set_parent!(N, node; add_child=true)
+        set_parent!(N, node; add_child=true)
         push!(node_dict[child], N)
     end
 end
@@ -19,16 +19,16 @@ function create_node!(node_dict, child::Nest, parent::IndexedNest)
     end
 end
 
-function _add_netput!(netput_dict, node_dict, child::MPSGE_MP.Netput, parent::ScalarNest)
+function _add_netput!(netput_dict, node_dict, child::Netput, parent::ScalarNest)
     for node ∈ node_dict[parent]#nest_dict[name(parent)]]
-        MPSGE_MP.set_parent!(child, node; add_child = true) 
+        set_parent!(child, node; add_child = true) 
 
         #Check netput signs match up the tree
         c, p = child, node
         while !isnothing(p)
             if c.netput_sign != p.netput_sign
                 p.netput_sign = c.netput_sign
-                c,p = p, MPSGE_MP.parent(p)
+                c,p = p, parent(p)
             else
                 p = nothing
             end
@@ -39,7 +39,7 @@ function _add_netput!(netput_dict, node_dict, child::MPSGE_MP.Netput, parent::Sc
     end
 end
 
-function _add_netput!(netput_dict, node_dict, child::MPSGE_MP.Netput, parent::IndexedNest)
+function _add_netput!(netput_dict, node_dict, child::Netput, parent::IndexedNest)
     _add_netput!.(Ref(netput_dict), Ref(node_dict), Ref(child), parent)
 end
 
@@ -49,7 +49,7 @@ function Production(
     all_nests::Vector{Any}, 
     top_nests::Vector{Symbol},
     nest_connections::Vector{Tuple{Symbol,Symbol}},
-    netputs::Vector{Tuple{MPSGE_MP.Netput, Symbol}}
+    netputs::Vector{Tuple{Netput, Symbol}}
     )
 
     # Error Checking
