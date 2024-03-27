@@ -7,6 +7,8 @@ import JuMP.Containers:DenseAxisArray
 include("structs.jl")
 include("show.jl")
 include("model.jl")
+include("production.jl")
+
 
 include("macros.jl")
 #include("prune.jl")
