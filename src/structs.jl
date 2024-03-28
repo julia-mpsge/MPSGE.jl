@@ -280,6 +280,7 @@ Base.:-(x::_MPSGEquantity) = MPSGEExpr(:-, [x])
 
 
 
+
 # Getters
 """
     _get_parameter_value
@@ -308,17 +309,6 @@ end
 ####################
 ## Tree Structure ##
 ####################
-
-
-commodity(C::Netput) = C.commodity
-base_quantity(N::Netput) = _get_parameter_value(N.quantity)
-reference_price(N::Netput) = _get_parameter_value(N.reference_price)
-quantity(N::Netput) = base_quantity(N)*reference_price(N)
-taxes(N::Netput) = N.taxes
-name(N::Netput) = name(commodity(N))
-parent(N::Netput) = N.parent
-children(N::Netput) = []
-
 
 struct Tax
     agent::Consumer
@@ -389,7 +379,7 @@ mutable struct Node
     parent::Union{Node, Nothing}
     children::Vector{Union{Node,Netput}}
     data::ScalarNest
-    cost_function::MPSGEquantity
+    cost_function::MPSGEquantity #There may be a better name
     netput_sign::Int
     function Node(data::ScalarNest; children = [], netput_sign::Int = 1)
         N = new(nothing, children, data, 0, netput_sign) #Cost function is set after trees are built
@@ -430,6 +420,18 @@ function set_parent!(child::Netput, parent::Node; add_child=false)
         push!(parent.children, child)
     end
 end
+
+
+## Netputs
+
+commodity(C::Netput) = C.commodity
+base_quantity(N::Netput) = _get_parameter_value(N.quantity)
+reference_price(N::Netput) = _get_parameter_value(N.reference_price)
+quantity(N::Netput) = base_quantity(N)*reference_price(N)
+taxes(N::Netput) = N.taxes
+name(N::Netput) = name(commodity(N))
+parent(N::Netput) = N.parent
+children(N::Netput) = []
     
 mutable struct Input <: Netput 
     commodity::ScalarCommodity
@@ -467,8 +469,8 @@ end
 ################
 struct Production
     sector::ScalarSector
-    netputs::Dict{Commodity, Vector{MPSGE_MP.Netput}}
-    compensated_demands::Dict{Commodity,Vector{MPSGE_MP.MPSGEquantity}}
+    netputs::Dict{Commodity, Vector{Netput}}
+    compensated_demands::Dict{Netput,Vector{MPSGEquantity}}
     input::Union{Node, Nothing}
     output::Union{Node, Nothing}
 end
@@ -484,7 +486,7 @@ commodities(P::Production) = collect(keys(P.netputs))
 
 
 
-struct ScalarDem
+struct ScalarDem #FinalDemand
     commodity::ScalarCommodity
     quantity::MPSGEquantity
     reference_price::MPSGEquantity
@@ -556,10 +558,10 @@ constraint(C::AuxConstraint) = _get_parameter_value(C.constraint)
 mutable struct MPSGEModel <:AbstractMPSGEModel
     object_dict::Dict{Symbol,Any} # Contains only MPSGEVariables?
     jump_model::Union{JuMP.Model,Nothing}
-    productions::Dict{Sector,Production}
-    demands::Dict{Consumer,Demand}
-    commodities::Dict{Commodity,Vector{Sector}} #Generated on model build
-    auxiliaries::Dict{Auxiliary, AuxConstraint}
+    productions::Dict{ScalarSector,Production} # all scalars
+    demands::Dict{ScalarConsumer,Demand}
+    commodities::Dict{ScalarCommodity,Vector{ScalarSector}} #Generated on model build
+    auxiliaries::Dict{ScalarAuxiliary, AuxConstraint}
     MPSGEModel() = new(Dict(),nothing,Dict(),Dict(),Dict(),Dict())
 end
 
@@ -642,8 +644,10 @@ function commodities(m::MPSGEModel)
     return X
 end
 
-function commodities(S::Sector)
-    return collect(keys(compensated_demand_dictionary(S)))
+function commodities(S::ScalarSector) 
+    P = production(S)
+    return collect(keys(P.netputs))
+    #return collect(keys(compensated_demand_dictionary(S)))
 end
 
 
@@ -674,10 +678,13 @@ end
 
 
 ## Production
-function production(S::ScalarSector)
+function production(S::ScalarSector) #Key errors are possible
     M = model(S)
     return M.productions[S]
 end
+
+
+#Broken below here
 
 function taxes(S::ScalarSector)
     P = production(S)
