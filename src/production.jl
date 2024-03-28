@@ -90,7 +90,7 @@ function Production(
     end
 
 
-    netput_dict = Dict()
+    netput_dict = Dict{ScalarCommodity,Vector{Netput}}()
     for (child,parent_nest)∈netputs
 
         # Prune, this will only give zero if the base quantity is 0 
@@ -119,14 +119,22 @@ function Production(
 
     @assert !isnothing(input) && !isnothing(output) "Production block for $(sector) has a 0 quantity in either output or input, but not both."
 
-    # Initialize cost functions
+    # Initialize cost functions - Should check if things are nothing
     for nest∈reverse(collect(keys(node_dict)))
         for node∈node_dict[nest]
             build_cost_function!(node)
         end
     end
 
-    return Production(sector, netput_dict, Dict(), input, output)
+    # Build compensated demands
+    compensated_demands = Dict{Netput, Vector{MPSGEquantity}}()
+    for (_, netput_vector)∈netput_dict
+        for netput∈netput_vector
+            compensated_demands[netput] = build_compensated_demand.(Ref(netput),netput.parents)
+        end
+    end
+
+    return Production(sector, netput_dict, compensated_demands, input, output)
 end
 
 #####################
@@ -192,3 +200,25 @@ function CES(N::Node)#P::ScalarProduction, T::ScalarNest, sign::Int)
     sign = N.netput_sign
     return sum(quantity(child)/quantity(N) * cost_function(child)^(1+sign*elasticity(N)) for child in children(N); init=0) ^ (1/(1+sign*elasticity(N)))
 end
+
+function build_compensated_demand(base_netput::Netput, parent_node::Node)
+    child, parent = base_netput, parent_node
+    sign = child.netput_sign
+    compensated_demand = -sign * MPSGE_MP.base_quantity(child)
+    while !isnothing(parent)
+        compensated_demand *= (cost_function(parent)/cost_function(child)) ^ (-sign*elasticity(parent))
+        child,parent = parent, parent.parent
+    end
+    return compensated_demand
+end
+
+#function build_compensated_demand(N::Netput)
+#    build_compensated_dem
+#    sign = N.netput_sign
+#    compensatd_demand = -sign * MPSGE_MP.base_quantity(netput)
+#    while !isnothing(parent)
+#        compensated_demand *= (cost_function(parent)/cost_function(child)) ^ (-sign*elasticity(parent))
+#        child,parent = parent, parent.parent
+#    end
+#    return compensated_demand
+#end
