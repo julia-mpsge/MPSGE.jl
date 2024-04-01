@@ -361,9 +361,11 @@ base_quantity(N::Node) = sum(quantity(c) for c∈children(N); init=0)
 base_name(N::Node) = base_name(N.data)
 name(N::Node) = name(N.data)
 children(N::Node) = N.children
-parents(N::Node) = N.parents
+#
 elasticity(N::Node) = elasticity(N.data)
 parent(N::Node) = N.parent
+
+
 
 cost_function(N::Node) = N.cost_function
 #name(N::Node) = N.data.name
@@ -395,8 +397,9 @@ reference_price(N::Netput) = N.reference_price
 quantity(N::Netput) = base_quantity(N)*reference_price(N)
 taxes(N::Netput) = N.taxes
 name(N::Netput) = name(commodity(N))
-parent(N::Netput) = N.parent
+#parent(N::Netput) = N.parent
 children(N::Netput) = []
+parents(N::Netput) = N.parents
     
 mutable struct Input <: Netput 
     commodity::ScalarCommodity
