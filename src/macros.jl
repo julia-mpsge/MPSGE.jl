@@ -205,9 +205,9 @@ end
 macro production(model, sector, nestings, netputs)
 
     #nests
-    nests = :([])
-    top_nests = :([])
-    nest_connect = :([])
+    nests = :(Nest[])
+    top_nests = :(Symbol[])
+    nest_connect = :(Tuple{Symbol,Symbol}[])
     for nest in nestings.args
         if !Meta.isexpr(nest, :(=))
             error("Invalid syntax for nesting $nest. Required to have an = in "*
@@ -220,9 +220,9 @@ macro production(model, sector, nestings, netputs)
         name, index, _ = _parse_ref_sets(nest)
     
         if isempty(index.args)
-            push!(nests.args, :(ScalarNest($(QuoteNode(name)), $elasticity)))
+            push!(nests.args, :(ScalarNest($(QuoteNode(name)), $(esc(elasticity)))))
         else
-            push!(nests.args, :(IndexedNest($(QuoteNode(name)), $elasticity, $index)))
+            push!(nests.args, :(IndexedNest($(QuoteNode(name)), $(esc(elasticity)), $index)))
         end
     
         if !ismissing(parent)
@@ -233,7 +233,7 @@ macro production(model, sector, nestings, netputs)
     end
 
     #netputs
-    nets = :([])
+    nets = :(Tuple{Netput,Symbol}[])
     for arg in netputs.args
         if arg isa LineNumberNode
             continue
