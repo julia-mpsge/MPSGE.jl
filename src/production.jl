@@ -122,7 +122,7 @@ function Production(
     # Initialize cost functions - Should check if things are nothing
     for nest∈reverse(collect(keys(node_dict)))
         for node∈node_dict[nest]
-            build_cost_function!(node)
+            build_cost_function!(node, sector)
         end
     end
 
@@ -174,23 +174,24 @@ function cost_function(N::Netput)
     return C*(1-sign*sum(tax(t) for t∈taxes(N);init = 0))/rp
 end
 
-build_cost_function!(N::Netput) = nothing
+build_cost_function!(N::Netput, S::ScalarSector) = nothing
 
-function build_cost_function!(N::Node)
-    #if !(isa(raw_elasticity(N), Real))
+# ScalarSector is a required input so that we can pull the jump model and
+# create an ifelse 
+function build_cost_function!(N::Node, S::ScalarSector)
+    
+    sign = N.netput_sign
+    if !(isa(elasticity(N), Real))
 
-        #jm = jump_model(model(sector(P)))
+        jm = jump_model(model(S))
 
         #This must be an explicit expression, otherwise it's evaluated now. 
-        #return @expression(jm, ifelse(
-        #            elasticity(T) * sign == -1,
-        #            cobb_douglass(P,T,sign), 
-        #            CES(P,T,sign)
-        #        ))
-    #end
-
-    sign = N.netput_sign
-    if elasticity(N)*sign == -1 #Cobb-Douglas is only on demand side with σ=1
+        N.cost_function = @expression(jm, ifelse(
+                    elasticity(N) * sign == -1,
+                    cobb_douglass(N), 
+                    CES(N)
+                ))
+    elseif elasticity(N)*sign == -1 #Cobb-Douglas is only on demand side with σ=1
         N.cost_function = cobb_douglass(N)
     else
         N.cost_function = CES(N)
@@ -217,14 +218,3 @@ function build_compensated_demand(base_netput::Netput, parent_node::Node)
     end
     return compensated_demand
 end
-
-#function build_compensated_demand(N::Netput)
-#    build_compensated_dem
-#    sign = N.netput_sign
-#    compensatd_demand = -sign * MPSGE_MP.base_quantity(netput)
-#    while !isnothing(parent)
-#        compensated_demand *= (cost_function(parent)/cost_function(child)) ^ (-sign*elasticity(parent))
-#        child,parent = parent, parent.parent
-#    end
-#    return compensated_demand
-#end
