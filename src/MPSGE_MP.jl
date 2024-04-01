@@ -7,6 +7,7 @@ import JuMP.Containers:DenseAxisArray
 import OrderedCollections:OrderedDict
 
 include("structs.jl")
+include("arithmetic.jl")
 include("show.jl")
 include("model.jl")
 include("production.jl")
