@@ -126,3 +126,30 @@ function income_balance(H::ScalarConsumer)
     H - (sum(endowment(H,C)* C for C∈commodities(M) if endowment(H,C)!=0) - sum(tau(S,H)*S for S∈production_sectors(M) if tau(S,H)!=0; init=0))
 end
 
+
+
+
+"""
+    solve!(m::abstract_mpsge_model; keywords)
+    Function to solve the model. Triggers the build if the model hasn't been built yet.
+### Example
+```julia-repl
+julia> solve!(m, cumulative_iteration_limit=0)
+```
+"""
+function solve!(m::AbstractMPSGEModel; kwargs...)
+    jm = jump_model(m)
+    if jm===nothing
+        jm = build!(m)
+    end
+
+    #JuMP.set_optimizer(jm, PATHSolver.Optimizer)
+
+    for (k,v) in kwargs
+        JuMP.set_attribute(jm, string(k), v)
+    end
+
+    JuMP.optimize!(jm)
+
+    #return m
+end
