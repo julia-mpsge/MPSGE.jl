@@ -213,7 +213,9 @@ function build_compensated_demand(base_netput::Netput, parent_node::Node)
     sign = child.netput_sign
     compensated_demand = -sign * MPSGE_MP.base_quantity(child)
     while !isnothing(parent)
-        compensated_demand *= (cost_function(parent)/cost_function(child)) ^ (-sign*elasticity(parent))
+        if elasticity(parent)!=0
+            compensated_demand *= (cost_function(parent)/cost_function(child)) ^ (-sign*elasticity(parent))
+        end
         child,parent = parent, parent.parent
     end
     return compensated_demand
