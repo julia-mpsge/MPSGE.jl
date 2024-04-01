@@ -59,6 +59,7 @@ struct ScalarSector <: MPSGEScalarVariable
     description::String
     function ScalarSector(model::AbstractMPSGEModel,name::Symbol; description ="") 
         S = new(model,name,missing, description)
+        # Add variable to JuMP Model
         return S
     end
     ScalarSector(model::AbstractMPSGEModel,name::Symbol,subindex; description = "") = new(model,name,subindex,description)
@@ -91,11 +92,15 @@ struct ScalarCommodity <: MPSGEScalarVariable
     subindex::Any
     description::String
     function ScalarCommodity(model::AbstractMPSGEModel,name::Symbol; description = "") 
-        S = new(model,name,missing, description)
-        
-        return S
+        C = new(model,name,missing, description)
+        model.commodities[C] = []
+        return C
     end
-    ScalarCommodity(model::AbstractMPSGEModel,name::Symbol,subindex; description = "") = new(model,name,subindex, description)
+    function ScalarCommodity(model::AbstractMPSGEModel,name::Symbol,subindex; description = "") 
+        C = new(model,name,subindex, description)
+        model.commodities[C] = []
+        return C
+    end
 end
 
 struct IndexedCommodity{N} <: MPSGEIndexedVariable{ScalarCommodity,N}
@@ -290,9 +295,9 @@ if the model has been generated.
 """
 _get_parameter_value(x) = x
 function _get_parameter_value(X::ScalarParameter)
-    if !isnothing(jump_model(model(X)))
-        return get_variable(X)
-    end
+    #if !isnothing(jump_model(model(X)))
+    #    return get_variable(X)
+    #end
     return X#value(X)
 end
 
@@ -562,7 +567,7 @@ mutable struct MPSGEModel <:AbstractMPSGEModel
     demands::Dict{ScalarConsumer,Demand}
     commodities::Dict{ScalarCommodity,Vector{ScalarSector}} #Generated on model build
     auxiliaries::Dict{ScalarAuxiliary, AuxConstraint}
-    MPSGEModel() = new(Dict(),nothing,Dict(),Dict(),Dict(),Dict())
+    MPSGEModel() = new(Dict(),Model(PATHSolver.Optimizer),Dict(),Dict(),Dict(),Dict())
 end
 
 #Getters
