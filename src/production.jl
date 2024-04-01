@@ -117,7 +117,8 @@ function Production(
     input = prune!(input)
     output = prune!(output)
 
-    @assert !isnothing(input) && !isnothing(output) "Production block for $(sector) has a 0 quantity in either output or input, but not both."
+    @assert !(!isnothing(input) && isnothing(output))  "Production block for $(sector) has a 0 quantity in output but not input."
+    @assert !(isnothing(input)  && !isnothing(output)) "Production block for $(sector) has a 0 quantity in input but not output."
 
     # Initialize cost functions - Should check if things are nothing
     for nest∈reverse(collect(keys(node_dict)))
@@ -211,7 +212,7 @@ end
 function build_compensated_demand(base_netput::Netput, parent_node::Node)
     child, parent = base_netput, parent_node
     sign = child.netput_sign
-    compensated_demand = -sign * MPSGE_MP.base_quantity(child)
+    compensated_demand = -sign * base_quantity(child)
     while !isnothing(parent)
         if elasticity(parent)!=0
             compensated_demand *= (cost_function(parent)/cost_function(child)) ^ (-sign*elasticity(parent))
