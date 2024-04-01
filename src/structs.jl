@@ -9,6 +9,9 @@ abstract type MPSGEVariable end
 #abstract type MPSGEIndexedVariable <: MPSGEVariable end
 abstract type MPSGEScalarVariable <: MPSGEVariable end
 
+# Valid types for fields that are quantities
+const MPSGEquantity = Union{Real,MPSGEScalarVariable,JuMP.AffExpr, JuMP.QuadExpr, JuMP.NonlinearExpr}
+
 abstract type MPSGEIndexedVariable{T,N} <: AbstractArray{T,N} end
 
 abstract type abstractMPSGEExpr end
@@ -266,66 +269,6 @@ end
 const Auxiliary = Union{ScalarAuxiliary,IndexedAuxiliary}
 
 
-#######################
-## MPSGE Expressions ##
-#######################
-struct MPSGEExpr <: abstractMPSGEExpr
-    head::Symbol
-    args::Vector{Union{Real,MPSGEScalarVariable,abstractMPSGEExpr}}
-end
-
-const MPSGEquantity = Union{Real,MPSGEScalarVariable,MPSGEExpr}
-const _MPSGEquantity = Union{MPSGEScalarVariable,MPSGEExpr}
-
-JuMP.value(x::abstractMPSGEExpr) = value(_get_parameter_value(x))
-
-
-Base.:+(x::MPSGEquantity,y::_MPSGEquantity) = MPSGEExpr(:+, [x, y])
-Base.:+(x::_MPSGEquantity,y::Real) = MPSGEExpr(:+, [x, y])
-
-Base.:-(x::MPSGEquantity,y::_MPSGEquantity) = MPSGEExpr(:-, [x, y])
-Base.:-(x::_MPSGEquantity,y::Real) = MPSGEExpr(:-, [x, y])
-
-Base.:*(x::MPSGEquantity,y::_MPSGEquantity) = MPSGEExpr(:*, [x, y])
-Base.:*(x::_MPSGEquantity,y::Real) = MPSGEExpr(:*, [x, y])
-
-Base.:/(x::MPSGEquantity,y::_MPSGEquantity) = MPSGEExpr(:/, [x, y])
-Base.:/(x::_MPSGEquantity,y::Real) = MPSGEExpr(:/, [x, y])
-
-Base.:^(x::MPSGEquantity,y::_MPSGEquantity) = MPSGEExpr(:^, [x, y])
-Base.:^(x::_MPSGEquantity,y::Real) = MPSGEExpr(:^, [x, y])
-
-Base.:-(x::_MPSGEquantity) = MPSGEExpr(:-, [x])
-
-
-
-
-
-# Getters
-"""
-    _get_parameter_value
-
-The purpose of this is to return either the variable or the value depending on 
-if the model has been generated.
-"""
-_get_parameter_value(x) = x
-function _get_parameter_value(X::ScalarParameter)
-    #if !isnothing(jump_model(model(X)))
-    #    return get_variable(X)
-    #end
-    return X#value(X)
-end
-
-
-function _get_parameter_value(x::abstractMPSGEExpr)
-    return NonlinearExpr(x.head, _get_parameter_value.(x.args)...)
-end
-
-function _get_parameter_value(x:: MPSGEScalarVariable)
-    return x#get_variable(x)
-end
-
-
 ####################
 ## Tree Structure ##
 ####################
@@ -336,7 +279,7 @@ struct Tax
 end
 
 tax_agent(T::Tax) = T.agent
-tax(T::Tax) = _get_parameter_value(T.tax)
+tax(T::Tax) = T.tax
 
 
 struct ScalarNest
@@ -351,7 +294,7 @@ end
 
 base_name(N::ScalarNest) = N.name
 name(N::ScalarNest) = ismissing(subindex(N)) ? N.name : Symbol(N.name,"_",join(subindex(N),"_"))
-elasticity(N::ScalarNest) = _get_parameter_value(N.elasticity)
+elasticity(N::ScalarNest) = N.elasticity
 subindex(N::ScalarNest) = N.subindex
 
 struct IndexedNest{N} <: AbstractArray{ScalarNest, N}
@@ -417,7 +360,6 @@ name(N::Node) = name(N.data)
 children(N::Node) = N.children
 parents(N::Node) = N.parents
 elasticity(N::Node) = elasticity(N.data)
-raw_elasticity(N::Node) = N.elasticity
 parent(N::Node) = N.parent
 
 cost_function(N::Node) = N.cost_function
@@ -445,8 +387,8 @@ end
 ## Netputs
 
 commodity(C::Netput) = C.commodity
-base_quantity(N::Netput) = _get_parameter_value(N.quantity)
-reference_price(N::Netput) = _get_parameter_value(N.reference_price)
+base_quantity(N::Netput) = N.quantity
+reference_price(N::Netput) = N.reference_price
 quantity(N::Netput) = base_quantity(N)*reference_price(N)
 taxes(N::Netput) = N.taxes
 name(N::Netput) = name(commodity(N))
@@ -521,13 +463,13 @@ end
 
 # Getters
 commodity(C::ScalarDem) = C.commodity
-base_quantity(D::ScalarDem) = _get_parameter_value(D.quantity)
+base_quantity(D::ScalarDem) = D.quantity
 quantity(D::ScalarDem) = base_quantity(D) * reference_price(D)
-reference_price(D::ScalarDem) = _get_parameter_value(D.reference_price)
+reference_price(D::ScalarDem) = D.reference_price
 raw_quantity(D::ScalarDem) = value(D.quantity)*value(D.reference_price)
 
 commodity(C::ScalarEndowment) = C.commodity
-quantity(C::ScalarEndowment) = _get_parameter_value(C.quantity)
+quantity(C::ScalarEndowment) = C.quantity
 
 struct ScalarDemand
     consumer::ScalarConsumer
@@ -555,20 +497,20 @@ consumer(D::Demand) = D.consumer
 demands(D::Demand) = D.demands
 endowments(D::Demand) = D.endowments
 quantity(D::Demand) = sum(quantity(d) for (_,d)∈demands(D))
-elasticity(D::Demand) = _get_parameter_value(D.elasticity)
+elasticity(D::Demand) = D.elasticity
 raw_quantity(D::Demand) = sum(raw_quantity(d) for (_,d)∈demands(D))
 
 
 
 struct ScalarAuxConstraint
     aux::ScalarAuxiliary
-    constraint::MPSGEExpr
+    constraint::Any#MPSGEExpr
 end
 
 const AuxConstraint = ScalarAuxConstraint
 
 auxiliary(C::AuxConstraint) = C.aux
-constraint(C::AuxConstraint) = _get_parameter_value(C.constraint)
+constraint(C::AuxConstraint) = C.constraint
 
 ###########
 ## Model ##
