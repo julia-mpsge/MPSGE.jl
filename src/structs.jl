@@ -175,6 +175,7 @@ mutable struct ScalarParameter <: MPSGEScalarVariable
     function ScalarParameter(model::AbstractMPSGEModel,name::Symbol, value::Number; description = "") 
         S = new(model,name,missing, value, description)
         add_variable!(model, S)
+        fix(S, value)
         return S
     end
     ScalarParameter(model::AbstractMPSGEModel,name::Symbol, value::Number,subindex; description = "") = new(model,name,subindex, value, description)
@@ -197,6 +198,7 @@ struct IndexedParameter{N} <: MPSGEIndexedVariable{ScalarParameter,N}
         sr = JuMP.Containers.DenseAxisArray(temp_array, index...)
         S = new{length(index)}(model,name, sr, index, description)
         add_variable!(model, S)
+        fix.(S, value)
         return S
     end
 
@@ -211,6 +213,7 @@ struct IndexedParameter{N} <: MPSGEIndexedVariable{ScalarParameter,N}
         sr = JuMP.Containers.DenseAxisArray(temp_array, index...)
         S = new{length(index)}(model,name, sr, index, description)
         add_variable!(model, S)
+        fix.(S,value)
         return S
     end
 end
