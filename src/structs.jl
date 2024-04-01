@@ -60,7 +60,6 @@ struct ScalarSector <: MPSGEScalarVariable
     function ScalarSector(model::AbstractMPSGEModel,name::Symbol; description ="") 
         S = new(model,name,missing, description)
         add_variable!(model, S)
-        # Add variable to JuMP Model
         return S
     end
     ScalarSector(model::AbstractMPSGEModel,name::Symbol,subindex; description = "") = new(model,name,subindex,description)
