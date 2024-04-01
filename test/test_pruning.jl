@@ -75,7 +75,6 @@ Fun fact: I don't think GAMS MPSGE does this. It will just error.
     #Ensure the 0 is in the production block
     #@test length(input(P).children) == 3
 
-    build!(M);
 
     #Ensure it gets removed
     #@test length(input(P).children) == 2
@@ -83,7 +82,11 @@ Fun fact: I don't think GAMS MPSGE does this. It will just error.
     # Test that the Q production block was removed
     #@test_throws KeyError(Q) production(Q)
     
+
+    fix(CONS, 22.446346350813023)
     solve!(M)
+
+    
 
     # Make sure the solution is correct
     @test isapprox(value(W),0.9838272769615133,atol = 1e-6)

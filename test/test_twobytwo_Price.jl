@@ -59,7 +59,6 @@
             @endowment(PK, 80)
     end)
 
-    build!(m)
 
     fix(PU, 1)
     solve!(m, cumulative_iteration_limit=0)
@@ -277,7 +276,6 @@ end
             @endowment(PK, 80)
     end)
 
-    build!(m)
 
     fix(PU, 1)
     solve!(m, cumulative_iteration_limit=0)
@@ -502,7 +500,6 @@ end
     )
 
 
-    build!(m)
 
     fix(PU, 1)
     solve!(m, cumulative_iteration_limit=0)

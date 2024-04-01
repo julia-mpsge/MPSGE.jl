@@ -136,7 +136,7 @@
        elasticity = sigma
    )
    
-    build!(m)
+    
 
     fix(HH, 414.184)
     solve!(m, cumulative_iteration_limit=0.)

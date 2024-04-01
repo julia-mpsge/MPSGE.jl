@@ -1374,8 +1374,7 @@ end
     end)
     
     @aux_constraint(m, U, PL - PW)
-    
-    build!(m)
+
     
     set_start_value(U,.2)
     
@@ -1604,8 +1603,6 @@ end
         W*PW*340 - PL * 200 - PK * 100  - 40 * (PX + PY)/2
     )
 
-
-    build!(m)
 
     set_start_value(TAU, 1)
 
@@ -1892,7 +1889,6 @@ end
     )
     
     
-    build!(m)
     
     set_start_value(SHAREX, .5)
     
