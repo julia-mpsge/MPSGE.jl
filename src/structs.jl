@@ -59,6 +59,7 @@ struct ScalarSector <: MPSGEScalarVariable
     description::String
     function ScalarSector(model::AbstractMPSGEModel,name::Symbol; description ="") 
         S = new(model,name,missing, description)
+        add_variable!(model, S)
         # Add variable to JuMP Model
         return S
     end
@@ -80,6 +81,7 @@ struct IndexedSector{N} <: MPSGEIndexedVariable{ScalarSector,N}
         
         sr = JuMP.Containers.DenseAxisArray(temp_array, index...)
         S = new{length(index)}(model,name, sr, index, description)
+        add_variable!(model, S)
         return S
     end
 end
@@ -94,6 +96,7 @@ struct ScalarCommodity <: MPSGEScalarVariable
     function ScalarCommodity(model::AbstractMPSGEModel,name::Symbol; description = "") 
         C = new(model,name,missing, description)
         model.commodities[C] = []
+        add_variable!(model, C)
         return C
     end
     function ScalarCommodity(model::AbstractMPSGEModel,name::Symbol,subindex; description = "") 
@@ -118,6 +121,7 @@ struct IndexedCommodity{N} <: MPSGEIndexedVariable{ScalarCommodity,N}
         
         sr = JuMP.Containers.DenseAxisArray(temp_array, index...)
         S = new{length(index)}(model,name, sr, index, description)
+        add_variable!(model, S)
         return S
     end
 end
@@ -132,7 +136,7 @@ struct ScalarConsumer <: MPSGEScalarVariable
     description::String
     function ScalarConsumer(model::AbstractMPSGEModel,name::Symbol; description = "") 
         S = new(model,name,missing, description)
-        
+        add_variable!(model, S)
         return S
     end
     ScalarConsumer(model::AbstractMPSGEModel,name::Symbol,subindex; description = "") = new(model,name,subindex, description)
@@ -153,6 +157,7 @@ struct IndexedConsumer{N} <: MPSGEIndexedVariable{ScalarConsumer,N}
         
         sr = JuMP.Containers.DenseAxisArray(temp_array, index...)
         S = new{length(index)}(model,name, sr, index, description)
+        add_variable!(model, S)
         return S
     end
 end
@@ -165,7 +170,11 @@ mutable struct ScalarParameter <: MPSGEScalarVariable
     subindex::Any
     value::Number
     description::String
-    ScalarParameter(model::AbstractMPSGEModel,name::Symbol, value::Number; description = "") = new(model,name,missing, value, description)
+    function ScalarParameter(model::AbstractMPSGEModel,name::Symbol, value::Number; description = "") 
+        S = new(model,name,missing, value, description)
+        add_variable!(model, S)
+        return S
+    end
     ScalarParameter(model::AbstractMPSGEModel,name::Symbol, value::Number,subindex; description = "") = new(model,name,subindex, value, description)
 end
 
@@ -185,6 +194,7 @@ struct IndexedParameter{N} <: MPSGEIndexedVariable{ScalarParameter,N}
         
         sr = JuMP.Containers.DenseAxisArray(temp_array, index...)
         S = new{length(index)}(model,name, sr, index, description)
+        add_variable!(model, S)
         return S
     end
 
@@ -198,6 +208,7 @@ struct IndexedParameter{N} <: MPSGEIndexedVariable{ScalarParameter,N}
         
         sr = JuMP.Containers.DenseAxisArray(temp_array, index...)
         S = new{length(index)}(model,name, sr, index, description)
+        add_variable!(model, S)
         return S
     end
 end
@@ -225,7 +236,11 @@ struct ScalarAuxiliary <: MPSGEScalarVariable
     name::Symbol
     subindex::Any
     description::String
-    ScalarAuxiliary(model::AbstractMPSGEModel,name::Symbol; description = "") = new(model,name, missing, description)
+    function ScalarAuxiliary(model::AbstractMPSGEModel,name::Symbol; description = "")  
+        S = new(model,name, missing, description)
+        add_variable!(model, S)
+        return S
+    end
     ScalarAuxiliary(model::AbstractMPSGEModel,name::Symbol,subindex; description = "") = new(model,name,subindex, description)
 end
 
@@ -244,6 +259,7 @@ struct IndexedAuxiliary{N} <: MPSGEIndexedVariable{ScalarAuxiliary,N}
         
         sr = JuMP.Containers.DenseAxisArray(temp_array, index...)
         S = new{length(index)}(model,name, sr, index, description)
+        add_variable!(model, S)
         return S
     end
 end
