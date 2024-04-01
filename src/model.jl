@@ -87,7 +87,7 @@ function add_demand!(M::MPSGEModel,H::ScalarConsumer,demands::Vector{ScalarDem},
 end
 
 
-function add_aux_constraint!(model::AbstractMPSGEModel, A::ScalarAuxiliary, constraint::MPSGEExpr)
+function add_aux_constraint!(model::AbstractMPSGEModel, A::ScalarAuxiliary, constraint::Any)#MPSGEExpr)
     P = ScalarAuxConstraint(A,constraint)
     model.auxiliaries[A] = P
     return P
