@@ -86,27 +86,27 @@
    end)
    
    @production(m, Y, [t = etadx, s = esubkl], begin   
-        @Output(PD, d0, t)
-        @Output(PX, x0, t, taxes=[Tax(GOVT, tx)], reference_price=px0)
-        @Input(RK, kd0, s, taxes=[Tax(GOVT, tk)], reference_price=rr0)
-        @Input(PL, ly0, s, taxes=[Tax(GOVT, tl+TAU_TL)], reference_price=pl0)
+        @output(PD, d0, t)
+        @output(PX, x0, t, taxes=[Tax(GOVT, tx)], reference_price=px0)
+        @input(RK, kd0, s, taxes=[Tax(GOVT, tk)], reference_price=rr0)
+        @input(PL, ly0, s, taxes=[Tax(GOVT, tl+TAU_TL)], reference_price=pl0)
 
     end)
    
    @production(m, A, [t = 0, s = sigmadm], begin
-        @Output(PA, a0, t, taxes=[Tax(GOVT, ta)])
-        @Input(PD, d0, s)
-        @Input(PM, m0, s, taxes=[Tax(GOVT, TM)], reference_price=pm0)
+        @output(PA, a0, t, taxes=[Tax(GOVT, ta)])
+        @input(PD, d0, s)
+        @input(PM, m0, s, taxes=[Tax(GOVT, TM)], reference_price=pm0)
     end)
    
    @production(m, M, [t = 0, s = 1], begin
-           @Output(PM,m0, t)
-           @Input(PFX, pwm*m0, s)
+           @output(PM,m0, t)
+           @input(PFX, pwm*m0, s)
     end)
    
    @production(m, X, [t = 0, s = 1], begin
-        @Output(PFX, pwx*x0, t)
-        @Input(PX, x0, s)
+        @output(PFX, pwx*x0, t)
+        @input(PX, x0, s)
     end)
    
    

@@ -28,21 +28,21 @@
     @consumer(m, RA)
 
     @production(m, X, [t = 0, s = 1], begin
-        @Output(PX,100, t)
-        @Input(PL, inputcoeff * 25, s) 
-        @Input(PK, 50, s)
+        @output(PX,100, t)
+        @input(PL, inputcoeff * 25, s) 
+        @input(PK, 50, s)
     end)
 
     @production(m, Y, [t = 0, s = elascoeff*.5], begin
-        @Output(PY,50, t)
-        @Input(PL, 20, s)
-        @Input(PK, 30, s)
+        @output(PY,50, t)
+        @input(PL, 20, s)
+        @input(PK, 30, s)
     end)
 
     @production(m, U, [t = 0, s = 1], begin
-        @Output(PU, outputmult * 75, t)
-        @Input(PX, 100, s) 
-        @Input(PY, 50, s)
+        @output(PU, outputmult * 75, t)
+        @input(PX, 100, s) 
+        @input(PY, 50, s)
     end)
 
     @demand(m, RA, begin

@@ -33,16 +33,16 @@
 
     for i in goods
         @production(m, Y[i], [t = 0, s = 1], begin
-            @Output(PC[i], supply[i],    t, taxes = [Tax(C[:ra], outax[i])])
-            @Input(PF[:l], factor[i,:l], s, taxes = [Tax(C[:ra], intax[i])]) 
-            @Input(PF[:k], factor[i,:k], s)
+            @output(PC[i], supply[i],    t, taxes = [Tax(C[:ra], outax[i])])
+            @input(PF[:l], factor[i,:l], s, taxes = [Tax(C[:ra], intax[i])]) 
+            @input(PF[:k], factor[i,:k], s)
         end)      
     end
 
     @production(m, U, [t = 0, s = 1], begin
-        @Output(PU, 150, t)
-        @Input(PC[:x], 100, s)
-        @Input(PC[:y], 50, s)
+        @output(PU, 150, t)
+        @input(PC[:x], 100, s)
+        @input(PC[:y], 50, s)
     end)
     
     @demand(m, C[:ra], begin
@@ -226,15 +226,15 @@ end
 
     for i in goods
         @production(m, Y[i], [t = 0, s = 1], begin 
-            @Output(PC[i], supply[i], t)
-            @Input(PF[:l], factor[i,:l], s)
-            @Input(PF[:k], factor[i,:k], s)
+            @output(PC[i], supply[i], t)
+            @input(PF[:l], factor[i,:l], s)
+            @input(PF[:k], factor[i,:k], s)
         end)      
     end
 
     @production(m, U, [t = 0, s = 1], begin
-            @Output(PU, 150, t)
-            [@Input(PC[i], supply[i], s, reference_price = pricepci[i]) for i∈goods]...
+            @output(PU, 150, t)
+            [@input(PC[i], supply[i], s, reference_price = pricepci[i]) for i∈goods]...
     end)
     
     @demand(m, C[:ra], begin
@@ -405,15 +405,15 @@ end
 
     for i in goods
         @production(m, Y[i], [t = 0, s = 1], begin
-            @Output(PC[i], supply[i], t)
-            @Input(PF[:l], factor[i,:l], s)
-            @Input(PF[:k], factor[i,:k], s)
+            @output(PC[i], supply[i], t)
+            @input(PF[:l], factor[i,:l], s)
+            @input(PF[:k], factor[i,:k], s)
         end)      
     end
     
     @production(m, U, [t = 0, s = 1, PCi => s = 1], begin
-        @Output(PU, 150, t)
-        [@Input(PC[i], supply[i], PCi, reference_price = pricepci[i]) for i∈goods]...
+        @output(PU, 150, t)
+        [@input(PC[i], supply[i], PCi, reference_price = pricepci[i]) for i∈goods]...
     end)
     
     @demand(m, C[:ra], begin
@@ -588,15 +588,15 @@ end
 
     for i in goods
         @production(m, Y[i], [t = 0, s = 1], begin
-            @Output(PC[i], supply[i], t)
-            @Input(PF[:l], factor[i,:l], s)
-            @Input(PF[:k], factor[i,:k], s)
+            @output(PC[i], supply[i], t)
+            @input(PF[:l], factor[i,:l], s)
+            @input(PF[:k], factor[i,:k], s)
         end)      
     end
 
     @production(m, U, [t =0, s = 1], begin
-        [@Output(PU[f], cons[f],  t) for f∈factors]...
-        [@Input(PC[i], supply[i], s) for i∈goods]...
+        [@output(PU[f], cons[f],  t) for f∈factors]...
+        [@input(PC[i], supply[i], s) for i∈goods]...
     end)
 
     @demand(m, C[:ra], begin

@@ -34,22 +34,22 @@
     @consumer(m, RA)
     
     @production(m, X, [t = 0, s = esub_x], begin
-        @Output(PX, 110, t, taxes=[Tax(RA, otax)])
-        @Input(PL, 50, s, taxes=[Tax(RA, itax)], reference_price=1.2)
-        @Input(PK, 50, s)
+        @output(PX, 110, t, taxes=[Tax(RA, otax)])
+        @input(PL, 50, s, taxes=[Tax(RA, itax)], reference_price=1.2)
+        @input(PK, 50, s)
     end)
 
 
     @production(m, Y, [t = 0, s = esub_y], begin
-        @Output(PY, 54, t)
-        @Input(PL, 24, s) 
-        @Input(PK, 30, s)
+        @output(PY, 54, t)
+        @input(PL, 24, s) 
+        @input(PK, 30, s)
     end)
     
     @production(m, U, [t = 0, s = esub_u], begin
-            @Output(PU, 164, t)
-            @Input(PX, 110, s)
-            @Input(PY, 54,  s)
+            @output(PU, 164, t)
+            @input(PX, 110, s)
+            @input(PY, 54,  s)
     end)
 
     @demand(m, RA, begin
@@ -252,22 +252,22 @@ end
     @consumer(m, RA)
 
     @production(m, X, [t = 0, s = esub_x], begin
-        @Output(PX, 100, t, taxes=[Tax(RA, otax)], reference_price = 1.2)
-        @Input(PL, 30, s, taxes=[Tax(RA, itax)])
-        @Input(PK, 50, s)
+        @output(PX, 100, t, taxes=[Tax(RA, otax)], reference_price = 1.2)
+        @input(PL, 30, s, taxes=[Tax(RA, itax)])
+        @input(PK, 50, s)
     end)
 
 
     @production(m, Y, [t = 0, s = esub_y], begin
-            @Output(PY, 54, t)
-            @Input(PL, 24, s) 
-            @Input(PK, 30, s)
+            @output(PY, 54, t)
+            @input(PL, 24, s) 
+            @input(PK, 30, s)
     end)
 
     @production(m, U, [t=0, s = esub_u], begin
-        @Output(PU, 154, t)
-        @Input(PX, 100, s) 
-        @Input(PY, 54, s)
+        @output(PU, 154, t)
+        @input(PX, 100, s) 
+        @input(PY, 54, s)
     end)
 
     @demand(m, RA, begin
@@ -474,21 +474,21 @@ end
     @consumer(m, RA)
 
     @production(m, X, [t = 0, s = esub_x], begin
-        @Output(PX, 80, t, taxes=[Tax(RA, otax)])
-        @Input(PL, 30, s, taxes=[Tax(RA, itax)])
-        @Input(PK, 50, s)
+        @output(PX, 80, t, taxes=[Tax(RA, otax)])
+        @input(PL, 30, s, taxes=[Tax(RA, itax)])
+        @input(PK, 50, s)
     end)
 
     @production(m, Y, [t = 0, s = esub_y], begin
-            @Output(PY, 54, t)
-            @Input(PL, 24, s) 
-            @Input(PK, 30, s)
+            @output(PY, 54, t)
+            @input(PL, 24, s) 
+            @input(PK, 30, s)
     end)
 
     @production(m, U, [t = 0, s = esub_u], begin
-            @Output(PU, 124, t)
-            @Input(PX, 80, s) 
-            @Input(PY, 44, s)
+            @output(PU, 124, t)
+            @input(PX, 80, s) 
+            @input(PY, 44, s)
     end)
 
     @demand(m, RA, begin
