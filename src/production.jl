@@ -53,7 +53,7 @@ end
 
 function Production(
     sector::ScalarSector, 
-    all_nests::Vector{Any}, 
+    all_nests::Vector{Nest}, 
     top_nests::Vector{Symbol},
     nest_connections::Vector{Tuple{Symbol,Symbol}},
     netputs::Vector{Tuple{Netput, Symbol}}
@@ -132,6 +132,12 @@ function Production(
         for netput∈netput_vector
             compensated_demands[netput] = build_compensated_demand.(Ref(netput),netput.parents)
         end
+    end
+
+    #Store sectors by commodity
+    M = model(sector) 
+    for (C,_)∈netput_dict
+        push!(M.commodities[C], sector)
     end
 
     return Production(sector, netput_dict, compensated_demands, input, output)
