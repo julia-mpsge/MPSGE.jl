@@ -59,8 +59,7 @@ export  @sector,    @sectors,
         @final_demand, @endowment
 
 #Building
-#export  build!, compensated_demand_dictionary, compensated_demand, tau, 
-#        demand, endowment
+export  compensated_demand, tau, demand, endowment
 
 #Reporting
 export generate_report, solve!
