@@ -88,7 +88,8 @@ function compensated_demand(S::ScalarSector,C::ScalarCommodity)
 end
 
 
-taxes(N::Netput, H::ScalarConsumer) = [tax(t) for t∈taxes(N) if tax_agent(t) == H]
+taxes(N::Netput, H::ScalarConsumer) = [-N.netput_sign*tax(t) for t∈taxes(N) if tax_agent(t) == H]
+
 function total_tax(S::ScalarSector, C::ScalarCommodity, H::ScalarConsumer)
     P = production(S)
     return sum(Iterators.flatten(taxes.(P.netputs[C], Ref(H))); init = 0)
