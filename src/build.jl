@@ -149,7 +149,7 @@ end
 
 function market_clearance(C::ScalarCommodity)
     M = model(C)
-    sum(compensated_demand(S,C) * S for S∈sectors(C)) - sum( endowment(H,C) - demand(H,C) for H∈consumers(M))
+    sum(compensated_demand(S,C) * S for S∈sectors(C);init=0) - sum( endowment(H,C) - demand(H,C) for H∈consumers(M); init=0)
 end
 
 function income_balance(H::ScalarConsumer)
