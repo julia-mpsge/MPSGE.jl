@@ -29,32 +29,32 @@ Fun fact: I don't think GAMS MPSGE does this. It will just error.
     @consumer(M, CONS)
     
     @production(M, X, [t =0, s = .5, va => s = 1], begin
-        @Output(PX, 120., t)
-        @Input(PY,20, s)
-        @Input(PL, 40, va, taxes = [Tax(CONS, 0.5)])
-        @Input(PK, 60, va, taxes = [Tax(CONS, 0.5)])
+        @output(PX, 120., t)
+        @input(PY,20, s)
+        @input(PL, 40, va, taxes = [Tax(CONS, 0.5)])
+        @input(PK, 60, va, taxes = [Tax(CONS, 0.5)])
     end)
     
     @production(M, Y, [t = 0, s = .75, va => s = 1], begin
-        @Output(PY, 120, t)
-        @Input(PX,20, s)
-        @Input(PL, 60, va)
-        @Input(PK, 40, va)
+        @output(PY, 120, t)
+        @input(PX,20, s)
+        @input(PL, 60, va)
+        @input(PK, 40, va)
     end)
     
     
     @production(M, W, [t = 0, s = 1, zero => s = 1], begin
-        @Output(PW, 200, t)
-        @Input(PX, 100, s)
-        @Input(PY, 100, s)
-        @Input(PX, 0, zero)
-        @Input(PY,0, zero)
+        @output(PW, 200, t)
+        @input(PX, 100, s)
+        @input(PY, 100, s)
+        @input(PX, 0, zero)
+        @input(PY,0, zero)
     end)
 
     @production(M, Q, [t = 1, s = 2], begin
-        @Output(PW, 0, t)        
-        @Input(PX,0, s)
-        @Input(PY,0, s)
+        @output(PW, 0, t)        
+        @input(PX,0, s)
+        @input(PY,0, s)
     end)
 
     
@@ -75,7 +75,6 @@ Fun fact: I don't think GAMS MPSGE does this. It will just error.
     #Ensure the 0 is in the production block
     #@test length(input(P).children) == 3
 
-    build!(M);
 
     #Ensure it gets removed
     #@test length(input(P).children) == 2
@@ -83,7 +82,11 @@ Fun fact: I don't think GAMS MPSGE does this. It will just error.
     # Test that the Q production block was removed
     #@test_throws KeyError(Q) production(Q)
     
+
+    fix(CONS, 22.446346350813023)
     solve!(M)
+
+    
 
     # Make sure the solution is correct
     @test isapprox(value(W),0.9838272769615133,atol = 1e-6)

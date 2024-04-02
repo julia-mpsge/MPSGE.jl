@@ -47,6 +47,36 @@ function netput_dict(S::ScalarSector)
     return P.netputs
 end
 
+# This should be rewritten. It finds all the parent
+# names of the given netput. 
+function parent_name_chain(N::MPSGE_MP.Netput)
+    found_parents = deepcopy(N.parents) #temporary?
+    parent_names = []
+    #print(found_parents)
+    while !isempty(found_parents)
+        n = pop!(found_parents)
+        if name(n)∉parent_names
+            push!(parent_names, MPSGE_MP.name(n))
+        end
+        if !isnothing(MPSGE_MP.parent(n))
+            push!(found_parents, MPSGE_MP.parent(n))
+        end
+    end
+    return parent_names
+end
+
+function compensated_demand(S::ScalarSector, C::ScalarCommodity, nest::Symbol)
+    cd = MPSGE_MP.compensated_demands(S)
+    all_netputs = MPSGE_MP.netput_dict(S)
+    if !haskey(all_netputs, C)
+        return 0
+    end
+    netputs = [n for n∈all_netputs[C] if nest∈parent_name_chain(n)]
+
+    return sum(sum(cd[netput]) for netput∈netputs)
+
+end
+
 function compensated_demand(S::ScalarSector,C::ScalarCommodity)
     cd = compensated_demands(S)
     netputs = netput_dict(S)
@@ -58,7 +88,8 @@ function compensated_demand(S::ScalarSector,C::ScalarCommodity)
 end
 
 
-taxes(N::Netput, H::ScalarConsumer) = [tax(t) for t∈taxes(N) if tax_agent(t) == H]
+taxes(N::Netput, H::ScalarConsumer) = [-N.netput_sign*tax(t) for t∈taxes(N) if tax_agent(t) == H]
+
 function total_tax(S::ScalarSector, C::ScalarCommodity, H::ScalarConsumer)
     P = production(S)
     return sum(Iterators.flatten(taxes.(P.netputs[C], Ref(H))); init = 0)
@@ -126,3 +157,55 @@ function income_balance(H::ScalarConsumer)
     H - (sum(endowment(H,C)* C for C∈commodities(M) if endowment(H,C)!=0) - sum(tau(S,H)*S for S∈production_sectors(M) if tau(S,H)!=0; init=0))
 end
 
+
+
+function build_constraints!(M::MPSGEModel)
+    jm = jump_model(M)
+
+    JuMP.@constraint(jm, zero_profit[S = MPSGE_MP.production_sectors(M)],
+        MPSGE_MP.zero_profit(S) ⟂ get_variable(S)
+    )
+    
+    JuMP.@constraint(jm, market_clearance[C = MPSGE_MP.commodities(M)],
+        MPSGE_MP.market_clearance(C) ⟂ get_variable(C)
+    )
+    
+    JuMP.@constraint(jm, income_balance[H = MPSGE_MP.consumers(M)],
+        MPSGE_MP.income_balance(H) ⟂ get_variable(H)
+    )
+
+    aux_cons = aux_constraints(M)
+
+    @constraint(jm, auxiliary_constraints[A∈keys(aux_cons)],
+        constraint(aux_cons[A]) ⟂ get_variable(A)
+    )
+
+end
+
+
+"""
+    solve!(m::abstract_mpsge_model; keywords)
+    Function to solve the model. Triggers the build if the model hasn't been built yet.
+### Example
+```julia-repl
+julia> solve!(m, cumulative_iteration_limit=0)
+```
+"""
+function solve!(m::AbstractMPSGEModel; kwargs...)
+    jm = jump_model(m)
+
+    if !haskey(JuMP.object_dictionary(jm), :zero_profit)
+        build_constraints!(m)
+    end
+
+    #Set the default iteration limit to 10_000
+    JuMP.set_attribute(jm, "cumulative_iteration_limit", 10_000)
+
+    for (k,v) in kwargs
+        JuMP.set_attribute(jm, string(k), v)
+    end
+
+    JuMP.optimize!(jm)
+
+    #return m
+end

@@ -24,11 +24,11 @@
 
 
     @production(m, U, [t=0, s = 1, X=>s = 1, Y=>s=elascoeff*.5], begin
-        @Output(PY, outputmult * 75, t)
-        @Input(PL, inputcoeff * 25, X)
-        @Input(PK, 50, X)
-        @Input(PL, 20, Y)
-        @Input(PK,30 Y)
+        @output(PY, outputmult * 75, t)
+        @input(PL, inputcoeff * 25, X)
+        @input(PK, 50, X)
+        @input(PL, 20, Y)
+        @input(PK,30 Y)
     end)
 
     @demand(m, RA, begin

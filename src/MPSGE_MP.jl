@@ -7,6 +7,7 @@ import JuMP.Containers:DenseAxisArray
 import OrderedCollections:OrderedDict
 
 include("structs.jl")
+include("arithmetic.jl")
 include("show.jl")
 include("model.jl")
 include("production.jl")
@@ -58,8 +59,7 @@ export  @sector,    @sectors,
         @final_demand, @endowment
 
 #Building
-#export  build!, compensated_demand_dictionary, compensated_demand, tau, 
-#        demand, endowment
+export  compensated_demand, tau, demand, endowment
 
 #Reporting
 export generate_report, solve!

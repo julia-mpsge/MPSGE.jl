@@ -28,22 +28,22 @@
     @consumer(m, RA)
     
     @production(m, X, [t=0, s = esub_x], begin
-        @Output(PX, 100, t, taxes=[Tax(RA, otax)])
-        @Input(PL, 50, s)
-        @Input(PK, 50, s)
+        @output(PX, 100, t, taxes=[Tax(RA, otax)])
+        @input(PL, 50, s)
+        @input(PK, 50, s)
     end)
 
 
     @production(m, Y, [t = 0, s = esub_y], begin
-        @Output(PY, 50, t)
-        @Input(PL, 20, s) 
-        @Input(PK, 30, s)
+        @output(PY, 50, t)
+        @input(PL, 20, s) 
+        @input(PK, 30, s)
     end)
 
     @production(m, U, [t = 0, s = 1], begin    
-        @Output(PU,150, t)
-        @Input(PX, 100, s) 
-        @Input(PY, 50,  s)
+        @output(PU,150, t)
+        @input(PX, 100, s) 
+        @input(PY, 50,  s)
     end)
 
     @demand(m, RA, begin
@@ -300,21 +300,21 @@ end
     @consumer(m, RA, index = [consumers])
     
     @production(m, X, [t = 0, s = esub_x], begin
-        @Output(PX, 100, t, taxes=[Tax(RA[:a], otaxa)])
-        @Input(PL, 50, s) 
-        @Input(PK, 50, s)
+        @output(PX, 100, t, taxes=[Tax(RA[:a], otaxa)])
+        @input(PL, 50, s) 
+        @input(PK, 50, s)
     end)
     
     @production(m, Y, [t = 0, s = esub_y], begin
-        @Output(PY, 50, t, taxes = [Tax(RA[:b], otaxb)])
-        @Input(PL, 20, s) 
-        @Input(PK, 30, s)
+        @output(PY, 50, t, taxes = [Tax(RA[:b], otaxb)])
+        @input(PL, 20, s) 
+        @input(PK, 30, s)
     end)
     
     @production(m, U, [t = 0, s = 1], begin
-        @Output(PU,150, t)
-        @Input(PX, 100, s) 
-        @Input(PY, 50,  s)
+        @output(PU,150, t)
+        @input(PX, 100, s) 
+        @input(PY, 50,  s)
     end)
 
     for r in consumers
@@ -697,24 +697,24 @@ end
     @consumer(m, CONS)
     
     @production(m, A, [t = t_elas_a, s = sub_elas_a], begin
-        @Output(PX, 80, t, taxes=[Tax(CONS, otax1)]) 
-        @Output(PY, 20, t, taxes=[Tax(CONS, otax2)])
-        @Input(PL, 40, s, taxes=[Tax(CONS, itax)])
-        @Input(PK, 60, s, taxes=[Tax(CONS, itax)])
+        @output(PX, 80, t, taxes=[Tax(CONS, otax1)]) 
+        @output(PY, 20, t, taxes=[Tax(CONS, otax2)])
+        @input(PL, 40, s, taxes=[Tax(CONS, itax)])
+        @input(PK, 60, s, taxes=[Tax(CONS, itax)])
     end)
 
     @production(m, B, [t = t_elas_b, s = sub_elas_b], begin
-        @Output(PX, 20, t, taxes=[Tax(CONS, otax3)])
-        @Output(PY, 80, t, taxes=[Tax(CONS, otax4)])
-        @Input(PL, 60, s)
-        @Input(PK, 40, s)
+        @output(PX, 20, t, taxes=[Tax(CONS, otax3)])
+        @output(PY, 80, t, taxes=[Tax(CONS, otax4)])
+        @input(PL, 60, s)
+        @input(PK, 40, s)
     end)
             
 
     @production(m, W, [t = 0, s = sub_elas_w], begin
-        @Output(PW, 200, t)
-        @Input(PX, 100, s) 
-        @Input(PY, 100, s)
+        @output(PW, 200, t)
+        @input(PX, 100, s) 
+        @input(PY, 100, s)
     end)
 
 
@@ -1349,21 +1349,21 @@ end
     #@parameter(m, U, 0.2)
     
     @production(m, X, [t = 0, s = 1], begin
-            @Output(PX, 100, t, taxes = [Tax(CONS, tx)])
-            @Input(PK, 50, s, taxes = [Tax(CONS,tkx)])
-            @Input(PL, 40, s)
+            @output(PX, 100, t, taxes = [Tax(CONS, tx)])
+            @input(PK, 50, s, taxes = [Tax(CONS,tkx)])
+            @input(PL, 40, s)
     end)
     
     @production(m, Y, [t = 0, s = 1], begin
-        @Output(PY, 100, t, taxes = [Tax(CONS, ty)])
-        @Input(PL, 60, s) 
-        @Input(PK, 40, s)
+        @output(PY, 100, t, taxes = [Tax(CONS, ty)])
+        @input(PL, 60, s) 
+        @input(PK, 40, s)
     end)
     
     @production(m, W, [t = 0, s = 1], begin
-        @Output(PW, 200, t)
-        @Input(PX, 100, s) 
-        @Input(PY, 100, s)
+        @output(PW, 200, t)
+        @input(PX, 100, s) 
+        @input(PY, 100, s)
     end)
     
     @demand(m, CONS, begin
@@ -1374,8 +1374,7 @@ end
     end)
     
     @aux_constraint(m, U, PL - PW)
-    
-    build!(m)
+
     
     set_start_value(U,.2)
     
@@ -1564,33 +1563,33 @@ end
     #@parameter(m, U, 0.2)
 
     @production(m, X, [t = 0, s = 1], begin
-        @Output(PX, 120, t)
-        @Input(PLS, 48, s)
-        @Input(PKS, 72, s)
+        @output(PX, 120, t)
+        @input(PLS, 48, s)
+        @input(PKS, 72, s)
     end)
 
     @production(m, Y, [t = 0, s = 1], begin
-        @Output(PY, 120, t)
-        @Input(PLS, 72, s) 
-        @Input(PKS, 48, s)
+        @output(PY, 120, t)
+        @input(PLS, 72, s) 
+        @input(PKS, 48, s)
     end)
 
     @production(m, W, [t = 0, s = .7, AW => s = 1], begin
-        @Output(PW, 340, t)
-        @Input(PL, 100, s)
-        @Input(PX, 120, AW)
-        @Input(PY, 120, AW)
+        @output(PW, 340, t)
+        @input(PL, 100, s)
+        @input(PX, 120, AW)
+        @input(PY, 120, AW)
     end)
 
 
     @production(m, TL, [t = 0, s = 1], begin
-        @Output(PLS, 120, t)
-        @Input(PL, 100, s, taxes=[Tax(CONS, txl*TAU)])
+        @output(PLS, 120, t)
+        @input(PL, 100, s, taxes=[Tax(CONS, txl*TAU)])
     end)
             
     @production(m, TK, [t = 0, s = 1], begin
-        @Output(PKS, 120, t)
-        @Input(PK, 100, s, taxes=[Tax(CONS, txk*TAU)])
+        @output(PKS, 120, t)
+        @input(PK, 100, s, taxes=[Tax(CONS, txk*TAU)])
     end)    
             
     @demand(m, CONS, begin
@@ -1604,8 +1603,6 @@ end
         W*PW*340 - PL * 200 - PK * 100  - 40 * (PX + PY)/2
     )
 
-
-    build!(m)
 
     set_start_value(TAU, 1)
 
@@ -1855,21 +1852,21 @@ end
     
     
     @production(m, X, [t = 0, s = 1], begin
-        @Output(PX, 80, t, taxes = [Tax(CONS, MARKUP[:a])])
-        @Input(PL, 14, s)
-        @Input(PK, 50, s)
+        @output(PX, 80, t, taxes = [Tax(CONS, MARKUP[:a])])
+        @input(PL, 14, s)
+        @input(PK, 50, s)
     end)
     
     @production(m, Y, [t = 0, s = 1], begin
-        @Output(PY, 100, t)
-        @Input(PL, 60, s) 
-        @Input(PK, 40, s)
+        @output(PY, 100, t)
+        @input(PL, 60, s) 
+        @input(PK, 40, s)
     end)
     
     @production(m, W, [t = 0, s = 9], begin
-        @Output(PW, 180, t)
-        @Input(PX, 80,  s)
-        @Input(PY, 100, s)
+        @output(PW, 180, t)
+        @input(PX, 80,  s)
+        @input(PY, 100, s)
     end)
     
     @demand(m, CONS, begin
@@ -1892,7 +1889,6 @@ end
     )
     
     
-    build!(m)
     
     set_start_value(SHAREX, .5)
     
