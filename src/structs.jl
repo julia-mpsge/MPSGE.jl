@@ -489,11 +489,17 @@ struct ScalarDemand
         elasticity::MPSGEquantity = 1
         )
 
-        new(consumer,
+        
+
+        D = new(consumer,
             elasticity,
             Dict(demand.commodity => demand for demand in demands), 
             Dict(endowment.commodity => endowment for endowment in endowments),
             )
+
+        set_start_value(consumer, raw_quantity(D))
+
+        return D
     end
 end
 
