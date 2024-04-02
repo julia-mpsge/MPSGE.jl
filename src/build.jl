@@ -198,7 +198,8 @@ function solve!(m::AbstractMPSGEModel; kwargs...)
         build_constraints!(m)
     end
 
-    
+    #Set the default iteration limit to 10_000
+    JuMP.set_attribute(jm, "cumulative_iteration_limit", 10_000)
 
     for (k,v) in kwargs
         JuMP.set_attribute(jm, string(k), v)
