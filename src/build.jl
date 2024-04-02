@@ -95,8 +95,15 @@ function total_tax(S::ScalarSector, C::ScalarCommodity, H::ScalarConsumer)
     return sum(Iterators.flatten(taxes.(P.netputs[C], Ref(H))); init = 0)
 end
 
+function total_tax(N::Netput, H::ScalarConsumer)
+    sum(taxes(N, H); init=0)
+end
+
+#temporary fix
 function tau(S::ScalarSector,H::ScalarConsumer)
-    -sum(compensated_demand(S, C) * total_tax(S, C, H) * C for C∈commodities(S) if total_tax(S,C,H)!=0; init=0)
+    P = production(S)
+    -sum( sum(compensated_demands) * total_tax(netput, H) * commodity(netput) for (netput, compensated_demands)∈P.compensated_demands if total_tax(netput,H)!=0; init=0)
+    #-sum(compensated_demand(S, C) * total_tax(S, C, H) * C for C∈commodities(S) if total_tax(S,C,H)!=0; init=0)
     #Taxes = taxes(S,H)
     #return -sum( compensated_demand(X,C,n)* tax * C for ((C,n),tax)∈Taxes; init=0)
 end
