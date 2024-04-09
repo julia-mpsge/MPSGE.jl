@@ -102,10 +102,8 @@ end
 #temporary fix
 function tau(S::ScalarSector,H::ScalarConsumer)
     P = production(S)
+    #jm = jump_model(model(S))
     -sum( sum(compensated_demands) * total_tax(netput, H) * commodity(netput) for (netput, compensated_demands)∈P.compensated_demands if total_tax(netput,H)!=0; init=0)
-    #-sum(compensated_demand(S, C) * total_tax(S, C, H) * C for C∈commodities(S) if total_tax(S,C,H)!=0; init=0)
-    #Taxes = taxes(S,H)
-    #return -sum( compensated_demand(X,C,n)* tax * C for ((C,n),tax)∈Taxes; init=0)
 end
 
 
@@ -140,9 +138,10 @@ end
 
 
 function expenditure(D::ScalarDemand)
+    jm = jump_model(model(consumer(D)))
     total_quantity = quantity(D)
     σ = elasticity(D)
-    return sum( quantity(d)/total_quantity * (commodity(d)/reference_price(d))^(1-σ) for (_,d)∈demands(D))^(1/(1-σ))
+    return @expression(jm, sum( quantity(d)/total_quantity * (get_variable(commodity(d))/reference_price(d))^(1-σ) for (_,d)∈demands(D))^(1/(1-σ)))
 end
 
 #################
@@ -151,17 +150,20 @@ end
 
 function zero_profit(S::ScalarSector)
     M = model(S)
-    sum(compensated_demand(S,C)*C for C∈commodities(S)) - sum(tau(S,H) for H∈consumers(M) if tau(S,H)!=0; init=0)
+    jm = jump_model(M)
+    @expression(jm, sum(compensated_demand(S,C)*get_variable(C) for C∈commodities(S)) - sum(tau(S,H) for H∈consumers(M) if tau(S,H)!=0; init=0))
 end
 
 function market_clearance(C::ScalarCommodity)
     M = model(C)
-    sum(compensated_demand(S,C) * S for S∈sectors(C);init=0) - sum( endowment(H,C) - demand(H,C) for H∈consumers(M); init=0)
+    jm = jump_model(M)
+    @expression(jm, sum(compensated_demand(S,C) * get_variable(S) for S∈sectors(C);init=0) - sum( endowment(H,C) - demand(H,C) for H∈consumers(M); init=0))
 end
 
 function income_balance(H::ScalarConsumer)
     M = model(H)
-    H - (sum(endowment(H,C)* C for C∈commodities(M) if endowment(H,C)!=0) - sum(tau(S,H)*S for S∈production_sectors(M) if tau(S,H)!=0; init=0))
+    jm = jump_model(M)
+    @expression(jm, get_variable(H) - (sum(endowment(H,C)* get_variable(C) for C∈commodities(M) if endowment(H,C)!=0) - sum(tau(S,H)*S for S∈production_sectors(M) if tau(S,H)!=0; init=0)))
 end
 
 
