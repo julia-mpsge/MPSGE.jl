@@ -72,10 +72,12 @@ end
 ## Production/Demand ##
 #######################
 
-function add_production!(model::AbstractMPSGEModel, S::ScalarSector, nodes::Vector{Node}, netputs::MPSGE_MP.ScalarNetput...)
-    P = ScalarProduction(S,nodes, netputs...)
-    model.productions[S] = P
-    return P
+function add_production!(model::MPSGEModel, P::Production)
+    if !isnothing(input(P)) && !isnothing(output(P))
+        model.productions[sector(P)] = P
+        return P
+    end
+    return nothing
 end
 
 function add_demand!(M::MPSGEModel,H::ScalarConsumer,demands::Vector{ScalarDem},endowments::Vector{ScalarEndowment};elasticity::Union{Real,ScalarParameter} = 1)
@@ -85,7 +87,7 @@ function add_demand!(M::MPSGEModel,H::ScalarConsumer,demands::Vector{ScalarDem},
 end
 
 
-function add_aux_constraint!(model::AbstractMPSGEModel, A::ScalarAuxiliary, constraint::MPSGEExpr)
+function add_aux_constraint!(model::AbstractMPSGEModel, A::ScalarAuxiliary, constraint::Any)#MPSGEExpr)
     P = ScalarAuxConstraint(A,constraint)
     model.auxiliaries[A] = P
     return P

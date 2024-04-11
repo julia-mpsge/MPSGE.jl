@@ -4,12 +4,17 @@ using JuMP, DataFrames, PATHSolver
 
 import JuMP.Containers:DenseAxisArray
 
+import OrderedCollections:OrderedDict
+
 include("structs.jl")
+include("arithmetic.jl")
 include("show.jl")
 include("model.jl")
+include("production.jl")
+
 
 include("macros.jl")
-include("prune.jl")
+#include("prune.jl")
 
 include("build.jl")
 include("report.jl")
@@ -23,16 +28,19 @@ export  MPSGEModel,
         ScalarConsumer,  IndexedConsumer,  Consumer, 
         ScalarParameter, IndexedParameter, Parameter,
         ScalarAuxiliary, IndexedAuxiliary, Auxiliary,
-        Tax, ScalarInput, ScalarOutput,
-        ScalarNest, ScalarProduction,
+        ScalarNest,      IndexedNest,      Nest,
+        Tax, Input, Output,
+        Production,
         ScalarDem, ScalarEndowment, ScalarDemand,
-        ScalarAuxConstraint, Node
+        ScalarAuxConstraint
 
 #Struct access
 export  name, quantity, production, jump_model, sectors, commodities,
         consumers, taxes, sector, commodity, consumer, description,
-        set_value!, value, auxiliaries, parameters
+        set_value!, value, auxiliaries, parameters#, cost_function
 
+#Production
+export cost_function, input, output
 
 #Model
 export  add_variable!, add!, add_sector!, add_commodity!, add_consumer!,
@@ -47,12 +55,11 @@ export  @sector,    @sectors,
         @auxiliary, @auxiliaries,
         @production, @demand,
         @aux_constraint,
-        @Output, @Input,
+        @output, @input,
         @final_demand, @endowment
 
 #Building
-export  build!, compensated_demand_dictionary, compensated_demand, tau, 
-        demand, endowment
+export  compensated_demand, tau, demand, endowment
 
 #Reporting
 export generate_report, solve!
