@@ -207,14 +207,36 @@ function solve!(m::AbstractMPSGEModel; kwargs...)
         build_constraints!(m)
     end
 
+
     #Set the default iteration limit to 10_000
     JuMP.set_attribute(jm, "cumulative_iteration_limit", 10_000)
+
 
     for (k,v) in kwargs
         JuMP.set_attribute(jm, string(k), v)
     end
 
+    JuMP.set_optimizer(jm, PATHSolver.Optimizer)
+
+    consumer = nothing
+    #Check numinaire here
+    if sum(is_fixed.(all_variables(jm))) == length(parameters(m)) #If there are no fixed variables other than parameters
+        consumer = argmax(start_value, consumers(m))
+        fix(consumer, start_value(consumer))
+    end
+
     JuMP.optimize!(jm)
+
+    # Perhaps print a message here with solver status
+    output = "\n\nSolver Status: $(termination_status(jm))\nModel Status: $(primal_status(jm))"
+
+    if !isnothing(consumer)
+        output *= "\n\nDefault price normalization using income for $consumer - This value is fixed. Unfix with unfix($consumer)."
+        #unfix(consumer)
+    end
+
+    print(output)
+
 
     #return m
 end

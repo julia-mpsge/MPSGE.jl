@@ -83,21 +83,21 @@ Fun fact: I don't think GAMS MPSGE does this. It will just error.
     #@test_throws KeyError(Q) production(Q)
     
 
-    fix(CONS, 22.446346350813023)
+    #fix(CONS, 22.446346350813023)
     solve!(M)
 
     
 
     # Make sure the solution is correct
-    @test isapprox(value(W),0.9838272769615133,atol = 1e-6)
-    @test isapprox(value(Y), 1.1091469981123894,atol = 1e-6)
-    @test isapprox(value(X), 0.8618665918328441,atol = 1e-6)
-    @test isapprox(value(PY), 0.09909680198537893,atol = 1e-6)
-    @test isapprox(value(PW), 0.11407666201399301,atol = 1e-6)
-    @test isapprox(value(PL), 0.09596021792565605,atol = 1e-6)
-    @test isapprox(value(PX), 0.13132093625155308,atol = 1e-6)
-    @test isapprox(value(PK), 0.08978538540360285,atol = 1e-6)
-    @test isapprox(value(CONS), 22.446346350813023,atol = 1e-6)
+    @test isapprox(value(W),0.9838272769613801,atol = 1e-6)
+    @test isapprox(value(Y), 1.1091469981122113,atol = 1e-6)
+    @test isapprox(value(X), 0.8618665918327036,atol = 1e-6)
+    @test isapprox(value(PY), 0.882965988643779,atol = 1e-6)
+    @test isapprox(value(PW), 1.0164385796341864,atol = 1e-6)
+    @test isapprox(value(PL), 0.8550185979160754,atol = 1e-6)
+    @test isapprox(value(PX), 1.170087409318743,atol = 1e-6)
+    @test isapprox(value(PK), 0.7999999999999832,atol = 1e-6)
+    @test isapprox(value(CONS), 200,atol = 1e-6)
     @test value(Q) == 0
     
 end
