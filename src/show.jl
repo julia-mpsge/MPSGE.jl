@@ -314,7 +314,6 @@ julia> var_report(model, true; decimals=4)
 ```
 Note: For exporting dataframe to csv, use keyword argument bom=true for the symbols
 """
-
 function var_report(m::Model, implicit::Bool=false; decimals::Int = 15, mdecimals::Int = 12)
     jm=m._jump_model
     extract_variable_ref(v::JuMP.NonlinearExpr) = v.args[1]
