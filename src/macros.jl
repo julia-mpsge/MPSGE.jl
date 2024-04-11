@@ -263,8 +263,8 @@ end
 
 
 macro demand(model, consumer, demand_block, endowment_block, kwargs...)
-    local demands = :([])
-    local endows = :([])
+    local demands = :(ScalarDem[])
+    local endows = :(ScalarEndowment[])
     for d∈demand_block.args
         if !isa(d, LineNumberNode)
             push!(demands.args, esc(d))
