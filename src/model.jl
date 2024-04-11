@@ -64,7 +64,10 @@ function get_variable(S::MPSGEScalarVariable)
         end
     end
     return S
+end
 
+function get_variable(S)
+    return S
 end
 
 
