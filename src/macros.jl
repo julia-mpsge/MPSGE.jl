@@ -43,9 +43,37 @@ function _plural_macro_code(model, block, macro_sym)
     return code
 end
 
+# This function heavily inspired by JuMP
+function _parse_ref_sets(c)
+    name = missing
+    index = :([])
+    index_vars = :([])
+    if Meta.isexpr(c, :ref)
+        name = c.args[1]
+        for arg in c.args[2:end]
+            if Meta.isexpr(arg, :kw)
+                push!(index.args, esc(arg.args[2]))
+                push!(index_vars.args, esc(arg.args[1]))
+            else isa(arg, Symbol)
+                push!(index.args, esc(arg))
+                push!(index_vars.args, missing)
+            end
+        end
+    else c isa Symbol
+        name = c
+    end
+    return [name, index, index_vars]
+end
+
+
 
 macro sector(model, name, kwargs...)
-    constr_call = :(add_sector!($(esc(model)),$(QuoteNode(name))))
+    name, index, _ = _parse_ref_sets(name)
+    if isempty(index.args) #This could be better
+        constr_call = :(add_sector!($(esc(model)),$(QuoteNode(name))))
+    else
+        constr_call = :(add_sector!($(esc(model)),$(QuoteNode(name)); index = $index))
+    end
     _add_kw_args(constr_call, kwargs)
     return :($(esc(name)) = $constr_call)
 end
@@ -56,10 +84,14 @@ macro sectors(model, block)
 end
 
 macro commodity(model, name, kwargs...)
-    constr_call = :(add_commodity!($(esc(model)),$(QuoteNode(name))))
+    name, index, _ = _parse_ref_sets(name)
+    if isempty(index.args) #This could be better
+        constr_call = :(add_commodity!($(esc(model)),$(QuoteNode(name))))
+    else
+        constr_call = :(add_commodity!($(esc(model)),$(QuoteNode(name)); index = $index))
+    end
     _add_kw_args(constr_call, kwargs)
     return :($(esc(name)) = $constr_call)
-
 end
 
 macro commodities(model, block)
@@ -67,7 +99,12 @@ macro commodities(model, block)
 end
 
 macro consumer(model, name, kwargs...)
-    constr_call = :(add_consumer!($(esc(model)),$(QuoteNode(name))))
+    name, index, _ = _parse_ref_sets(name)
+    if isempty(index.args) #This could be better
+        constr_call = :(add_consumer!($(esc(model)),$(QuoteNode(name))))
+    else
+        constr_call = :(add_consumer!($(esc(model)),$(QuoteNode(name)); index = $index))
+    end
     _add_kw_args(constr_call, kwargs)
     return :($(esc(name)) = $constr_call)
 end
@@ -77,7 +114,12 @@ macro consumers(model, block)
 end
 
 macro parameter(model, name, value, kwargs...)
-    constr_call = :(add_parameter!($(esc(model)),$(QuoteNode(name)), $(esc(value))))
+    name, index, _ = _parse_ref_sets(name)
+    if isempty(index.args) #This could be better
+        constr_call = :(add_parameter!($(esc(model)),$(QuoteNode(name)), $(esc(value))))
+    else
+        constr_call = :(add_parameter!($(esc(model)),$(QuoteNode(name)), $(esc(value)); index = $index))
+    end
     _add_kw_args(constr_call, kwargs)
     return :($(esc(name)) = $constr_call)
 end
@@ -88,7 +130,12 @@ end
 
 
 macro auxiliary(model, name, kwargs...)
-    constr_call = :(add_auxiliary!($(esc(model)),$(QuoteNode(name))))
+    name, index, _ = _parse_ref_sets(name)
+    if isempty(index.args) #This could be better
+        constr_call = :(add_auxiliary!($(esc(model)),$(QuoteNode(name))))
+    else
+        constr_call = :(add_auxiliary!($(esc(model)),$(QuoteNode(name)); index = $index))
+    end
     _add_kw_args(constr_call, kwargs)
     return :($(esc(name)) = $constr_call)
 end
@@ -96,8 +143,6 @@ end
 macro auxiliaries(model, block)
     return _plural_macro_code(model, block, Symbol("@auxiliary"))
 end
-
-
 
 
 macro aux_constraint(model, A, constraint)
@@ -137,40 +182,66 @@ function _parse_nest(nest)
     value = _strip_value(nest)
     parent, name = _strip_nest_name(nest)
     if !ismissing(parent)
-        return :(MPSGE_MP.Node($(QuoteNode(name)), $(value); parent = $(QuoteNode(parent))))
+        return :(Node($(QuoteNode(name)), $(value); parent = $(QuoteNode(parent))))
     else
-        return :(MPSGE_MP.Node($(QuoteNode(name)), $(value)))
+        return :(Node($(QuoteNode(name)), $(value)))
     end
 
 end
 
-macro Output(commodity, quantity, nest, kwargs...)
-    constr_call = :(ScalarOutput($(esc(commodity)), $(esc(quantity)); parent = $(QuoteNode(nest))))
+macro input(commodity, quantity, nest, kwargs...)
+    constr_call = :(Input($(esc(commodity)), $(esc(quantity))))
     _add_kw_args(constr_call, kwargs)
-    return :($constr_call)
+    return :(($constr_call, $(QuoteNode(nest))))#@nest($nest,0)))
 end
 
-
-macro Input(commodity, quantity, nest, kwargs...)
-    constr_call = :(ScalarInput($(esc(commodity)), $(esc(quantity)); parent = $(QuoteNode(nest))))
-    MPSGE_MP._add_kw_args(constr_call, kwargs)
-    return :($constr_call)
+macro output(commodity, quantity, nest, kwargs...)
+    constr_call = :(Output($(esc(commodity)), $(esc(quantity))))
+    _add_kw_args(constr_call, kwargs)
+    return :(($constr_call, $(QuoteNode(nest))))
 end
+
 
 macro production(model, sector, nestings, netputs)
-    nodes = esc.(_parse_nest.(nestings.args))
-    node_expr = :([])
-    for node in nodes
-        push!(node_expr.args, node)
-    end
-    constr_call = :(add_production!($(esc(model)), $(esc(sector)),$node_expr))
-    for netput in netputs.args
-        if !isa(netput,LineNumberNode)
-            push!(constr_call.args, esc(netput))
+
+    #nests
+    nests = :(Nest[])
+    top_nests = :(Symbol[])
+    nest_connect = :(Tuple{Symbol,Symbol}[])
+    for nest in nestings.args
+        if !Meta.isexpr(nest, :(=))
+            error("Invalid syntax for nesting $nest. Required to have an = in "*
+            "statement. `s = 0` or `va => s = 0`."
+            )
+        end
+        elasticity = _strip_value(nest)
+        parent, nest = _strip_nest_name(nest)
+
+        name, index, _ = _parse_ref_sets(nest)
+    
+        if isempty(index.args)
+            push!(nests.args, :(ScalarNest($(QuoteNode(name)), $(esc(elasticity)))))
+        else
+            push!(nests.args, :(IndexedNest($(QuoteNode(name)), $(esc(elasticity)), $index)))
+        end
+    
+        if !ismissing(parent)
+            push!(nest_connect.args, :(($(QuoteNode(name)), $(QuoteNode(parent)))))
+        else
+            push!(top_nests.args, :($(QuoteNode(name))))
         end
     end
-    #_add_kw_args(constr_call, kwargs)
-    return :($constr_call)
+
+    #netputs
+    nets = :(Tuple{Netput,Symbol}[])
+    for arg in netputs.args
+        if arg isa LineNumberNode
+            continue
+        end
+        push!(nets.args, esc(arg))
+    end
+
+    return :(add_production!($(esc(model)), Production($(esc(sector)), $nests, $top_nests, $nest_connect, $nets)))
 end
 
 
