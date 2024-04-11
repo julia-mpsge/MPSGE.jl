@@ -163,7 +163,7 @@ end
 function income_balance(H::ScalarConsumer)
     M = model(H)
     jm = jump_model(M)
-    @expression(jm, get_variable(H) - (sum(endowment(H,C)* get_variable(C) for C∈commodities(M) if endowment(H,C)!=0) - sum(tau(S,H)*S for S∈production_sectors(M) if tau(S,H)!=0; init=0)))
+    @expression(jm, get_variable(H) - (sum(get_variable(endowment(H,C))* get_variable(C) for C∈commodities(M) if endowment(H,C)!=0) - sum(tau(S,H)*S for S∈production_sectors(M) if tau(S,H)!=0; init=0)))
 end
 
 
