@@ -83,7 +83,7 @@ Fun fact: I don't think GAMS MPSGE does this. It will just error.
     #@test_throws KeyError(Q) production(Q)
     
 
-    fix(CONS, 22.446346350813023)
+    #fix(CONS, 22.446346350813023)
     solve!(M)
 
     
