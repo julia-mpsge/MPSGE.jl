@@ -227,15 +227,17 @@ function solve!(m::AbstractMPSGEModel; kwargs...)
 
     JuMP.optimize!(jm)
 
-    # Perhaps print a message here with solver status
-    output = "\n\nSolver Status: $(termination_status(jm))\nModel Status: $(primal_status(jm))"
+    if !m.silent
+        # Perhaps print a message here with solver status
+        output = "\n\nSolver Status: $(termination_status(jm))\nModel Status: $(primal_status(jm))"
 
-    if !isnothing(consumer)
-        output *= "\n\nDefault price normalization using income for $consumer - This value is fixed. Unfix with unfix($consumer)."
-        #unfix(consumer)
+        if !isnothing(consumer)
+            output *= "\n\nDefault price normalization using income for $consumer - This value is fixed. Unfix with unfix($consumer)."
+            #unfix(consumer)
+        end
+
+        print(output)
     end
-
-    print(output)
 
 
     #return m

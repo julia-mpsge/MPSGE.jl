@@ -10,3 +10,13 @@ end
 
 JuMP.set_start_value(X::MPSGEScalarVariable, val::Real) = JuMP.set_start_value(get_variable(X), val)
 JuMP.start_value(H::ScalarConsumer) = start_value(get_variable(H))
+
+function JuMP.set_silent(M::MPSGEModel) 
+    M.silent = true
+    JuMP.set_silent(jump_model(M))
+end
+
+function JuMP.unset_silent(M::MPSGEModel) 
+    M.silent = false
+    JuMP.unset_silent(jump_model(M))
+end

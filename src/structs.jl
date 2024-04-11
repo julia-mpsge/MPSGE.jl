@@ -536,7 +536,8 @@ mutable struct MPSGEModel <:AbstractMPSGEModel
     demands::Dict{ScalarConsumer,Demand}
     commodities::Dict{ScalarCommodity,Vector{ScalarSector}} #Generated on model build
     auxiliaries::Dict{ScalarAuxiliary, AuxConstraint}
-    MPSGEModel() = new(Dict(),Model(PATHSolver.Optimizer; add_bridges = false),Dict(),Dict(),Dict(),Dict())
+    silent::Bool
+    MPSGEModel() = new(Dict(),Model(PATHSolver.Optimizer; add_bridges = false),Dict(),Dict(),Dict(),Dict(),false)
 end
 
 #Getters
