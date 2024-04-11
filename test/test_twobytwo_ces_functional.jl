@@ -1,6 +1,6 @@
 @testitem "TWOBYTWO (functional version copied, with non-1 elasticities of substitution in production)" begin
     using XLSX, MPSGE.JuMP.Containers
-    import JuMP
+    import JuMP, DataFrames
     
     m = Model()
     # Here parameter values are doubled and input data halved from MPSGE version       
@@ -54,9 +54,21 @@
 
     avm2 = algebraic_version(m)
     @test typeof(avm2) == MPSGE.AlgebraicWrapper
+    df_vr = var_report(m, decimals=16, mdecimals=5);
+    @test typeof(df_vr) == DataFrames.DataFrame
+    @test PATH_var(m, 5) == ("X", 1.0)
+    @test generate_name(m, X, PX, "o")[1] == Symbol("PX‡X")
+    @test generate_name(m, X, PL, "i")[1] == Symbol("PL†X")
+    @test generate_name(m, RA, PU, "fd")[1] == Symbol("PUρRA")
+    @test generate_name(m, :X, :PX, "o")[1] == Symbol("PX‡X")
+    @test generate_name(m, :X, :PL, "i")[1] == Symbol("PL†X")
+    @test generate_name(m, :RA, :PU, "fd")[1] == Symbol("PUρRA")
+    @test generate_name(m, X, PX, "d") == println("options are \"o\" for output, \"i\" for input, or \"fd\" for final_demand")
+    @test generate_name(m, X, PX, "d") === nothing
 
     # For now just run these functions, we might add tests for the results
     # at a later point
+    repr(MIME("text/plain"), df_vr)
     repr(MIME("text/plain"), m)
     repr(MIME("text/plain"), avm2)
     repr(MIME("text/latex"), avm2)

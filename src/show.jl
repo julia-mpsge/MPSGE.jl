@@ -236,3 +236,135 @@ end
 function Base.show(io::IO, E::Endowment)
     print(io,"E: $(get_name(E.commodity))\tQ: $(E.quantity)")
 end
+
+"""
+    generate_name(::Model, Sector or Consumer name, Commodity or Nest, argument::String )
+    A function to return the internally generated names of 'implicit' variables, combinations of a Sector or Consumer, and a commodity or nest.
+    Outputs an array with a variable name as a Symbol (index [1]), its value (index [2]), and its associated expression (index [3]), or the VariableRef if a nest.
+    Can be combined and applied iteratively, for instance to generate the name of a nested compensated demand.
+### Options
+    arguments:
+    the name of the MPSGE.jl model
+    A Sector or Consumer: can be SectorRef/ConsumerRref, or just its Symbol (must be Symbol for a Nest).
+    A Commodity: can be a CommodityRef, or just its Symbol. If a Nest name, must be both Symbols.
+    A string with either "o" (an output = compensated supply), "i" (an input = compensated demand), "fd" (a final demand), or "n" (nest)
+### Example
+```julia-repl
+julia> generate_name(m,PL,Y,"i")[1]
+Symbol("PL†Y")
+julia> generate_name(m,generate_name(m,:GOVT, :CN, "n")[1],:PD,"i")[1]
+Symbol("PD†GOVT→CN")
+```
+"""
+function generate_name(m::Model, s::Union{SectorRef,ConsumerRef}, c::Union{CommodityRef}, imptype::String)
+    if imptype=="o"
+        sym = Symbol("$(get_name(c))‡$(get_name(s))")
+    elseif imptype=="i"
+        sym = Symbol("$(get_name(c))†$(get_name(s))")
+    elseif imptype=="fd"
+        sym = Symbol("$(get_name(c))ρ$(get_name(s))")
+    elseif imptype=="n"
+        sym = Symbol("$(s)→$(c)")
+     else 
+        v = println("options are \"o\" for output, \"i\" for input, \"fd\" for final_demand, or v\"n\" for a nest")
+        return v
+    end
+    val = JuMP.value(m._jump_model[sym])
+    varref = m._jump_model[sym]
+    return [sym, val, varref]
+end
+
+
+function generate_name(m::Model, s::Symbol, commod_or_nest::Symbol, imptype::String)
+    if imptype=="o"
+        sym = Symbol("$(commod_or_nest)‡$(s)")
+    elseif imptype=="i"
+        sym = Symbol("$(commod_or_nest)†$(s)")
+    elseif imptype=="fd"
+        sym = Symbol("$(commod_or_nest)ρ$(s)")
+    elseif imptype=="n"
+        sym = Symbol("$(s)→$(commod_or_nest)")
+     else 
+        v = println("options are \"o\" for output, \"i\" for input, \"fd\" for final_demand, or v\"n\" for a nest")
+        return v
+    end
+    val = JuMP.value(m._jump_model[sym])
+    varref = m._jump_model[sym]
+    return [sym, val, varref]
+end
+
+"""
+    var_report(::Model, implicit::Boolean; keywordargs)
+    Function that outputs a dataframe with all model variables, their value, and margin of the associated constraint (if not fixed)
+### Options
+    implicit=true (default=false) to include all implicit 'variables'/named expressions
+    keyword arguments:
+    demimals=::Int    set the max decimals for the variable value
+    mdecimals=::Int   set the max decimals for the margin value from the variable's complementary constraint equation
+### Example
+```julia-repl
+julia> var_report(model, true; decimals=4)
+15×3 DataFrame
+ Row │ var            value    margin    
+     │ GenericV…      Float64  Float64?  
+─────┼───────────────────────────────────
+   1 │ endow              1.1  missing   
+  ⋮  │       ⋮           ⋮         ⋮
+   7 │ X              1.0469  -1.4983e-8
+```
+Note: For exporting dataframe to csv, use keyword argument bom=true for the symbols
+"""
+
+function var_report(m::Model, implicit::Bool=false; decimals::Int = 15, mdecimals::Int = 12)
+    jm=m._jump_model
+    extract_variable_ref(v::JuMP.NonlinearExpr) = v.args[1]
+    extract_variable_ref(v::JuMP.AffExpr) = collect(keys(v.terms))[1]
+    extract_variable_ref(v::JuMP.QuadExpr) = extract_variable_ref(v.aff)
+    out = []
+    mapping = Dict()
+    for ci in JuMP.all_constraints(jm; include_variable_in_set_constraints = false)
+            c = JuMP.constraint_object(ci)
+        # Dictionary to set order and link variable name to values
+        mapping[extract_variable_ref(c.func[2])] = c.func[1]
+    end
+    for elm in JuMP.all_variables(jm)
+        val = JuMP.is_parameter(elm) ? round(JuMP.parameter_value(elm), digits = decimals) : round(JuMP.value(elm), digits=decimals)
+        margin = "."
+        try
+            margin = round(value(mapping[elm]),digits = mdecimals)
+        catch
+            margin = missing
+        end
+        push!(out,(elm,val,margin))
+    end
+    if implicit==true
+        for key in keys(jm.obj_dict)
+            if jm.obj_dict[key] isa JuMP.NonlinearExpr
+            push!(out,(key, JuMP.value(jm[key]),missing))
+            end
+        end
+    end
+        df = DataFrame(out, [:var,:value,:margin])
+        return df
+end
+
+"""
+    PATH_var(::model, ::Int)
+    Function that gets the variable name and solved value associated with the PATH row number
+### Options
+    None
+### Example
+```julia-repl
+julia> PATH_var(model, 11)
+("Variable name", "Variable value as passed by PATH")
+```
+"""
+function PATH_var(m, number::Int)
+   v = MPSGE.JuMP.MOI.get(m._jump_model.moi_backend, JuMP.MOI.VariableName(), JuMP.MOI.VariableIndex(number))
+   val = MPSGE.JuMP.MOI.get(m._jump_model.moi_backend,  JuMP.MOI.VariablePrimal(), JuMP.MOI.VariableIndex(number))
+   if v==""
+    println("Name not seen by PATH (or index outside of PATH model bounds)")
+   else
+   return v, val
+   end
+end

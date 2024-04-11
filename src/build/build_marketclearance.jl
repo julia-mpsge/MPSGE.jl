@@ -17,7 +17,9 @@ function build_marketclearance!(m, jm)
         end
     end
 
-
+    jump_ex = Dict()
+    jump_var = Dict()
+    jump_var_ind = []
     # Loop over commodities
     for commodity in commodities
         # Find all endowments for current commodity
@@ -60,15 +62,17 @@ function build_marketclearance!(m, jm)
             end
         end
 
-        jump_ex = +(
+        cm_name = Symbol(get_jump_variable_for_commodity(jm, commodity))
+        push!(jump_var_ind, cm_name)
+        push!(jump_var, cm_name => get_jump_variable_for_commodity(jm, commodity))
+        push!(jump_ex, cm_name =>
+        +(
             0.,
             endows...,
             comp_supplies...) -
             +(0., final_demand..., comp_demands...)
-
-        jump_var = get_jump_variable_for_commodity(jm, commodity)
-
-        @constraint(jm, jump_ex ⟂ jump_var)
-        push!(m._nlexpressions.market_clearance, (expr=jump_ex, var=jump_var))
+        )
+        push!(m._nlexpressions.market_clearance, (expr=jump_ex[cm_name], var=jump_var[cm_name]))
     end
+    @constraint(jm, mkt_clr[cm=jump_var_ind], jump_ex[cm] ⟂ jump_var[cm])
 end

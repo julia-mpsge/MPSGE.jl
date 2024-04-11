@@ -429,7 +429,8 @@ HH = add!(m, Consumer(:HH, benchmark=80.)) #      ! Private households
 # add!(m, DemandFunction(GOVT, 1.,  [Demand(PX,20),Demand(PA, 90)],              [Endowment(RK, 110)])) # Non-Nested
 
 # Nested Version
-add!(m, DemandFunction(GOVT, 1.,  [Demand(PX,20),Demand(Nest(:CN,:($sigmadm*1.),90.,
+add!(m, DemandFunction(GOVT, 1.,  [Demand(PX,20),
+                                  Demand(Nest(:CN,:($sigmadm*1.),90.,
                         [
                           Input(PD, 30),
                           Input(PM, 60)
