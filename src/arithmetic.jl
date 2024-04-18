@@ -21,3 +21,4 @@ Base.:^(x::MPSGE_MP.MPSGEScalarVariable, y::Union{Real, JuMP.VariableRef, JuMP.A
 Base.:^(x::Union{Real, JuMP.VariableRef, JuMP.AffExpr, JuMP.QuadExpr, JuMP.NonlinearExpr}, y::MPSGE_MP.MPSGEScalarVariable) = x^get_variable(y) 
 
 Base.zero(::Type{ScalarParameter}) = 0
+Base.zero(::Type{ScalarAuxiliary}) = 0
