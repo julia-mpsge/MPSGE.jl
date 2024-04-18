@@ -10,7 +10,7 @@ abstract type MPSGEVariable end
 abstract type MPSGEScalarVariable <: MPSGEVariable end
 
 # Valid types for fields that are quantities
-const MPSGEquantity = Union{Real,MPSGEScalarVariable,JuMP.AffExpr, JuMP.QuadExpr, JuMP.NonlinearExpr}
+const MPSGEquantity = Union{Real,MPSGEScalarVariable, JuMP.VariableRef, JuMP.AffExpr, JuMP.QuadExpr, JuMP.NonlinearExpr}
 
 abstract type MPSGEIndexedVariable{T,N} <: AbstractArray{T,N} end
 

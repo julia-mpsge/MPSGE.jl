@@ -217,7 +217,6 @@ function solve!(m::AbstractMPSGEModel; kwargs...)
         JuMP.set_attribute(jm, string(k), v)
     end
 
-
     consumer = nothing
     #Check numinaire here
     if sum(is_fixed.(all_variables(jm))) == length(parameters(m)) #If there are no fixed variables other than parameters

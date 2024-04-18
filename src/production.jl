@@ -187,16 +187,25 @@ function build_cost_function!(N::Node, S::ScalarSector)
         jm = jump_model(model(S))
 
         #This must be an explicit expression, otherwise it's evaluated now. 
-        N.cost_function = @expression(jm, ifelse(
+        cost_function = @expression(jm, ifelse(
                     elasticity(N) * sign == -1,
                     cobb_douglass(N), 
                     CES(N)
                 ))
     elseif elasticity(N)*sign == -1 #Cobb-Douglas is only on demand side with σ=1
-        N.cost_function = cobb_douglass(N)
+        cost_function = cobb_douglass(N)
     else
-        N.cost_function = CES(N)
+        cost_function = CES(N)
     end
+
+    if length(N.children) < 1000
+        N.cost_function = cost_function
+    else
+        jm = jump_model(model(S))
+        N.cost_function = @variable(jm, start = 1) 
+        @constraint(jm, cost_function - N.cost_function ⟂ N.cost_function)
+    end
+
 end
 
 function cobb_douglass(N::Node)#P::ScalarProduction, T::ScalarNest, sign)
