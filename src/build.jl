@@ -216,7 +216,7 @@ function solve!(m::AbstractMPSGEModel; kwargs...)
         JuMP.set_attribute(jm, string(k), v)
     end
 
-    JuMP.set_optimizer(jm, PATHSolver.Optimizer)
+    #JuMP.set_optimizer(jm, PATHSolver.Optimizer)
 
     consumer = nothing
     #Check numinaire here
