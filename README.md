@@ -6,7 +6,7 @@
 [![Coverage](https://codecov.io/gh/mitchphillipson/MPSGE_MP.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/mitchphillipson/MPSGE_MP.jl)
 
 
-[Documenation](https://mitchphillipson.github.io/MPSGE_MP.jl/dev/)
+[Documenation](https://julia-mpsge.github.io/MPSGE_MP.jl/dev/)
 
 
 Things to translate: 
