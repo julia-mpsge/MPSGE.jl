@@ -476,6 +476,7 @@ raw_quantity(D::ScalarDem) = value(D.quantity)*value(D.reference_price)
 
 commodity(C::ScalarEndowment) = C.commodity
 quantity(C::ScalarEndowment) = C.quantity
+raw_quantity(C::ScalarEndowment) = value(C.quantity)
 
 struct ScalarDemand
     consumer::ScalarConsumer
@@ -537,7 +538,8 @@ mutable struct MPSGEModel <:AbstractMPSGEModel
     commodities::Dict{ScalarCommodity,Vector{ScalarSector}} #Generated on model build
     auxiliaries::Dict{ScalarAuxiliary, AuxConstraint}
     silent::Bool
-    MPSGEModel() = new(Dict(),Model(PATHSolver.Optimizer; add_bridges = false),Dict(),Dict(),Dict(),Dict(),false)
+    numeraire::Union{MPSGEVariable,Missing}
+    MPSGEModel() = new(Dict(),Model(PATHSolver.Optimizer; add_bridges = false),Dict(),Dict(),Dict(),Dict(),false,missing)
 end
 
 #Getters

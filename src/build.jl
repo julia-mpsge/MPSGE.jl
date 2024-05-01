@@ -217,27 +217,40 @@ function solve!(m::AbstractMPSGEModel; kwargs...)
         JuMP.set_attribute(jm, string(k), v)
     end
 
+    # Unfix numeraire, if set
+    if !ismissing(m.numeraire) 
+        unfix(m.numeraire) #Check to see if it's still fixed
+        m.numeraire = missing
+    end
+
+    # Update consumer start values
+    for consumer∈consumers(m)
+        new_start = sum(raw_quantity(e) for (_,e)∈endowments(demand(consumer)))
+        set_start_value(consumer, new_start)
+    end
+
+
     consumer = nothing
     #Check numinaire here
     if sum(is_fixed.(all_variables(jm))) == length(parameters(m)) #If there are no fixed variables other than parameters
         consumer = argmax(start_value, consumers(m))
         fix(consumer, start_value(consumer))
+        m.numeraire = consumer
     end
 
     JuMP.optimize!(jm)
 
     if !m.silent
-        # Perhaps print a message here with solver status
         output = "\n\nSolver Status: $(termination_status(jm))\nModel Status: $(primal_status(jm))"
 
         if !isnothing(consumer)
-            output *= "\n\nDefault price normalization using income for $consumer - This value is fixed. Unfix with unfix($consumer)."
+            output *= "\n\nDefault price normalization using income for $consumer - This value is fixed to $(value(consumer)).\n"* 
+                      "Unfix with unfix($consumer)."
             #unfix(consumer)
         end
 
         print(output)
     end
-
 
     #return m
 end
