@@ -1,4 +1,4 @@
-@testset "123 model" begin
+@testset "Orientation Check" begin
     using XLSX, MPSGE_MP.JuMP.Containers
     import JuMP
 
@@ -104,7 +104,6 @@
     #set_silent(mules_mpsge)
     solve!(mules_mpsge)
 
-    df_mpsge = generate_report(mules_mpsge);
 
     @test JuMP.is_solved_and_feasible(jump_model(mules_mpsge))
 
