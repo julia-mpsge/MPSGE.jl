@@ -14,4 +14,6 @@ using Test
     include("test_twobytwo_Price.jl")
     include("test_twobytwo_wTaxes.jl")
 
+    include("test_orientation.jl")
+
 end
