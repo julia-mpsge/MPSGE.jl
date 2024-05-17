@@ -104,7 +104,6 @@
     #set_silent(mules_mpsge)
     solve!(mules_mpsge)
 
-    print("\n"^3*"I'm Here"*"\n"^3)
 
     @test JuMP.is_solved_and_feasible(jump_model(mules_mpsge))
 
