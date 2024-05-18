@@ -201,12 +201,17 @@ julia> solve!(m, cumulative_iteration_limit=0)
 ```
 """
 function solve!(m::AbstractMPSGEModel; kwargs...)
+    print("\n\n Enetered solve!")
+
     jm = jump_model(m)
+
+    
 
     if !haskey(JuMP.object_dictionary(jm), :zero_profit)
         build_constraints!(m)
     end
 
+    print("\n\n built constraints\n\n")
 
     #Set the default iteration limit to 10_000
     JuMP.set_attribute(jm, "cumulative_iteration_limit", 10_000)
@@ -217,6 +222,9 @@ function solve!(m::AbstractMPSGEModel; kwargs...)
         JuMP.set_attribute(jm, string(k), v)
     end
 
+
+    print("\n\n$(sum(is_fixed.(all_variables(jm))))\n\n")
+
     consumer = nothing
     #Check numinaire here
     if sum(is_fixed.(all_variables(jm))) == length(parameters(m)) #If there are no fixed variables other than parameters
@@ -224,7 +232,11 @@ function solve!(m::AbstractMPSGEModel; kwargs...)
         fix(consumer, start_value(consumer))
     end
 
+    print("\n\n numeraire\n\n")
+
     JuMP.optimize!(jm)
+
+    print("\n\n optimized\n\n")
 
     if !m.silent
         # Perhaps print a message here with solver status
