@@ -10,4 +10,4 @@ makedocs(modules=[MPSGE],
         "Reference" => "reference.md"
     ])
 
-deploydocs(repo="github.com/anthofflab/MPSGE.jl.git")
+deploydocs(repo="github.com/julia-mpsge/MPSGE.jl.git")
