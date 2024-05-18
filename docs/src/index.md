@@ -1,4 +1,4 @@
-# MPSGE.jl
+# [MPSGE.jl](https://github.com/julia-mpsge/MPSGE.jl)
 
 MPSGE.jl is a Julia evolution of the [GAMS](https://www.gams.com/) subsystem [MPSGE](https://www.gams.com/solvers/mpsge/index.htm). The [Documentation](https://www.gams.com/latest/docs/UG_MPSGE_Intro.html) for the GAMS MPSGE should be useful to reference, especially for background, theory, and for some understanding of the included [features](https://www.gams.com/latest/docs/UG_MPSGE_Intro.html#UG_MPSGE_Intro_KeywordsSyntax), especially while the MPSGE.jl documentation is still being written.
 
