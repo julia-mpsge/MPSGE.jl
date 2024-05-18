@@ -101,9 +101,13 @@
 
     fix(RA[:r4], 1+sum(ω[g,:r4] for g∈goods))
 
+
+    println("\n\n Pre Solve \n\n")
+
     #set_silent(mules_mpsge)
     solve!(mules_mpsge)
 
+    println("\n\n Post Solve \n\n")
 
     @test JuMP.is_solved_and_feasible(jump_model(mules_mpsge))
 
