@@ -3,7 +3,6 @@ using Test
 
 @testset "MPSGE_MP.jl" begin
 
-    
     include("test_pruning.jl")
     include("test_123.jl")
     include("test_Benchmark-Theta.jl")
@@ -15,7 +14,6 @@ using Test
     include("test_twobytwo_Price.jl")
     include("test_twobytwo_wTaxes.jl")
 
-
-    #include("test_orientation.jl")
+    include("test_orientation.jl")
 
 end
