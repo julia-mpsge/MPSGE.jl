@@ -219,7 +219,7 @@ function solve!(m::AbstractMPSGEModel; kwargs...)
 
     # Unfix numeraire, if set
     if !ismissing(m.numeraire) 
-        unfix(m.numeraire) #Check to see if it's still fixed
+        is_fixed(m.numeraire) ? unfix(m.numeraire) : nothing #Check to see if it's still fixed
         m.numeraire = missing
     end
 
@@ -232,7 +232,8 @@ function solve!(m::AbstractMPSGEModel; kwargs...)
 
     consumer = nothing
     #Check numinaire here
-    if sum(is_fixed.(all_variables(jm))) == length(parameters(m)) #If there are no fixed variables other than parameters
+    # Check if any (non-auxiliary) variables are fixed.
+    if sum(is_fixed.(MPSGE_MP.production_sectors(m))) + sum(is_fixed.(commodities(m))) + sum(is_fixed.(consumers(m)))== 0 
         consumer = argmax(start_value, consumers(m))
         fix(consumer, start_value(consumer))
         m.numeraire = consumer
