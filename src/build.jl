@@ -228,10 +228,10 @@ function solve!(m::AbstractMPSGEModel; kwargs...)
 
     if !m.silent
         # Perhaps print a message here with solver status
-        output = "\n\nSolver Status: $(termination_status(jm))\nModel Status: $(primal_status(jm))"
+        output = "\n\nSolver Status: $(termination_status(jm))\nModel Status: $(primal_status(jm))\n\n"
 
         if !isnothing(consumer)
-            output *= "\n\nDefault price normalization using income for $consumer - This value is fixed. Unfix with unfix($consumer)."
+            output *= "Default price normalization using income for $consumer - This value is fixed. Unfix with unfix($consumer).\n\n"
             #unfix(consumer)
         end
 
