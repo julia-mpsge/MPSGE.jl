@@ -1,5 +1,5 @@
 @testitem "TWOBYTWO Input Nest (functional version)" begin
-    using XLSX, MPSGE.JuMP.Containers
+    using XLSX, MPSGE_MP.JuMP.Containers
     import JuMP
 
     m = MPSGEModel()
