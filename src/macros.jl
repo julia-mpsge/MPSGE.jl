@@ -19,7 +19,7 @@ function _plural_macro_code(model, block, macro_sym)
     @assert block.args[1] isa LineNumberNode
     last_line = block.args[1]
     code = quote end #Expr(:tuple) #I don't know why this works in JuMP, but not for me. Perhaps a Julia 1.10 thing
-    jump_macro = Expr(:., Main, QuoteNode(macro_sym)) #Change Main to module name here
+    jump_macro = Expr(:., MPSGE_MP, QuoteNode(macro_sym)) #Change Main to module name here
     for arg in block.args
         if arg isa LineNumberNode
             last_line = arg

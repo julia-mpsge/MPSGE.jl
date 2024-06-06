@@ -157,7 +157,7 @@ end
 function market_clearance(C::ScalarCommodity)
     M = model(C)
     jm = jump_model(M)
-    @expression(jm, sum(compensated_demand(S,C) * get_variable(S) for S∈sectors(C);init=0) - sum( endowment(H,C) - demand(H,C) for H∈consumers(M); init=0))
+    @expression(jm, -sum(compensated_demand(S,C) * get_variable(S) for S∈sectors(C);init=0) + sum( endowment(H,C) - demand(H,C) for H∈consumers(M); init=0))
 end
 
 function income_balance(H::ScalarConsumer)
@@ -203,6 +203,8 @@ julia> solve!(m, cumulative_iteration_limit=0)
 function solve!(m::AbstractMPSGEModel; kwargs...)
     jm = jump_model(m)
 
+    
+
     if !haskey(JuMP.object_dictionary(jm), :zero_profit)
         build_constraints!(m)
     end
@@ -217,6 +219,7 @@ function solve!(m::AbstractMPSGEModel; kwargs...)
         JuMP.set_attribute(jm, string(k), v)
     end
 
+
     consumer = nothing
     #Check numinaire here
     if sum(is_fixed.(all_variables(jm))) == length(parameters(m)) #If there are no fixed variables other than parameters
@@ -228,10 +231,10 @@ function solve!(m::AbstractMPSGEModel; kwargs...)
 
     if !m.silent
         # Perhaps print a message here with solver status
-        output = "\n\nSolver Status: $(termination_status(jm))\nModel Status: $(primal_status(jm))"
+        output = "\n\nSolver Status: $(termination_status(jm))\nModel Status: $(primal_status(jm))\n\n"
 
         if !isnothing(consumer)
-            output *= "\n\nDefault price normalization using income for $consumer - This value is fixed. Unfix with unfix($consumer)."
+            output *= "Default price normalization using income for $consumer - This value is fixed. Unfix with unfix($consumer).\n\n"
             #unfix(consumer)
         end
 
