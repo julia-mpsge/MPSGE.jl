@@ -6,6 +6,7 @@ function JuMP.fix(X::MPSGEScalarVariable, value::Real)
         M.numeraire = missing
     end 
     JuMP.fix(get_variable(X), value; force=true)
+    set_start_value(X, value)
 end
 
 function JuMP.unfix(X::MPSGEScalarVariable) 
