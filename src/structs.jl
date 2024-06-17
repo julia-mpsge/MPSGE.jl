@@ -32,6 +32,7 @@ base_name(V::MPSGEVariable) = V.name
 name(V::MPSGEVariable) = ismissing(subindex(V)) ? V.name : Symbol(V.name,"_",join(subindex(V),"_"))
 model(V::MPSGEVariable) = V.model
 description(V::MPSGEVariable) = V.description
+JuMP.value(V::MPSGEScalarVariable) = V.value
 
 
 subindex(V::MPSGEVariable) = missing
@@ -60,12 +61,13 @@ struct ScalarSector <: MPSGEScalarVariable
     name::Symbol
     subindex::Any
     description::String
-    function ScalarSector(model::AbstractMPSGEModel,name::Symbol; description ="") 
-        S = new(model,name,missing, description)
-        add_variable!(model, S)
+    value::Float64
+    function ScalarSector(model::AbstractMPSGEModel,name::Symbol; description ="", start = 1) 
+        S = new(model,name,missing, description, start)
+        add_variable!(model, S; start = start)
         return S
     end
-    ScalarSector(model::AbstractMPSGEModel,name::Symbol,subindex; description = "") = new(model,name,subindex,description)
+    ScalarSector(model::AbstractMPSGEModel,name::Symbol,subindex; description = "", start = 1) = new(model,name,subindex,description, start)
 end
 
 struct IndexedSector{N} <: MPSGEIndexedVariable{ScalarSector,N}
@@ -95,14 +97,15 @@ struct ScalarCommodity <: MPSGEScalarVariable
     name::Symbol
     subindex::Any
     description::String
-    function ScalarCommodity(model::AbstractMPSGEModel,name::Symbol; description = "") 
-        C = new(model,name,missing, description)
+    value::Float64
+    function ScalarCommodity(model::AbstractMPSGEModel,name::Symbol; description = "", start = 1) 
+        C = new(model,name,missing, description,start)
         model.commodities[C] = []
-        add_variable!(model, C)
+        add_variable!(model, C; start = start)
         return C
     end
-    function ScalarCommodity(model::AbstractMPSGEModel,name::Symbol,subindex; description = "") 
-        C = new(model,name,subindex, description)
+    function ScalarCommodity(model::AbstractMPSGEModel,name::Symbol,subindex; description = "", start = 1) 
+        C = new(model,name,subindex, description, start)
         model.commodities[C] = []
         return C
     end
@@ -136,12 +139,13 @@ struct ScalarConsumer <: MPSGEScalarVariable
     name::Symbol
     subindex::Any
     description::String
-    function ScalarConsumer(model::AbstractMPSGEModel,name::Symbol; description = "") 
-        S = new(model,name,missing, description)
-        add_variable!(model, S)
+    value::Float64
+    function ScalarConsumer(model::AbstractMPSGEModel,name::Symbol; description = "",start=1) 
+        S = new(model,name,missing, description, start)
+        add_variable!(model, S; start = start)
         return S
     end
-    ScalarConsumer(model::AbstractMPSGEModel,name::Symbol,subindex; description = "") = new(model,name,subindex, description)
+    ScalarConsumer(model::AbstractMPSGEModel,name::Symbol,subindex; description = "", start=1) = new(model,name,subindex, description,start)
 end
 
 struct IndexedConsumer{N} <: MPSGEIndexedVariable{ScalarConsumer,N}
@@ -220,7 +224,7 @@ end
 
 const Parameter = Union{ScalarParameter,IndexedParameter}
 
-JuMP.value(P::ScalarParameter) = P.value
+#JuMP.value(P::ScalarParameter) = P.value
 
 function set_value!(P::ScalarParameter, value::Number)
     P.value = value
@@ -241,12 +245,13 @@ struct ScalarAuxiliary <: MPSGEScalarVariable
     name::Symbol
     subindex::Any
     description::String
-    function ScalarAuxiliary(model::AbstractMPSGEModel,name::Symbol; description = "")  
-        S = new(model,name, missing, description)
-        add_variable!(model, S)
+    value::Float64
+    function ScalarAuxiliary(model::AbstractMPSGEModel,name::Symbol; description = "", start = 0)  
+        S = new(model,name, missing, description, start)
+        add_variable!(model, S; start = start)
         return S
     end
-    ScalarAuxiliary(model::AbstractMPSGEModel,name::Symbol,subindex; description = "") = new(model,name,subindex, description)
+    ScalarAuxiliary(model::AbstractMPSGEModel,name::Symbol,subindex; description = "", start = 0) = new(model,name,subindex, description, start)
 end
 
 struct IndexedAuxiliary{N} <: MPSGEIndexedVariable{ScalarAuxiliary,N}
