@@ -226,16 +226,16 @@ function solve!(m::AbstractMPSGEModel; kwargs...)
     # Update consumer start values
     for consumer∈consumers(m)
         if termination_status(jm) == OPTIMIZE_NOT_CALLED
-            starting_values = Dict(get_variable(var) => start_value(var) for  var in all_variables(jm))
+            #starting_values = Dict(get_variable(var) => start_value(var) for  var in all_variables(jm))
             new_start = sum(
                 raw_quantity(
-                    i->get(starting_values, i,missing), 
+                    start_value, 
                     endowment
                 ) 
                 for (_,endowment)∈endowments(demand(consumer))
             )
             new_start += -value(
-                i->get(starting_values,i,missing), 
+                start_value, 
                 sum(tau(sector, consumer) for sector in production_sectors(m))
             )
         else
