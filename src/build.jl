@@ -213,19 +213,35 @@ function solve!(m::AbstractMPSGEModel; kwargs...)
 
 
     for (k,v) in kwargs
-
         JuMP.set_attribute(jm, string(k), v)
     end
 
     # Unfix numeraire, if set
     if !ismissing(m.numeraire) 
-        is_fixed(m.numeraire) ? unfix(m.numeraire) : nothing #Check to see if it's still fixed
-        m.numeraire = missing
+        unfix(numeraire(m))
     end
 
     # Update consumer start values
     for consumer∈consumers(m)
-        new_start = sum(raw_quantity(e) for (_,e)∈endowments(demand(consumer)))
+        if termination_status(jm) == OPTIMIZE_NOT_CALLED
+            starting_values = Dict(get_variable(var) => start_value(var) for  var in all_variables(jm))
+            new_start = sum(
+                raw_quantity(
+                    i->get(starting_values, i,missing), 
+                    endowment
+                ) 
+                for (_,endowment)∈endowments(demand(consumer))
+            )
+            new_start += -value(
+                i->get(starting_values,i,missing), 
+                sum(tau(sector, consumer) for sector in production_sectors(m))
+            )
+        else
+            new_start = sum(raw_quantity(e) for (_,e)∈endowments(demand(consumer)))
+            new_start += -value(
+                sum(tau(sector, consumer) for sector in production_sectors(m))
+            )
+        end
         set_start_value(consumer, new_start)
     end
 
@@ -240,6 +256,10 @@ function solve!(m::AbstractMPSGEModel; kwargs...)
     end
 
     JuMP.optimize!(jm)
+
+    # Need to check termination status here
+
+    
 
     if !m.silent
         output = "\n\nSolver Status: $(termination_status(jm))\nModel Status: $(primal_status(jm))"
