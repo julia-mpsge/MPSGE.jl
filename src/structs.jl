@@ -581,15 +581,6 @@ raw_consumers(m::MPSGEModel) = [s for (_,s) in m.object_dict if isa(s,Consumer)]
 raw_parameters(m::MPSGEModel) = [s for (_,s) in m.object_dict if isa(s,Parameter)]
 raw_auxiliaries(m::MPSGEModel) = [s for (_,s) in m.object_dict if isa(s,Auxiliary)]
 
-
-#function JuMP.all_variables(M::MPSGEModel)
-#    X = values(M.object_dict) |>
-#        x -> extract_scalars.(x) |>  
-#        x -> Iterators.flatten(x) |>
-#        x -> collect(x)
-#    return X
-#end
-
 """
     sectors(m::MPSGEModel)
 
