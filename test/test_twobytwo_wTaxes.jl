@@ -1,5 +1,3 @@
-
-#=
 @testset "TWOBYTWOwTax" begin
     using XLSX, MPSGE_MP.JuMP.Containers
     import JuMP
@@ -270,7 +268,6 @@
     
 
 end
-=#
 
 
 @testset "TWOBYTWOwOTax_IndCons" begin
@@ -676,7 +673,6 @@ end
 end		
 
 
-#=
 
 @testset "TWObyTWOwOutTax_tr_elas" begin
     using XLSX, MPSGE_MP.JuMP.Containers
@@ -1993,5 +1989,3 @@ end
     @test value(demand(CONS, PW)) ≈ two_by_two_AuxinOutput["CWCONS","S.FX.2,M.5"]#  182.2957177
 
 end
-
-=#
