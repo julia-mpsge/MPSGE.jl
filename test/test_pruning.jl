@@ -92,12 +92,12 @@ Fun fact: I don't think GAMS MPSGE does this. It will just error.
     @test isapprox(value(W),0.9838272769613801,atol = 1e-6)
     @test isapprox(value(Y), 1.1091469981122113,atol = 1e-6)
     @test isapprox(value(X), 0.8618665918327036,atol = 1e-6)
-    @test isapprox(value(PY), 0.882965988643779,atol = 1e-6)
-    @test isapprox(value(PW), 1.0164385796341864,atol = 1e-6)
-    @test isapprox(value(PL), 0.8550185979160754,atol = 1e-6)
-    @test isapprox(value(PX), 1.170087409318743,atol = 1e-6)
-    @test isapprox(value(PK), 0.7999999999999832,atol = 1e-6)
-    @test isapprox(value(CONS), 200,atol = 1e-6)
+    @test isapprox(value(PY), 1.0969563491633882,atol = 1e-6)
+    @test isapprox(value(PW), 1.262776559690059,atol = 1e-6)
+    @test isapprox(value(PL), 1.0622357958363249,atol = 1e-6)
+    @test isapprox(value(PX), 1.453662801549734,atol = 1e-6)
+    @test isapprox(value(PK), 0.9938832192950132,atol = 1e-6)
+    @test isapprox(value(CONS), 248.4708048410644,atol = 1e-6)
     @test value(Q) == 0
     
 end
