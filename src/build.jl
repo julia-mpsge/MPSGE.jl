@@ -203,6 +203,8 @@ julia> solve!(m, cumulative_iteration_limit=0)
 function solve!(m::AbstractMPSGEModel; kwargs...)
     jm = jump_model(m)
 
+    
+
     if !haskey(JuMP.object_dictionary(jm), :zero_profit)
         build_constraints!(m)
     end
@@ -262,14 +264,11 @@ function solve!(m::AbstractMPSGEModel; kwargs...)
     
 
     if !m.silent
-        output = "\n\nSolver Status: $(termination_status(jm))\nModel Status: $(primal_status(jm))"
-
         if !isnothing(consumer)
             output *= "\n\nDefault price normalization using income for $consumer - This value is fixed to $(value(consumer)).\n"* 
                       "Unfix with unfix($consumer)."
             #unfix(consumer)
         end
-
         print(output)
     end
 
