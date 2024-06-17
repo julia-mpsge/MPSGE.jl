@@ -32,7 +32,6 @@ base_name(V::MPSGEVariable) = V.name
 name(V::MPSGEVariable) = ismissing(subindex(V)) ? V.name : Symbol(V.name,"_",join(subindex(V),"_"))
 model(V::MPSGEVariable) = V.model
 description(V::MPSGEVariable) = V.description
-JuMP.value(V::MPSGEScalarVariable) = V.value
 
 
 subindex(V::MPSGEVariable) = missing
@@ -61,13 +60,12 @@ struct ScalarSector <: MPSGEScalarVariable
     name::Symbol
     subindex::Any
     description::String
-    value::Float64
-    function ScalarSector(model::AbstractMPSGEModel,name::Symbol; description ="", start = 1) 
-        S = new(model,name,missing, description, start)
-        add_variable!(model, S; start = start)
+    function ScalarSector(model::AbstractMPSGEModel,name::Symbol; description ="") 
+        S = new(model,name,missing, description)
+        add_variable!(model, S)
         return S
     end
-    ScalarSector(model::AbstractMPSGEModel,name::Symbol,subindex; description = "", start = 1) = new(model,name,subindex,description, start)
+    ScalarSector(model::AbstractMPSGEModel,name::Symbol,subindex; description = "") = new(model,name,subindex,description)
 end
 
 struct IndexedSector{N} <: MPSGEIndexedVariable{ScalarSector,N}
@@ -97,15 +95,14 @@ struct ScalarCommodity <: MPSGEScalarVariable
     name::Symbol
     subindex::Any
     description::String
-    value::Float64
-    function ScalarCommodity(model::AbstractMPSGEModel,name::Symbol; description = "", start = 1) 
-        C = new(model,name,missing, description,start)
+    function ScalarCommodity(model::AbstractMPSGEModel,name::Symbol; description = "") 
+        C = new(model,name,missing, description)
         model.commodities[C] = []
-        add_variable!(model, C; start = start)
+        add_variable!(model, C)
         return C
     end
-    function ScalarCommodity(model::AbstractMPSGEModel,name::Symbol,subindex; description = "", start = 1) 
-        C = new(model,name,subindex, description, start)
+    function ScalarCommodity(model::AbstractMPSGEModel,name::Symbol,subindex; description = "") 
+        C = new(model,name,subindex, description)
         model.commodities[C] = []
         return C
     end
@@ -139,13 +136,12 @@ struct ScalarConsumer <: MPSGEScalarVariable
     name::Symbol
     subindex::Any
     description::String
-    value::Float64
-    function ScalarConsumer(model::AbstractMPSGEModel,name::Symbol; description = "",start=1) 
-        S = new(model,name,missing, description, start)
-        add_variable!(model, S; start = start)
+    function ScalarConsumer(model::AbstractMPSGEModel,name::Symbol; description = "") 
+        S = new(model,name,missing, description)
+        add_variable!(model, S)
         return S
     end
-    ScalarConsumer(model::AbstractMPSGEModel,name::Symbol,subindex; description = "", start=1) = new(model,name,subindex, description,start)
+    ScalarConsumer(model::AbstractMPSGEModel,name::Symbol,subindex; description = "") = new(model,name,subindex, description)
 end
 
 struct IndexedConsumer{N} <: MPSGEIndexedVariable{ScalarConsumer,N}
@@ -180,6 +176,7 @@ mutable struct ScalarParameter <: MPSGEScalarVariable
         S = new(model,name,missing, value, description)
         add_variable!(model, S)
         fix(S, value)
+        set_start_value(S, value)
         return S
     end
     ScalarParameter(model::AbstractMPSGEModel,name::Symbol, value::Number,subindex; description = "") = new(model,name,subindex, value, description)
@@ -203,6 +200,7 @@ struct IndexedParameter{N} <: MPSGEIndexedVariable{ScalarParameter,N}
         S = new{length(index)}(model,name, sr, index, description)
         add_variable!(model, S)
         fix.(S, value)
+        set_start_value.(S, value)
         return S
     end
 
@@ -218,13 +216,15 @@ struct IndexedParameter{N} <: MPSGEIndexedVariable{ScalarParameter,N}
         S = new{length(index)}(model,name, sr, index, description)
         add_variable!(model, S)
         fix.(S,value)
+        set_start_value.(S, value)
         return S
     end
 end
 
 const Parameter = Union{ScalarParameter,IndexedParameter}
 
-#JuMP.value(P::ScalarParameter) = P.value
+JuMP.value(P::ScalarParameter) = P.value
+JuMP.value(F::Function, P::ScalarParameter) = P.value
 
 function set_value!(P::ScalarParameter, value::Number)
     P.value = value
@@ -245,13 +245,12 @@ struct ScalarAuxiliary <: MPSGEScalarVariable
     name::Symbol
     subindex::Any
     description::String
-    value::Float64
-    function ScalarAuxiliary(model::AbstractMPSGEModel,name::Symbol; description = "", start = 0)  
-        S = new(model,name, missing, description, start)
-        add_variable!(model, S; start = start)
+    function ScalarAuxiliary(model::AbstractMPSGEModel,name::Symbol; description = "")  
+        S = new(model,name, missing, description)
+        add_variable!(model, S)
         return S
     end
-    ScalarAuxiliary(model::AbstractMPSGEModel,name::Symbol,subindex; description = "", start = 0) = new(model,name,subindex, description, start)
+    ScalarAuxiliary(model::AbstractMPSGEModel,name::Symbol,subindex; description = "") = new(model,name,subindex, description)
 end
 
 struct IndexedAuxiliary{N} <: MPSGEIndexedVariable{ScalarAuxiliary,N}
@@ -481,6 +480,10 @@ raw_quantity(D::ScalarDem) = value(D.quantity)*value(D.reference_price)
 
 commodity(C::ScalarEndowment) = C.commodity
 quantity(C::ScalarEndowment) = C.quantity
+raw_quantity(F::Function, C::ScalarEndowment) = value(F, C.quantity)
+JuMP.value(F::Function, N::Number) = N
+
+
 raw_quantity(C::ScalarEndowment) = value(C.quantity)
 
 struct ScalarDemand
@@ -553,6 +556,7 @@ jump_model(M::MPSGEModel) = M.jump_model
 productions(M::MPSGEModel) = M.productions
 demands(M::MPSGEModel) = M.demands
 aux_constraints(M::MPSGEModel) = M.auxiliaries
+numeraire(M::MPSGEModel) = M.numeraire
 Base.getindex(M::MPSGEModel,key::Symbol) = M.object_dict[key]
 
 
@@ -577,6 +581,14 @@ raw_consumers(m::MPSGEModel) = [s for (_,s) in m.object_dict if isa(s,Consumer)]
 raw_parameters(m::MPSGEModel) = [s for (_,s) in m.object_dict if isa(s,Parameter)]
 raw_auxiliaries(m::MPSGEModel) = [s for (_,s) in m.object_dict if isa(s,Auxiliary)]
 
+
+#function JuMP.all_variables(M::MPSGEModel)
+#    X = values(M.object_dict) |>
+#        x -> extract_scalars.(x) |>  
+#        x -> Iterators.flatten(x) |>
+#        x -> collect(x)
+#    return X
+#end
 
 """
     sectors(m::MPSGEModel)
