@@ -544,7 +544,7 @@ mutable struct MPSGEModel <:AbstractMPSGEModel
     auxiliaries::Dict{ScalarAuxiliary, AuxConstraint}
     silent::Bool
     numeraire::Union{MPSGEVariable,Missing}
-    MPSGEModel() = new(Dict(),Model(PATHSolver.Optimizer; add_bridges = false),Dict(),Dict(),Dict(),Dict(),false,missing)
+    MPSGEModel() = new(Dict(),direct_model(PATHSolver.Optimizer()),Dict(),Dict(),Dict(),Dict(),false,missing)
 end
 
 #Getters
