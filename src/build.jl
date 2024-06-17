@@ -226,7 +226,6 @@ function solve!(m::AbstractMPSGEModel; kwargs...)
     # Update consumer start values
     for consumer∈consumers(m)
         if termination_status(jm) == OPTIMIZE_NOT_CALLED
-            #starting_values = Dict(get_variable(var) => start_value(var) for  var in all_variables(jm))
             new_start = sum(
                 raw_quantity(
                     start_value, 
