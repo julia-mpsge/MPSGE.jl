@@ -1,4 +1,4 @@
-@testset "TWOBYTWO (macro version)" begin
+@testitem "TWOBYTWO (macro version)" begin
     using XLSX, MPSGE_MP.JuMP.Containers
     import JuMP
     
@@ -118,7 +118,7 @@ end
 
 
 
-@testset "TWOBYTWO with Transformation Elasticities (macro version)" begin
+@testitem "TWOBYTWO with Transformation Elasticities (macro version)" begin
     using XLSX, MPSGE_MP.JuMP.Containers
     import JuMP
 

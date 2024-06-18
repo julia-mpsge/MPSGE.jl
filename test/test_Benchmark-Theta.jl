@@ -1,4 +1,4 @@
-@testset "TWOBYTWO outputdiff ThetaTest (macro version)" begin
+@testitem "TWOBYTWO outputdiff ThetaTest (macro version)" begin
     using XLSX, MPSGE_MP.JuMP.Containers
     import JuMP
 
@@ -95,7 +95,7 @@ end
 
 
 
-@testset "TWOBYTWO Inputs ThetaTest (macro version)" begin
+@testitem "TWOBYTWO Inputs ThetaTest (macro version)" begin
     using XLSX, MPSGE_MP.JuMP.Containers
     import JuMP
 

@@ -5,7 +5,7 @@ is an essential step in eliminating these zeros.
 Fun fact: I don't think GAMS MPSGE does this. It will just error.
 """
 
-@testset "Pruning a sector/nest from a Model" begin
+@testitem "Pruning a sector/nest from a Model" begin
 
     using MPSGE_MP
     

@@ -1,4 +1,4 @@
-@testset "123 model" begin
+@testitem "123 model" begin
     using XLSX, MPSGE_MP.JuMP.Containers
     import JuMP
 
