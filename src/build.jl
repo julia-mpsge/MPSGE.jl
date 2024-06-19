@@ -127,13 +127,16 @@ function endowment(H::Consumer, C::Commodity)
 end
 
 function demand(H::Consumer, C::Commodity)
+    jm = jump_model(model(H))
     D = demand(H)
     total_quantity = quantity(D)
     if !haskey(D.demands, C)
         return 0
     end
     d = D.demands[C]
-    return quantity(d)/total_quantity * H/C * ifelse(elasticity(D) != 1, (expenditure(D)*reference_price(d)/C)^(elasticity(D)-1), 1)
+    return @expression(jm, 
+            quantity(d)/total_quantity * H/C * ifelse(elasticity(D) != 1, (expenditure(D)*reference_price(d)/C)^(elasticity(D)-1), 1)
+        )
 end
 
 
@@ -192,6 +195,32 @@ function build_constraints!(M::MPSGEModel)
 end
 
 
+function consumer_income(consumer)
+    m = model(consumer)
+    jm = jump_model(m)
+    
+    if termination_status(jm) == OPTIMIZE_NOT_CALLED
+        new_start = sum(
+            raw_quantity(
+                start_value, 
+                endowment
+            ) 
+            for (_,endowment)∈endowments(demand(consumer))
+        )
+        new_start += -value(
+            start_value, 
+            sum(tau(sector, consumer) for sector in production_sectors(m))
+        )
+    else
+        new_start = sum(raw_quantity(e) for (_,e)∈endowments(demand(consumer)))
+        new_start += -value(
+            sum(tau(sector, consumer) for sector in production_sectors(m))
+        )
+    end
+    return new_start
+end
+
+
 """
     solve!(m::abstract_mpsge_model; keywords)
     Function to solve the model. Triggers the build if the model hasn't been built yet.
@@ -223,36 +252,11 @@ function solve!(m::AbstractMPSGEModel; kwargs...)
         unfix(numeraire(m))
     end
 
-    # Update consumer start values
-    for consumer∈consumers(m)
-        if termination_status(jm) == OPTIMIZE_NOT_CALLED
-            new_start = sum(
-                raw_quantity(
-                    start_value, 
-                    endowment
-                ) 
-                for (_,endowment)∈endowments(demand(consumer))
-            )
-            new_start += -value(
-                start_value, 
-                sum(tau(sector, consumer) for sector in production_sectors(m))
-            )
-        else
-            new_start = sum(raw_quantity(e) for (_,e)∈endowments(demand(consumer)))
-            new_start += -value(
-                sum(tau(sector, consumer) for sector in production_sectors(m))
-            )
-        end
-        set_start_value(consumer, new_start)
-    end
-
-
     consumer = nothing
-    #Check numinaire here
-    # Check if any (non-auxiliary) variables are fixed.
-    if sum(is_fixed.(MPSGE_MP.production_sectors(m))) + sum(is_fixed.(commodities(m))) + sum(is_fixed.(consumers(m)))== 0 
-        consumer = argmax(start_value, consumers(m))
-        fix(consumer, start_value(consumer))
+    # Check if any (non-auxiliary) variables are fixed. If not, set numeraire
+    if sum(is_fixed.(MPSGE_MP.production_sectors(m))) + sum(is_fixed.(commodities(m))) + sum(is_fixed.(consumers(m))) == 0 
+        consumer = argmax(consumer_income, consumers(m))
+        fix(consumer, consumer_income(consumer))
         m.numeraire = consumer
     end
 
