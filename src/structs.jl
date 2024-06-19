@@ -517,9 +517,9 @@ const Demand = ScalarDemand
 consumer(D::Demand) = D.consumer
 demands(D::Demand) = D.demands
 endowments(D::Demand) = D.endowments
-quantity(D::Demand) = sum(quantity(d) for (_,d)∈demands(D))
+quantity(D::Demand) = sum(quantity(d) for (_,d)∈demands(D);init=0)
 elasticity(D::Demand) = D.elasticity
-raw_quantity(D::Demand) = sum(raw_quantity(d) for (_,d)∈demands(D))
+raw_quantity(D::Demand) = sum(raw_quantity(d) for (_,d)∈demands(D); init=0)
 
 
 

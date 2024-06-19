@@ -1,4 +1,4 @@
-@testset "TWOBYTWO (indexed version)" begin 
+@testitem "TWOBYTWO (indexed version)" begin 
     using XLSX, MPSGE_MP.JuMP.Containers
     import JuMP
     
@@ -192,7 +192,7 @@
 end
 
 
-@testset "TWOBYTWO (indexed w non-1 Input prices)" begin 
+@testitem "TWOBYTWO (indexed w non-1 Input prices)" begin 
     using XLSX, MPSGE_MP.JuMP.Containers
     import JuMP
 
@@ -372,7 +372,7 @@ end
 
 end
 
-@testset "TWOBYTWO (indexed w non-1 Input prices and input nesting)" begin 
+@testitem "TWOBYTWO (indexed w non-1 Input prices and input nesting)" begin 
     using XLSX, MPSGE_MP.JuMP.Containers
     import JuMP
 
@@ -554,7 +554,7 @@ end
 
 
 
-@testset "TWOBYTWO (indexed w non-1 Demand prices)" begin 
+@testitem "TWOBYTWO (indexed w non-1 Demand prices)" begin 
     using XLSX, MPSGE_MP.JuMP.Containers
     import JuMP
   
@@ -749,7 +749,7 @@ end
 #=
 ## Test excluded. Demand nesting should be replaced with another production block
 
-@testset "TWOBYTWO (indexed w non-1 Demand prices w Nest)" begin 
+@testitem "TWOBYTWO (indexed w non-1 Demand prices w Nest)" begin 
     using XLSX, MPSGE_MP.JuMP.Containers
     import JuMP      
 

@@ -1,4 +1,4 @@
-@testset "TWOBYTWO (functional version copied, with non-1 elasticities of substitution in production)" begin
+@testitem "TWOBYTWO (functional version copied, with non-1 elasticities of substitution in production)" begin
     using XLSX, MPSGE_MP.JuMP.Containers
     import JuMP
     

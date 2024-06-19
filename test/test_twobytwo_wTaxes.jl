@@ -1,4 +1,4 @@
-@testset "TWOBYTWOwTax" begin
+@testitem "TWOBYTWOwTax" begin
     using XLSX, MPSGE_MP.JuMP.Containers
     import JuMP
 
@@ -669,7 +669,8 @@ end
 
 
 
-@testset "TWObyTWOwOutTax_tr_elas" begin
+@testitem "TWObyTWOwOutTax_tr_elas" begin
+
     using XLSX, MPSGE_MP.JuMP.Containers
     import JuMP
     
@@ -1319,7 +1320,7 @@ end
 
 
 
-@testset "TWObyTWO_wAuxinDemand" begin
+@testitem "TWObyTWO_wAuxinDemand" begin
     using XLSX, MPSGE_MP.JuMP.Containers
     import JuMP
     
@@ -1528,7 +1529,7 @@ end
 
 
 
-@testset "TWObyTWO_wAuxinInputs" begin
+@testitem "TWObyTWO_wAuxinInputs" begin
     using XLSX, MPSGE_MP.JuMP.Containers
     import JuMP
     gams_results = XLSX.readxlsx(joinpath(@__DIR__, "MPSGEresults.xlsx"))
@@ -1825,7 +1826,7 @@ end
 
 
 
-@testset "TWObyTWO_wAuxinOutputs" begin
+@testitem "TWObyTWO_wAuxinOutputs" begin
     using XLSX, MPSGE_MP.JuMP.Containers
     import JuMP
     gams_results = XLSX.readxlsx(joinpath(@__DIR__, "MPSGEresults.xlsx"))

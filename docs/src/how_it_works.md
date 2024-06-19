@@ -1,6 +1,6 @@
 # How MPSGE Works
 
-Work in progress
+Work in progress -- This explanation is quick and dirty. A more fully featured explanation is in progress.
 
 
 # Constructing Equations
