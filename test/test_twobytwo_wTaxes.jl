@@ -236,6 +236,12 @@
 
     
     set_value!(otax, 0.9)
+
+    ### Bug if not set. Not certain what the issue is.
+    ### This only breaks if run in this order, if you set otax to .9 before
+    ### solving with otax = .5 then it's fine. 
+    #fix(RA,462)
+
     solve!(m)
 
     @test value(X) ≈ two_by_two_scalar_results["X.L","Otax=.9"]#    0.2653299831628428
@@ -262,6 +268,7 @@
     
 
 end
+
 
 
 @testset "TWOBYTWOwOTax_IndCons" begin
@@ -524,10 +531,10 @@ end
 		
 
  
-    set_value!(otaxa, 0.9)		
+    set_value!(otaxa, 0.9)	
     solve!(m)		
 		
-    @test value(X)                                          ≈ two_by_two_scalar_results["X.L","Otaxa=.9"]	#	0.26532998
+    @test value(X) ≈ two_by_two_scalar_results["X.L","Otaxa=.9"]	#	0.26532998
     @test value(Y) ≈ two_by_two_scalar_results["Y.L","Otaxa=.9"]	#	2.57533335
     @test value(U) ≈ two_by_two_scalar_results["U.L","Otaxa=.9"]	#	0.56598124
     @test value(RA[:a]) ≈ two_by_two_scalar_results["RAA.L","Otaxa=.9"]	#	369.6
@@ -549,7 +556,7 @@ end
     @test value(compensated_demand(U, PU, :t)) ≈ -two_by_two_scalar_results["SU.L","Otaxa=.9"]	#	150
     @test value(demand(RA[:a], PU)) ≈ two_by_two_scalar_results["DURAA.L","Otaxa=.9"] 	#	67.91774892
     @test value(demand(RA[:b], PU)) ≈ two_by_two_scalar_results["DURAB.L","Otaxa=.9"] 	#	16.97943723
-   		
+
     set_value!(otaxa, 0.1)		
     set_value!(otaxb, 0.1)		
     solve!(m)		
@@ -608,7 +615,7 @@ end
     set_value!(otaxb, 0.5)		
     solve!(m)		
 		
-    @test value(X)                                          ≈ two_by_two_scalar_results["X.L","Otax=.5"]	#	1.04880885
+    @test value(X) ≈ two_by_two_scalar_results["X.L","Otax=.5"]	#	1.04880885
     @test value(Y) ≈ two_by_two_scalar_results["Y.L","Otax=.5"]	#	1.03886012
     @test value(U) ≈ two_by_two_scalar_results["U.L","Otax=.5"]	#	1.04548206
     @test value(RA[:a]) ≈ two_by_two_scalar_results["RAA.L","Otax=.5"]	#	192.5
@@ -635,7 +642,7 @@ end
     set_value!(otaxb, 0.9)		
     solve!(m)		
 		
-    @test value(X)                                          ≈ two_by_two_scalar_results["X.L","Otax=.9"]	#	1.04880885
+    @test value(X) ≈ two_by_two_scalar_results["X.L","Otax=.9"]	#	1.04880885
     @test value(Y) ≈ two_by_two_scalar_results["Y.L","Otax=.9"]	#	1.03886012
     @test value(U) ≈ two_by_two_scalar_results["U.L","Otax=.9"]	#	1.04548206
     @test value(RA[:a]) ≈ two_by_two_scalar_results["RAA.L","Otax=.9"]	#	1072.5
@@ -662,7 +669,9 @@ end
 end		
 
 
+
 @testitem "TWObyTWOwOutTax_tr_elas" begin
+
     using XLSX, MPSGE_MP.JuMP.Containers
     import JuMP
     
@@ -1977,4 +1986,3 @@ end
     @test value(demand(CONS, PW)) ≈ two_by_two_AuxinOutput["CWCONS","S.FX.2,M.5"]#  182.2957177
 
 end
-

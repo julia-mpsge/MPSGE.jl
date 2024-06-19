@@ -176,6 +176,7 @@ mutable struct ScalarParameter <: MPSGEScalarVariable
         S = new(model,name,missing, value, description)
         add_variable!(model, S)
         fix(S, value)
+        set_start_value(S, value)
         return S
     end
     ScalarParameter(model::AbstractMPSGEModel,name::Symbol, value::Number,subindex; description = "") = new(model,name,subindex, value, description)
@@ -199,6 +200,7 @@ struct IndexedParameter{N} <: MPSGEIndexedVariable{ScalarParameter,N}
         S = new{length(index)}(model,name, sr, index, description)
         add_variable!(model, S)
         fix.(S, value)
+        set_start_value.(S, value)
         return S
     end
 
@@ -214,6 +216,7 @@ struct IndexedParameter{N} <: MPSGEIndexedVariable{ScalarParameter,N}
         S = new{length(index)}(model,name, sr, index, description)
         add_variable!(model, S)
         fix.(S,value)
+        set_start_value.(S, value)
         return S
     end
 end
@@ -221,6 +224,7 @@ end
 const Parameter = Union{ScalarParameter,IndexedParameter}
 
 JuMP.value(P::ScalarParameter) = P.value
+JuMP.value(F::Function, P::ScalarParameter) = P.value
 
 function set_value!(P::ScalarParameter, value::Number)
     P.value = value
@@ -476,6 +480,11 @@ raw_quantity(D::ScalarDem) = value(D.quantity)*value(D.reference_price)
 
 commodity(C::ScalarEndowment) = C.commodity
 quantity(C::ScalarEndowment) = C.quantity
+raw_quantity(F::Function, C::ScalarEndowment) = value(F, C.quantity)
+JuMP.value(F::Function, N::Number) = N
+
+
+raw_quantity(C::ScalarEndowment) = value(C.quantity)
 
 struct ScalarDemand
     consumer::ScalarConsumer
@@ -537,7 +546,8 @@ mutable struct MPSGEModel <:AbstractMPSGEModel
     commodities::Dict{ScalarCommodity,Vector{ScalarSector}} #Generated on model build
     auxiliaries::Dict{ScalarAuxiliary, AuxConstraint}
     silent::Bool
-    MPSGEModel() = new(Dict(),Model(PATHSolver.Optimizer; add_bridges = false),Dict(),Dict(),Dict(),Dict(),false)
+    numeraire::Union{MPSGEVariable,Missing}
+    MPSGEModel() = new(Dict(),direct_model(PATHSolver.Optimizer()),Dict(),Dict(),Dict(),Dict(),false,missing)
 end
 
 #Getters
@@ -546,6 +556,7 @@ jump_model(M::MPSGEModel) = M.jump_model
 productions(M::MPSGEModel) = M.productions
 demands(M::MPSGEModel) = M.demands
 aux_constraints(M::MPSGEModel) = M.auxiliaries
+numeraire(M::MPSGEModel) = M.numeraire
 Base.getindex(M::MPSGEModel,key::Symbol) = M.object_dict[key]
 
 
@@ -569,7 +580,6 @@ raw_commodities(m::MPSGEModel) = [s for (_,s) in m.object_dict if isa(s,Commodit
 raw_consumers(m::MPSGEModel) = [s for (_,s) in m.object_dict if isa(s,Consumer)]
 raw_parameters(m::MPSGEModel) = [s for (_,s) in m.object_dict if isa(s,Parameter)]
 raw_auxiliaries(m::MPSGEModel) = [s for (_,s) in m.object_dict if isa(s,Auxiliary)]
-
 
 """
     sectors(m::MPSGEModel)

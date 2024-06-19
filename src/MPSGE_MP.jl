@@ -65,6 +65,8 @@ export  compensated_demand, tau, demand, endowment
 export generate_report, solve!
 
 #Convenience
-export value, fix, unfix, set_start_value, start_value, set_silent, unset_silent
+export  value, fix, unfix, is_fixed, 
+        set_start_value, start_value, 
+        set_silent, unset_silent
 
 end

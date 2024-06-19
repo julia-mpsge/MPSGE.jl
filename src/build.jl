@@ -127,13 +127,25 @@ function endowment(H::Consumer, C::Commodity)
 end
 
 function demand(H::Consumer, C::Commodity)
+    jm = jump_model(model(H))
     D = demand(H)
     total_quantity = quantity(D)
     if !haskey(D.demands, C)
         return 0
     end
     d = D.demands[C]
-    return quantity(d)/total_quantity * H/C * ifelse(elasticity(D) != 1, (expenditure(D)*reference_price(d)/C)^(elasticity(D)-1), 1)
+
+    if !(isa(elasticity(D), Real))
+        income =  @expression(jm, 
+            quantity(d)/total_quantity * H/C * ifelse(1*elasticity(D) == 1, 1, (expenditure(D)*reference_price(d)/C)^(elasticity(D)-1))
+        )
+    elseif elasticity(D) == 1
+        income = quantity(d)/total_quantity * H/C
+    else 
+        income = quantity(d)/total_quantity * H/C * (expenditure(D)*reference_price(d)/C)^(elasticity(D)-1)
+    end
+
+    return income
 end
 
 
@@ -192,6 +204,32 @@ function build_constraints!(M::MPSGEModel)
 end
 
 
+function consumer_income(consumer)
+    m = model(consumer)
+    jm = jump_model(m)
+    
+    if termination_status(jm) == OPTIMIZE_NOT_CALLED
+        new_start = sum(
+            raw_quantity(
+                start_value, 
+                endowment
+            ) 
+            for (_,endowment)∈endowments(demand(consumer))
+        )
+        new_start += -value(
+            start_value, 
+            sum(tau(sector, consumer) for sector in production_sectors(m))
+        )
+    else
+        new_start = sum(raw_quantity(e) for (_,e)∈endowments(demand(consumer)))
+        new_start += -value(
+            sum(tau(sector, consumer) for sector in production_sectors(m))
+        )
+    end
+    return new_start
+end
+
+
 """
     solve!(m::abstract_mpsge_model; keywords)
     Function to solve the model. Triggers the build if the model hasn't been built yet.
@@ -215,32 +253,38 @@ function solve!(m::AbstractMPSGEModel; kwargs...)
 
 
     for (k,v) in kwargs
-
         JuMP.set_attribute(jm, string(k), v)
     end
 
+    # Unfix numeraire, if set
+    if !ismissing(m.numeraire) 
+        unfix(numeraire(m))
+    end
 
     consumer = nothing
-    #Check numinaire here
-    if sum(is_fixed.(all_variables(jm))) == length(parameters(m)) #If there are no fixed variables other than parameters
-        consumer = argmax(start_value, consumers(m))
-        fix(consumer, start_value(consumer))
+    # Check if any (non-auxiliary) variables are fixed. If not, set numeraire
+    if sum(is_fixed.(MPSGE_MP.production_sectors(m))) + sum(is_fixed.(commodities(m))) + sum(is_fixed.(consumers(m))) == 0 
+        consumer = argmax(consumer_income, consumers(m))
+        fix(consumer, consumer_income(consumer))
+        m.numeraire = consumer
     end
 
     JuMP.optimize!(jm)
 
+    # Need to check termination status here
+
+    
+
     if !m.silent
-        # Perhaps print a message here with solver status
-        output = "\n\nSolver Status: $(termination_status(jm))\nModel Status: $(primal_status(jm))\n\n"
+        output = "\n\nSolver Status: $(termination_status(jm))\nModel Status: $(primal_status(jm))"
 
         if !isnothing(consumer)
-            output *= "Default price normalization using income for $consumer - This value is fixed. Unfix with unfix($consumer).\n\n"
+            output *= "\n\nDefault price normalization using income for $consumer - This value is fixed to $(value(consumer)).\n"* 
+                      "Unfix with unfix($consumer)."
             #unfix(consumer)
         end
-
         print(output)
     end
-
 
     #return m
 end
