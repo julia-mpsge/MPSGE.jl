@@ -134,9 +134,18 @@ function demand(H::Consumer, C::Commodity)
         return 0
     end
     d = D.demands[C]
-    return @expression(jm, 
-            quantity(d)/total_quantity * H/C * ifelse(elasticity(D) != 1, (expenditure(D)*reference_price(d)/C)^(elasticity(D)-1), 1)
+
+    if !(isa(elasticity(D), Real))
+        income =  @expression(jm, 
+            quantity(d)/total_quantity * H/C * ifelse(1*elasticity(D) == 1, 1, (expenditure(D)*reference_price(d)/C)^(elasticity(D)-1))
         )
+    elseif elasticity(D) == 1
+        income = quantity(d)/total_quantity * H/C
+    else 
+        income = quantity(d)/total_quantity * H/C * (expenditure(D)*reference_price(d)/C)^(elasticity(D)-1)
+    end
+
+    return income
 end
 
 
