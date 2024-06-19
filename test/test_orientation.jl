@@ -1,4 +1,4 @@
-@testset "Orientation Check" begin
+@testitem "Orientation Check" begin
     using XLSX, MPSGE_MP.JuMP.Containers
     import JuMP
     import PATHSolver

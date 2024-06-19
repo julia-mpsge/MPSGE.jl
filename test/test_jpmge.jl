@@ -1,4 +1,4 @@
-@testset "JPMGE (Joint Production Intermediate Demand)" begin
+@testitem "JPMGE (Joint Production Intermediate Demand)" begin
     using XLSX, MPSGE_MP.JuMP.Containers
     import JuMP
     
@@ -165,7 +165,7 @@ end
 
 
 
-@testset "JPMGE Demand Elasticities" begin
+@testitem "JPMGE Demand Elasticities" begin
     using XLSX, MPSGE_MP.JuMP.Containers
     import JuMP
     #A replication of the JPMGE from https://www.gams.com/34/docs/UG_MPSGE_Intro.html#UG_MPSGE_Intro_Appendix_jpmge

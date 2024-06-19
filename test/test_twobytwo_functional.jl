@@ -1,4 +1,4 @@
-@testset "TWOBYTWO (functional version)" begin
+@testitem "TWOBYTWO (functional version)" begin
     using XLSX, MPSGE_MP.JuMP.Containers
     import JuMP
 
