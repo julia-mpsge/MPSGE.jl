@@ -20,6 +20,8 @@ OrderedCollections = "1.6.3"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 XLSX = "fdbf4ff8-1666-58a4-91e7-1b58723a45e0"
 TestItemRunner = "f8b46487-2199-4994-9208-9a1283c18c0a"
+CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
+
 
 [targets]
-test = ["Test", "XLSX", "TestItemRunner"]
+test = ["Test", "XLSX", "TestItemRunner", "CSV"]
