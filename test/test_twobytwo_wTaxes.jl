@@ -240,7 +240,7 @@
     ### Bug if not set. Not certain what the issue is.
     ### This only breaks if run in this order, if you set otax to .9 before
     ### solving with otax = .5 then it's fine. 
-    fix(RA,462)
+    #fix(RA,462)
 
     solve!(m)
 
@@ -532,9 +532,6 @@ end
 
  
     set_value!(otaxa, 0.9)	
-    
-    fix(RA[:a], 369.6) # This is the result of a bug
-
     solve!(m)		
 		
     @test value(X) ≈ two_by_two_scalar_results["X.L","Otaxa=.9"]	#	0.26532998
@@ -559,8 +556,6 @@ end
     @test value(compensated_demand(U, PU, :t)) ≈ -two_by_two_scalar_results["SU.L","Otaxa=.9"]	#	150
     @test value(demand(RA[:a], PU)) ≈ two_by_two_scalar_results["DURAA.L","Otaxa=.9"] 	#	67.91774892
     @test value(demand(RA[:b], PU)) ≈ two_by_two_scalar_results["DURAB.L","Otaxa=.9"] 	#	16.97943723
-   		
-    unfix(RA[:a])
 
     set_value!(otaxa, 0.1)		
     set_value!(otaxb, 0.1)		
@@ -675,8 +670,8 @@ end
 
 
 
-
 @testitem "TWObyTWOwOutTax_tr_elas" begin
+
     using XLSX, MPSGE_MP.JuMP.Containers
     import JuMP
     
