@@ -221,8 +221,10 @@ function consumer_income(consumer)
             sum(tau(sector, consumer) for sector in production_sectors(m))
         )
     else
-        new_start = sum(raw_quantity(e) for (_,e)∈endowments(demand(consumer)))
+        __value_function(x) = is_fixed(x) ? fix_value(x) : value(x)
+        new_start = sum(raw_quantity(__value_function, e) for (_,e)∈endowments(demand(consumer)))
         new_start += -value(
+            __value_function,
             sum(tau(sector, consumer) for sector in production_sectors(m))
         )
     end
