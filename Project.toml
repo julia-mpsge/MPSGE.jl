@@ -1,5 +1,5 @@
-name = "MPSGE_MP"
-uuid = "e4d7e5e9-05a6-42ea-b397-b92e5812bd75"
+name = "MPSGE"
+uuid = "d5dc2f44-7ae2-49e9-bc77-b47b6bca565d"
 authors = ["Mitch Phillipson"]
 version = "1.0.0-DEV"
 

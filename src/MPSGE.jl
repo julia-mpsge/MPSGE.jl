@@ -1,4 +1,4 @@
-module MPSGE_MP
+module MPSGE
 
 using JuMP, DataFrames, PATHSolver
 
