@@ -3,7 +3,7 @@
 *.jl.mem
 /docs/Manifest.toml
 /docs/build/
-
+Manifest.toml
 
 # GAMS output files for testing
 *.GEN
