@@ -21,7 +21,7 @@ makedocs(;
     authors="Mitch Phillipson",
     sitename="MPSGE.jl",
     format=Documenter.HTML(;
-        canonical="https://mitchphillipson.github.io/MPSGE.jl",
+        canonical="https://julia-mpsge.github.io/MPSGE.jl",
         edit_link="main",
         assets=String[],
     ),
@@ -29,7 +29,7 @@ makedocs(;
 )
 
 deploydocs(;
-    repo = "github.com/mitchphillipson/MPSGE.jl",
+    repo = "github.com/julia-mpsge/MPSGE.jl",
     devbranch = "main",
     branch = "gh-pages"
 )
