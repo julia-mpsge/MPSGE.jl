@@ -1,7 +1,7 @@
 @testitem "WiNDC National Model" begin
 
 # WiNDC National Model
-using XLSX, MPSGE_MP.JuMP.Containers
+using XLSX, MPSGE.JuMP.Containers
 import JuMP
 import CSV
 import PATHSolver

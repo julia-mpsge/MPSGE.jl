@@ -6,5 +6,5 @@
 ```
 
 ```@autodocs
-Modules = [MPSGE_MP]
+Modules = [MPSGE]
 ```

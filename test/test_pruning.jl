@@ -7,7 +7,7 @@ Fun fact: I don't think GAMS MPSGE does this. It will just error.
 
 @testitem "Pruning a sector/nest from a Model" begin
 
-    using MPSGE_MP
+    using MPSGE
     
     M = MPSGEModel()
 

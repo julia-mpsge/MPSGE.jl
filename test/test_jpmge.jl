@@ -1,5 +1,5 @@
 @testitem "JPMGE (Joint Production Intermediate Demand)" begin
-    using XLSX, MPSGE_MP.JuMP.Containers
+    using XLSX, MPSGE.JuMP.Containers
     import JuMP
     
 #A replication of the JPMGE from https://www.gams.com/34/docs/UG_MPSGE_Intro.html#UG_MPSGE_Intro_Appendix_jpmge
@@ -166,7 +166,7 @@ end
 
 
 @testitem "JPMGE Demand Elasticities" begin
-    using XLSX, MPSGE_MP.JuMP.Containers
+    using XLSX, MPSGE.JuMP.Containers
     import JuMP
     #A replication of the JPMGE from https://www.gams.com/34/docs/UG_MPSGE_Intro.html#UG_MPSGE_Intro_Appendix_jpmge
     # Re-running the model and tests as checks on different Demand elasticities - here with Demand elasticity = 0 (Leontief)

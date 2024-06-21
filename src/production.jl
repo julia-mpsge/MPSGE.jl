@@ -32,7 +32,7 @@ function _add_netput!(netput_dict, node_dict, child::Netput, parent::ScalarNest)
         while !isnothing(p)
             if c.netput_sign != p.netput_sign
                 p.netput_sign = c.netput_sign
-                c,p = p, MPSGE_MP.parent(p)
+                c,p = p, MPSGE.parent(p)
             else
                 p = nothing
             end

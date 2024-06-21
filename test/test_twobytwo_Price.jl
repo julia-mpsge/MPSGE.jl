@@ -1,5 +1,5 @@
 @testitem "TWOBYTWO (functional version , with non-1 prices in Inputs)" begin
-    using XLSX, MPSGE_MP.JuMP.Containers
+    using XLSX, MPSGE.JuMP.Containers
     import JuMP
 
     gams_results = XLSX.readxlsx(joinpath(@__DIR__, "MPSGEresults.xlsx"))
@@ -216,7 +216,7 @@
 end
 
 @testitem "TWOBYTWO (functional version , with non-1 prices in Ouput)" begin
-    using XLSX, MPSGE_MP.JuMP.Containers
+    using XLSX, MPSGE.JuMP.Containers
     import JuMP
 
     gams_results = XLSX.readxlsx(joinpath(@__DIR__, "MPSGEresults.xlsx"))
@@ -433,7 +433,7 @@ end
 
 
 @testitem "TWOBYTWO (functional version , with non-1 prices in Demand)" begin
-    using XLSX, MPSGE_MP.JuMP.Containers
+    using XLSX, MPSGE.JuMP.Containers
     import JuMP
 
     gams_results = XLSX.readxlsx(joinpath(@__DIR__, "MPSGEresults.xlsx"))

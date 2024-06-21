@@ -49,25 +49,25 @@ end
 
 # This should be rewritten. It finds all the parent
 # names of the given netput. 
-function parent_name_chain(N::MPSGE_MP.Netput)
+function parent_name_chain(N::MPSGE.Netput)
     found_parents = deepcopy(N.parents) #temporary?
     parent_names = []
     #print(found_parents)
     while !isempty(found_parents)
         n = pop!(found_parents)
         if name(n)∉parent_names
-            push!(parent_names, MPSGE_MP.name(n))
+            push!(parent_names, MPSGE.name(n))
         end
-        if !isnothing(MPSGE_MP.parent(n))
-            push!(found_parents, MPSGE_MP.parent(n))
+        if !isnothing(MPSGE.parent(n))
+            push!(found_parents, MPSGE.parent(n))
         end
     end
     return parent_names
 end
 
 function compensated_demand(S::ScalarSector, C::ScalarCommodity, nest::Symbol)
-    cd = MPSGE_MP.compensated_demands(S)
-    all_netputs = MPSGE_MP.netput_dict(S)
+    cd = MPSGE.compensated_demands(S)
+    all_netputs = MPSGE.netput_dict(S)
     if !haskey(all_netputs, C)
         return 0
     end
@@ -183,16 +183,16 @@ end
 function build_constraints!(M::MPSGEModel)
     jm = jump_model(M)
 
-    JuMP.@constraint(jm, zero_profit[S = MPSGE_MP.production_sectors(M)],
-        MPSGE_MP.zero_profit(S) ⟂ get_variable(S)
+    JuMP.@constraint(jm, zero_profit[S = MPSGE.production_sectors(M)],
+        MPSGE.zero_profit(S) ⟂ get_variable(S)
     )
     
-    JuMP.@constraint(jm, market_clearance[C = MPSGE_MP.commodities(M)],
-        MPSGE_MP.market_clearance(C) ⟂ get_variable(C)
+    JuMP.@constraint(jm, market_clearance[C = MPSGE.commodities(M)],
+        MPSGE.market_clearance(C) ⟂ get_variable(C)
     )
     
-    JuMP.@constraint(jm, income_balance[H = MPSGE_MP.consumers(M)],
-        MPSGE_MP.income_balance(H) ⟂ get_variable(H)
+    JuMP.@constraint(jm, income_balance[H = MPSGE.consumers(M)],
+        MPSGE.income_balance(H) ⟂ get_variable(H)
     )
 
     aux_cons = aux_constraints(M)
@@ -265,7 +265,7 @@ function solve!(m::AbstractMPSGEModel; kwargs...)
 
     consumer = nothing
     # Check if any (non-auxiliary) variables are fixed. If not, set numeraire
-    if sum(is_fixed.(MPSGE_MP.production_sectors(m))) + sum(is_fixed.(commodities(m))) + sum(is_fixed.(consumers(m))) == 0 
+    if sum(is_fixed.(MPSGE.production_sectors(m))) + sum(is_fixed.(commodities(m))) + sum(is_fixed.(consumers(m))) == 0 
         consumer = argmax(consumer_income, consumers(m))
         fix(consumer, consumer_income(consumer))
         m.numeraire = consumer
