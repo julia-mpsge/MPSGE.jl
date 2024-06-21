@@ -1,5 +1,5 @@
 @testitem "TWOBYTWOwTax" begin
-    using XLSX, MPSGE_MP.JuMP.Containers
+    using XLSX, MPSGE.JuMP.Containers
     import JuMP
 
     # A replication of the Two By Two Scalar, with an output Tax in counterfactual: TwoByTwo_Scalar_wTax_MPSGE.gms
@@ -272,7 +272,7 @@ end
 
 
 @testset "TWOBYTWOwOTax_IndCons" begin
-    using XLSX, MPSGE_MP.JuMP.Containers
+    using XLSX, MPSGE.JuMP.Containers
     import JuMP
     
     # A replication of the Two By Two, with an output Tax in one consumer counterfactual: TwoByTwo_wTax_IndexRA.gms
@@ -672,7 +672,7 @@ end
 
 @testitem "TWObyTWOwOutTax_tr_elas" begin
 
-    using XLSX, MPSGE_MP.JuMP.Containers
+    using XLSX, MPSGE.JuMP.Containers
     import JuMP
     
     # A replication of the Two By Two Scalar, with an output Tax and non-0 transformation elasticities in counterfactual: TwobyTwo_OutTax1-2Sectors.gms
@@ -1322,7 +1322,7 @@ end
 
 
 @testitem "TWObyTWO_wAuxinDemand" begin
-    using XLSX, MPSGE_MP.JuMP.Containers
+    using XLSX, MPSGE.JuMP.Containers
     import JuMP
     
     # A replication of an adapted version (taking out non-1 prices) of the Markusen MS_8s model, with Auxiliary Variable/Constraint in the Demand function: TwobyTwo_AuxinDemand.gms
@@ -1531,7 +1531,7 @@ end
 
 
 @testitem "TWObyTWO_wAuxinInputs" begin
-    using XLSX, MPSGE_MP.JuMP.Containers
+    using XLSX, MPSGE.JuMP.Containers
     import JuMP
     gams_results = XLSX.readxlsx(joinpath(@__DIR__, "MPSGEresults.xlsx"))
     a_table = gams_results["two_by_two_AuxinInput"][:]  # Generated from TwoByTwo_Scalar_Algeb-MPSGE.gms
@@ -1828,7 +1828,7 @@ end
 
 
 @testitem "TWObyTWO_wAuxinOutputs" begin
-    using XLSX, MPSGE_MP.JuMP.Containers
+    using XLSX, MPSGE.JuMP.Containers
     import JuMP
     gams_results = XLSX.readxlsx(joinpath(@__DIR__, "MPSGEresults.xlsx"))
     a_table = gams_results["two_by_two_AuxinOutput"][:]  # Generated from AuxinOutputTest.gms

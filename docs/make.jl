@@ -1,7 +1,7 @@
-using MPSGE_MP
+using MPSGE
 using Documenter
 
-DocMeta.setdocmeta!(MPSGE_MP, :DocTestSetup, :(using MPSGE_MP); recursive=true)
+DocMeta.setdocmeta!(MPSGE, :DocTestSetup, :(using MPSGE); recursive=true)
 
 
 const _PAGES = [
@@ -17,11 +17,11 @@ const _PAGES = [
 
 
 makedocs(;
-    modules=[MPSGE_MP],
+    modules=[MPSGE],
     authors="Mitch Phillipson",
-    sitename="MPSGE_MP.jl",
+    sitename="MPSGE.jl",
     format=Documenter.HTML(;
-        canonical="https://mitchphillipson.github.io/MPSGE_MP.jl",
+        canonical="https://mitchphillipson.github.io/MPSGE.jl",
         edit_link="main",
         assets=String[],
     ),
@@ -29,7 +29,7 @@ makedocs(;
 )
 
 deploydocs(;
-    repo = "github.com/mitchphillipson/MPSGE_MP.jl",
+    repo = "github.com/mitchphillipson/MPSGE.jl",
     devbranch = "main",
     branch = "gh-pages"
 )

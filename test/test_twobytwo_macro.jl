@@ -1,5 +1,5 @@
 @testitem "TWOBYTWO (macro version)" begin
-    using XLSX, MPSGE_MP.JuMP.Containers
+    using XLSX, MPSGE.JuMP.Containers
     import JuMP
     
     m = MPSGEModel()
@@ -119,7 +119,7 @@ end
 
 
 @testitem "TWOBYTWO with Transformation Elasticities (macro version)" begin
-    using XLSX, MPSGE_MP.JuMP.Containers
+    using XLSX, MPSGE.JuMP.Containers
     import JuMP
 
     m = MPSGEModel()

@@ -1,5 +1,5 @@
 @testitem "123 model" begin
-    using XLSX, MPSGE_MP.JuMP.Containers
+    using XLSX, MPSGE.JuMP.Containers
     import JuMP
 
     # A replication of the 123 from https://www.gams.com/34/docs/UG_MPSGE_Intro.html#UG_MPSGE_Intro_Appendix_mge123 Static 123 Model Ala Devarjan
