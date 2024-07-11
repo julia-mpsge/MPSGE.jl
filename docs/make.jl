@@ -31,7 +31,8 @@ makedocs(;
 deploydocs(;
     repo = "github.com/julia-mpsge/MPSGE.jl",
     devbranch = "main",
-    branch = "gh-pages"
+    branch = "gh-pages",
+    push_preview = true
 )
 
 #deploydocs(
