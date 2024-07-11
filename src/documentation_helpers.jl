@@ -15,8 +15,32 @@ arguments `kwargs`.
 
 *Keyword Arguments*
 
-- `index`: Explicity sets the index. For example, this `@$var_type(model, X, index = [I])` 
-is equivalent to `@$var_type(model, X[I])`.
+- `index`: Explicity sets the index. For example, this `@$var_type(model, X, index = [I])` is equivalent to `@$var_type(model, X[I])`.
 - `description`: Set a description on a variable. 
+"""
+end
+
+function variables_description(var_type::String)
+
+return """
+    @$var_type(model, args...)
+
+Adds multiple $var_type to a model at once. 
+
+The model must be the first argument, and multiple variables can be added on multiple lines by wrapping them in a `begin ... end` block. 
+
+*Example*
+```jldoctest
+julia> M = MPSGEModel();
+
+julia> @variables(M, begin
+            X[I]
+            Y[I,J], (description = "This is an indexed variable")
+            Z, (description = "Scalar variable")
+        end)
+```
+
+!!! note
+    Keywords must be contained in parentheses as in the example above. 
 """
 end
