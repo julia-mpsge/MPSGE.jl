@@ -33,7 +33,7 @@ The model must be the first argument, and multiple variables can be added on mul
 ```jldoctest
 julia> M = MPSGEModel();
 
-julia> @variables(M, begin
+julia> @$var_type(M, begin
             X[I]
             Y[I,J], (description = "This is an indexed variable")
             Z, (description = "Scalar variable")
