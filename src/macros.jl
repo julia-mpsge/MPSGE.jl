@@ -81,16 +81,16 @@ macro sector(model, name, kwargs...)
 end
 
 """
-    @sectors(model, args...)
-
-Adds multiple sectors 
+$(variables_description("sectors"))
 """
 macro sectors(model, block)
     return _plural_macro_code(model, block, Symbol("@sector"))
 end
 
 
-
+"""
+$(variable_description("commodity"))
+"""
 macro commodity(model, name, kwargs...)
     name, index, _ = _parse_ref_sets(name)
     if isempty(index.args) #This could be better
@@ -102,10 +102,16 @@ macro commodity(model, name, kwargs...)
     return :($(esc(name)) = $constr_call)
 end
 
+"""
+$(variables_description("commodities"))
+"""
 macro commodities(model, block)
     return _plural_macro_code(model, block, Symbol("@commodity"))
 end
 
+"""
+$(variable_description("consumer"))
+"""
 macro consumer(model, name, kwargs...)
     name, index, _ = _parse_ref_sets(name)
     if isempty(index.args) #This could be better
@@ -117,10 +123,18 @@ macro consumer(model, name, kwargs...)
     return :($(esc(name)) = $constr_call)
 end
 
+"""
+$(variables_description("consumers"))
+"""
 macro consumers(model, block)
     return _plural_macro_code(model, block, Symbol("@consumer"))
 end
 
+"""
+    @parameter(model, expr, value, kwargs...)
+
+
+"""
 macro parameter(model, name, value, kwargs...)
     name, index, _ = _parse_ref_sets(name)
     if isempty(index.args) #This could be better
