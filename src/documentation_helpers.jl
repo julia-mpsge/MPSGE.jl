@@ -39,7 +39,7 @@ julia> @$var_type(M, begin
             X[I]
             Y[I,I], (description = "This is an indexed variable")
             Z, (description = "Scalar variable")
-        end)
+        end);
 ```
 
 !!! note
