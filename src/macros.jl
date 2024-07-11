@@ -66,7 +66,9 @@ function _parse_ref_sets(c)
 end
 
 
-
+"""
+$(variable_description("sector"))
+"""
 macro sector(model, name, kwargs...)
     name, index, _ = _parse_ref_sets(name)
     if isempty(index.args) #This could be better
@@ -78,10 +80,16 @@ macro sector(model, name, kwargs...)
     return :($(esc(name)) = $constr_call)
 end
 
+"""
+    @sectors(model, args...)
 
+Adds multiple sectors 
+"""
 macro sectors(model, block)
     return _plural_macro_code(model, block, Symbol("@sector"))
 end
+
+
 
 macro commodity(model, name, kwargs...)
     name, index, _ = _parse_ref_sets(name)
