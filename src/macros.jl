@@ -252,9 +252,11 @@ end
 Define a production for the `sector` in the `model` with given `nestings` and `netputs`. 
 
 **sector**
+
 This is any `ScalarSector` in the model. 
 
 **nestings**
+
 This is where the nesting structure is defined and the associated elasticities. At minimum you must declare at least two nests and elasticities, one for the elasticity of substitution (`input`) and one for the elasticity of transformation (`output`), by convention these are denoted `s` and `t` respectively, although any identifier may be used. 
 
 As a minimal example, `[s=1, t=0]` will set the `s` nest to have an elasticity of 1 and the `t` nest 0. Suppose you want a nest below `s` called `va` with an elasticity of 2, this is created with `[s=1, t=0, va=>s=2]`. The `va` points at its parent nest `s` and the elasticity follows. Nestings can be aribrarily deep, for example 
@@ -264,9 +266,11 @@ As a minimal example, `[s=1, t=0]` will set the `s` nest to have an elasticity o
 will have two nests below `s` and one below `dm`. 
 
 **netputs**
+
 A netput is either an [`@input`](@ref) or an [`@output`](@ref). The netputs get wrapped in a `begin ... end` block and each netput must be on its own line.
 
 **Examples**
+
 In the below example we define the production blocks for two sectors `X` and `Y`. This is a non-function example solely created to show syntax. The `X` sector only has the two require elasticities where as `Y` has a more interesting nesting structure. A tax is included in the `Y` production block. 
 
 ```julia
