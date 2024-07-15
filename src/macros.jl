@@ -139,8 +139,8 @@ Create a `parameter` in the `model` described by the `expr` with initial `value`
 
 `expr` must be one of the forms:
 
-- A single symbol like `@$var_type(model, X)`
-- A container like expression `@$var_type(model, X[I])`
+- A single symbol like `@parameter(model, X)`
+- A container like expression `@parameter(model, X[I])`
 
 *values*
 
@@ -148,7 +148,7 @@ The value can either be a single float or an array. Currently using an array is 
 
 *Keyword Arguments*
 
-- `index`: Explicity sets the index. For example, this `@$var_type(model, X, index = [I])` is equivalent to `@$var_type(model, X[I])`.
+- `index`: Explicity sets the index. For example, this `@parameter(model, X, index = [I])` is equivalent to `@parameter(model, X[I])`.
 - `description`: Set a description on a variable. 
 """
 macro parameter(model, name, value, kwargs...)
