@@ -269,35 +269,35 @@ A netput is either an [`@input`](@ref) or an [`@output`](@ref). The netputs get 
 **Examples**
 In the below example we define the production blocks for two sectors `X` and `Y`. This is a non-function example solely created to show syntax. The `X` sector only has the two require elasticities where as `Y` has a more interesting nesting structure. A tax is included in the `Y` production block. 
 
-```jldoctest
+```julia
 julia> M = MPSGEModel();
 
 julia> @sectors(M, begin
-    X
-    Y
-end);
+            X
+            Y
+        end);
 
 julia> @commodities(M, begin
-    PX
-    PY
-    PL
-    PK
-end);
+            PX
+            PY
+            PL
+            PK
+        end);
 
 julia> @consumer(M, RA);
 
 julia> @production(M, X, [s=1,t=0], begin
-    @output(PX, 10, t)
-    @input(PL, 5, s)
-    @input(PK, 5, s)
-end);
+            @output(PX, 10, t)
+            @input(PL, 5, s)
+            @input(PK, 5, s)
+        end);
 
 julia> @production(M, Y, [s=2, t=1, va=>s=1], begin
-    @output(PY, 15, t)
-    @input(PX, 3, s)
-    @input(PL, 4, va, taxes = [Tax(RA, .5)])
-    @input(PK, 6, va)
-end);
+            @output(PY, 15, t)
+            @input(PX, 3, s)
+            @input(PL, 4, va, taxes = [Tax(RA, .5)])
+            @input(PK, 6, va)
+        end);
 ```
 
 For examples using indexed sectors and commodities we recommend looking at the WiNDC national model. This will be linked when the appropriate write-up is ready.
