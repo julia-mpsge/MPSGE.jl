@@ -1,4 +1,4 @@
-# Robinson Crusoe
+# Robinson Crusoe - Introduction
 
 In this section we will consider the [Robinson Crusoe Economy](https://en.wikipedia.org/wiki/Robinson_Crusoe_economy). If you are unfamiliar, Robinson Crusoe is a novel in which the titular character is stranded on a deserted island. 
 
