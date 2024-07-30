@@ -11,8 +11,9 @@ const _PAGES = [
         "Basic Examples" => ["Tutorials/basic_examples/m1_mpsge.md"],
         "Intermediate Examples" => ["Tutorials/intermediate_examples/M22.md"],
     ],
+    "Cookbook" => ["cookbook/taxes.md"],
     "How it works" => ["how_it_works.md"], 
-    "Docstrings" => ["docs.md"],
+    "API Reference" => ["docs.md"],
 ]
 
 
