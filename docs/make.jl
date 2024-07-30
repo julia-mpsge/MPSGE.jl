@@ -23,8 +23,10 @@ const _PAGES = [
 ]
 
 
-
-Literate.markdown("src/Tutorials/robinson_crusoe/basic_rc.jl", "src/Tutorials/robinson_crusoe/";
+EXAMPLE = joinpath(@__DIR__, "src/Tutorials/robinson_crusoe/basic_rc.jl")
+OUTPUT = joinpath(@__DIR__,"src/Tutorials/robinson_crusoe/")
+Literate.markdown(EXAMPLE, 
+                  OUTPUT;
                   name = "basic_rc.md")#, preprocess = replace_includes)
 
 makedocs(;
