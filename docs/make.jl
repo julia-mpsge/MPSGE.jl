@@ -1,5 +1,6 @@
 using MPSGE
-using Documenter
+using Documenter 
+import Literate
 
 DocMeta.setdocmeta!(MPSGE, :DocTestSetup, :(using MPSGE); recursive=true)
 
