@@ -67,7 +67,7 @@ price_coconuts
     @input(price_labor, 1, s)
 end)
 
-# We define the demands in a [`@demand`](@ref) block. This resembles a 
+# We define the demands in a `@demand` block. This resembles a 
 # production block with no elasticities. 
 #
 
