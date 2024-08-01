@@ -51,8 +51,10 @@ price_coconuts
 
 # A [`@production`](@ref) block defines the inputs and outputs from a sector. 
 # Recall we said 
-#   `rc_producer` takes in `price_labor` and outputs both `price_fish` and 
-#   `price_coconuts`
+#
+#       `rc_producer` takes in `price_labor` and outputs both `price_fish` and 
+#       `price_coconuts`
+#
 # This tells us the inputs and outputs. For the moment we are going to set all 
 # quantities to one. We will have examples later that deal with balanced data. 
 #
