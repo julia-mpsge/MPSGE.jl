@@ -11,7 +11,7 @@ PATHSolver = "f5f7c340-0bb3-5c69-969a-41884d311d1b"
 
 [compat]
 DataFrames = "1.6.1"
-JuMP = "1.23.0"
+JuMP = "1.22.2"
 PATHSolver = "1.7.7"
 julia = "1.6"
 OrderedCollections = "1.6.3"
