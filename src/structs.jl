@@ -481,7 +481,6 @@ raw_quantity(D::ScalarDem) = value(D.quantity)*value(D.reference_price)
 commodity(C::ScalarEndowment) = C.commodity
 quantity(C::ScalarEndowment) = C.quantity
 raw_quantity(F::Function, C::ScalarEndowment) = value(F, C.quantity)
-JuMP.value(F::Function, N::Number) = N
 
 
 raw_quantity(C::ScalarEndowment) = value(C.quantity)
