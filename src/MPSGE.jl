@@ -6,8 +6,6 @@ import JuMP.Containers:DenseAxisArray
 
 import OrderedCollections:OrderedDict
 
-include("documentation_helpers.jl")
-
 include("structs.jl")
 include("arithmetic.jl")
 include("show.jl")
