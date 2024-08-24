@@ -281,12 +281,8 @@ function solve!(m::AbstractMPSGEModel; kwargs...)
         output = "\n\nSolver Status: $(termination_status(jm))\nModel Status: $(primal_status(jm))"
 
         if !isnothing(consumer)
-            output *= "\n\nDefault price normalization using income for $consumer - This value is fixed to $(value(consumer)).\n"* 
-                      "Unfix with unfix($consumer)."
-            #unfix(consumer)
+            output *= "\n\nDefault price normalization using income for $consumer as numeraire, with the value of $(value(consumer)).\n"
         end
         print(output)
     end
-
-    #return m
 end
