@@ -258,35 +258,27 @@ function solve!(m::AbstractMPSGEModel; kwargs...)
         JuMP.set_attribute(jm, string(k), v)
     end
 
-    # Unfix numeraire, if set
-    if !ismissing(m.numeraire) 
-        unfix(numeraire(m))
-    end
-
     consumer = nothing
     # Check if any (non-auxiliary) variables are fixed. If not, set numeraire
     if sum(is_fixed.(MPSGE.production_sectors(m))) + sum(is_fixed.(commodities(m))) + sum(is_fixed.(consumers(m))) == 0 
         consumer = argmax(consumer_income, consumers(m))
         fix(consumer, consumer_income(consumer))
-        m.numeraire = consumer
     end
 
     JuMP.optimize!(jm)
 
     # Need to check termination status here
 
-    
+    if !isnothing(consumer)
+        unfix(consumer)
+    end
 
     if !m.silent
         output = "\n\nSolver Status: $(termination_status(jm))\nModel Status: $(primal_status(jm))"
 
         if !isnothing(consumer)
-            output *= "\n\nDefault price normalization using income for $consumer - This value is fixed to $(value(consumer)).\n"* 
-                      "Unfix with unfix($consumer)."
-            #unfix(consumer)
+            output *= "\n\nDefault price normalization using income for $consumer as numeraire, with the value of $(value(consumer)).\n"
         end
         print(output)
     end
-
-    #return m
 end

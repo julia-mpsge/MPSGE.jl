@@ -545,8 +545,7 @@ mutable struct MPSGEModel <:AbstractMPSGEModel
     commodities::Dict{ScalarCommodity,Vector{ScalarSector}} #Generated on model build
     auxiliaries::Dict{ScalarAuxiliary, AuxConstraint}
     silent::Bool
-    numeraire::Union{MPSGEVariable,Missing}
-    MPSGEModel() = new(Dict(),direct_model(PATHSolver.Optimizer()),Dict(),Dict(),Dict(),Dict(),false,missing)
+    MPSGEModel() = new(Dict(),direct_model(PATHSolver.Optimizer()),Dict(),Dict(),Dict(),Dict(),false)
 end
 
 #Getters
@@ -555,7 +554,6 @@ jump_model(M::MPSGEModel) = M.jump_model
 productions(M::MPSGEModel) = M.productions
 demands(M::MPSGEModel) = M.demands
 aux_constraints(M::MPSGEModel) = M.auxiliaries
-numeraire(M::MPSGEModel) = M.numeraire
 Base.getindex(M::MPSGEModel,key::Symbol) = M.object_dict[key]
 
 
