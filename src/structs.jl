@@ -228,11 +228,8 @@ JuMP.value(F::Function, P::ScalarParameter) = P.value
 
 function set_value!(P::ScalarParameter, value::Number)
     P.value = value
-    #if !isnothing(jump_model(model(P)))
-
     fix(get_variable(P), value; force=true)
     set_start_value(get_variable(P), value)
-    #end
     return value
 end
 
