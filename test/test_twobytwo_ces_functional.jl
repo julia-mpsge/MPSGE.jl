@@ -123,8 +123,8 @@
     fix(PX, 1)
     solve!(m)
 
-    lower_bound(Y)
-    upper_bound(PY)
+    @test lower_bound(Y) ≈ 0.
+    @test upper_bound(PY) ≈ 10e100
     @test value(X) ≈ two_by_two_CES["X.L","PX=1"] # 1.05050654
     @test value(Y) ≈ two_by_two_CES["Y.L","PX=1"] # 1.03248042
     @test value(U) ≈ two_by_two_CES["U.L","PX=1"] # 1.0
