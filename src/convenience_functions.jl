@@ -29,3 +29,5 @@ end
 
 JuMP.set_lower_bound(X::MPSGEScalarVariable, val::Real) = JuMP.set_lower_bound(get_variable(X), val)
 JuMP.set_upper_bound(X::MPSGEScalarVariable, val::Real) = JuMP.set_upper_bound(get_variable(X), val)
+JuMP.lower_bound(X::MPSGEScalarVariable) = JuMP.lower_bound(get_variable(X))
+JuMP.upper_bound(X::MPSGEScalarVariable) = JuMP.upper_bound(get_variable(X))

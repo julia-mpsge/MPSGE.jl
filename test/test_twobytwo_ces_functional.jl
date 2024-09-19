@@ -102,25 +102,29 @@
 
     # Just testing for bunctionality, not effecting the results
     #Scalar Consumer
-    #set_lower_bound(RA, 10e100)
-    #set_lower_bound(RA, 0.)
-    #set_upper_bound(RA, 0.)
-    #set_upper_bound(RA, 10e100)
+    set_lower_bound(RA, 10e100)
+    set_lower_bound(RA, 0.)
+    set_upper_bound(RA, 0.)
+    set_upper_bound(RA, 10e100)
     # Scalar Sector
-    #set_lower_bound(Y, 1.)
-    #set_lower_bound(Y, 0.)
-    #set_upper_bound(Y, 1.)
-    #set_upper_bound(Y, 10e100)
-    #set_fixed!(Y, true)
-    #set_fixed!(Y, false)
+    set_lower_bound(Y, 1.)
+    set_lower_bound(Y, 0.)
+    set_upper_bound(Y, 1.)
+    set_upper_bound(Y, 10e100)
+    fix(Y, true)
+    fix(Y, false)
     # Scalar Commodity
-    #set_lower_bound(PY, 1.)
-    #set_lower_bound(PY, 0.)
-    #set_upper_bound(PY, 1.)
-    #set_upper_bound(PY, 10e100)
+    set_lower_bound(PY, 1.)
+    set_lower_bound(PY, 0.)
+    set_upper_bound(PY, 1.)
+    set_upper_bound(PY, 10e100)
 
+    unfix(Y)
+    fix(PX, 1)
     solve!(m)
 
+    lower_bound(Y)
+    upper_bound(PY)
     @test value(X) ≈ two_by_two_CES["X.L","PX=1"] # 1.05050654
     @test value(Y) ≈ two_by_two_CES["Y.L","PX=1"] # 1.03248042
     @test value(U) ≈ two_by_two_CES["U.L","PX=1"] # 1.0
