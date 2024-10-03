@@ -75,7 +75,7 @@ function Base.show(io::IO, P::Production)
     print(io,"$(input(P))")
 end
 
-function Base.show(io::IO,E::ScalarDem)
+function Base.show(io::IO,E::ScalarFinalDemand)
     print(io,"D: $(commodity(E))    Q: $(quantity(E))")
 end
 
@@ -89,10 +89,10 @@ function Base.show(io::IO, D::ScalarDemand)
         first_line *= " Elasticity: $(elasticity(D))"
     end
     println(io,first_line)
-    for (_,d)∈D.demands
+    for (_,DF)∈demands(D), d∈DF
         println(io,"    $d")
     end
-    for (_,e)∈D.endowments
+    for (_,E)∈endowments(D), e∈E
         println(io,"    $e")
     end
 end

@@ -455,27 +455,27 @@ commodities(P::Production) = collect(keys(P.netputs))
 ## Demands/Endowments ##
 ########################
 
+abstract type abstractDemandFlow end;
 
-
-struct ScalarDem #FinalDemand
+struct ScalarFinalDemand <: abstractDemandFlow #FinalDemand
     commodity::ScalarCommodity
     quantity::MPSGEquantity
     reference_price::MPSGEquantity
-    ScalarDem(commodity::ScalarCommodity, quantity::MPSGEquantity; reference_price::MPSGEquantity = 1) = new(commodity,quantity,reference_price)
+    ScalarFinalDemand(commodity::ScalarCommodity, quantity::MPSGEquantity; reference_price::MPSGEquantity = 1) = new(commodity,quantity,reference_price)
 end
 
 
-struct ScalarEndowment
+struct ScalarEndowment <: abstractDemandFlow
     commodity::ScalarCommodity
     quantity::MPSGEquantity
 end
 
 # Getters
-commodity(C::ScalarDem) = C.commodity
-base_quantity(D::ScalarDem) = D.quantity
-quantity(D::ScalarDem) = base_quantity(D) * reference_price(D)
-reference_price(D::ScalarDem) = D.reference_price
-raw_quantity(D::ScalarDem) = value(D.quantity)*value(D.reference_price)
+commodity(C::ScalarFinalDemand) = C.commodity
+base_quantity(D::ScalarFinalDemand) = D.quantity
+quantity(D::ScalarFinalDemand) = base_quantity(D) * reference_price(D)
+reference_price(D::ScalarFinalDemand) = D.reference_price
+raw_quantity(D::ScalarFinalDemand) = value(D.quantity)*value(D.reference_price)
 
 commodity(C::ScalarEndowment) = C.commodity
 quantity(C::ScalarEndowment) = C.quantity
@@ -487,21 +487,35 @@ raw_quantity(C::ScalarEndowment) = value(C.quantity)
 struct ScalarDemand
     consumer::ScalarConsumer
     elasticity::MPSGEquantity
-    demands::Dict{Commodity,ScalarDem}
-    endowments::Dict{Commodity,ScalarEndowment}
+    demand_flow::Dict{Commodity, Vector{abstractDemandFlow}}
+    #demands::Dict{Commodity,ScalarFinalDemand}
+    #endowments::Dict{Commodity,ScalarEndowment}
     function ScalarDemand(
         consumer::ScalarConsumer,
-        demands::Vector{ScalarDem},
+        demands::Vector{ScalarFinalDemand},
         endowments::Vector{ScalarEndowment};
         elasticity::MPSGEquantity = 1
         )
 
-        
+        demand_flow = Dict{Commodity, Vector{abstractDemandFlow}}()
+        for demand in demands
+            if haskey(demand_flow, demand.commodity)
+                push!(demand_flow[demand.commodity], demand)
+            else
+                demand_flow[demand.commodity] = [demand]
+            end
+        end
+        for endowment in endowments
+            if haskey(demand_flow, endowment.commodity)
+                push!(demand_flow[endowment.commodity], endowment)
+            else
+                demand_flow[endowment.commodity] = [endowment]
+            end
+        end
 
         D = new(consumer,
             elasticity,
-            Dict(demand.commodity => demand for demand in demands), 
-            Dict(endowment.commodity => endowment for endowment in endowments),
+            demand_flow
             )
 
         set_start_value(consumer, raw_quantity(D))
@@ -513,11 +527,11 @@ end
 const Demand = ScalarDemand
 
 consumer(D::Demand) = D.consumer
-demands(D::Demand) = D.demands
-endowments(D::Demand) = D.endowments
-quantity(D::Demand) = sum(quantity(d) for (_,d)∈demands(D);init=0)
+demands(D::Demand) = Dict(C => [d for d in DF if isa(d,ScalarFinalDemand)] for (C,DF) in D.demand_flow)
+endowments(D::Demand) = Dict(C => [e for e in E if isa(e,ScalarEndowment)] for (C,E) in D.demand_flow)#D.endowments
+quantity(D::Demand) = sum(sum(quantity.(d)) for (_,d)∈demands(D);init=0)
 elasticity(D::Demand) = D.elasticity
-raw_quantity(D::Demand) = sum(raw_quantity(d) for (_,d)∈demands(D); init=0)
+raw_quantity(D::Demand) = sum(sum(raw_quantity.(d)) for (_,d)∈demands(D); init=0)
 
 
 

@@ -250,7 +250,7 @@ end
 ###################
 
 macro final_demand(commodity, quantity, kwargs...)
-    constr_call = :(ScalarDem($(esc(commodity)), $(esc(quantity))))
+    constr_call = :(ScalarFinalDemand($(esc(commodity)), $(esc(quantity))))
     _add_kw_args(constr_call, kwargs)
     return :($constr_call)
 end
@@ -263,7 +263,7 @@ end
 
 
 macro demand(model, consumer, demand_block, endowment_block, kwargs...)
-    local demands = :(ScalarDem[])
+    local demands = :(ScalarFinalDemand[])
     local endows = :(ScalarEndowment[])
     for d∈demand_block.args
         if !isa(d, LineNumberNode)
