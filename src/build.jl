@@ -130,7 +130,8 @@ function demand(H::Consumer, C::Commodity)
     jm = jump_model(model(H))
     D = demand(H)
     total_quantity = quantity(D)
-    if !haskey(D.demands, C)
+    final_demands = demands(D)
+    if !haskey(final_demands, C) && length(final_demands[C])==0
         return 0
     end
     d = D.demands[C]
@@ -214,7 +215,7 @@ function consumer_income(consumer)
                 start_value, 
                 endowment
             ) 
-            for (_,endowment)∈endowments(demand(consumer)); init=0
+            for (_,E)∈endowments(demand(consumer)) for endowment∈E; init=0
         )
         new_start += -value(
             start_value, 
@@ -222,7 +223,7 @@ function consumer_income(consumer)
         )
     else
         __value_function(x) = is_fixed(x) ? fix_value(x) : value(x)
-        new_start = sum(raw_quantity(__value_function, e) for (_,e)∈endowments(demand(consumer)); init=0)
+        new_start = sum(raw_quantity(__value_function, e) for (_,E)∈endowments(demand(consumer)) for e∈E; init=0)
         new_start += -value(
             __value_function,
             sum(tau(sector, consumer) for sector in production_sectors(m); init=0)
