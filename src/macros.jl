@@ -262,21 +262,17 @@ macro endowment(commodity, quantity, kwargs...)
 end
 
 
-macro demand(model, consumer, demand_block, endowment_block, kwargs...)
-    local demands = :(ScalarFinalDemand[])
-    local endows = :(ScalarEndowment[])
-    for d∈demand_block.args
+macro demand(model, consumer, demand_flow_block, kwargs...)
+    local demand_flow = :(abstractDemandFlow[])
+    #local endows = :(ScalarEndowment[])
+    for d∈demand_flow_block.args
         if !isa(d, LineNumberNode)
-            push!(demands.args, esc(d))
+            push!(demand_flow.args, esc(d))
         end
     end
-    for e∈endowment_block.args
-        if !isa(e, LineNumberNode)
-            push!(endows.args, esc(e))
-        end
-    end
+
     
-    constr_call = :(add_demand!($(esc(model)), $(esc(consumer)), $demands, $endows))
+    constr_call = :(add_demand!($(esc(model)), $(esc(consumer)), $demand_flow))
     _add_kw_args(constr_call, kwargs)
     return :($constr_call)
 end

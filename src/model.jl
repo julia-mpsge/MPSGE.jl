@@ -83,8 +83,8 @@ function add_production!(model::MPSGEModel, P::Production)
     return nothing
 end
 
-function add_demand!(M::MPSGEModel,H::ScalarConsumer,demands::Vector{ScalarFinalDemand},endowments::Vector{ScalarEndowment};elasticity::Union{Real,ScalarParameter} = 1)
-    P = ScalarDemand(H,demands,endowments; elasticity = elasticity)
+function add_demand!(M::MPSGEModel,H::ScalarConsumer,demand_flow::Vector{abstractDemandFlow};elasticity::Union{Real,ScalarParameter} = 1)
+    P = ScalarDemand(H,demand_flow; elasticity = elasticity)
     M.demands[H] = P
     return P
 end

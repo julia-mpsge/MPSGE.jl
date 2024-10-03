@@ -488,34 +488,24 @@ struct ScalarDemand
     consumer::ScalarConsumer
     elasticity::MPSGEquantity
     demand_flow::Dict{Commodity, Vector{abstractDemandFlow}}
-    #demands::Dict{Commodity,ScalarFinalDemand}
-    #endowments::Dict{Commodity,ScalarEndowment}
     function ScalarDemand(
         consumer::ScalarConsumer,
-        demands::Vector{ScalarFinalDemand},
-        endowments::Vector{ScalarEndowment};
+        demand_flow::Vector{abstractDemandFlow};
         elasticity::MPSGEquantity = 1
         )
 
-        demand_flow = Dict{Commodity, Vector{abstractDemandFlow}}()
-        for demand in demands
-            if haskey(demand_flow, demand.commodity)
-                push!(demand_flow[demand.commodity], demand)
+        _demand_flow = Dict{Commodity, Vector{abstractDemandFlow}}()
+        for demand in demand_flow
+            if haskey(_demand_flow, demand.commodity)
+                push!(_demand_flow[demand.commodity], demand)
             else
-                demand_flow[demand.commodity] = [demand]
-            end
-        end
-        for endowment in endowments
-            if haskey(demand_flow, endowment.commodity)
-                push!(demand_flow[endowment.commodity], endowment)
-            else
-                demand_flow[endowment.commodity] = [endowment]
+                _demand_flow[demand.commodity] = [demand]
             end
         end
 
         D = new(consumer,
             elasticity,
-            demand_flow
+            _demand_flow
             )
 
         set_start_value(consumer, raw_quantity(D))
