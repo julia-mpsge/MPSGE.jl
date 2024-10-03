@@ -37,7 +37,6 @@
 
     @demand(M, Y, begin
             [@final_demand(P[i], c0[i]) for i∈goods]...
-        end, begin
             [@endowment(PF[j], endow[j]) for j∈factors]...
         end
     )
@@ -201,8 +200,7 @@ end
     end
 
     @demand(M, Y, begin
-        [@final_demand(P[i], c0[i]) for i∈goods]...
-    end,begin
+        [@final_demand(P[i], c0[i]) for i∈goods]...        
         [@endowment(PF[j], endow[j]) for j∈factors]...
     end,
     elasticity = 0
@@ -368,8 +366,7 @@ end
     end
 
     @demand(M, Y, begin
-            [@final_demand(P[i], c0[i]) for i∈goods]...
-        end,begin
+            [@final_demand(P[i], c0[i]) for i∈goods]...            
             [@endowment(PF[j], endow[j]) for j∈factors]...
         end,
         elasticity = 2
