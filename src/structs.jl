@@ -517,11 +517,11 @@ end
 const Demand = ScalarDemand
 
 consumer(D::Demand) = D.consumer
-demands(D::Demand) = Dict(C => [d for d in DF if isa(d,ScalarFinalDemand)] for (C,DF) in D.demand_flow)
+final_demands(D::Demand) = Dict(C => [d for d in DF if isa(d,ScalarFinalDemand)] for (C,DF) in D.demand_flow)
 endowments(D::Demand) = Dict(C => [e for e in E if isa(e,ScalarEndowment)] for (C,E) in D.demand_flow)#D.endowments
-quantity(D::Demand) = sum(sum(quantity.(d);init=0) for (_,d)∈demands(D);init=0)
+quantity(D::Demand) = sum(sum(quantity.(d);init=0) for (_,d)∈final_demands(D);init=0)
 elasticity(D::Demand) = D.elasticity
-raw_quantity(D::Demand) = sum(sum(raw_quantity.(d);init=0) for (_,d)∈demands(D); init=0)
+raw_quantity(D::Demand) = sum(sum(raw_quantity.(d);init=0) for (_,d)∈final_demands(D); init=0)
 
 
 

@@ -89,7 +89,7 @@ function Base.show(io::IO, D::ScalarDemand)
         first_line *= " Elasticity: $(elasticity(D))"
     end
     println(io,first_line)
-    for (_,DF)∈demands(D), d∈DF
+    for (_,DF)∈final_demands(D), d∈DF
         println(io,"    $d")
     end
     for (_,E)∈endowments(D), e∈E

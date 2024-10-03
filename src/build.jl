@@ -130,11 +130,11 @@ function demand(H::Consumer, C::Commodity)
     jm = jump_model(model(H))
     D = demand(H)
     total_quantity = quantity(D)
-    final_demands = demands(D)
-    if !haskey(final_demands, C) || length(final_demands[C])==0
+    Final_Demands = final_demands(D)
+    if !haskey(Final_Demands, C) || length(Final_Demands[C])==0
         return 0
     end
-    DF = final_demands[C]
+    DF = Final_Demands[C]
 
     total_income = []
     for d in DF
@@ -159,7 +159,7 @@ function expenditure(D::ScalarDemand)
     jm = jump_model(model(consumer(D)))
     total_quantity = quantity(D)
     σ = elasticity(D)
-    return @expression(jm, sum( quantity(d)/total_quantity * (get_variable(commodity(d))/reference_price(d))^(1-σ) for (_,DF)∈demands(D) for d∈DF)^(1/(1-σ)))
+    return @expression(jm, sum( quantity(d)/total_quantity * (get_variable(commodity(d))/reference_price(d))^(1-σ) for (_,DF)∈final_demands(D) for d∈DF)^(1/(1-σ)))
 end
 
 #################
