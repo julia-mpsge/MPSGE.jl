@@ -160,10 +160,19 @@ end
 ## Constraints ##
 #################
 
-function zero_profit(S::ScalarSector)
+function cost_function(P::Production)
+    quantity(P.input)*P.input.cost_function
+end
+
+function revenue_function(P::Production)
+    quantity(P.output)*P.output.cost_function
+end
+
+function zero_profit(S::MPSGE.ScalarSector)
     M = model(S)
     jm = jump_model(M)
-    @expression(jm, sum(compensated_demand(S,C)*get_variable(C) for C∈commodities(S)) - sum(tau(S,H) for H∈consumers(M) if tau(S,H)!=0; init=0))
+    P = production(S)
+    @expression(jm, cost_function(P) - revenue_function(P))
 end
 
 function market_clearance(C::ScalarCommodity)
