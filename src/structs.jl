@@ -348,10 +348,11 @@ mutable struct Node
     parent::Union{Node, Nothing}
     children::Vector{Union{Node,Netput}}
     data::ScalarNest
-    cost_function::MPSGEquantity #There may be a better name
+    cost_function_virtual::Union{Nothing,JuMP.VariableRef}
+    cost_function::MPSGEquantity 
     netput_sign::Int
     function Node(data::ScalarNest; children = [], netput_sign::Int = 1)
-        N = new(nothing, children, data, 0, netput_sign) #Cost function is set after trees are built
+        N = new(nothing, children, data, nothing, 0, netput_sign) #Cost function is set after trees are built
         for child in children 
             set_parent!(child, N)
         end
