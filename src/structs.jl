@@ -371,7 +371,7 @@ parent(N::Node) = N.parent
 
 
 
-cost_function(N::Node) = N.cost_function
+cost_function(N::Node; virtual = false) = !virtual ? N.cost_function : N.cost_function_virtual
 #name(N::Node) = N.data.name
 #elasticity(N::Node) = N.data.elasticity
 
@@ -403,7 +403,8 @@ taxes(N::Netput) = N.taxes
 name(N::Netput) = name(commodity(N))
 #parent(N::Netput) = N.parent
 children(N::Netput) = []
-parents(N::Netput) = N.parents
+parent(N::Netput) = N.parents
+netput_sign(N::Netput) = N.netput_sign
     
 mutable struct Input <: Netput 
     commodity::ScalarCommodity
@@ -411,7 +412,6 @@ mutable struct Input <: Netput
     reference_price::MPSGEquantity
     taxes::Vector{Tax}
     parents::Vector{Node}
-    #cost_function::MPSGEquantity
     netput_sign::Int
     Input( commodity::ScalarCommodity,
             quantity::MPSGEquantity;
@@ -442,7 +442,6 @@ end
 struct Production
     sector::ScalarSector
     netputs::Dict{Commodity, Vector{Netput}}
-    compensated_demands::Dict{Netput,Vector{MPSGEquantity}}
     input::Union{Node, Nothing}
     output::Union{Node, Nothing}
 end
@@ -451,6 +450,10 @@ sector(P::Production) = P.sector
 input(P::Production) = P.input
 output(P::Production) = P.output
 commodities(P::Production) = collect(keys(P.netputs))
+netputs(P::Production) = P.netputs
+netputs(S::ScalarSector, C::ScalarCommodity) = get(netputs(production(S)), C, [])
+
+
 function cost_function(P::Production; virtual = false)
     I = input(P)
     if virtual 

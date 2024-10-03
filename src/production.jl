@@ -120,18 +120,15 @@ function Production(
     @assert !(!isnothing(input) && isnothing(output))  "Production block for $(sector) has a 0 quantity in output but not input."
     @assert !(isnothing(input)  && !isnothing(output)) "Production block for $(sector) has a 0 quantity in input but not output."
 
+    if isnothing(input) && isnothing(output)
+        return Production(sector, netput_dict, nothing, nothing)
+    end
+
+
     # Initialize cost functions - Should check if things are nothing
     for nest∈reverse(collect(keys(node_dict)))
         for node∈node_dict[nest]
             build_cost_function!(node, sector)
-        end
-    end
-
-    # Build compensated demands
-    compensated_demands = Dict{Netput, Vector{MPSGEquantity}}()
-    for (_, netput_vector)∈netput_dict
-        for netput∈netput_vector
-            compensated_demands[netput] = build_compensated_demand.(Ref(netput),netput.parents)
         end
     end
 
@@ -141,7 +138,7 @@ function Production(
         push!(M.commodities[C], sector)
     end
 
-    return Production(sector, netput_dict, compensated_demands, input, output)
+    return Production(sector, netput_dict, input, output)
 end
 
 #####################
@@ -168,7 +165,7 @@ end
 ## Cost Functions ##
 ####################
 
-function cost_function(N::Netput)
+function cost_function(N::Netput; virtual = false)
     C = commodity(N)
     sign = N.netput_sign
     rp = reference_price(N)
@@ -199,7 +196,7 @@ function build_cost_function!(N::Node, S::ScalarSector)
     end
 
     jm = jump_model(model(S))
-    N.cost_function_virtual = @variable(jm, start = 1) 
+    N.cost_function_virtual = @variable(jm, start = value(start_value, cost_function)) 
     N.cost_function = cost_function
     @constraint(jm, cost_function - N.cost_function_virtual ⟂ N.cost_function_virtual)
     #end
@@ -214,17 +211,4 @@ end
 function CES(N::Node)#P::ScalarProduction, T::ScalarNest, sign::Int)
     sign = N.netput_sign
     return sum(quantity(child)/quantity(N) * cost_function(child)^(1+sign*elasticity(N)) for child in children(N); init=0) ^ (1/(1+sign*elasticity(N)))
-end
-
-function build_compensated_demand(base_netput::Netput, parent_node::Node)
-    child, parent = base_netput, parent_node
-    sign = child.netput_sign
-    compensated_demand = -sign * base_quantity(child)
-    while !isnothing(parent)
-        if elasticity(parent)!=0
-            compensated_demand *= (cost_function(parent)/cost_function(child)) ^ (-sign*elasticity(parent))
-        end
-        child,parent = parent, parent.parent
-    end
-    return compensated_demand
 end
