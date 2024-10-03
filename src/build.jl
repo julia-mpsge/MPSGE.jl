@@ -160,19 +160,12 @@ end
 ## Constraints ##
 #################
 
-function cost_function(P::Production)
-    quantity(P.input)*P.input.cost_function
-end
-
-function revenue_function(P::Production)
-    quantity(P.output)*P.output.cost_function
-end
 
 function zero_profit(S::MPSGE.ScalarSector)
     M = model(S)
     jm = jump_model(M)
     P = production(S)
-    @expression(jm, cost_function(P) - revenue_function(P))
+    @expression(jm, cost_function(P; virtual=true) - revenue_function(P; virtual=true))
 end
 
 function market_clearance(C::ScalarCommodity)

@@ -451,6 +451,25 @@ sector(P::Production) = P.sector
 input(P::Production) = P.input
 output(P::Production) = P.output
 commodities(P::Production) = collect(keys(P.netputs))
+function cost_function(P::Production; virtual = false)
+    I = input(P)
+    if virtual 
+        quantity(I)*I.cost_function_virtual
+    else
+        quantity(I)*I.cost_function
+    end
+end
+
+function revenue_function(P::Production; virtual = false)
+    O = output(P)
+    if virtual 
+        quantity(O)*O.cost_function_virtual
+    else
+        quantity(O)*O.cost_function
+    end
+end
+
+
 
 ########################
 ## Demands/Endowments ##
