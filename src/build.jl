@@ -114,10 +114,10 @@ end
 function endowment(H::Consumer, C::Commodity)
     D = demand(H)
     endows = endowments(D)
-    if !haskey(endows,C)
+    if !haskey(endows,C) || length(endows[C])==0
         return 0
     else
-        return quantity(endows[C])
+        return sum(quantity.(endows[C]))
     end
 end
 
@@ -125,22 +125,28 @@ function demand(H::Consumer, C::Commodity)
     jm = jump_model(model(H))
     D = demand(H)
     total_quantity = quantity(D)
-    if !haskey(D.demands, C)
+    Final_Demands = final_demands(D)
+    if !haskey(Final_Demands, C) || length(Final_Demands[C])==0
         return 0
     end
-    d = D.demands[C]
+    DF = Final_Demands[C]
 
-    if !(isa(elasticity(D), Real))
-        income =  @expression(jm, 
-            quantity(d)/total_quantity * H/C * ifelse(1*elasticity(D) == 1, 1, (expenditure(D)*reference_price(d)/C)^(elasticity(D)-1))
-        )
-    elseif elasticity(D) == 1
-        income = quantity(d)/total_quantity * H/C
-    else 
-        income = quantity(d)/total_quantity * H/C * (expenditure(D)*reference_price(d)/C)^(elasticity(D)-1)
+    total_income = []
+    for d in DF
+        if !(isa(elasticity(D), Real))
+            income =  @expression(jm, 
+                quantity(d)/total_quantity * H/C * ifelse(1*elasticity(D) == 1, 1, (expenditure(D)*reference_price(d)/C)^(elasticity(D)-1))
+            )
+        elseif elasticity(D) == 1
+            income = quantity(d)/total_quantity * H/C
+        else 
+            income = quantity(d)/total_quantity * H/C * (expenditure(D)*reference_price(d)/C)^(elasticity(D)-1)
+        end
+
+        push!(total_income, income)
     end
 
-    return income
+    return sum(total_income)
 end
 
 
@@ -148,7 +154,7 @@ function expenditure(D::ScalarDemand)
     jm = jump_model(model(consumer(D)))
     total_quantity = quantity(D)
     σ = elasticity(D)
-    return @expression(jm, sum( quantity(d)/total_quantity * (get_variable(commodity(d))/reference_price(d))^(1-σ) for (_,d)∈demands(D))^(1/(1-σ)))
+    return @expression(jm, sum( quantity(d)/total_quantity * (get_variable(commodity(d))/reference_price(d))^(1-σ) for (_,DF)∈final_demands(D) for d∈DF)^(1/(1-σ)))
 end
 
 #################
@@ -211,7 +217,7 @@ function consumer_income(consumer)
                 start_value, 
                 endowment
             ) 
-            for (_,endowment)∈endowments(demand(consumer)); init=0
+            for (_,E)∈endowments(demand(consumer)) for endowment∈E; init=0
         )
         new_start += -value(
             start_value, 
@@ -219,7 +225,7 @@ function consumer_income(consumer)
         )
     else
         __value_function(x) = is_fixed(x) ? fix_value(x) : value(x)
-        new_start = sum(raw_quantity(__value_function, e) for (_,e)∈endowments(demand(consumer)); init=0)
+        new_start = sum(raw_quantity(__value_function, e) for (_,E)∈endowments(demand(consumer)) for e∈E; init=0)
         new_start += -value(
             __value_function,
             sum(tau(sector, consumer) for sector in production_sectors(m); init=0)

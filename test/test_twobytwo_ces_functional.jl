@@ -47,7 +47,6 @@
 
     @demand(m, RA, begin
             @final_demand(PU,150)
-        end, begin
             @endowment(PL, 35 * endow)
             @endowment(PK, 80)
     end)

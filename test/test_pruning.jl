@@ -60,7 +60,6 @@ Fun fact: I don't think GAMS MPSGE does this. It will just error.
     
     @demand(M, CONS, begin
             @final_demand(PW, 200)
-        end, begin
             @endowment(PL,100)
             @endowment(PK,100)
     end)

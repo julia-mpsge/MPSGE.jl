@@ -93,8 +93,7 @@
     for r∈regions
         @demand(mules_mpsge, RA[r], begin
             [@final_demand(P[g,r], 1) for g∈goods]...
-            @final_demand(PL[r], 1)
-        end,begin
+            @final_demand(PL[r], 1)            
             @endowment(PL[r], 1)
             [@endowment(P[g,r], ω[g,r]) for g∈goods]...
         end)

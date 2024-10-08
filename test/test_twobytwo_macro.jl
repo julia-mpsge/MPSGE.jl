@@ -44,7 +44,6 @@
 
     @demand(m, RA, begin
             @final_demand(PU, 150)
-        end, begin
             @endowment(PL, endow * 35)
             @endowment(PK, 80)
     end)
@@ -167,8 +166,7 @@ end
 
 
     @demand(m, CONS, begin
-            @final_demand(PW, 200.)
-        end,begin
+            @final_demand(PW, 200.)            
             @endowment(PL, 100.0)
             @endowment(PK, 100.0)
     end)
@@ -561,8 +559,7 @@ end
 
 
     @demand(m, CONS, begin
-            @final_demand(PW, 200.)
-        end,begin
+            @final_demand(PW, 200.)            
             @endowment(PL, 100.0)
             @endowment(PK, 100.0)
     end)

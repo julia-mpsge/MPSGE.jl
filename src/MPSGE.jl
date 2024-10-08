@@ -31,7 +31,7 @@ export  MPSGEModel,
         ScalarNest,      IndexedNest,      Nest,
         Tax, Input, Output,
         Production,
-        ScalarDem, ScalarEndowment, ScalarDemand,
+        ScalarFinalDemand, ScalarEndowment, ScalarDemand,
         ScalarAuxConstraint
 
 #Struct access
