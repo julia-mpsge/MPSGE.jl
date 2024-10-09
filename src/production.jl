@@ -198,7 +198,7 @@ function build_cost_function!(N::Node, S::ScalarSector)
     jm = jump_model(model(S))
     N.cost_function_virtual = @variable(jm, start = value(start_value, cost_function)) 
     N.cost_function = cost_function
-    @constraint(jm, cost_function - N.cost_function_virtual ⟂ N.cost_function_virtual)
+    @constraint(jm, N.cost_function_virtual - cost_function ⟂ N.cost_function_virtual)
     #end
 
 end
