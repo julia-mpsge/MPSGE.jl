@@ -31,3 +31,16 @@ JuMP.set_lower_bound(X::MPSGEScalarVariable, val::Real) = JuMP.set_lower_bound(g
 JuMP.set_upper_bound(X::MPSGEScalarVariable, val::Real) = JuMP.set_upper_bound(get_variable(X), val)
 JuMP.lower_bound(X::MPSGEScalarVariable) = JuMP.lower_bound(get_variable(X))
 JuMP.upper_bound(X::MPSGEScalarVariable) = JuMP.upper_bound(get_variable(X))
+
+
+function JuMP.all_variables(M::MPSGEModel)
+
+    X = [s for (_,s) in M.object_dict] |>
+        x -> MPSGE.extract_scalars.(x) |>  
+        x -> Iterators.flatten(x) |>
+        x -> collect(x)
+
+    return X
+
+end
+

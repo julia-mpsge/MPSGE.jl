@@ -348,10 +348,11 @@ mutable struct Node
     parent::Union{Node, Nothing}
     children::Vector{Union{Node,Netput}}
     data::ScalarNest
-    cost_function::MPSGEquantity #There may be a better name
+    cost_function_virtual::Union{Nothing,JuMP.VariableRef}
+    cost_function::MPSGEquantity 
     netput_sign::Int
     function Node(data::ScalarNest; children = [], netput_sign::Int = 1)
-        N = new(nothing, children, data, 0, netput_sign) #Cost function is set after trees are built
+        N = new(nothing, children, data, nothing, 0, netput_sign) #Cost function is set after trees are built
         for child in children 
             set_parent!(child, N)
         end
@@ -370,7 +371,7 @@ parent(N::Node) = N.parent
 
 
 
-cost_function(N::Node) = N.cost_function
+cost_function(N::Node; virtual = false) = !virtual ? N.cost_function : N.cost_function_virtual
 #name(N::Node) = N.data.name
 #elasticity(N::Node) = N.data.elasticity
 
@@ -402,7 +403,8 @@ taxes(N::Netput) = N.taxes
 name(N::Netput) = name(commodity(N))
 #parent(N::Netput) = N.parent
 children(N::Netput) = []
-parents(N::Netput) = N.parents
+parent(N::Netput) = N.parents
+netput_sign(N::Netput) = N.netput_sign
     
 mutable struct Input <: Netput 
     commodity::ScalarCommodity
@@ -410,7 +412,6 @@ mutable struct Input <: Netput
     reference_price::MPSGEquantity
     taxes::Vector{Tax}
     parents::Vector{Node}
-    #cost_function::MPSGEquantity
     netput_sign::Int
     Input( commodity::ScalarCommodity,
             quantity::MPSGEquantity;
@@ -441,7 +442,6 @@ end
 struct Production
     sector::ScalarSector
     netputs::Dict{Commodity, Vector{Netput}}
-    compensated_demands::Dict{Netput,Vector{MPSGEquantity}}
     input::Union{Node, Nothing}
     output::Union{Node, Nothing}
 end
@@ -450,6 +450,29 @@ sector(P::Production) = P.sector
 input(P::Production) = P.input
 output(P::Production) = P.output
 commodities(P::Production) = collect(keys(P.netputs))
+netputs(P::Production) = P.netputs
+netputs(S::ScalarSector, C::ScalarCommodity) = get(netputs(production(S)), C, [])
+
+
+function cost_function(P::Production; virtual = false)
+    I = input(P)
+    if virtual 
+        quantity(I)*I.cost_function_virtual
+    else
+        quantity(I)*I.cost_function
+    end
+end
+
+function revenue_function(P::Production; virtual = false)
+    O = output(P)
+    if virtual 
+        quantity(O)*O.cost_function_virtual
+    else
+        quantity(O)*O.cost_function
+    end
+end
+
+
 
 ########################
 ## Demands/Endowments ##
