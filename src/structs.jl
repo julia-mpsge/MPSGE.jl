@@ -517,9 +517,9 @@ commodity.
 If `virtual` is true, return the virtual revenue functions.
 
 """
-revenue_function(P::Production; virtual = false) = cost_function(P, name(output(P)), virtual = virtual)
+revenue_function(P::Production; virtual = false) = cost_function(P, name(output(P)), virtual = virtual, search = :output)
 revenue_function(S::ScalarSector, nest::Symbol; virtual = false) = cost_function(production(S), nest, virtual = virtual, search = :output)
-revenue_function(S::ScalarSector; virtual = false) = cost_function(production(S), virtual = virtual)
+revenue_function(S::ScalarSector; virtual = false) = revenue_function(production(S); virtual = virtual)
 
 ########################
 ## Demands/Endowments ##
