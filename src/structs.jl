@@ -480,7 +480,7 @@ end
 function cost_function(P::Production, nest::Symbol; virtual = false, search = :all)
     N = find_nodes(P; search = search)
     if haskey(N, nest)
-        return quantity.(N[nest]).*cost_function.(N[nest]; virtual = virtual)
+        return sum(quantity.(N[nest]).*cost_function.(N[nest]; virtual = virtual))
     end
     return 0
 end
