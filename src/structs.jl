@@ -453,26 +453,73 @@ commodities(P::Production) = collect(keys(P.netputs))
 netputs(P::Production) = P.netputs
 netputs(S::ScalarSector, C::ScalarCommodity) = get(netputs(production(S)), C, [])
 
-
-function cost_function(P::Production; virtual = false)
-    I = input(P)
-    if virtual 
-        quantity(I)*I.cost_function_virtual
-    else
-        quantity(I)*I.cost_function
+function find_nodes(P; search = :all)
+    out = Dict()
+    nodes_to_search = []
+    if search == :all
+        nodes_to_search = Vector{Any}([P.input, P.output])
+    elseif search == :input
+        nodes_to_search = Vector{Any}([input(P)])
+    elseif search == :output
+        nodes_to_search = Vector{Any}([output(P)])
     end
+    while !isempty(nodes_to_search)
+        n = popfirst!(nodes_to_search)
+        if !haskey(out, name(n))
+            out[name(n)] = []
+        end
+        push!(out[name(n)], n)
+        if isa(n, MPSGE.Node)
+            push!(nodes_to_search, MPSGE.children(n)...)
+        end
+    end
+    return out
 end
 
-function revenue_function(P::Production; virtual = false)
-    O = output(P)
-    if virtual 
-        quantity(O)*O.cost_function_virtual
-    else
-        quantity(O)*O.cost_function
+
+function cost_function(P::Production, nest::Symbol; virtual = false, search = :all)
+    N = find_nodes(P; search = search)
+    if haskey(N, nest)
+        return quantity.(N[nest]).*cost_function.(N[nest]; virtual = virtual)
     end
+    return 0
 end
 
 
+"""
+    cost_function(S::ScalarSector; virtual = false)
+    cost_function(S::ScalarSector, nest::Symbol; virtual = false)
+    
+Return a vector of cost functions for the given sector and nest. If `nest` is 
+not provided return the cost function for input tree. 
+
+`nest` is the symbol representing the nest. This can also be the name of a 
+commodity. 
+
+If `virtual` is true, return the virtual cost functions.
+"""
+cost_function(P::Production; virtual=false) = cost_function(P, name(input(P)), virtual=virtual)
+cost_function(S::ScalarSector, nest::Symbol; virtual = false) = cost_function(production(S), nest, virtual=virtual, search = :input)
+cost_function(S::ScalarSector; virtual = false) = cost_function(production(S), virtual=virtual)
+
+
+
+"""
+    revenue_function(S::ScalarSector; virtual = false)    
+    revenue_function(S::ScalarSector, nest::Symbol; virtual = false)
+    
+Return a vector of revenue functions for the given sector and nest. If `nest` is 
+not provided return the revenue function for input tree. 
+
+`nest` is the symbol representing the nest. This can also be the name of a 
+commodity. 
+
+If `virtual` is true, return the virtual revenue functions.
+
+"""
+revenue_function(P::Production; virtual = false) = cost_function(P, name(output(P)), virtual = virtual)
+revenue_function(S::ScalarSector, nest::Symbol; virtual = false) = cost_function(production(S), nest, virtual = virtual, search = :output)
+revenue_function(S::ScalarSector; virtual = false) = cost_function(production(S), virtual = virtual)
 
 ########################
 ## Demands/Endowments ##

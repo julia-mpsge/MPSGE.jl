@@ -37,10 +37,10 @@ export  MPSGEModel,
 #Struct access
 export  name, quantity, production, jump_model, sectors, commodities,
         consumers, taxes, sector, commodity, consumer, description,
-        set_value!, value, auxiliaries, parameters#, cost_function
+        set_value!, value, auxiliaries, parameters
 
 #Production
-export cost_function, input, output
+export cost_function, revenue_function, input, output
 
 #Model
 export  add_variable!, add!, add_sector!, add_commodity!, add_consumer!,
