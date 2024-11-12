@@ -444,6 +444,7 @@ struct Production
     netputs::Dict{Commodity, Vector{Netput}}
     input::Union{Node, Nothing}
     output::Union{Node, Nothing}
+    taxes::Dict{Consumer, Vector{Netput}}
 end
 
 sector(P::Production) = P.sector
@@ -452,6 +453,15 @@ output(P::Production) = P.output
 commodities(P::Production) = collect(keys(P.netputs))
 netputs(P::Production) = P.netputs
 netputs(S::ScalarSector, C::ScalarCommodity) = get(netputs(production(S)), C, [])
+function taxes(S::ScalarSector,H::ScalarConsumer)
+    P = production(S)
+    if !haskey(P.taxes, H)
+        return []
+    end
+    return P.taxes[H]
+end
+
+
 
 function find_nodes(P; search = :all)
     out = Dict()
@@ -564,13 +574,35 @@ struct ScalarDemand
         elasticity::MPSGEquantity = 1
         )
 
+        M = model(consumer)
+
         _demand_flow = Dict{Commodity, Vector{abstractDemandFlow}}()
         for demand in demand_flow
+            if quantity(demand) == 0
+                continue
+            end
             if haskey(_demand_flow, demand.commodity)
                 push!(_demand_flow[demand.commodity], demand)
             else
                 _demand_flow[demand.commodity] = [demand]
             end
+
+            if isa(demand, ScalarEndowment)
+                if !(haskey(M.endowments, demand.commodity))
+                    M.endowments[demand.commodity] = [consumer]
+                else
+                    push!(M.endowments[demand.commodity], consumer)
+                end
+            end
+
+            if isa(demand, ScalarFinalDemand)
+                if !(haskey(M.final_demands, demand.commodity))
+                    M.final_demands[demand.commodity] = [consumer]
+                else
+                    push!(M.final_demands[demand.commodity], consumer)
+                end
+            end
+
         end
 
         D = new(consumer,
@@ -616,9 +648,11 @@ mutable struct MPSGEModel <:AbstractMPSGEModel
     productions::Dict{ScalarSector,Production} # all scalars
     demands::Dict{ScalarConsumer,Demand}
     commodities::Dict{ScalarCommodity,Vector{ScalarSector}} #Generated on model build
+    endowments::Dict{ScalarCommodity, Vector{ScalarConsumer}}
+    final_demands::Dict{ScalarCommodity, Vector{ScalarConsumer}}
     auxiliaries::Dict{ScalarAuxiliary, AuxConstraint}
     silent::Bool
-    MPSGEModel() = new(Dict(),direct_model(PATHSolver.Optimizer()),Dict(),Dict(),Dict(),Dict(),false)
+    MPSGEModel() = new(Dict(),direct_model(PATHSolver.Optimizer()),Dict(),Dict(),Dict(),Dict(),Dict(),Dict(),false)
 end
 
 #Getters
@@ -690,6 +724,20 @@ function sectors(C::Commodity)
     return C.model.commodities[C]  #stupid
 end
 
+function endowments(C::Commodity)
+    if !haskey(C.model.endowments, C)
+        return []
+    end
+    return C.model.endowments[C]
+end
+
+function final_demands(C::Commodity)
+    if !haskey(C.model.final_demands, C)
+        return []
+    end
+    return C.model.final_demands[C]
+end
+
 
 function commodities(m::MPSGEModel)
     X = raw_commodities(m) |>
@@ -738,15 +786,3 @@ function production(S::ScalarSector) #Key errors are possible
     return M.productions[S]
 end
 
-
-#Broken below here
-
-function taxes(S::ScalarSector)
-    P = production(S)
-    return taxes(P)
-end
-
-function taxes(S::ScalarSector, H::ScalarConsumer)
-    P = production(S)
-    return get(taxes(P), H, Dict())
-end
