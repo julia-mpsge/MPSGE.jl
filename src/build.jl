@@ -150,7 +150,7 @@ function demand(H::Consumer, C::Commodity)
     total_income = []
     for d in DF
         if !(isa(elasticity(D), Real))
-            income =  @force_nonlinear(
+            income =  @expression(jm,
                 quantity(d)/total_quantity * H/C * ifelse(1*elasticity(D) == 1, 1, (expenditure(D)*reference_price(d)/C)^(elasticity(D)-1))
             )
         elseif elasticity(D) == 1
@@ -162,7 +162,7 @@ function demand(H::Consumer, C::Commodity)
         push!(total_income, income)
     end
 
-    return @force_nonlinear(sum(total_income))
+    return sum(total_income; init = 0)
 end
 
 
@@ -170,7 +170,7 @@ function expenditure(D::ScalarDemand)
     jm = jump_model(model(consumer(D)))
     total_quantity = quantity(D)
     σ = elasticity(D)
-    return @force_nonlinear(sum( quantity(d)/total_quantity * (get_variable(commodity(d))/reference_price(d))^(1-σ) for (_,DF)∈final_demands(D) for d∈DF)^(1/(1-σ)))
+    return @expression(jm,sum( quantity(d)/total_quantity * (get_variable(commodity(d))/reference_price(d))^(1-σ) for (_,DF)∈final_demands(D) for d∈DF)^(1/(1-σ)))
 end
 
 #################
