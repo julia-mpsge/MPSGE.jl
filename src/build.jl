@@ -236,8 +236,7 @@ function consumer_income(consumer)
         x -> is_fixed(x) ? fix_value(x) : value(x)
     )
 
-    return value(value_function, sum(get_variable(endowment(consumer,C))* get_variable(C) for C∈household_commodities) - sum(tax_revenue(S,consumer;virtual = true) for S∈production_sectors(M); init=0))
-
+    return sum(value(value_function,get_variable(endowment(consumer,C))* get_variable(C)) for C∈household_commodities) - sum(value(value_function,tax_revenue(S,consumer;virtual = true)) for S∈production_sectors(M); init=0)
 end
 
 
@@ -252,12 +251,9 @@ julia> solve!(m, cumulative_iteration_limit=0)
 function solve!(m::AbstractMPSGEModel; kwargs...)
     jm = jump_model(m)
 
-    
-
     if !haskey(JuMP.object_dictionary(jm), :zero_profit)
         build_constraints!(m)
     end
-
 
     #Set the default iteration limit to 10_000
     JuMP.set_attribute(jm, "cumulative_iteration_limit", 10_000)
