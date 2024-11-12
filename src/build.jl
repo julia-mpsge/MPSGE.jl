@@ -196,7 +196,7 @@ function income_balance(H::ScalarConsumer; virtual = false)
     jm = jump_model(M)
     household_commodities = [C for C∈commodities(M) if H∈MPSGE.endowments(C)]
 
-    @expression(jm, get_variable(H) - (sum(get_variable(endowment(H,C))* get_variable(C) for C∈household_commodities) - sum(tax_revenue(S,H;virtual = virtual) for S∈production_sectors(M); init=0)))  #sum(tau(S,H)*S for S∈production_sectors(M) if tau(S,H)!=0; init=0)))
+    @expression(jm, get_variable(H) - (sum(get_variable(endowment(H,C))* get_variable(C) for C∈household_commodities) - sum(tax_revenue(S,H;virtual = virtual) for S∈production_sectors(M); init=0)))  
 end
 
 
@@ -226,30 +226,18 @@ end
 
 
 function consumer_income(consumer)
-    m = model(consumer)
-    jm = jump_model(m)
-    
-    if termination_status(jm) == OPTIMIZE_NOT_CALLED
-        new_start = sum(
-            raw_quantity(
-                start_value, 
-                endowment
-            ) 
-            for (_,E)∈endowments(demand(consumer)) for endowment∈E; init=0
-        )
-        new_start += -value(
-            start_value, 
-            sum(tau(sector, consumer) for sector in production_sectors(m); init = 0)
-        )
-    else
-        __value_function(x) = is_fixed(x) ? fix_value(x) : value(x)
-        new_start = sum(raw_quantity(__value_function, e) for (_,E)∈endowments(demand(consumer)) for e∈E; init=0)
-        new_start += -value(
-            __value_function,
-            sum(tau(sector, consumer) for sector in production_sectors(m); init=0)
-        )
-    end
-    return new_start
+    M = model(consumer)
+    jm = jump_model(M)
+    household_commodities = [C for C∈commodities(M) if consumer∈MPSGE.endowments(C)]
+
+    value_function = ifelse(
+        termination_status(jm) == OPTIMIZE_NOT_CALLED,
+        start_value,
+        x -> is_fixed(x) ? fix_value(x) : value(x)
+    )
+
+    return value(value_function, sum(get_variable(endowment(consumer,C))* get_variable(C) for C∈household_commodities) - sum(tax_revenue(S,consumer;virtual = true) for S∈production_sectors(M); init=0))
+
 end
 
 
