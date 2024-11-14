@@ -589,8 +589,9 @@ struct ScalarDemand
 
             if isa(demand, ScalarEndowment)
                 if !(haskey(M.endowments, demand.commodity))
-                    M.endowments[demand.commodity] = [consumer]
-                else
+                    M.endowments[demand.commodity] = []
+                end
+                if consumer ∉ M.endowments[demand.commodity]
                     push!(M.endowments[demand.commodity], consumer)
                 end
             end
