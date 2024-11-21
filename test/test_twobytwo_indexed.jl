@@ -46,8 +46,7 @@
     end)
     
     @demand(m, C[:ra], begin
-            @final_demand(PU,150)
-        end,begin
+            @final_demand(PU,150)            
             @endowment(PF[:l], endow[:l])
             @endowment(PF[:k], endow[:k]) 
     end)
@@ -238,8 +237,7 @@ end
     end)
     
     @demand(m, C[:ra], begin
-            @final_demand(PU,150)
-        end,begin
+            @final_demand(PU,150)            
             @endowment(PF[:l], endow[:l])
             @endowment(PF[:k], endow[:k])
     end)
@@ -417,8 +415,7 @@ end
     end)
     
     @demand(m, C[:ra], begin
-            @final_demand(PU,150)
-        end,begin
+            @final_demand(PU,150)            
             @endowment(PF[:l], endow[:l])
             @endowment(PF[:k], endow[:k])
     end)
@@ -601,7 +598,6 @@ end
 
     @demand(m, C[:ra], begin
             [@final_demand(PU[f], cons[f], reference_price = pricepu[f]) for f∈factors]...
-        end, begin
             [@endowment(PF[f], endow[f]) for f∈factors]...
     end)
 

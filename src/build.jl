@@ -37,11 +37,6 @@ end
 ## Compensated Demand ##
 ########################
 
-function compensated_demands(S::ScalarSector)
-    P = production(S)
-    return P.compensated_demands
-end
-
 function netput_dict(S::ScalarSector)
     P = production(S)
     return P.netputs
@@ -65,26 +60,26 @@ function parent_name_chain(N::MPSGE.Netput)
     return parent_names
 end
 
-function compensated_demand(S::ScalarSector, C::ScalarCommodity, nest::Symbol)
-    cd = MPSGE.compensated_demands(S)
-    all_netputs = MPSGE.netput_dict(S)
-    if !haskey(all_netputs, C)
-        return 0
+function compensated_demand(N::MPSGE.Netput; virtual = false)
+    child, parent = N, MPSGE.parent(N)[1]
+    sign = -MPSGE.netput_sign(N)
+    compensated_demand = sign * MPSGE.base_quantity(N)
+    while !isnothing(parent)
+        if MPSGE.elasticity(parent)!=0
+            compensated_demand *= (cost_function(parent; virtual=virtual)/cost_function(child; virtual=virtual)) ^ (sign*MPSGE.elasticity(parent))
+        end
+        child,parent = parent, MPSGE.parent(parent)
     end
-    netputs = [n for n∈all_netputs[C] if nest∈parent_name_chain(n)]
-
-    return sum(sum(cd[netput]) for netput∈netputs)
-
+    return compensated_demand
 end
 
-function compensated_demand(S::ScalarSector,C::ScalarCommodity)
-    cd = compensated_demands(S)
-    netputs = netput_dict(S)
-    if !haskey(netputs, C)
-        return 0
-    end
-    sum(sum(cd[netput]) for netput∈netputs[C])
-    #sum(sum(v) for (netput, v)∈cd if commodity(netput) == C; init = 0)
+function compensated_demand(S::ScalarSector, C::ScalarCommodity; virtual = false)
+    return sum(compensated_demand.(netputs(S,C); virtual=virtual); init = 0)
+end
+
+function compensated_demand(S::ScalarSector, C::ScalarCommodity, nest::Symbol; virtual = false)
+    N = [n for n∈netputs(S,C) if nest∈parent_name_chain(n)]
+    return sum(compensated_demand.(N, virtual = virtual); init = 0)
 end
 
 
@@ -103,7 +98,7 @@ end
 function tau(S::ScalarSector,H::ScalarConsumer)
     P = production(S)
     #jm = jump_model(model(S))
-    -sum( sum(compensated_demands) * total_tax(netput, H) * commodity(netput) for (netput, compensated_demands)∈P.compensated_demands if total_tax(netput,H)!=0; init=0)
+    -sum( compensated_demand(netput) * total_tax(netput, H) * commodity(netput) for (_,N)∈netputs(P) for netput∈N if total_tax(netput,H)!=0; init=0)
 end
 
 
@@ -119,10 +114,10 @@ end
 function endowment(H::Consumer, C::Commodity)
     D = demand(H)
     endows = endowments(D)
-    if !haskey(endows,C)
+    if !haskey(endows,C) || length(endows[C])==0
         return 0
     else
-        return quantity(endows[C])
+        return sum(quantity.(endows[C]))
     end
 end
 
@@ -130,22 +125,28 @@ function demand(H::Consumer, C::Commodity)
     jm = jump_model(model(H))
     D = demand(H)
     total_quantity = quantity(D)
-    if !haskey(D.demands, C)
+    Final_Demands = final_demands(D)
+    if !haskey(Final_Demands, C) || length(Final_Demands[C])==0
         return 0
     end
-    d = D.demands[C]
+    DF = Final_Demands[C]
 
-    if !(isa(elasticity(D), Real))
-        income =  @expression(jm, 
-            quantity(d)/total_quantity * H/C * ifelse(1*elasticity(D) == 1, 1, (expenditure(D)*reference_price(d)/C)^(elasticity(D)-1))
-        )
-    elseif elasticity(D) == 1
-        income = quantity(d)/total_quantity * H/C
-    else 
-        income = quantity(d)/total_quantity * H/C * (expenditure(D)*reference_price(d)/C)^(elasticity(D)-1)
+    total_income = []
+    for d in DF
+        if !(isa(elasticity(D), Real))
+            income =  @expression(jm, 
+                quantity(d)/total_quantity * H/C * ifelse(1*elasticity(D) == 1, 1, (expenditure(D)*reference_price(d)/C)^(elasticity(D)-1))
+            )
+        elseif elasticity(D) == 1
+            income = quantity(d)/total_quantity * H/C
+        else 
+            income = quantity(d)/total_quantity * H/C * (expenditure(D)*reference_price(d)/C)^(elasticity(D)-1)
+        end
+
+        push!(total_income, income)
     end
 
-    return income
+    return sum(total_income)
 end
 
 
@@ -153,26 +154,28 @@ function expenditure(D::ScalarDemand)
     jm = jump_model(model(consumer(D)))
     total_quantity = quantity(D)
     σ = elasticity(D)
-    return @expression(jm, sum( quantity(d)/total_quantity * (get_variable(commodity(d))/reference_price(d))^(1-σ) for (_,d)∈demands(D))^(1/(1-σ)))
+    return @expression(jm, sum( quantity(d)/total_quantity * (get_variable(commodity(d))/reference_price(d))^(1-σ) for (_,DF)∈final_demands(D) for d∈DF)^(1/(1-σ)))
 end
 
 #################
 ## Constraints ##
 #################
 
-function zero_profit(S::ScalarSector)
+
+function zero_profit(S::MPSGE.ScalarSector; virtual = false)
     M = model(S)
     jm = jump_model(M)
-    @expression(jm, sum(compensated_demand(S,C)*get_variable(C) for C∈commodities(S)) - sum(tau(S,H) for H∈consumers(M) if tau(S,H)!=0; init=0))
+    #P = production(S)
+    @expression(jm, cost_function(S; virtual=virtual) - revenue_function(S; virtual=virtual))
 end
 
-function market_clearance(C::ScalarCommodity)
+function market_clearance(C::ScalarCommodity; virtual = false)
     M = model(C)
     jm = jump_model(M)
-    @expression(jm, -sum(compensated_demand(S,C) * get_variable(S) for S∈sectors(C);init=0) + sum( endowment(H,C) - demand(H,C) for H∈consumers(M); init=0))
+    @expression(jm, -sum(compensated_demand(S,C;virtual = virtual) * get_variable(S) for S∈sectors(C);init=0) + sum( endowment(H,C) - demand(H,C) for H∈consumers(M); init=0))
 end
 
-function income_balance(H::ScalarConsumer)
+function income_balance(H::ScalarConsumer; virtual = false)
     M = model(H)
     jm = jump_model(M)
     @expression(jm, get_variable(H) - (sum(get_variable(endowment(H,C))* get_variable(C) for C∈commodities(M) if endowment(H,C)!=0) - sum(tau(S,H)*S for S∈production_sectors(M) if tau(S,H)!=0; init=0)))
@@ -184,15 +187,15 @@ function build_constraints!(M::MPSGEModel)
     jm = jump_model(M)
 
     JuMP.@constraint(jm, zero_profit[S = MPSGE.production_sectors(M)],
-        MPSGE.zero_profit(S) ⟂ get_variable(S)
+        MPSGE.zero_profit(S; virtual = true) ⟂ get_variable(S)
     )
     
     JuMP.@constraint(jm, market_clearance[C = MPSGE.commodities(M)],
-        MPSGE.market_clearance(C) ⟂ get_variable(C)
+        MPSGE.market_clearance(C; virtual = true) ⟂ get_variable(C)
     )
     
     JuMP.@constraint(jm, income_balance[H = MPSGE.consumers(M)],
-        MPSGE.income_balance(H) ⟂ get_variable(H)
+        MPSGE.income_balance(H; virtual = true) ⟂ get_variable(H)
     )
 
     aux_cons = aux_constraints(M)
@@ -214,7 +217,7 @@ function consumer_income(consumer)
                 start_value, 
                 endowment
             ) 
-            for (_,endowment)∈endowments(demand(consumer)); init=0
+            for (_,E)∈endowments(demand(consumer)) for endowment∈E; init=0
         )
         new_start += -value(
             start_value, 
@@ -222,7 +225,7 @@ function consumer_income(consumer)
         )
     else
         __value_function(x) = is_fixed(x) ? fix_value(x) : value(x)
-        new_start = sum(raw_quantity(__value_function, e) for (_,e)∈endowments(demand(consumer)); init=0)
+        new_start = sum(raw_quantity(__value_function, e) for (_,E)∈endowments(demand(consumer)) for e∈E; init=0)
         new_start += -value(
             __value_function,
             sum(tau(sector, consumer) for sector in production_sectors(m); init=0)
@@ -258,35 +261,27 @@ function solve!(m::AbstractMPSGEModel; kwargs...)
         JuMP.set_attribute(jm, string(k), v)
     end
 
-    # Unfix numeraire, if set
-    if !ismissing(m.numeraire) 
-        unfix(numeraire(m))
-    end
-
     consumer = nothing
     # Check if any (non-auxiliary) variables are fixed. If not, set numeraire
     if sum(is_fixed.(MPSGE.production_sectors(m))) + sum(is_fixed.(commodities(m))) + sum(is_fixed.(consumers(m))) == 0 
         consumer = argmax(consumer_income, consumers(m))
         fix(consumer, consumer_income(consumer))
-        m.numeraire = consumer
     end
 
     JuMP.optimize!(jm)
 
     # Need to check termination status here
 
-    
+    if !isnothing(consumer)
+        unfix(consumer)
+    end
 
     if !m.silent
         output = "\n\nSolver Status: $(termination_status(jm))\nModel Status: $(primal_status(jm))"
 
         if !isnothing(consumer)
-            output *= "\n\nDefault price normalization using income for $consumer - This value is fixed to $(value(consumer)).\n"* 
-                      "Unfix with unfix($consumer)."
-            #unfix(consumer)
+            output *= "\n\nDefault price normalization using income for $consumer as numeraire, with the value of $(value(consumer)).\n"
         end
         print(output)
     end
-
-    #return m
 end

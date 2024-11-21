@@ -1,6 +1,5 @@
 using MPSGE
-using Documenter 
-import Literate
+using Documenter
 
 DocMeta.setdocmeta!(MPSGE, :DocTestSetup, :(using MPSGE); recursive=true)
 
@@ -8,26 +7,14 @@ DocMeta.setdocmeta!(MPSGE, :DocTestSetup, :(using MPSGE); recursive=true)
 const _PAGES = [
     "Introduction" => ["index.md"],
     "Tutorials" => [
-        "Tutorials/introduction.md", 
-        "Robinson Crusoe" => [
-            "Tutorials/robinson_crusoe/introduction.md",
-            "Tutorials/robinson_crusoe/basic_rc.md"
-            ],
-        "Intermediate Examples" => [
-            "Tutorials/intermediate_examples/M22.md"
-            ],
+        "Getting Started" => ["Tutorials/getting_started/introduction.md", "Tutorials/getting_started/getting_started_mpsge.md"],
+        "Basic Examples" => ["Tutorials/basic_examples/m1_mpsge.md"],
+        "Intermediate Examples" => ["Tutorials/intermediate_examples/M22.md"],
     ],
-    "Cookbook" => ["cookbook/taxes.md"],
     "How it works" => ["how_it_works.md"], 
-    "API Reference" => ["docs.md"],
+    "Docstrings" => ["docs.md"],
 ]
 
-
-EXAMPLE = joinpath(@__DIR__, "src/Tutorials/robinson_crusoe/basic_rc.jl")
-OUTPUT = joinpath(@__DIR__,"src/Tutorials/robinson_crusoe/")
-Literate.markdown(EXAMPLE, 
-                  OUTPUT;
-                  name = "basic_rc")#, preprocess = replace_includes)
 
 makedocs(;
     modules=[MPSGE],
@@ -44,8 +31,7 @@ makedocs(;
 deploydocs(;
     repo = "github.com/julia-mpsge/MPSGE.jl",
     devbranch = "main",
-    branch = "gh-pages",
-    push_preview = true
+    branch = "gh-pages"
 )
 
 #deploydocs(

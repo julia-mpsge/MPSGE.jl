@@ -53,8 +53,7 @@
     end)
 
     @demand(m, RA, begin
-            @final_demand(PU,164)
-        end,begin
+            @final_demand(PU,164)            
             @endowment(PL, endow * 74)
             @endowment(PK, 80)
     end)
@@ -270,8 +269,7 @@ end
     end)
 
     @demand(m, RA, begin
-            @final_demand(PU,154)
-        end,begin
+            @final_demand(PU,154)            
             @endowment(PL, endow * 54)
             @endowment(PK, 80)
     end)
@@ -492,7 +490,6 @@ end
     @demand(m, RA, begin
             @final_demand(PU,124, reference_price = pr_Ud)
             @final_demand(PY, 10)    
-        end, begin
             @endowment(PL, endow * 54)
             @endowment(PK, 80)
         end,

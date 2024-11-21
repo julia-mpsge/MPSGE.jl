@@ -47,8 +47,7 @@
     end)
 
     @demand(m, RA, begin
-            @final_demand(PU, 150. )
-        end,begin
+            @final_demand(PU, 150. )            
             @endowment(PL, endow*70)
             @endowment(PK, 80)
     end)
@@ -325,8 +324,7 @@ end
 
     for r in consumers
         @demand(m, RA[r], begin
-                @final_demand(PU, 75. )
-            end,begin
+                @final_demand(PU, 75. )                
                 @endowment(PL, endow*35)
                 @endowment(PK, 40)
         end)
@@ -728,7 +726,6 @@ end
 
     @demand(m, CONS, begin
             @final_demand(PW, 200.)
-        end, begin
             @endowment(PL, 100.0)
             @endowment(PK, 100.0)
     end)
@@ -1376,7 +1373,6 @@ end
     
     @demand(m, CONS, begin
             @final_demand(PW,200)
-        end, begin
             @endowment(PL, 120 + -80/(1-uo)*U)
             @endowment(PK, 90)
     end)
@@ -1601,8 +1597,7 @@ end
     end)    
             
     @demand(m, CONS, begin
-            @final_demand(PW,340)
-        end,begin
+            @final_demand(PW,340)            
             @endowment(PL, 200.)
             @endowment(PK, 100)
     end)
@@ -1879,7 +1874,6 @@ end
     
     @demand(m, CONS, begin
             @final_demand(PW, 180)
-        end, begin
             @endowment(PL, 74)
             @endowment(PK, 90)
     end)

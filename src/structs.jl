@@ -228,9 +228,8 @@ JuMP.value(F::Function, P::ScalarParameter) = P.value
 
 function set_value!(P::ScalarParameter, value::Number)
     P.value = value
-    if !isnothing(jump_model(model(P)))
-        fix(get_variable(P), value; force=true)
-    end
+    fix(get_variable(P), value; force=true)
+    set_start_value(get_variable(P), value)
     return value
 end
 
@@ -349,10 +348,11 @@ mutable struct Node
     parent::Union{Node, Nothing}
     children::Vector{Union{Node,Netput}}
     data::ScalarNest
-    cost_function::MPSGEquantity #There may be a better name
+    cost_function_virtual::Union{Nothing,JuMP.VariableRef}
+    cost_function::MPSGEquantity 
     netput_sign::Int
     function Node(data::ScalarNest; children = [], netput_sign::Int = 1)
-        N = new(nothing, children, data, 0, netput_sign) #Cost function is set after trees are built
+        N = new(nothing, children, data, nothing, 0, netput_sign) #Cost function is set after trees are built
         for child in children 
             set_parent!(child, N)
         end
@@ -371,7 +371,7 @@ parent(N::Node) = N.parent
 
 
 
-cost_function(N::Node) = N.cost_function
+cost_function(N::Node; virtual = false) = !virtual ? N.cost_function : N.cost_function_virtual
 #name(N::Node) = N.data.name
 #elasticity(N::Node) = N.data.elasticity
 
@@ -403,7 +403,8 @@ taxes(N::Netput) = N.taxes
 name(N::Netput) = name(commodity(N))
 #parent(N::Netput) = N.parent
 children(N::Netput) = []
-parents(N::Netput) = N.parents
+parent(N::Netput) = N.parents
+netput_sign(N::Netput) = N.netput_sign
     
 mutable struct Input <: Netput 
     commodity::ScalarCommodity
@@ -411,7 +412,6 @@ mutable struct Input <: Netput
     reference_price::MPSGEquantity
     taxes::Vector{Tax}
     parents::Vector{Node}
-    #cost_function::MPSGEquantity
     netput_sign::Int
     Input( commodity::ScalarCommodity,
             quantity::MPSGEquantity;
@@ -442,7 +442,6 @@ end
 struct Production
     sector::ScalarSector
     netputs::Dict{Commodity, Vector{Netput}}
-    compensated_demands::Dict{Netput,Vector{MPSGEquantity}}
     input::Union{Node, Nothing}
     output::Union{Node, Nothing}
 end
@@ -451,32 +450,102 @@ sector(P::Production) = P.sector
 input(P::Production) = P.input
 output(P::Production) = P.output
 commodities(P::Production) = collect(keys(P.netputs))
+netputs(P::Production) = P.netputs
+netputs(S::ScalarSector, C::ScalarCommodity) = get(netputs(production(S)), C, [])
+
+function find_nodes(P; search = :all)
+    out = Dict()
+    nodes_to_search = []
+    if search == :all
+        nodes_to_search = Vector{Any}([P.input, P.output])
+    elseif search == :input
+        nodes_to_search = Vector{Any}([input(P)])
+    elseif search == :output
+        nodes_to_search = Vector{Any}([output(P)])
+    end
+    while !isempty(nodes_to_search)
+        n = popfirst!(nodes_to_search)
+        if !haskey(out, name(n))
+            out[name(n)] = []
+        end
+        push!(out[name(n)], n)
+        if isa(n, MPSGE.Node)
+            push!(nodes_to_search, MPSGE.children(n)...)
+        end
+    end
+    return out
+end
+
+
+function cost_function(P::Production, nest::Symbol; virtual = false, search = :all)
+    N = find_nodes(P; search = search)
+    if haskey(N, nest)
+        return sum(quantity.(N[nest]).*cost_function.(N[nest]; virtual = virtual))
+    end
+    return 0
+end
+
+
+"""
+    cost_function(S::ScalarSector; virtual = false)
+    cost_function(S::ScalarSector, nest::Symbol; virtual = false)
+    
+Return a vector of cost functions for the given sector and nest. If `nest` is 
+not provided return the cost function for input tree. 
+
+`nest` is the symbol representing the nest. This can also be the name of a 
+commodity. 
+
+If `virtual` is true, return the virtual cost functions.
+"""
+cost_function(P::Production; virtual=false) = cost_function(P, name(input(P)), virtual=virtual)
+cost_function(S::ScalarSector, nest::Symbol; virtual = false) = cost_function(production(S), nest, virtual=virtual, search = :input)
+cost_function(S::ScalarSector; virtual = false) = cost_function(production(S), virtual=virtual)
+
+
+
+"""
+    revenue_function(S::ScalarSector; virtual = false)    
+    revenue_function(S::ScalarSector, nest::Symbol; virtual = false)
+    
+Return a vector of revenue functions for the given sector and nest. If `nest` is 
+not provided return the revenue function for input tree. 
+
+`nest` is the symbol representing the nest. This can also be the name of a 
+commodity. 
+
+If `virtual` is true, return the virtual revenue functions.
+
+"""
+revenue_function(P::Production; virtual = false) = cost_function(P, name(output(P)), virtual = virtual, search = :output)
+revenue_function(S::ScalarSector, nest::Symbol; virtual = false) = cost_function(production(S), nest, virtual = virtual, search = :output)
+revenue_function(S::ScalarSector; virtual = false) = revenue_function(production(S); virtual = virtual)
 
 ########################
 ## Demands/Endowments ##
 ########################
 
+abstract type abstractDemandFlow end;
 
-
-struct ScalarDem #FinalDemand
+struct ScalarFinalDemand <: abstractDemandFlow #FinalDemand
     commodity::ScalarCommodity
     quantity::MPSGEquantity
     reference_price::MPSGEquantity
-    ScalarDem(commodity::ScalarCommodity, quantity::MPSGEquantity; reference_price::MPSGEquantity = 1) = new(commodity,quantity,reference_price)
+    ScalarFinalDemand(commodity::ScalarCommodity, quantity::MPSGEquantity; reference_price::MPSGEquantity = 1) = new(commodity,quantity,reference_price)
 end
 
 
-struct ScalarEndowment
+struct ScalarEndowment <: abstractDemandFlow
     commodity::ScalarCommodity
     quantity::MPSGEquantity
 end
 
 # Getters
-commodity(C::ScalarDem) = C.commodity
-base_quantity(D::ScalarDem) = D.quantity
-quantity(D::ScalarDem) = base_quantity(D) * reference_price(D)
-reference_price(D::ScalarDem) = D.reference_price
-raw_quantity(D::ScalarDem) = value(D.quantity)*value(D.reference_price)
+commodity(C::ScalarFinalDemand) = C.commodity
+base_quantity(D::ScalarFinalDemand) = D.quantity
+quantity(D::ScalarFinalDemand) = base_quantity(D) * reference_price(D)
+reference_price(D::ScalarFinalDemand) = D.reference_price
+raw_quantity(D::ScalarFinalDemand) = value(D.quantity)*value(D.reference_price)
 
 commodity(C::ScalarEndowment) = C.commodity
 quantity(C::ScalarEndowment) = C.quantity
@@ -488,21 +557,25 @@ raw_quantity(C::ScalarEndowment) = value(C.quantity)
 struct ScalarDemand
     consumer::ScalarConsumer
     elasticity::MPSGEquantity
-    demands::Dict{Commodity,ScalarDem}
-    endowments::Dict{Commodity,ScalarEndowment}
+    demand_flow::Dict{Commodity, Vector{abstractDemandFlow}}
     function ScalarDemand(
         consumer::ScalarConsumer,
-        demands::Vector{ScalarDem},
-        endowments::Vector{ScalarEndowment};
+        demand_flow::Vector{abstractDemandFlow};
         elasticity::MPSGEquantity = 1
         )
 
-        
+        _demand_flow = Dict{Commodity, Vector{abstractDemandFlow}}()
+        for demand in demand_flow
+            if haskey(_demand_flow, demand.commodity)
+                push!(_demand_flow[demand.commodity], demand)
+            else
+                _demand_flow[demand.commodity] = [demand]
+            end
+        end
 
         D = new(consumer,
             elasticity,
-            Dict(demand.commodity => demand for demand in demands), 
-            Dict(endowment.commodity => endowment for endowment in endowments),
+            _demand_flow
             )
 
         set_start_value(consumer, raw_quantity(D))
@@ -514,11 +587,11 @@ end
 const Demand = ScalarDemand
 
 consumer(D::Demand) = D.consumer
-demands(D::Demand) = D.demands
-endowments(D::Demand) = D.endowments
-quantity(D::Demand) = sum(quantity(d) for (_,d)∈demands(D);init=0)
+final_demands(D::Demand) = Dict(C => [d for d in DF if isa(d,ScalarFinalDemand)] for (C,DF) in D.demand_flow)
+endowments(D::Demand) = Dict(C => [e for e in E if isa(e,ScalarEndowment)] for (C,E) in D.demand_flow)#D.endowments
+quantity(D::Demand) = sum(sum(quantity.(d);init=0) for (_,d)∈final_demands(D);init=0)
 elasticity(D::Demand) = D.elasticity
-raw_quantity(D::Demand) = sum(raw_quantity(d) for (_,d)∈demands(D); init=0)
+raw_quantity(D::Demand) = sum(sum(raw_quantity.(d);init=0) for (_,d)∈final_demands(D); init=0)
 
 
 
@@ -545,8 +618,7 @@ mutable struct MPSGEModel <:AbstractMPSGEModel
     commodities::Dict{ScalarCommodity,Vector{ScalarSector}} #Generated on model build
     auxiliaries::Dict{ScalarAuxiliary, AuxConstraint}
     silent::Bool
-    numeraire::Union{MPSGEVariable,Missing}
-    MPSGEModel() = new(Dict(),direct_model(PATHSolver.Optimizer()),Dict(),Dict(),Dict(),Dict(),false,missing)
+    MPSGEModel() = new(Dict(),direct_model(PATHSolver.Optimizer()),Dict(),Dict(),Dict(),Dict(),false)
 end
 
 #Getters
@@ -555,7 +627,6 @@ jump_model(M::MPSGEModel) = M.jump_model
 productions(M::MPSGEModel) = M.productions
 demands(M::MPSGEModel) = M.demands
 aux_constraints(M::MPSGEModel) = M.auxiliaries
-numeraire(M::MPSGEModel) = M.numeraire
 Base.getindex(M::MPSGEModel,key::Symbol) = M.object_dict[key]
 
 

@@ -120,8 +120,7 @@ for i∈I
 end
 
 @demand(WiNnat, RA, begin
-    [@final_demand(PA[i], fd_0[yr,i,:pce]) for i∈I]...
-    end,begin
+    [@final_demand(PA[i], fd_0[yr,i,:pce]) for i∈I]...    
     [@endowment(PY[i], fs_0[yr,i]) for i∈I]...
     @endowment(PFX, bopdef_0[yr])
     [@endowment(PA[i], -sum(fd_0[yr,i,xfd] for xfd∈FD if xfd!=:pce)) for i∈I]...
@@ -281,202 +280,202 @@ gams_results = XLSX.readxlsx(joinpath(@__DIR__, "MPSGEresults.xlsx"))
     @test value(A[:mmf]) ≈ WNDCnat["A.mmf","benchmarkmge"]#  1
     @test value(A[:otr]) ≈ WNDCnat["A.otr","benchmarkmge"]#  1
     @test value(A[:min]) ≈ WNDCnat["A.min","benchmarkmge"]#  1
-    # @test value(PA[ppd]ρRA) ≈ WNDCnat["DPARA.ppd","benchmarkmge"]#  44.9917512786608
-    # @test value(PA[res]ρRA) ≈ WNDCnat["DPARA.res","benchmarkmge"]#  739.640977649195
-    # @test value(PA[amb]ρRA) ≈ WNDCnat["DPARA.amb","benchmarkmge"]#  1051.49526950129
-    # @test value(PA[fbp]ρRA) ≈ WNDCnat["DPARA.fbp","benchmarkmge"]#  1032.63715951023
-    # @test value(PA[rec]ρRA) ≈ WNDCnat["DPARA.rec","benchmarkmge"]#  198.973632905629
-    # @test value(PA[agr]ρRA) ≈ WNDCnat["DPARA.agr","benchmarkmge"]#  147.860765929871
-    # @test value(PA[eec]ρRA) ≈ WNDCnat["DPARA.eec","benchmarkmge"]#  86.2937794590717
-    # @test value(PA[pub]ρRA) ≈ WNDCnat["DPARA.pub","benchmarkmge"]#  130.558271938077
-    # @test value(PA[hou]ρRA) ≈ WNDCnat["DPARA.hou","benchmarkmge"]#  2035.11235903476
-    # @test value(PA[ins]ρRA) ≈ WNDCnat["DPARA.ins","benchmarkmge"]#  386.984798816457
-    # @test value(PA[tex]ρRA) ≈ WNDCnat["DPARA.tex","benchmarkmge"]#  72.742311765499
-    # @test value(PA[leg]ρRA) ≈ WNDCnat["DPARA.leg","benchmarkmge"]#  104.839454950276
-    # @test value(PA[fen]ρRA) ≈ WNDCnat["DPARA.fen","benchmarkmge"]#  6.15724913707967
-    # @test value(PA[uti]ρRA) ≈ WNDCnat["DPARA.uti","benchmarkmge"]#  264.75348987443
-    # @test value(PA[nmp]ρRA) ≈ WNDCnat["DPARA.nmp","benchmarkmge"]#  20.8800042900968
-    # @test value(PA[brd]ρRA) ≈ WNDCnat["DPARA.brd","benchmarkmge"]#  330.910993843052
-    # @test value(PA[bnk]ρRA) ≈ WNDCnat["DPARA.bnk","benchmarkmge"]#  279.347316867508
-    # @test value(PA[ore]ρRA) ≈ WNDCnat["DPARA.ore","benchmarkmge"]#  5.63069962732941
-    # @test value(PA[edu]ρRA) ≈ WNDCnat["DPARA.edu","benchmarkmge"]#  351.693474833195
-    # @test value(PA[ote]ρRA) ≈ WNDCnat["DPARA.ote","benchmarkmge"]#  32.6161713845304
-    # @test value(PA[mch]ρRA) ≈ WNDCnat["DPARA.mch","benchmarkmge"]#  24.0979004885706
-    # @test value(PA[dat]ρRA) ≈ WNDCnat["DPARA.dat","benchmarkmge"]#  55.6169482736214
-    # @test value(PA[amd]ρRA) ≈ WNDCnat["DPARA.amd","benchmarkmge"]#  157.445263925325
-    # @test value(PA[hos]ρRA) ≈ WNDCnat["DPARA.hos","benchmarkmge"]#  1066.45110949419
-    # @test value(PA[rnt]ρRA) ≈ WNDCnat["DPARA.rnt","benchmarkmge"]#  105.365483950026
-    # @test value(PA[pla]ρRA) ≈ WNDCnat["DPARA.pla","benchmarkmge"]#  67.3705556680468
-    # @test value(PA[fof]ρRA) ≈ WNDCnat["DPARA.fof","benchmarkmge"]#  11.7882882944089
-    # @test value(PA[fin]ρRA) ≈ WNDCnat["DPARA.fin","benchmarkmge"]#  162.337880923005
-    # @test value(PA[tsv]ρRA) ≈ WNDCnat["DPARA.tsv","benchmarkmge"]#  72.8032149654701
-    # @test value(PA[nrs]ρRA) ≈ WNDCnat["DPARA.nrs","benchmarkmge"]#  242.29760788508
-    # @test value(PA[sec]ρRA) ≈ WNDCnat["DPARA.sec","benchmarkmge"]#  224.455670893543
-    # @test value(PA[art]ρRA) ≈ WNDCnat["DPARA.art","benchmarkmge"]#  78.2323166628951
-    # @test value(PA[mov]ρRA) ≈ WNDCnat["DPARA.mov","benchmarkmge"]#  32.5341701845693
-    # @test value(PA[fpd]ρRA) ≈ WNDCnat["DPARA.fpd","benchmarkmge"]#  119.650958943251
-    # @test value(PA[pri]ρRA) ≈ WNDCnat["DPARA.pri","benchmarkmge"]#  8.42087210600606
-    # @test value(PA[grd]ρRA) ≈ WNDCnat["DPARA.grd","benchmarkmge"]#  45.8913275782342
-    # @test value(PA[sle]ρRA) ≈ WNDCnat["DPARA.sle","benchmarkmge"]#  70.8505336663962
-    # @test value(PA[osv]ρRA) ≈ WNDCnat["DPARA.osv","benchmarkmge"]#  615.300415708169
-    # @test value(PA[trn]ρRA) ≈ WNDCnat["DPARA.trn","benchmarkmge"]#  1.50801962928476
-    # @test value(PA[fmt]ρRA) ≈ WNDCnat["DPARA.fmt","benchmarkmge"]#  40.6884084807019
-    # @test value(PA[pet]ρRA) ≈ WNDCnat["DPARA.pet","benchmarkmge"]#  310.684543852645
-    # @test value(PA[cep]ρRA) ≈ WNDCnat["DPARA.cep","benchmarkmge"]#  164.51940292197
-    # @test value(PA[wst]ρRA) ≈ WNDCnat["DPARA.wst","benchmarkmge"]#  27.02992138718
-    # @test value(PA[mot]ρRA) ≈ WNDCnat["DPARA.mot","benchmarkmge"]#  338.060986839661
-    # @test value(PA[adm]ρRA) ≈ WNDCnat["DPARA.adm","benchmarkmge"]#  63.9123816696869
-    # @test value(PA[soc]ρRA) ≈ WNDCnat["DPARA.soc","benchmarkmge"]#  210.496481900163
-    # @test value(PA[alt]ρRA) ≈ WNDCnat["DPARA.alt","benchmarkmge"]#  399.697885810427
-    # @test value(PA[pmt]ρRA) ≈ WNDCnat["DPARA.pmt","benchmarkmge"]#  1.73992778917477
-    # @test value(PA[trk]ρRA) ≈ WNDCnat["DPARA.trk","benchmarkmge"]#  12.2893814941713
-    # @test value(PA[wtt]ρRA) ≈ WNDCnat["DPARA.wtt","benchmarkmge"]#  21.4072842898467
-    # @test value(PA[wpd]ρRA) ≈ WNDCnat["DPARA.wpd","benchmarkmge"]#  7.89415413625588
-    # @test value(PA[wrh]ρRA) ≈ WNDCnat["DPARA.wrh","benchmarkmge"] atol=1.0e-8 #  0.0873265562585818
-    # @test value(PA[ott]ρRA) ≈ WNDCnat["DPARA.ott","benchmarkmge"]#  5.46827548740645
-    # @test value(PA[che]ρRA) ≈ WNDCnat["DPARA.che","benchmarkmge"]#  630.352943701029
-    # @test value(PA[air]ρRA) ≈ WNDCnat["DPARA.air","benchmarkmge"]#  129.274758938686
-    # @test value(PA[mmf]ρRA) ≈ WNDCnat["DPARA.mmf","benchmarkmge"]#  264.623776874491
-    # @test value(PA[otr]ρRA) ≈ WNDCnat["DPARA.otr","benchmarkmge"]#  23.3470480889267
-    # @test value(PA[min]ρRA) ≈ WNDCnat["DPARA.min","benchmarkmge"]#  0.643946397694582
-    # @test value(PA[ppd]‡A[ppd]) ≈ WNDCnat["SPAA.ppd","benchmarkmge"]#  237.61937898161
-    # @test value(PA[res]‡A[res]) ≈ WNDCnat["SPAA.res","benchmarkmge"]#  959.336695999382
-    # @test value(PA[com]‡A[com]) ≈ WNDCnat["SPAA.com","benchmarkmge"]#  524.890024973663
-    # @test value(PA[amb]‡A[amb]) ≈ WNDCnat["SPAA.amb","benchmarkmge"]#  1093.37976000005
-    # @test value(PA[fbp]‡A[fbp]) ≈ WNDCnat["SPAA.fbp","benchmarkmge"]#  1517.70571993414
-    # @test value(PA[rec]‡A[rec]) ≈ WNDCnat["SPAA.rec","benchmarkmge"]#  204.693237
-    # @test value(PA[con]‡A[con]) ≈ WNDCnat["SPAA.con","benchmarkmge"]#  1661.39430000001
-    # @test value(PA[agr]‡A[agr]) ≈ WNDCnat["SPAA.agr","benchmarkmge"]#  517.589199751203
-    # @test value(PA[eec]‡A[eec]) ≈ WNDCnat["SPAA.eec","benchmarkmge"]#  298.912943
-    # @test value(PA[fnd]‡A[fnd]) ≈ WNDCnat["SPAA.fnd","benchmarkmge"]#  380.898129
-    # @test value(PA[pub]‡A[pub]) ≈ WNDCnat["SPAA.pub","benchmarkmge"]#  348.3906469578
-    # @test value(PA[hou]‡A[hou]) ≈ WNDCnat["SPAA.hou","benchmarkmge"]#  2035.11236
-    # @test value(PA[ins]‡A[ins]) ≈ WNDCnat["SPAA.ins","benchmarkmge"]#  1174.63183999205
-    # @test value(PA[tex]‡A[tex]) ≈ WNDCnat["SPAA.tex","benchmarkmge"]#  145.78984
-    # @test value(PA[leg]‡A[leg]) ≈ WNDCnat["SPAA.leg","benchmarkmge"]#  348.314109011953
-    # @test value(PA[fen]‡A[fen]) ≈ WNDCnat["SPAA.fen","benchmarkmge"]#  70.4793684
-    # @test value(PA[uti]‡A[uti]) ≈ WNDCnat["SPAA.uti","benchmarkmge"]#  652.129446
-    # @test value(PA[nmp]‡A[nmp]) ≈ WNDCnat["SPAA.nmp","benchmarkmge"]#  214.381814997754
-    # @test value(PA[brd]‡A[brd]) ≈ WNDCnat["SPAA.brd","benchmarkmge"]#  707.121256008476
-    # @test value(PA[bnk]‡A[bnk]) ≈ WNDCnat["SPAA.bnk","benchmarkmge"]#  792.046892594355
-    # @test value(PA[ore]‡A[ore]) ≈ WNDCnat["SPAA.ore","benchmarkmge"]#  1255.26627000537
-    # @test value(PA[edu]‡A[edu]) ≈ WNDCnat["SPAA.edu","benchmarkmge"]#  392.687609997531
-    # @test value(PA[ote]‡A[ote]) ≈ WNDCnat["SPAA.ote","benchmarkmge"]#  277.836923944712
-    # @test value(PA[man]‡A[man]) ≈ WNDCnat["SPAA.man","benchmarkmge"]#  579.490321000943
-    # @test value(PA[mch]‡A[mch]) ≈ WNDCnat["SPAA.mch","benchmarkmge"]#  588.491860085505
-    # @test value(PA[dat]‡A[dat]) ≈ WNDCnat["SPAA.dat","benchmarkmge"]#  245.652028996898
-    # @test value(PA[amd]‡A[amd]) ≈ WNDCnat["SPAA.amd","benchmarkmge"]#  229.587824
-    # @test value(PA[oil]‡A[oil]) ≈ WNDCnat["SPAA.oil","benchmarkmge"]#  411.63889798397
-    # @test value(PA[hos]‡A[hos]) ≈ WNDCnat["SPAA.hos","benchmarkmge"]#  1073.11604999793
-    # @test value(PA[rnt]‡A[rnt]) ≈ WNDCnat["SPAA.rnt","benchmarkmge"]#  367.735560970776
-    # @test value(PA[pla]‡A[pla]) ≈ WNDCnat["SPAA.pla","benchmarkmge"]#  363.00797901718
-    # @test value(PA[fof]‡A[fof]) ≈ WNDCnat["SPAA.fof","benchmarkmge"]#  92.0874858004525
-    # @test value(PA[fin]‡A[fin]) ≈ WNDCnat["SPAA.fin","benchmarkmge"]#  183.495134
-    # @test value(PA[tsv]‡A[tsv]) ≈ WNDCnat["SPAA.tsv","benchmarkmge"]#  1988.02194989871
-    # @test value(PA[nrs]‡A[nrs]) ≈ WNDCnat["SPAA.nrs","benchmarkmge"]#  245.658333
-    # @test value(PA[sec]‡A[sec]) ≈ WNDCnat["SPAA.sec","benchmarkmge"]#  513.798265994931
-    # @test value(PA[art]‡A[art]) ≈ WNDCnat["SPAA.art","benchmarkmge"]#  174.622135001627
-    # @test value(PA[mov]‡A[mov]) ≈ WNDCnat["SPAA.mov","benchmarkmge"]#  146.386317008313
-    # @test value(PA[fpd]‡A[fpd]) ≈ WNDCnat["SPAA.fpd","benchmarkmge"]#  221.314816995872
-    # @test value(PA[slg]‡A[slg]) ≈ WNDCnat["SPAA.slg","benchmarkmge"]#  1744.23136
-    # @test value(PA[pri]‡A[pri]) ≈ WNDCnat["SPAA.pri","benchmarkmge"]#  89.3225462013793
-    # @test value(PA[grd]‡A[grd]) ≈ WNDCnat["SPAA.grd","benchmarkmge"]#  93.1481825
-    # @test value(PA[pip]‡A[pip]) ≈ WNDCnat["SPAA.pip","benchmarkmge"]#  0.374257519
-    # @test value(PA[sle]‡A[sle]) ≈ WNDCnat["SPAA.sle","benchmarkmge"]#  104.176032
-    # @test value(PA[osv]‡A[osv]) ≈ WNDCnat["SPAA.osv","benchmarkmge"]#  868.463054999984
-    # @test value(PA[trn]‡A[trn]) ≈ WNDCnat["SPAA.trn","benchmarkmge"]#  7.94738373497139
-    # @test value(PA[smn]‡A[smn]) ≈ WNDCnat["SPAA.smn","benchmarkmge"]#  124.292406
-    # @test value(PA[fmt]‡A[fmt]) ≈ WNDCnat["SPAA.fmt","benchmarkmge"]#  477.616345039274
-    # @test value(PA[pet]‡A[pet]) ≈ WNDCnat["SPAA.pet","benchmarkmge"]#  757.577833
-    # @test value(PA[cep]‡A[cep]) ≈ WNDCnat["SPAA.cep","benchmarkmge"]#  753.924908891486
-    # @test value(PA[wst]‡A[wst]) ≈ WNDCnat["SPAA.wst","benchmarkmge"]#  117.577674999935
-    # @test value(PA[mot]‡A[mot]) ≈ WNDCnat["SPAA.mot","benchmarkmge"]#  1119.67645
-    # @test value(PA[adm]‡A[adm]) ≈ WNDCnat["SPAA.adm","benchmarkmge"]#  929.228217998669
-    # @test value(PA[soc]‡A[soc]) ≈ WNDCnat["SPAA.soc","benchmarkmge"]#  211.263869
-    # @test value(PA[alt]‡A[alt]) ≈ WNDCnat["SPAA.alt","benchmarkmge"]#  429.277534993067
-    # @test value(PA[pmt]‡A[pmt]) ≈ WNDCnat["SPAA.pmt","benchmarkmge"]#  307.0467769927
-    # @test value(PA[trk]‡A[trk]) ≈ WNDCnat["SPAA.trk","benchmarkmge"]#  37.7022274993623
-    # @test value(PA[fdd]‡A[fdd]) ≈ WNDCnat["SPAA.fdd","benchmarkmge"]#  598.321003
-    # @test value(PA[wtt]‡A[wtt]) ≈ WNDCnat["SPAA.wtt","benchmarkmge"]#  24.8619917973652
-    # @test value(PA[wpd]‡A[wpd]) ≈ WNDCnat["SPAA.wpd","benchmarkmge"]#  169.552497997188
-    # @test value(PA[wht]‡A[wht]) ≈ WNDCnat["SPAA.wht","benchmarkmge"]#  101.032245
-    # @test value(PA[wrh]‡A[wrh]) ≈ WNDCnat["SPAA.wrh","benchmarkmge"]#  141.95619299996
-    # @test value(PA[ott]‡A[ott]) ≈ WNDCnat["SPAA.ott","benchmarkmge"]#  7.216437
-    # @test value(PA[che]‡A[che]) ≈ WNDCnat["SPAA.che","benchmarkmge"]#  1318.00180013406
-    # @test value(PA[air]‡A[air]) ≈ WNDCnat["SPAA.air","benchmarkmge"]#  208.476751
-    # @test value(PA[mmf]‡A[mmf]) ≈ WNDCnat["SPAA.mmf","benchmarkmge"]#  433.137576991175
-    # @test value(PA[otr]‡A[otr]) ≈ WNDCnat["SPAA.otr","benchmarkmge"]#  234.454974992182
-    # @test value(PA[min]‡A[min]) ≈ WNDCnat["SPAA.min","benchmarkmge"]#  111.084490990502
-    # @test value(PY[ppd]†A→dmppd) ≈ WNDCnat["DPYA.ppd","benchmarkmge"]#  177.848050085401
-    # @test value(PY[res]†A→dmres) ≈ WNDCnat["DPYA.res","benchmarkmge"]#  899.582049
-    # @test value(PY[com]†A→dmcom) ≈ WNDCnat["DPYA.com","benchmarkmge"]#  517.204729
-    # @test value(PY[amb]†A→dmamb) ≈ WNDCnat["DPYA.amb","benchmarkmge"]#  1092.93382
-    # @test value(PY[fbp]†A→dmfbp) ≈ WNDCnat["DPYA.fbp","benchmarkmge"]#  930.255710616793
-    # @test value(PY[rec]†A→dmrec) ≈ WNDCnat["DPYA.rec","benchmarkmge"]#  195.091973
-    # @test value(PY[con]†A→dmcon) ≈ WNDCnat["DPYA.con","benchmarkmge"]#  1659.55143
-    # @test value(PY[agr]†A→dmagr) ≈ WNDCnat["DPYA.agr","benchmarkmge"]#  396.050008932756
-    # @test value(PY[eec]†A→dmeec) ≈ WNDCnat["DPYA.eec","benchmarkmge"]#  117.88548944717
-    # @test value(PY[fnd]†A→dmfnd) ≈ WNDCnat["DPYA.fnd","benchmarkmge"]#  380.898129
-    # @test value(PY[pub]†A→dmpub) ≈ WNDCnat["DPYA.pub","benchmarkmge"]#  279.160328
-    # @test value(PY[hou]†A→dmhou) ≈ WNDCnat["DPYA.hou","benchmarkmge"]#  2073.31916
-    # @test value(PY[ins]†A→dmins) ≈ WNDCnat["DPYA.ins","benchmarkmge"]#  1122.38542
-    # @test value(PY[tex]†A→dmtex) ≈ WNDCnat["DPYA.tex","benchmarkmge"]#  46.3777108288246
-    # @test value(PY[leg]†A→dmleg) ≈ WNDCnat["DPYA.leg","benchmarkmge"]#  342.991585
-    # @test value(PY[fen]†A→dmfen) ≈ WNDCnat["DPYA.fen","benchmarkmge"]#  70.9003684
-    # @test value(PY[uti]†A→dmuti) ≈ WNDCnat["DPYA.uti","benchmarkmge"]#  624.190868
-    # @test value(PY[nmp]†A→dmnmp) ≈ WNDCnat["DPYA.nmp","benchmarkmge"]#  123.614506
-    # @test value(PY[brd]†A→dmbrd) ≈ WNDCnat["DPYA.brd","benchmarkmge"]#  683.419058
-    # @test value(PY[bnk]†A→dmbnk) ≈ WNDCnat["DPYA.bnk","benchmarkmge"]#  852.55204
-    # @test value(PY[ore]†A→dmore) ≈ WNDCnat["DPYA.ore","benchmarkmge"]#  1259.29276
-    # @test value(PY[edu]†A→dmedu) ≈ WNDCnat["DPYA.edu","benchmarkmge"]#  393.263985
-    # @test value(PY[ote]†A→dmote) ≈ WNDCnat["DPYA.ote","benchmarkmge"]#  317.811410898786
-    # @test value(PY[man]†A→dmman) ≈ WNDCnat["DPYA.man","benchmarkmge"]#  582.277441
-    # @test value(PY[mch]†A→dmmch) ≈ WNDCnat["DPYA.mch","benchmarkmge"]#  351.230727563246
-    # @test value(PY[dat]†A→dmdat) ≈ WNDCnat["DPYA.dat","benchmarkmge"]#  249.633814
-    # @test value(PY[amd]†A→dmamd) ≈ WNDCnat["DPYA.amd","benchmarkmge"]#  211.274527
-    # @test value(PY[oil]†A→dmoil) ≈ WNDCnat["DPYA.oil","benchmarkmge"]#  231.922532588968
-    # @test value(PY[hos]†A→dmhos) ≈ WNDCnat["DPYA.hos","benchmarkmge"]#  1069.65353
-    # @test value(PY[rnt]†A→dmrnt) ≈ WNDCnat["DPYA.rnt","benchmarkmge"]#  433.205937
-    # @test value(PY[pla]†A→dmpla) ≈ WNDCnat["DPYA.pla","benchmarkmge"]#  230.941662410601
-    # @test value(PY[fof]†A→dmfof) ≈ WNDCnat["DPYA.fof","benchmarkmge"]#  65.8524888157003
-    # @test value(PY[fin]†A→dmfin) ≈ WNDCnat["DPYA.fin","benchmarkmge"]#  183.457238
-    # @test value(PY[tsv]†A→dmtsv) ≈ WNDCnat["DPYA.tsv","benchmarkmge"]#  2036.04782
-    # @test value(PY[nrs]†A→dmnrs) ≈ WNDCnat["DPYA.nrs","benchmarkmge"]#  242.743749
-    # @test value(PY[sec]†A→dmsec) ≈ WNDCnat["DPYA.sec","benchmarkmge"]#  584.315032
-    # @test value(PY[art]†A→dmart) ≈ WNDCnat["DPYA.art","benchmarkmge"]#  169.263525
-    # @test value(PY[mov]†A→dmmov) ≈ WNDCnat["DPYA.mov","benchmarkmge"]#  145.130265
-    # @test value(PY[fpd]†A→dmfpd) ≈ WNDCnat["DPYA.fpd","benchmarkmge"]#  71.5262340021643
-    # @test value(PY[slg]†A→dmslg) ≈ WNDCnat["DPYA.slg","benchmarkmge"]#  1744.23136
-    # @test value(PY[pri]†A→dmpri) ≈ WNDCnat["DPYA.pri","benchmarkmge"]#  71.103540199266
-    # @test value(PY[grd]†A→dmgrd) ≈ WNDCnat["DPYA.grd","benchmarkmge"]#  92.1405807
-    # @test value(PY[pip]†A→dmpip) ≈ WNDCnat["DPYA.pip","benchmarkmge"] atol=1.0e-7 #  0.551520281
-    # @test value(PY[sle]†A→dmsle) ≈ WNDCnat["DPYA.sle","benchmarkmge"]#  104.176032
-    # @test value(PY[osv]†A→dmosv) ≈ WNDCnat["DPYA.osv","benchmarkmge"]#  843.629126
-    # @test value(PY[trn]†A→dmtrn) ≈ WNDCnat["DPYA.trn","benchmarkmge"]#  10.818151
-    # @test value(PY[smn]†A→dmsmn) ≈ WNDCnat["DPYA.smn","benchmarkmge"]#  126.289406
-    # @test value(PY[fmt]†A→dmfmt) ≈ WNDCnat["DPYA.fmt","benchmarkmge"]#  329.180896584783
-    # @test value(PY[pet]†A→dmpet) ≈ WNDCnat["DPYA.pet","benchmarkmge"]#  528.436219055607
-    # @test value(PY[cep]†A→dmcep) ≈ WNDCnat["DPYA.cep","benchmarkmge"]#  298.351501859884
-    # @test value(PY[wst]†A→dmwst) ≈ WNDCnat["DPYA.wst","benchmarkmge"]#  115.754169
-    # @test value(PY[mot]†A→dmmot) ≈ WNDCnat["DPYA.mot","benchmarkmge"]#  657.78166616378
-    # @test value(PY[adm]†A→dmadm) ≈ WNDCnat["DPYA.adm","benchmarkmge"]#  923.386612
-    # @test value(PY[soc]†A→dmsoc) ≈ WNDCnat["DPYA.soc","benchmarkmge"]#  210.448152
-    # @test value(PY[alt]†A→dmalt) ≈ WNDCnat["DPYA.alt","benchmarkmge"]#  18.7614694421086
-    # @test value(PY[pmt]†A→dmpmt) ≈ WNDCnat["DPYA.pmt","benchmarkmge"]#  208.537991982698
-    # @test value(PY[trk]†A→dmtrk) ≈ WNDCnat["DPYA.trk","benchmarkmge"]#  38.934866
-    # @test value(PY[fdd]†A→dmfdd) ≈ WNDCnat["DPYA.fdd","benchmarkmge"]#  598.321003
-    # @test value(PY[wtt]†A→dmwtt) ≈ WNDCnat["DPYA.wtt","benchmarkmge"]#  29.5450418
-    # @test value(PY[wpd]†A→dmwpd) ≈ WNDCnat["DPYA.wpd","benchmarkmge"]#  110.755670091967
-    # @test value(PY[wht]†A→dmwht) ≈ WNDCnat["DPYA.wht","benchmarkmge"]#  103.418245
-    # @test value(PY[wrh]†A→dmwrh) ≈ WNDCnat["DPYA.wrh","benchmarkmge"]#  141.952358
-    # @test value(PY[ott]†A→dmott) ≈ WNDCnat["DPYA.ott","benchmarkmge"]#  7.216437
-    # @test value(PY[che]†A→dmche) ≈ WNDCnat["DPYA.che","benchmarkmge"]#  747.701432229913
-    # @test value(PY[air]†A→dmair) ≈ WNDCnat["DPYA.air","benchmarkmge"]#  189.931126
-    # @test value(PY[mmf]†A→dmmmf) ≈ WNDCnat["DPYA.mmf","benchmarkmge"]#  145.823807487888
-    # @test value(PY[otr]†A→dmotr) ≈ WNDCnat["DPYA.otr","benchmarkmge"]#  244.23904
-    # @test value(PY[min]†A→dmmin) ≈ WNDCnat["DPYA.min","benchmarkmge"]#  83.8020487
-    # @test value(PM[trn]‡MS[trn]) ≈ WNDCnat["SPMMS.trn","benchmarkmge"]#  441.38467
-    # @test value(PM[trd]‡MS[trd]) ≈ WNDCnat["SPMMS.trd","benchmarkmge"]#  2963.50744
+    @test value(demand(RA,PA[:ppd])) ≈ WNDCnat["DPARA.ppd","benchmarkmge"]#  44.9917512786608
+    @test value(demand(RA,PA[:res])) ≈ WNDCnat["DPARA.res","benchmarkmge"]#  739.640977649195
+    @test value(demand(RA,PA[:amb])) ≈ WNDCnat["DPARA.amb","benchmarkmge"]#  1051.49526950129
+    @test value(demand(RA,PA[:fbp])) ≈ WNDCnat["DPARA.fbp","benchmarkmge"]#  1032.63715951023
+    @test value(demand(RA,PA[:rec])) ≈ WNDCnat["DPARA.rec","benchmarkmge"]#  198.973632905629
+    @test value(demand(RA,PA[:agr])) ≈ WNDCnat["DPARA.agr","benchmarkmge"]#  147.860765929871
+    @test value(demand(RA,PA[:eec])) ≈ WNDCnat["DPARA.eec","benchmarkmge"]#  86.2937794590717
+    @test value(demand(RA,PA[:pub])) ≈ WNDCnat["DPARA.pub","benchmarkmge"]#  130.558271938077
+    @test value(demand(RA,PA[:hou])) ≈ WNDCnat["DPARA.hou","benchmarkmge"]#  2035.11235903476
+    @test value(demand(RA,PA[:ins])) ≈ WNDCnat["DPARA.ins","benchmarkmge"]#  386.984798816457
+    @test value(demand(RA,PA[:tex])) ≈ WNDCnat["DPARA.tex","benchmarkmge"]#  72.742311765499
+    @test value(demand(RA,PA[:leg])) ≈ WNDCnat["DPARA.leg","benchmarkmge"]#  104.839454950276
+    @test value(demand(RA,PA[:fen])) ≈ WNDCnat["DPARA.fen","benchmarkmge"]#  6.15724913707967
+    @test value(demand(RA,PA[:uti])) ≈ WNDCnat["DPARA.uti","benchmarkmge"]#  264.75348987443
+    @test value(demand(RA,PA[:nmp])) ≈ WNDCnat["DPARA.nmp","benchmarkmge"]#  20.8800042900968
+    @test value(demand(RA,PA[:brd])) ≈ WNDCnat["DPARA.brd","benchmarkmge"]#  330.910993843052
+    @test value(demand(RA,PA[:bnk])) ≈ WNDCnat["DPARA.bnk","benchmarkmge"]#  279.347316867508
+    @test value(demand(RA,PA[:ore])) ≈ WNDCnat["DPARA.ore","benchmarkmge"]#  5.63069962732941
+    @test value(demand(RA,PA[:edu])) ≈ WNDCnat["DPARA.edu","benchmarkmge"]#  351.693474833195
+    @test value(demand(RA,PA[:ote])) ≈ WNDCnat["DPARA.ote","benchmarkmge"]#  32.6161713845304
+    @test value(demand(RA,PA[:mch])) ≈ WNDCnat["DPARA.mch","benchmarkmge"]#  24.0979004885706
+    @test value(demand(RA,PA[:dat])) ≈ WNDCnat["DPARA.dat","benchmarkmge"]#  55.6169482736214
+    @test value(demand(RA,PA[:amd])) ≈ WNDCnat["DPARA.amd","benchmarkmge"]#  157.445263925325
+    @test value(demand(RA,PA[:hos])) ≈ WNDCnat["DPARA.hos","benchmarkmge"]#  1066.45110949419
+    @test value(demand(RA,PA[:rnt])) ≈ WNDCnat["DPARA.rnt","benchmarkmge"]#  105.365483950026
+    @test value(demand(RA,PA[:pla])) ≈ WNDCnat["DPARA.pla","benchmarkmge"]#  67.3705556680468
+    @test value(demand(RA,PA[:fof])) ≈ WNDCnat["DPARA.fof","benchmarkmge"]#  11.7882882944089
+    @test value(demand(RA,PA[:fin])) ≈ WNDCnat["DPARA.fin","benchmarkmge"]#  162.337880923005
+    @test value(demand(RA,PA[:tsv])) ≈ WNDCnat["DPARA.tsv","benchmarkmge"]#  72.8032149654701
+    @test value(demand(RA,PA[:nrs])) ≈ WNDCnat["DPARA.nrs","benchmarkmge"]#  242.29760788508
+    @test value(demand(RA,PA[:sec])) ≈ WNDCnat["DPARA.sec","benchmarkmge"]#  224.455670893543
+    @test value(demand(RA,PA[:art])) ≈ WNDCnat["DPARA.art","benchmarkmge"]#  78.2323166628951
+    @test value(demand(RA,PA[:mov])) ≈ WNDCnat["DPARA.mov","benchmarkmge"]#  32.5341701845693
+    @test value(demand(RA,PA[:fpd])) ≈ WNDCnat["DPARA.fpd","benchmarkmge"]#  119.650958943251
+    @test value(demand(RA,PA[:pri])) ≈ WNDCnat["DPARA.pri","benchmarkmge"]#  8.42087210600606
+    @test value(demand(RA,PA[:grd])) ≈ WNDCnat["DPARA.grd","benchmarkmge"]#  45.8913275782342
+    @test value(demand(RA,PA[:sle])) ≈ WNDCnat["DPARA.sle","benchmarkmge"]#  70.8505336663962
+    @test value(demand(RA,PA[:osv])) ≈ WNDCnat["DPARA.osv","benchmarkmge"]#  615.300415708169
+    @test value(demand(RA,PA[:trn])) ≈ WNDCnat["DPARA.trn","benchmarkmge"]#  1.50801962928476
+    @test value(demand(RA,PA[:fmt])) ≈ WNDCnat["DPARA.fmt","benchmarkmge"]#  40.6884084807019
+    @test value(demand(RA,PA[:pet])) ≈ WNDCnat["DPARA.pet","benchmarkmge"]#  310.684543852645
+    @test value(demand(RA,PA[:cep])) ≈ WNDCnat["DPARA.cep","benchmarkmge"]#  164.51940292197
+    @test value(demand(RA,PA[:wst])) ≈ WNDCnat["DPARA.wst","benchmarkmge"]#  27.02992138718
+    @test value(demand(RA,PA[:mot])) ≈ WNDCnat["DPARA.mot","benchmarkmge"]#  338.060986839661
+    @test value(demand(RA,PA[:adm])) ≈ WNDCnat["DPARA.adm","benchmarkmge"]#  63.9123816696869
+    @test value(demand(RA,PA[:soc])) ≈ WNDCnat["DPARA.soc","benchmarkmge"]#  210.496481900163
+    @test value(demand(RA,PA[:alt])) ≈ WNDCnat["DPARA.alt","benchmarkmge"]#  399.697885810427
+    @test value(demand(RA,PA[:pmt])) ≈ WNDCnat["DPARA.pmt","benchmarkmge"]#  1.73992778917477
+    @test value(demand(RA,PA[:trk])) ≈ WNDCnat["DPARA.trk","benchmarkmge"]#  12.2893814941713
+    @test value(demand(RA,PA[:wtt])) ≈ WNDCnat["DPARA.wtt","benchmarkmge"]#  21.4072842898467
+    @test value(demand(RA,PA[:wpd])) ≈ WNDCnat["DPARA.wpd","benchmarkmge"]#  7.89415413625588
+    @test value(demand(RA,PA[:wrh])) ≈ WNDCnat["DPARA.wrh","benchmarkmge"] atol=1.0e-8 #  0.0873265562585818
+    @test value(demand(RA,PA[:ott])) ≈ WNDCnat["DPARA.ott","benchmarkmge"]#  5.46827548740645
+    @test value(demand(RA,PA[:che])) ≈ WNDCnat["DPARA.che","benchmarkmge"]#  630.352943701029
+    @test value(demand(RA,PA[:air])) ≈ WNDCnat["DPARA.air","benchmarkmge"]#  129.274758938686
+    @test value(demand(RA,PA[:mmf])) ≈ WNDCnat["DPARA.mmf","benchmarkmge"]#  264.623776874491
+    @test value(demand(RA,PA[:otr])) ≈ WNDCnat["DPARA.otr","benchmarkmge"]#  23.3470480889267
+    @test value(demand(RA,PA[:min])) ≈ WNDCnat["DPARA.min","benchmarkmge"]#  0.643946397694582
+    @test value(compensated_demand(A[:ppd],PA[:ppd])) ≈ -WNDCnat["SPAA.ppd","benchmarkmge"]#  237.61937898161
+    @test value(compensated_demand(A[:res],PA[:res])) ≈ -WNDCnat["SPAA.res","benchmarkmge"]#  959.336695999382
+    @test value(compensated_demand(A[:com],PA[:com])) ≈ -WNDCnat["SPAA.com","benchmarkmge"]#  524.890024973663
+    @test value(compensated_demand(A[:amb],PA[:amb])) ≈ -WNDCnat["SPAA.amb","benchmarkmge"]#  1093.37976000005
+    @test value(compensated_demand(A[:fbp],PA[:fbp])) ≈ -WNDCnat["SPAA.fbp","benchmarkmge"]#  1517.70571993414
+    @test value(compensated_demand(A[:rec],PA[:rec])) ≈ -WNDCnat["SPAA.rec","benchmarkmge"]#  204.693237
+    @test value(compensated_demand(A[:con],PA[:con])) ≈ -WNDCnat["SPAA.con","benchmarkmge"]#  1661.39430000001
+    @test value(compensated_demand(A[:agr],PA[:agr])) ≈ -WNDCnat["SPAA.agr","benchmarkmge"]#  517.589199751203
+    @test value(compensated_demand(A[:eec],PA[:eec])) ≈ -WNDCnat["SPAA.eec","benchmarkmge"]#  298.912943
+    @test value(compensated_demand(A[:fnd],PA[:fnd])) ≈ -WNDCnat["SPAA.fnd","benchmarkmge"]#  380.898129
+    @test value(compensated_demand(A[:pub],PA[:pub])) ≈ -WNDCnat["SPAA.pub","benchmarkmge"]#  348.3906469578
+    @test value(compensated_demand(A[:hou],PA[:hou])) ≈ -WNDCnat["SPAA.hou","benchmarkmge"]#  2035.11236
+    @test value(compensated_demand(A[:ins],PA[:ins])) ≈ -WNDCnat["SPAA.ins","benchmarkmge"]#  1174.63183999205
+    @test value(compensated_demand(A[:tex],PA[:tex])) ≈ -WNDCnat["SPAA.tex","benchmarkmge"]#  145.78984
+    @test value(compensated_demand(A[:leg],PA[:leg])) ≈ -WNDCnat["SPAA.leg","benchmarkmge"]#  348.314109011953
+    @test value(compensated_demand(A[:fen],PA[:fen])) ≈ -WNDCnat["SPAA.fen","benchmarkmge"]#  70.4793684
+    @test value(compensated_demand(A[:uti],PA[:uti])) ≈ -WNDCnat["SPAA.uti","benchmarkmge"]#  652.129446
+    @test value(compensated_demand(A[:nmp],PA[:nmp])) ≈ -WNDCnat["SPAA.nmp","benchmarkmge"]#  214.381814997754
+    @test value(compensated_demand(A[:brd],PA[:brd])) ≈ -WNDCnat["SPAA.brd","benchmarkmge"]#  707.121256008476
+    @test value(compensated_demand(A[:bnk],PA[:bnk])) ≈ -WNDCnat["SPAA.bnk","benchmarkmge"]#  792.046892594355
+    @test value(compensated_demand(A[:ore],PA[:ore])) ≈ -WNDCnat["SPAA.ore","benchmarkmge"]#  1255.26627000537
+    @test value(compensated_demand(A[:edu],PA[:edu])) ≈ -WNDCnat["SPAA.edu","benchmarkmge"]#  392.687609997531
+    @test value(compensated_demand(A[:ote],PA[:ote])) ≈ -WNDCnat["SPAA.ote","benchmarkmge"]#  277.836923944712
+    @test value(compensated_demand(A[:man],PA[:man])) ≈ -WNDCnat["SPAA.man","benchmarkmge"]#  579.490321000943
+    @test value(compensated_demand(A[:mch],PA[:mch])) ≈ -WNDCnat["SPAA.mch","benchmarkmge"]#  588.491860085505
+    @test value(compensated_demand(A[:dat],PA[:dat])) ≈ -WNDCnat["SPAA.dat","benchmarkmge"]#  245.652028996898
+    @test value(compensated_demand(A[:amd],PA[:amd])) ≈ -WNDCnat["SPAA.amd","benchmarkmge"]#  229.587824
+    @test value(compensated_demand(A[:oil],PA[:oil])) ≈ -WNDCnat["SPAA.oil","benchmarkmge"]#  411.63889798397
+    @test value(compensated_demand(A[:hos],PA[:hos])) ≈ -WNDCnat["SPAA.hos","benchmarkmge"]#  1073.11604999793
+    @test value(compensated_demand(A[:rnt],PA[:rnt])) ≈ -WNDCnat["SPAA.rnt","benchmarkmge"]#  367.735560970776
+    @test value(compensated_demand(A[:pla],PA[:pla])) ≈ -WNDCnat["SPAA.pla","benchmarkmge"]#  363.00797901718
+    @test value(compensated_demand(A[:fof],PA[:fof])) ≈ -WNDCnat["SPAA.fof","benchmarkmge"]#  92.0874858004525
+    @test value(compensated_demand(A[:fin],PA[:fin])) ≈ -WNDCnat["SPAA.fin","benchmarkmge"]#  183.495134
+    @test value(compensated_demand(A[:tsv],PA[:tsv])) ≈ -WNDCnat["SPAA.tsv","benchmarkmge"]#  1988.02194989871
+    @test value(compensated_demand(A[:nrs],PA[:nrs])) ≈ -WNDCnat["SPAA.nrs","benchmarkmge"]#  245.658333
+    @test value(compensated_demand(A[:sec],PA[:sec])) ≈ -WNDCnat["SPAA.sec","benchmarkmge"]#  513.798265994931
+    @test value(compensated_demand(A[:art],PA[:art])) ≈ -WNDCnat["SPAA.art","benchmarkmge"]#  174.622135001627
+    @test value(compensated_demand(A[:mov],PA[:mov])) ≈ -WNDCnat["SPAA.mov","benchmarkmge"]#  146.386317008313
+    @test value(compensated_demand(A[:fpd],PA[:fpd])) ≈ -WNDCnat["SPAA.fpd","benchmarkmge"]#  221.314816995872
+    @test value(compensated_demand(A[:slg],PA[:slg])) ≈ -WNDCnat["SPAA.slg","benchmarkmge"]#  1744.23136
+    @test value(compensated_demand(A[:pri],PA[:pri])) ≈ -WNDCnat["SPAA.pri","benchmarkmge"]#  89.3225462013793
+    @test value(compensated_demand(A[:grd],PA[:grd])) ≈ -WNDCnat["SPAA.grd","benchmarkmge"]#  93.1481825
+    @test value(compensated_demand(A[:pip],PA[:pip])) ≈ -WNDCnat["SPAA.pip","benchmarkmge"]#  0.374257519
+    @test value(compensated_demand(A[:sle],PA[:sle])) ≈ -WNDCnat["SPAA.sle","benchmarkmge"]#  104.176032
+    @test value(compensated_demand(A[:osv],PA[:osv])) ≈ -WNDCnat["SPAA.osv","benchmarkmge"]#  868.463054999984
+    @test value(compensated_demand(A[:trn],PA[:trn])) ≈ -WNDCnat["SPAA.trn","benchmarkmge"]#  7.94738373497139
+    @test value(compensated_demand(A[:smn],PA[:smn])) ≈ -WNDCnat["SPAA.smn","benchmarkmge"]#  124.292406
+    @test value(compensated_demand(A[:fmt],PA[:fmt])) ≈ -WNDCnat["SPAA.fmt","benchmarkmge"]#  477.616345039274
+    @test value(compensated_demand(A[:pet],PA[:pet])) ≈ -WNDCnat["SPAA.pet","benchmarkmge"]#  757.577833
+    @test value(compensated_demand(A[:cep],PA[:cep])) ≈ -WNDCnat["SPAA.cep","benchmarkmge"]#  753.924908891486
+    @test value(compensated_demand(A[:wst],PA[:wst])) ≈ -WNDCnat["SPAA.wst","benchmarkmge"]#  117.577674999935
+    @test value(compensated_demand(A[:mot],PA[:mot])) ≈ -WNDCnat["SPAA.mot","benchmarkmge"]#  1119.67645
+    @test value(compensated_demand(A[:adm],PA[:adm])) ≈ -WNDCnat["SPAA.adm","benchmarkmge"]#  929.228217998669
+    @test value(compensated_demand(A[:soc],PA[:soc])) ≈ -WNDCnat["SPAA.soc","benchmarkmge"]#  211.263869
+    @test value(compensated_demand(A[:alt],PA[:alt])) ≈ -WNDCnat["SPAA.alt","benchmarkmge"]#  429.277534993067
+    @test value(compensated_demand(A[:pmt],PA[:pmt])) ≈ -WNDCnat["SPAA.pmt","benchmarkmge"]#  307.0467769927
+    @test value(compensated_demand(A[:trk],PA[:trk])) ≈ -WNDCnat["SPAA.trk","benchmarkmge"]#  37.7022274993623
+    @test value(compensated_demand(A[:fdd],PA[:fdd])) ≈ -WNDCnat["SPAA.fdd","benchmarkmge"]#  598.321003
+    @test value(compensated_demand(A[:wtt],PA[:wtt])) ≈ -WNDCnat["SPAA.wtt","benchmarkmge"]#  24.8619917973652
+    @test value(compensated_demand(A[:wpd],PA[:wpd])) ≈ -WNDCnat["SPAA.wpd","benchmarkmge"]#  169.552497997188
+    @test value(compensated_demand(A[:wht],PA[:wht])) ≈ -WNDCnat["SPAA.wht","benchmarkmge"]#  101.032245
+    @test value(compensated_demand(A[:wrh],PA[:wrh])) ≈ -WNDCnat["SPAA.wrh","benchmarkmge"]#  141.95619299996
+    @test value(compensated_demand(A[:ott],PA[:ott])) ≈ -WNDCnat["SPAA.ott","benchmarkmge"]#  7.216437
+    @test value(compensated_demand(A[:che],PA[:che])) ≈ -WNDCnat["SPAA.che","benchmarkmge"]#  1318.00180013406
+    @test value(compensated_demand(A[:air],PA[:air])) ≈ -WNDCnat["SPAA.air","benchmarkmge"]#  208.476751
+    @test value(compensated_demand(A[:mmf],PA[:mmf])) ≈ -WNDCnat["SPAA.mmf","benchmarkmge"]#  433.137576991175
+    @test value(compensated_demand(A[:otr],PA[:otr])) ≈ -WNDCnat["SPAA.otr","benchmarkmge"]#  234.454974992182
+    @test value(compensated_demand(A[:min],PA[:min])) ≈ -WNDCnat["SPAA.min","benchmarkmge"]#  111.084490990502
+    @test value(compensated_demand(A[:ppd],PY[:ppd])) ≈ WNDCnat["DPYA.ppd","benchmarkmge"]#  177.848050085401
+    @test value(compensated_demand(A[:res],PY[:res])) ≈ WNDCnat["DPYA.res","benchmarkmge"]#  899.582049
+    @test value(compensated_demand(A[:com],PY[:com])) ≈ WNDCnat["DPYA.com","benchmarkmge"]#  517.204729
+    @test value(compensated_demand(A[:amb],PY[:amb])) ≈ WNDCnat["DPYA.amb","benchmarkmge"]#  1092.93382
+    @test value(compensated_demand(A[:fbp],PY[:fbp])) ≈ WNDCnat["DPYA.fbp","benchmarkmge"]#  930.255710616793
+    @test value(compensated_demand(A[:rec],PY[:rec])) ≈ WNDCnat["DPYA.rec","benchmarkmge"]#  195.091973
+    @test value(compensated_demand(A[:con],PY[:con])) ≈ WNDCnat["DPYA.con","benchmarkmge"]#  1659.55143
+    @test value(compensated_demand(A[:agr],PY[:agr])) ≈ WNDCnat["DPYA.agr","benchmarkmge"]#  396.050008932756
+    @test value(compensated_demand(A[:eec],PY[:eec])) ≈ WNDCnat["DPYA.eec","benchmarkmge"]#  117.88548944717
+    @test value(compensated_demand(A[:fnd],PY[:fnd])) ≈ WNDCnat["DPYA.fnd","benchmarkmge"]#  380.898129
+    @test value(compensated_demand(A[:pub],PY[:pub])) ≈ WNDCnat["DPYA.pub","benchmarkmge"]#  279.160328
+    @test value(compensated_demand(A[:hou],PY[:hou])) ≈ WNDCnat["DPYA.hou","benchmarkmge"]#  2073.31916
+    @test value(compensated_demand(A[:ins],PY[:ins])) ≈ WNDCnat["DPYA.ins","benchmarkmge"]#  1122.38542
+    @test value(compensated_demand(A[:tex],PY[:tex])) ≈ WNDCnat["DPYA.tex","benchmarkmge"]#  46.3777108288246
+    @test value(compensated_demand(A[:leg],PY[:leg])) ≈ WNDCnat["DPYA.leg","benchmarkmge"]#  342.991585
+    @test value(compensated_demand(A[:fen],PY[:fen])) ≈ WNDCnat["DPYA.fen","benchmarkmge"]#  70.9003684
+    @test value(compensated_demand(A[:uti],PY[:uti])) ≈ WNDCnat["DPYA.uti","benchmarkmge"]#  624.190868
+    @test value(compensated_demand(A[:nmp],PY[:nmp])) ≈ WNDCnat["DPYA.nmp","benchmarkmge"]#  123.614506
+    @test value(compensated_demand(A[:brd],PY[:brd])) ≈ WNDCnat["DPYA.brd","benchmarkmge"]#  683.419058
+    @test value(compensated_demand(A[:bnk],PY[:bnk])) ≈ WNDCnat["DPYA.bnk","benchmarkmge"]#  852.55204
+    @test value(compensated_demand(A[:ore],PY[:ore])) ≈ WNDCnat["DPYA.ore","benchmarkmge"]#  1259.29276
+    @test value(compensated_demand(A[:edu],PY[:edu])) ≈ WNDCnat["DPYA.edu","benchmarkmge"]#  393.263985
+    @test value(compensated_demand(A[:ote],PY[:ote])) ≈ WNDCnat["DPYA.ote","benchmarkmge"]#  317.811410898786
+    @test value(compensated_demand(A[:man],PY[:man])) ≈ WNDCnat["DPYA.man","benchmarkmge"]#  582.277441
+    @test value(compensated_demand(A[:mch],PY[:mch])) ≈ WNDCnat["DPYA.mch","benchmarkmge"]#  351.230727563246
+    @test value(compensated_demand(A[:dat],PY[:dat])) ≈ WNDCnat["DPYA.dat","benchmarkmge"]#  249.633814
+    @test value(compensated_demand(A[:amd],PY[:amd])) ≈ WNDCnat["DPYA.amd","benchmarkmge"]#  211.274527
+    @test value(compensated_demand(A[:oil],PY[:oil])) ≈ WNDCnat["DPYA.oil","benchmarkmge"]#  231.922532588968
+    @test value(compensated_demand(A[:hos],PY[:hos])) ≈ WNDCnat["DPYA.hos","benchmarkmge"]#  1069.65353
+    @test value(compensated_demand(A[:rnt],PY[:rnt])) ≈ WNDCnat["DPYA.rnt","benchmarkmge"]#  433.205937
+    @test value(compensated_demand(A[:pla],PY[:pla])) ≈ WNDCnat["DPYA.pla","benchmarkmge"]#  230.941662410601
+    @test value(compensated_demand(A[:fof],PY[:fof])) ≈ WNDCnat["DPYA.fof","benchmarkmge"]#  65.8524888157003
+    @test value(compensated_demand(A[:fin],PY[:fin])) ≈ WNDCnat["DPYA.fin","benchmarkmge"]#  183.457238
+    @test value(compensated_demand(A[:tsv],PY[:tsv])) ≈ WNDCnat["DPYA.tsv","benchmarkmge"]#  2036.04782
+    @test value(compensated_demand(A[:nrs],PY[:nrs])) ≈ WNDCnat["DPYA.nrs","benchmarkmge"]#  242.743749
+    @test value(compensated_demand(A[:sec],PY[:sec])) ≈ WNDCnat["DPYA.sec","benchmarkmge"]#  584.315032
+    @test value(compensated_demand(A[:art],PY[:art])) ≈ WNDCnat["DPYA.art","benchmarkmge"]#  169.263525
+    @test value(compensated_demand(A[:mov],PY[:mov])) ≈ WNDCnat["DPYA.mov","benchmarkmge"]#  145.130265
+    @test value(compensated_demand(A[:fpd],PY[:fpd])) ≈ WNDCnat["DPYA.fpd","benchmarkmge"]#  71.5262340021643
+    @test value(compensated_demand(A[:slg],PY[:slg])) ≈ WNDCnat["DPYA.slg","benchmarkmge"]#  1744.23136
+    @test value(compensated_demand(A[:pri],PY[:pri])) ≈ WNDCnat["DPYA.pri","benchmarkmge"]#  71.103540199266
+    @test value(compensated_demand(A[:grd],PY[:grd])) ≈ WNDCnat["DPYA.grd","benchmarkmge"]#  92.1405807
+    @test value(compensated_demand(A[:pip],PY[:pip])) ≈ WNDCnat["DPYA.pip","benchmarkmge"] atol=1.0e-7 #  0.551520281
+    @test value(compensated_demand(A[:sle],PY[:sle])) ≈ WNDCnat["DPYA.sle","benchmarkmge"]#  104.176032
+    @test value(compensated_demand(A[:osv],PY[:osv])) ≈ WNDCnat["DPYA.osv","benchmarkmge"]#  843.629126
+    @test value(compensated_demand(A[:trn],PY[:trn])) ≈ WNDCnat["DPYA.trn","benchmarkmge"]#  10.818151
+    @test value(compensated_demand(A[:smn],PY[:smn])) ≈ WNDCnat["DPYA.smn","benchmarkmge"]#  126.289406
+    @test value(compensated_demand(A[:fmt],PY[:fmt])) ≈ WNDCnat["DPYA.fmt","benchmarkmge"]#  329.180896584783
+    @test value(compensated_demand(A[:pet],PY[:pet])) ≈ WNDCnat["DPYA.pet","benchmarkmge"]#  528.436219055607
+    @test value(compensated_demand(A[:cep],PY[:cep])) ≈ WNDCnat["DPYA.cep","benchmarkmge"]#  298.351501859884
+    @test value(compensated_demand(A[:wst],PY[:wst])) ≈ WNDCnat["DPYA.wst","benchmarkmge"]#  115.754169
+    @test value(compensated_demand(A[:mot],PY[:mot])) ≈ WNDCnat["DPYA.mot","benchmarkmge"]#  657.78166616378
+    @test value(compensated_demand(A[:adm],PY[:adm])) ≈ WNDCnat["DPYA.adm","benchmarkmge"]#  923.386612
+    @test value(compensated_demand(A[:soc],PY[:soc])) ≈ WNDCnat["DPYA.soc","benchmarkmge"]#  210.448152
+    @test value(compensated_demand(A[:alt],PY[:alt])) ≈ WNDCnat["DPYA.alt","benchmarkmge"]#  18.7614694421086
+    @test value(compensated_demand(A[:pmt],PY[:pmt])) ≈ WNDCnat["DPYA.pmt","benchmarkmge"]#  208.537991982698
+    @test value(compensated_demand(A[:trk],PY[:trk])) ≈ WNDCnat["DPYA.trk","benchmarkmge"]#  38.934866
+    @test value(compensated_demand(A[:fdd],PY[:fdd])) ≈ WNDCnat["DPYA.fdd","benchmarkmge"]#  598.321003
+    @test value(compensated_demand(A[:wtt],PY[:wtt])) ≈ WNDCnat["DPYA.wtt","benchmarkmge"]#  29.5450418
+    @test value(compensated_demand(A[:wpd],PY[:wpd])) ≈ WNDCnat["DPYA.wpd","benchmarkmge"]#  110.755670091967
+    @test value(compensated_demand(A[:wht],PY[:wht])) ≈ WNDCnat["DPYA.wht","benchmarkmge"]#  103.418245
+    @test value(compensated_demand(A[:wrh],PY[:wrh])) ≈ WNDCnat["DPYA.wrh","benchmarkmge"]#  141.952358
+    @test value(compensated_demand(A[:ott],PY[:ott])) ≈ WNDCnat["DPYA.ott","benchmarkmge"]#  7.216437
+    @test value(compensated_demand(A[:che],PY[:che])) ≈ WNDCnat["DPYA.che","benchmarkmge"]#  747.701432229913
+    @test value(compensated_demand(A[:air],PY[:air])) ≈ WNDCnat["DPYA.air","benchmarkmge"]#  189.931126
+    @test value(compensated_demand(A[:mmf],PY[:mmf])) ≈ WNDCnat["DPYA.mmf","benchmarkmge"]#  145.823807487888
+    @test value(compensated_demand(A[:otr],PY[:otr])) ≈ WNDCnat["DPYA.otr","benchmarkmge"]#  244.23904
+    @test value(compensated_demand(A[:min],PY[:min])) ≈ WNDCnat["DPYA.min","benchmarkmge"]#  83.8020487
+    @test value(compensated_demand(MS[:trn],PM[:trn])) ≈ -WNDCnat["SPMMS.trn","benchmarkmge"]#  441.38467
+    @test value(compensated_demand(MS[:trd],PM[:trd])) ≈ -WNDCnat["SPMMS.trd","benchmarkmge"]#  2963.50744
     @test value(MS[:trn]) ≈ WNDCnat["MS.trn","benchmarkmge"]#  1
     @test value(MS[:trd]) ≈ WNDCnat["MS.trd","benchmarkmge"]#  1
     @test value(PA[:ppd]) ≈ WNDCnat["PA.ppd","benchmarkmge"]#  1
@@ -780,202 +779,202 @@ solve!(WiNnat)
 @test value(A[:mmf]) ≈ WNDCnat["A.mmf","Countermge"]#  1.00711561245115
 @test value(A[:otr]) ≈ WNDCnat["A.otr","Countermge"]#  1.02108030242368
 @test value(A[:min]) ≈ WNDCnat["A.min","Countermge"]#  1.01630155662069
-# @test value(PA[ppd]ρRA) ≈ WNDCnat["DPARA.ppd","Countermge"]#  45.0983450258118
-# @test value(PA[res]ρRA) ≈ WNDCnat["DPARA.res","Countermge"]#  774.30644850203
-# @test value(PA[amb]ρRA) ≈ WNDCnat["DPARA.amb","Countermge"]#  1020.04917657084
-# @test value(PA[fbp]ρRA) ≈ WNDCnat["DPARA.fbp","Countermge"]#  1080.86336015448
-# @test value(PA[rec]ρRA) ≈ WNDCnat["DPARA.rec","Countermge"]#  204.125961820132
-# @test value(PA[agr]ρRA) ≈ WNDCnat["DPARA.agr","Countermge"]#  144.627985840036
-# @test value(PA[eec]ρRA) ≈ WNDCnat["DPARA.eec","Countermge"]#  87.2169771491712
-# @test value(PA[pub]ρRA) ≈ WNDCnat["DPARA.pub","Countermge"]#  129.471085383795
-# @test value(PA[hou]ρRA) ≈ WNDCnat["DPARA.hou","Countermge"]#  1927.94383239772
-# @test value(PA[ins]ρRA) ≈ WNDCnat["DPARA.ins","Countermge"]#  383.943789595992
-# @test value(PA[tex]ρRA) ≈ WNDCnat["DPARA.tex","Countermge"]#  75.5437796408227
-# @test value(PA[leg]ρRA) ≈ WNDCnat["DPARA.leg","Countermge"]#  106.266138994311
-# @test value(PA[fen]ρRA) ≈ WNDCnat["DPARA.fen","Countermge"]#  5.97072004230777
-# @test value(PA[uti]ρRA) ≈ WNDCnat["DPARA.uti","Countermge"]#  272.992165442691
-# @test value(PA[nmp]ρRA) ≈ WNDCnat["DPARA.nmp","Countermge"]#  21.0690866095121
-# @test value(PA[brd]ρRA) ≈ WNDCnat["DPARA.brd","Countermge"]#  343.608479971518
-# @test value(PA[bnk]ρRA) ≈ WNDCnat["DPARA.bnk","Countermge"]#  270.463738156423
-# @test value(PA[ore]ρRA) ≈ WNDCnat["DPARA.ore","Countermge"]#  5.53000837942978
-# @test value(PA[edu]ρRA) ≈ WNDCnat["DPARA.edu","Countermge"]#  340.647696780532
-# @test value(PA[ote]ρRA) ≈ WNDCnat["DPARA.ote","Countermge"]#  32.155916106726
-# @test value(PA[mch]ρRA) ≈ WNDCnat["DPARA.mch","Countermge"]#  24.1038938445545
-# @test value(PA[dat]ρRA) ≈ WNDCnat["DPARA.dat","Countermge"]#  54.4633114169796
-# @test value(PA[amd]ρRA) ≈ WNDCnat["DPARA.amd","Countermge"]#  167.153475662182
-# @test value(PA[hos]ρRA) ≈ WNDCnat["DPARA.hos","Countermge"]#  1040.7247049585
-# @test value(PA[rnt]ρRA) ≈ WNDCnat["DPARA.rnt","Countermge"]#  107.152323154972
-# @test value(PA[pla]ρRA) ≈ WNDCnat["DPARA.pla","Countermge"]#  68.1704729408806
-# @test value(PA[fof]ρRA) ≈ WNDCnat["DPARA.fof","Countermge"]#  11.5651242722978
-# @test value(PA[fin]ρRA) ≈ WNDCnat["DPARA.fin","Countermge"]#  158.55105630941
-# @test value(PA[tsv]ρRA) ≈ WNDCnat["DPARA.tsv","Countermge"]#  70.8316547519168
-# @test value(PA[nrs]ρRA) ≈ WNDCnat["DPARA.nrs","Countermge"]#  238.932568746628
-# @test value(PA[sec]ρRA) ≈ WNDCnat["DPARA.sec","Countermge"]#  218.521852430846
-# @test value(PA[art]ρRA) ≈ WNDCnat["DPARA.art","Countermge"]#  78.4055247393738
-# @test value(PA[mov]ρRA) ≈ WNDCnat["DPARA.mov","Countermge"]#  32.4430654023884
-# @test value(PA[fpd]ρRA) ≈ WNDCnat["DPARA.fpd","Countermge"]#  122.363411973318
-# @test value(PA[pri]ρRA) ≈ WNDCnat["DPARA.pri","Countermge"]#  8.37274945985891
-# @test value(PA[grd]ρRA) ≈ WNDCnat["DPARA.grd","Countermge"]#  45.2558721438874
-# @test value(PA[sle]ρRA) ≈ WNDCnat["DPARA.sle","Countermge"]#  70.283657579612
-# @test value(PA[osv]ρRA) ≈ WNDCnat["DPARA.osv","Countermge"]#  612.787024500054
-# @test value(PA[trn]ρRA) ≈ WNDCnat["DPARA.trn","Countermge"]#  1.25120478127489
-# @test value(PA[fmt]ρRA) ≈ WNDCnat["DPARA.fmt","Countermge"]#  40.7255951187371
-# @test value(PA[pet]ρRA) ≈ WNDCnat["DPARA.pet","Countermge"]#  358.729529644352
-# @test value(PA[cep]ρRA) ≈ WNDCnat["DPARA.cep","Countermge"]#  162.838825409896
-# @test value(PA[wst]ρRA) ≈ WNDCnat["DPARA.wst","Countermge"]#  26.8562461473655
-# @test value(PA[mot]ρRA) ≈ WNDCnat["DPARA.mot","Countermge"]#  344.573830948772
-# @test value(PA[adm]ρRA) ≈ WNDCnat["DPARA.adm","Countermge"]#  62.6015621217838
-# @test value(PA[soc]ρRA) ≈ WNDCnat["DPARA.soc","Countermge"]#  205.873629707678
-# @test value(PA[alt]ρRA) ≈ WNDCnat["DPARA.alt","Countermge"]#  432.459984153533
-# @test value(PA[pmt]ρRA) ≈ WNDCnat["DPARA.pmt","Countermge"]#  1.71848845347668
-# @test value(PA[trk]ρRA) ≈ WNDCnat["DPARA.trk","Countermge"]#  12.3653759398715
-# @test value(PA[wtt]ρRA) ≈ WNDCnat["DPARA.wtt","Countermge"]#  21.4157591930215
-# @test value(PA[wpd]ρRA) ≈ WNDCnat["DPARA.wpd","Countermge"]#  7.91823844428873
-# @test value(PA[wrh]ρRA) ≈ WNDCnat["DPARA.wrh","Countermge"] atol=1.0e-8 #  0.0854605630590118
-# @test value(PA[ott]ρRA) ≈ WNDCnat["DPARA.ott","Countermge"]#  5.31473768111257
-# @test value(PA[che]ρRA) ≈ WNDCnat["DPARA.che","Countermge"]#  632.508582230469
-# @test value(PA[air]ρRA) ≈ WNDCnat["DPARA.air","Countermge"]#  143.422732837925
-# @test value(PA[mmf]ρRA) ≈ WNDCnat["DPARA.mmf","Countermge"]#  268.65901078116
-# @test value(PA[otr]ρRA) ≈ WNDCnat["DPARA.otr","Countermge"]#  23.0291158739367
-# @test value(PA[min]ρRA) ≈ WNDCnat["DPARA.min","Countermge"] atol = 1.0e-7 #  0.653932358001658
-# @test value(PA[ppd]‡A[ppd]) ≈ WNDCnat["SPAA.ppd","Countermge"]#  236.988938393355
-# @test value(PA[res]‡A[res]) ≈ WNDCnat["SPAA.res","Countermge"]#  959.304544516456
-# @test value(PA[com]‡A[com]) ≈ WNDCnat["SPAA.com","Countermge"]#  525.364047878254
-# @test value(PA[amb]‡A[amb]) ≈ WNDCnat["SPAA.amb","Countermge"]#  1093.38041860847
-# @test value(PA[fbp]‡A[fbp]) ≈ WNDCnat["SPAA.fbp","Countermge"]#  1515.65653419943
-# @test value(PA[rec]‡A[rec]) ≈ WNDCnat["SPAA.rec","Countermge"]#  204.693237
-# @test value(PA[con]‡A[con]) ≈ WNDCnat["SPAA.con","Countermge"]#  1661.39205237938
-# @test value(PA[agr]‡A[agr]) ≈ WNDCnat["SPAA.agr","Countermge"]#  516.056457439951
-# @test value(PA[eec]‡A[eec]) ≈ WNDCnat["SPAA.eec","Countermge"]#  298.232417532365
-# @test value(PA[fnd]‡A[fnd]) ≈ WNDCnat["SPAA.fnd","Countermge"]#  380.898129
-# @test value(PA[pub]‡A[pub]) ≈ WNDCnat["SPAA.pub","Countermge"]#  348.824378750271
-# @test value(PA[hou]‡A[hou]) ≈ WNDCnat["SPAA.hou","Countermge"]#  2035.11236
-# @test value(PA[ins]‡A[ins]) ≈ WNDCnat["SPAA.ins","Countermge"]#  1174.52373324662
-# @test value(PA[tex]‡A[tex]) ≈ WNDCnat["SPAA.tex","Countermge"]#  145.347236767545
-# @test value(PA[leg]‡A[leg]) ≈ WNDCnat["SPAA.leg","Countermge"]#  348.469159371955
-# @test value(PA[fen]‡A[fen]) ≈ WNDCnat["SPAA.fen","Countermge"]#  70.4845665297578
-# @test value(PA[uti]‡A[uti]) ≈ WNDCnat["SPAA.uti","Countermge"]#  652.03285818802
-# @test value(PA[nmp]‡A[nmp]) ≈ WNDCnat["SPAA.nmp","Countermge"]#  214.116328876329
-# @test value(PA[brd]‡A[brd]) ≈ WNDCnat["SPAA.brd","Countermge"]#  706.802123628329
-# @test value(PA[bnk]‡A[bnk]) ≈ WNDCnat["SPAA.bnk","Countermge"]#  792.554975640748
-# @test value(PA[ore]‡A[ore]) ≈ WNDCnat["SPAA.ore","Countermge"]#  1255.20269149723
-# @test value(PA[edu]‡A[edu]) ≈ WNDCnat["SPAA.edu","Countermge"]#  392.715902817812
-# @test value(PA[ote]‡A[ote]) ≈ WNDCnat["SPAA.ote","Countermge"]#  276.943867862988
-# @test value(PA[man]‡A[man]) ≈ WNDCnat["SPAA.man","Countermge"]#  579.527335362865
-# @test value(PA[mch]‡A[mch]) ≈ WNDCnat["SPAA.mch","Countermge"]#  586.917497613094
-# @test value(PA[dat]‡A[dat]) ≈ WNDCnat["SPAA.dat","Countermge"]#  245.620113987753
-# @test value(PA[amd]‡A[amd]) ≈ WNDCnat["SPAA.amd","Countermge"]#  229.587824
-# @test value(PA[oil]‡A[oil]) ≈ WNDCnat["SPAA.oil","Countermge"]#  411.265605375987
-# @test value(PA[hos]‡A[hos]) ≈ WNDCnat["SPAA.hos","Countermge"]#  1073.11067297167
-# @test value(PA[rnt]‡A[rnt]) ≈ WNDCnat["SPAA.rnt","Countermge"]#  368.095713098834
-# @test value(PA[pla]‡A[pla]) ≈ WNDCnat["SPAA.pla","Countermge"]#  362.202794356016
-# @test value(PA[fof]‡A[fof]) ≈ WNDCnat["SPAA.fof","Countermge"]#  92.1024335819389
-# @test value(PA[fin]‡A[fin]) ≈ WNDCnat["SPAA.fin","Countermge"]#  183.495134
-# @test value(PA[tsv]‡A[tsv]) ≈ WNDCnat["SPAA.tsv","Countermge"]#  1988.87361079195
-# @test value(PA[nrs]‡A[nrs]) ≈ WNDCnat["SPAA.nrs","Countermge"]#  245.658333
-# @test value(PA[sec]‡A[sec]) ≈ WNDCnat["SPAA.sec","Countermge"]#  514.086810307178
-# @test value(PA[art]‡A[art]) ≈ WNDCnat["SPAA.art","Countermge"]#  174.632096282488
-# @test value(PA[mov]‡A[mov]) ≈ WNDCnat["SPAA.mov","Countermge"]#  146.421796945177
-# @test value(PA[fpd]‡A[fpd]) ≈ WNDCnat["SPAA.fpd","Countermge"]#  221.263642518005
-# @test value(PA[slg]‡A[slg]) ≈ WNDCnat["SPAA.slg","Countermge"]#  1744.23136
-# @test value(PA[pri]‡A[pri]) ≈ WNDCnat["SPAA.pri","Countermge"]#  89.2774959690228
-# @test value(PA[grd]‡A[grd]) ≈ WNDCnat["SPAA.grd","Countermge"]#  93.1481825
-# @test value(PA[pip]‡A[pip]) ≈ WNDCnat["SPAA.pip","Countermge"] atol=1.0e-7 #  0.379117207466209
-# @test value(PA[sle]‡A[sle]) ≈ WNDCnat["SPAA.sle","Countermge"]#  104.176032
-# @test value(PA[osv]‡A[osv]) ≈ WNDCnat["SPAA.osv","Countermge"]#  868.463128476593
-# @test value(PA[trn]‡A[trn]) ≈ WNDCnat["SPAA.trn","Countermge"]#  7.9177444003776
-# @test value(PA[smn]‡A[smn]) ≈ WNDCnat["SPAA.smn","Countermge"]#  124.248422623903
-# @test value(PA[fmt]‡A[fmt]) ≈ WNDCnat["SPAA.fmt","Countermge"]#  477.087153193648
-# @test value(PA[pet]‡A[pet]) ≈ WNDCnat["SPAA.pet","Countermge"]#  753.406521409953
-# @test value(PA[cep]‡A[cep]) ≈ WNDCnat["SPAA.cep","Countermge"]#  754.550491682529
-# @test value(PA[wst]‡A[wst]) ≈ WNDCnat["SPAA.wst","Countermge"]#  117.575866726324
-# @test value(PA[mot]‡A[mot]) ≈ WNDCnat["SPAA.mot","Countermge"]#  1115.45451278408
-# @test value(PA[adm]‡A[adm]) ≈ WNDCnat["SPAA.adm","Countermge"]#  929.230785877763
-# @test value(PA[soc]‡A[soc]) ≈ WNDCnat["SPAA.soc","Countermge"]#  211.263869
-# @test value(PA[alt]‡A[alt]) ≈ WNDCnat["SPAA.alt","Countermge"]#  428.629726604932
-# @test value(PA[pmt]‡A[pmt]) ≈ WNDCnat["SPAA.pmt","Countermge"]#  306.431094109142
-# @test value(PA[trk]‡A[trk]) ≈ WNDCnat["SPAA.trk","Countermge"]#  37.6284978938027
-# @test value(PA[fdd]‡A[fdd]) ≈ WNDCnat["SPAA.fdd","Countermge"]#  598.321003
-# @test value(PA[wtt]‡A[wtt]) ≈ WNDCnat["SPAA.wtt","Countermge"]#  24.6916474208002
-# @test value(PA[wpd]‡A[wpd]) ≈ WNDCnat["SPAA.wpd","Countermge"]#  169.415697653342
-# @test value(PA[wht]‡A[wht]) ≈ WNDCnat["SPAA.wht","Countermge"]#  101.037762899492
-# @test value(PA[wrh]‡A[wrh]) ≈ WNDCnat["SPAA.wrh","Countermge"]#  141.954773608058
-# @test value(PA[ott]‡A[ott]) ≈ WNDCnat["SPAA.ott","Countermge"]#  7.216437
-# @test value(PA[che]‡A[che]) ≈ WNDCnat["SPAA.che","Countermge"]#  1315.11234144772
-# @test value(PA[air]‡A[air]) ≈ WNDCnat["SPAA.air","Countermge"]#  206.669586610514
-# @test value(PA[mmf]‡A[mmf]) ≈ WNDCnat["SPAA.mmf","Countermge"]#  432.7463596551
-# @test value(PA[otr]‡A[otr]) ≈ WNDCnat["SPAA.otr","Countermge"]#  234.219103766939
-# @test value(PA[min]‡A[min]) ≈ WNDCnat["SPAA.min","Countermge"]#  110.649058719086
-# @test value(PY[ppd]†A→dmppd) ≈ WNDCnat["DPYA.ppd","Countermge"]#  178.302361762145
-# @test value(PY[res]†A→dmres) ≈ WNDCnat["DPYA.res","Countermge"]#  899.582049
-# @test value(PY[com]†A→dmcom) ≈ WNDCnat["DPYA.com","Countermge"]#  516.669955819314
-# @test value(PY[amb]†A→dmamb) ≈ WNDCnat["DPYA.amb","Countermge"]#  1092.93382
-# @test value(PY[fbp]†A→dmfbp) ≈ WNDCnat["DPYA.fbp","Countermge"]#  931.487295227378
-# @test value(PY[rec]†A→dmrec) ≈ WNDCnat["DPYA.rec","Countermge"]#  195.091973
-# @test value(PY[con]†A→dmcon) ≈ WNDCnat["DPYA.con","Countermge"]#  1659.55143
-# @test value(PY[agr]†A→dmagr) ≈ WNDCnat["DPYA.agr","Countermge"]#  397.159192634641
-# @test value(PY[eec]†A→dmeec) ≈ WNDCnat["DPYA.eec","Countermge"]#  116.334102941302
-# @test value(PY[fnd]†A→dmfnd) ≈ WNDCnat["DPYA.fnd","Countermge"]#  380.898129
-# @test value(PY[pub]†A→dmpub) ≈ WNDCnat["DPYA.pub","Countermge"]#  279.10604025972
-# @test value(PY[hou]†A→dmhou) ≈ WNDCnat["DPYA.hou","Countermge"]#  2073.31916
-# @test value(PY[ins]†A→dmins) ≈ WNDCnat["DPYA.ins","Countermge"]#  1122.67044865478
-# @test value(PY[tex]†A→dmtex) ≈ WNDCnat["DPYA.tex","Countermge"]#  44.7173450880499
-# @test value(PY[leg]†A→dmleg) ≈ WNDCnat["DPYA.leg","Countermge"]#  342.950931606667
-# @test value(PY[fen]†A→dmfen) ≈ WNDCnat["DPYA.fen","Countermge"]#  70.8982368935855
-# @test value(PY[uti]†A→dmuti) ≈ WNDCnat["DPYA.uti","Countermge"]#  624.245619014942
-# @test value(PY[nmp]†A→dmnmp) ≈ WNDCnat["DPYA.nmp","Countermge"]#  122.647906087377
-# @test value(PY[brd]†A→dmbrd) ≈ WNDCnat["DPYA.brd","Countermge"]#  683.422688863694
-# @test value(PY[bnk]†A→dmbnk) ≈ WNDCnat["DPYA.bnk","Countermge"]#  852.551655382011
-# @test value(PY[ore]†A→dmore) ≈ WNDCnat["DPYA.ore","Countermge"]#  1259.29276
-# @test value(PY[edu]†A→dmedu) ≈ WNDCnat["DPYA.edu","Countermge"]#  393.244804987551
-# @test value(PY[ote]†A→dmote) ≈ WNDCnat["DPYA.ote","Countermge"]#  317.698887736103
-# @test value(PY[man]†A→dmman) ≈ WNDCnat["DPYA.man","Countermge"]#  582.277441
-# @test value(PY[mch]†A→dmmch) ≈ WNDCnat["DPYA.mch","Countermge"]#  351.025893693393
-# @test value(PY[dat]†A→dmdat) ≈ WNDCnat["DPYA.dat","Countermge"]#  249.640344193458
-# @test value(PY[amd]†A→dmamd) ≈ WNDCnat["DPYA.amd","Countermge"]#  211.274527
-# @test value(PY[oil]†A→dmoil) ≈ WNDCnat["DPYA.oil","Countermge"]#  232.433992418968
-# @test value(PY[hos]†A→dmhos) ≈ WNDCnat["DPYA.hos","Countermge"]#  1069.66225689397
-# @test value(PY[rnt]†A→dmrnt) ≈ WNDCnat["DPYA.rnt","Countermge"]#  433.205937
-# @test value(PY[pla]†A→dmpla) ≈ WNDCnat["DPYA.pla","Countermge"]#  229.76217795404
-# @test value(PY[fof]†A→dmfof) ≈ WNDCnat["DPYA.fof","Countermge"]#  65.7668539641593
-# @test value(PY[fin]†A→dmfin) ≈ WNDCnat["DPYA.fin","Countermge"]#  183.457238
-# @test value(PY[tsv]†A→dmtsv) ≈ WNDCnat["DPYA.tsv","Countermge"]#  2035.48578452599
-# @test value(PY[nrs]†A→dmnrs) ≈ WNDCnat["DPYA.nrs","Countermge"]#  242.743749
-# @test value(PY[sec]†A→dmsec) ≈ WNDCnat["DPYA.sec","Countermge"]#  584.314802811685
-# @test value(PY[art]†A→dmart) ≈ WNDCnat["DPYA.art","Countermge"]#  169.255170120476
-# @test value(PY[mov]†A→dmmov) ≈ WNDCnat["DPYA.mov","Countermge"]#  145.11676859954
-# @test value(PY[fpd]†A→dmfpd) ≈ WNDCnat["DPYA.fpd","Countermge"]#  72.1173745812346
-# @test value(PY[slg]†A→dmslg) ≈ WNDCnat["DPYA.slg","Countermge"]#  1744.23136
-# @test value(PY[pri]†A→dmpri) ≈ WNDCnat["DPYA.pri","Countermge"]#  71.1597078701849
-# @test value(PY[grd]†A→dmgrd) ≈ WNDCnat["DPYA.grd","Countermge"]#  92.1405807
-# @test value(PY[pip]†A→dmpip) ≈ WNDCnat["DPYA.pip","Countermge"] atol=1.0e-7 #  0.551520281
-# @test value(PY[sle]†A→dmsle) ≈ WNDCnat["DPYA.sle","Countermge"]#  104.176032
-# @test value(PY[osv]†A→dmosv) ≈ WNDCnat["DPYA.osv","Countermge"]#  843.624530878845
-# @test value(PY[trn]†A→dmtrn) ≈ WNDCnat["DPYA.trn","Countermge"]#  10.818151
-# @test value(PY[smn]†A→dmsmn) ≈ WNDCnat["DPYA.smn","Countermge"]#  126.304327893962
-# @test value(PY[fmt]†A→dmfmt) ≈ WNDCnat["DPYA.fmt","Countermge"]#  326.869823793069
-# @test value(PY[pet]†A→dmpet) ≈ WNDCnat["DPYA.pet","Countermge"]#  530.474799018386
-# @test value(PY[cep]†A→dmcep) ≈ WNDCnat["DPYA.cep","Countermge"]#  294.430494107922
-# @test value(PY[wst]†A→dmwst) ≈ WNDCnat["DPYA.wst","Countermge"]#  115.756794370096
-# @test value(PY[mot]†A→dmmot) ≈ WNDCnat["DPYA.mot","Countermge"]#  662.904680000772
-# @test value(PY[adm]†A→dmadm) ≈ WNDCnat["DPYA.adm","Countermge"]#  923.384581727345
-# @test value(PY[soc]†A→dmsoc) ≈ WNDCnat["DPYA.soc","Countermge"]#  210.448152
-# @test value(PY[alt]†A→dmalt) ≈ WNDCnat["DPYA.alt","Countermge"]#  15.145671960047
-# @test value(PY[pmt]†A→dmpmt) ≈ WNDCnat["DPYA.pmt","Countermge"]#  209.39716483577
-# @test value(PY[trk]†A→dmtrk) ≈ WNDCnat["DPYA.trk","Countermge"]#  38.934866
-# @test value(PY[fdd]†A→dmfdd) ≈ WNDCnat["DPYA.fdd","Countermge"]#  598.321003
-# @test value(PY[wtt]†A→dmwtt) ≈ WNDCnat["DPYA.wtt","Countermge"]#  29.5450418
-# @test value(PY[wpd]†A→dmwpd) ≈ WNDCnat["DPYA.wpd","Countermge"]#  110.785996753944
-# @test value(PY[wht]†A→dmwht) ≈ WNDCnat["DPYA.wht","Countermge"]#  103.418245
-# @test value(PY[wrh]†A→dmwrh) ≈ WNDCnat["DPYA.wrh","Countermge"]#  141.952358
-# @test value(PY[ott]†A→dmott) ≈ WNDCnat["DPYA.ott","Countermge"]#  7.216437
-# @test value(PY[che]†A→dmche) ≈ WNDCnat["DPYA.che","Countermge"]#  749.112013186912
-# @test value(PY[air]†A→dmair) ≈ WNDCnat["DPYA.air","Countermge"]#  191.390664071866
-# @test value(PY[mmf]†A→dmmmf) ≈ WNDCnat["DPYA.mmf","Countermge"]#  144.470044937235
-# @test value(PY[otr]†A→dmotr) ≈ WNDCnat["DPYA.otr","Countermge"]#  244.240036073202
-# @test value(PY[min]†A→dmmin) ≈ WNDCnat["DPYA.min","Countermge"]#  83.8341797595734
-# @test value(PM[trn]‡MS[trn]) ≈ WNDCnat["SPMMS.trn","Countermge"]#  441.38467
-# @test value(PM[trd]‡MS[trd]) ≈ WNDCnat["SPMMS.trd","Countermge"]#  2963.50744
+@test value(demand(RA,PA[:ppd])) ≈ WNDCnat["DPARA.ppd","Countermge"]#  45.0983450258118
+@test value(demand(RA,PA[:res])) ≈ WNDCnat["DPARA.res","Countermge"]#  774.30644850203
+@test value(demand(RA,PA[:amb])) ≈ WNDCnat["DPARA.amb","Countermge"]#  1020.04917657084
+@test value(demand(RA,PA[:fbp])) ≈ WNDCnat["DPARA.fbp","Countermge"]#  1080.86336015448
+@test value(demand(RA,PA[:rec])) ≈ WNDCnat["DPARA.rec","Countermge"]#  204.125961820132
+@test value(demand(RA,PA[:agr])) ≈ WNDCnat["DPARA.agr","Countermge"]#  144.627985840036
+@test value(demand(RA,PA[:eec])) ≈ WNDCnat["DPARA.eec","Countermge"]#  87.2169771491712
+@test value(demand(RA,PA[:pub])) ≈ WNDCnat["DPARA.pub","Countermge"]#  129.471085383795
+@test value(demand(RA,PA[:hou])) ≈ WNDCnat["DPARA.hou","Countermge"]#  1927.94383239772
+@test value(demand(RA,PA[:ins])) ≈ WNDCnat["DPARA.ins","Countermge"]#  383.943789595992
+@test value(demand(RA,PA[:tex])) ≈ WNDCnat["DPARA.tex","Countermge"]#  75.5437796408227
+@test value(demand(RA,PA[:leg])) ≈ WNDCnat["DPARA.leg","Countermge"]#  106.266138994311
+@test value(demand(RA,PA[:fen])) ≈ WNDCnat["DPARA.fen","Countermge"]#  5.97072004230777
+@test value(demand(RA,PA[:uti])) ≈ WNDCnat["DPARA.uti","Countermge"]#  272.992165442691
+@test value(demand(RA,PA[:nmp])) ≈ WNDCnat["DPARA.nmp","Countermge"]#  21.0690866095121
+@test value(demand(RA,PA[:brd])) ≈ WNDCnat["DPARA.brd","Countermge"]#  343.608479971518
+@test value(demand(RA,PA[:bnk])) ≈ WNDCnat["DPARA.bnk","Countermge"]#  270.463738156423
+@test value(demand(RA,PA[:ore])) ≈ WNDCnat["DPARA.ore","Countermge"]#  5.53000837942978
+@test value(demand(RA,PA[:edu])) ≈ WNDCnat["DPARA.edu","Countermge"]#  340.647696780532
+@test value(demand(RA,PA[:ote])) ≈ WNDCnat["DPARA.ote","Countermge"]#  32.155916106726
+@test value(demand(RA,PA[:mch])) ≈ WNDCnat["DPARA.mch","Countermge"]#  24.1038938445545
+@test value(demand(RA,PA[:dat])) ≈ WNDCnat["DPARA.dat","Countermge"]#  54.4633114169796
+@test value(demand(RA,PA[:amd])) ≈ WNDCnat["DPARA.amd","Countermge"]#  167.153475662182
+@test value(demand(RA,PA[:hos])) ≈ WNDCnat["DPARA.hos","Countermge"]#  1040.7247049585
+@test value(demand(RA,PA[:rnt])) ≈ WNDCnat["DPARA.rnt","Countermge"]#  107.152323154972
+@test value(demand(RA,PA[:pla])) ≈ WNDCnat["DPARA.pla","Countermge"]#  68.1704729408806
+@test value(demand(RA,PA[:fof])) ≈ WNDCnat["DPARA.fof","Countermge"]#  11.5651242722978
+@test value(demand(RA,PA[:fin])) ≈ WNDCnat["DPARA.fin","Countermge"]#  158.55105630941
+@test value(demand(RA,PA[:tsv])) ≈ WNDCnat["DPARA.tsv","Countermge"]#  70.8316547519168
+@test value(demand(RA,PA[:nrs])) ≈ WNDCnat["DPARA.nrs","Countermge"]#  238.932568746628
+@test value(demand(RA,PA[:sec])) ≈ WNDCnat["DPARA.sec","Countermge"]#  218.521852430846
+@test value(demand(RA,PA[:art])) ≈ WNDCnat["DPARA.art","Countermge"]#  78.4055247393738
+@test value(demand(RA,PA[:mov])) ≈ WNDCnat["DPARA.mov","Countermge"]#  32.4430654023884
+@test value(demand(RA,PA[:fpd])) ≈ WNDCnat["DPARA.fpd","Countermge"]#  122.363411973318
+@test value(demand(RA,PA[:pri])) ≈ WNDCnat["DPARA.pri","Countermge"]#  8.37274945985891
+@test value(demand(RA,PA[:grd])) ≈ WNDCnat["DPARA.grd","Countermge"]#  45.2558721438874
+@test value(demand(RA,PA[:sle])) ≈ WNDCnat["DPARA.sle","Countermge"]#  70.283657579612
+@test value(demand(RA,PA[:osv])) ≈ WNDCnat["DPARA.osv","Countermge"]#  612.787024500054
+@test value(demand(RA,PA[:trn])) ≈ WNDCnat["DPARA.trn","Countermge"]#  1.25120478127489
+@test value(demand(RA,PA[:fmt])) ≈ WNDCnat["DPARA.fmt","Countermge"]#  40.7255951187371
+@test value(demand(RA,PA[:pet])) ≈ WNDCnat["DPARA.pet","Countermge"]#  358.729529644352
+@test value(demand(RA,PA[:cep])) ≈ WNDCnat["DPARA.cep","Countermge"]#  162.838825409896
+@test value(demand(RA,PA[:wst])) ≈ WNDCnat["DPARA.wst","Countermge"]#  26.8562461473655
+@test value(demand(RA,PA[:mot])) ≈ WNDCnat["DPARA.mot","Countermge"]#  344.573830948772
+@test value(demand(RA,PA[:adm])) ≈ WNDCnat["DPARA.adm","Countermge"]#  62.6015621217838
+@test value(demand(RA,PA[:soc])) ≈ WNDCnat["DPARA.soc","Countermge"]#  205.873629707678
+@test value(demand(RA,PA[:alt])) ≈ WNDCnat["DPARA.alt","Countermge"]#  432.459984153533
+@test value(demand(RA,PA[:pmt])) ≈ WNDCnat["DPARA.pmt","Countermge"]#  1.71848845347668
+@test value(demand(RA,PA[:trk])) ≈ WNDCnat["DPARA.trk","Countermge"]#  12.3653759398715
+@test value(demand(RA,PA[:wtt])) ≈ WNDCnat["DPARA.wtt","Countermge"]#  21.4157591930215
+@test value(demand(RA,PA[:wpd])) ≈ WNDCnat["DPARA.wpd","Countermge"]#  7.91823844428873
+@test value(demand(RA,PA[:wrh])) ≈ WNDCnat["DPARA.wrh","Countermge"] atol=1.0e-8 #  0.0854605630590118
+@test value(demand(RA,PA[:ott])) ≈ WNDCnat["DPARA.ott","Countermge"]#  5.31473768111257
+@test value(demand(RA,PA[:che])) ≈ WNDCnat["DPARA.che","Countermge"]#  632.508582230469
+@test value(demand(RA,PA[:air])) ≈ WNDCnat["DPARA.air","Countermge"]#  143.422732837925
+@test value(demand(RA,PA[:mmf])) ≈ WNDCnat["DPARA.mmf","Countermge"]#  268.65901078116
+@test value(demand(RA,PA[:otr])) ≈ WNDCnat["DPARA.otr","Countermge"]#  23.0291158739367
+@test value(demand(RA,PA[:min])) ≈ WNDCnat["DPARA.min","Countermge"] atol = 1.0e-7 #  0.653932358001658
+@test value(compensated_demand(A[:ppd],PA[:ppd])) ≈ -WNDCnat["SPAA.ppd","Countermge"] atol = 1.0e-6#  236.988938393355
+@test value(compensated_demand(A[:res],PA[:res])) ≈ -WNDCnat["SPAA.res","Countermge"]#  959.304544516456
+@test value(compensated_demand(A[:com],PA[:com])) ≈ -WNDCnat["SPAA.com","Countermge"]#  525.364047878254
+@test value(compensated_demand(A[:amb],PA[:amb])) ≈ -WNDCnat["SPAA.amb","Countermge"]#  1093.38041860847
+@test value(compensated_demand(A[:fbp],PA[:fbp])) ≈ -WNDCnat["SPAA.fbp","Countermge"]#  1515.65653419943
+@test value(compensated_demand(A[:rec],PA[:rec])) ≈ -WNDCnat["SPAA.rec","Countermge"]#  204.693237
+@test value(compensated_demand(A[:con],PA[:con])) ≈ -WNDCnat["SPAA.con","Countermge"]#  1661.39205237938
+@test value(compensated_demand(A[:agr],PA[:agr])) ≈ -WNDCnat["SPAA.agr","Countermge"]#  516.056457439951
+@test value(compensated_demand(A[:eec],PA[:eec])) ≈ -WNDCnat["SPAA.eec","Countermge"]#  298.232417532365
+@test value(compensated_demand(A[:fnd],PA[:fnd])) ≈ -WNDCnat["SPAA.fnd","Countermge"]#  380.898129
+@test value(compensated_demand(A[:pub],PA[:pub])) ≈ -WNDCnat["SPAA.pub","Countermge"]#  348.824378750271
+@test value(compensated_demand(A[:hou],PA[:hou])) ≈ -WNDCnat["SPAA.hou","Countermge"]#  2035.11236
+@test value(compensated_demand(A[:ins],PA[:ins])) ≈ -WNDCnat["SPAA.ins","Countermge"]#  1174.52373324662
+@test value(compensated_demand(A[:tex],PA[:tex])) ≈ -WNDCnat["SPAA.tex","Countermge"]#  145.347236767545
+@test value(compensated_demand(A[:leg],PA[:leg])) ≈ -WNDCnat["SPAA.leg","Countermge"]#  348.469159371955
+@test value(compensated_demand(A[:fen],PA[:fen])) ≈ -WNDCnat["SPAA.fen","Countermge"]#  70.4845665297578
+@test value(compensated_demand(A[:uti],PA[:uti])) ≈ -WNDCnat["SPAA.uti","Countermge"]#  652.03285818802
+@test value(compensated_demand(A[:nmp],PA[:nmp])) ≈ -WNDCnat["SPAA.nmp","Countermge"]#  214.116328876329
+@test value(compensated_demand(A[:brd],PA[:brd])) ≈ -WNDCnat["SPAA.brd","Countermge"]#  706.802123628329
+@test value(compensated_demand(A[:bnk],PA[:bnk])) ≈ -WNDCnat["SPAA.bnk","Countermge"]#  792.554975640748
+@test value(compensated_demand(A[:ore],PA[:ore])) ≈ -WNDCnat["SPAA.ore","Countermge"]#  1255.20269149723
+@test value(compensated_demand(A[:edu],PA[:edu])) ≈ -WNDCnat["SPAA.edu","Countermge"]#  392.715902817812
+@test value(compensated_demand(A[:ote],PA[:ote])) ≈ -WNDCnat["SPAA.ote","Countermge"]#  276.943867862988
+@test value(compensated_demand(A[:man],PA[:man])) ≈ -WNDCnat["SPAA.man","Countermge"]#  579.527335362865
+@test value(compensated_demand(A[:mch],PA[:mch])) ≈ -WNDCnat["SPAA.mch","Countermge"]#  586.917497613094
+@test value(compensated_demand(A[:dat],PA[:dat])) ≈ -WNDCnat["SPAA.dat","Countermge"]#  245.620113987753
+@test value(compensated_demand(A[:amd],PA[:amd])) ≈ -WNDCnat["SPAA.amd","Countermge"]#  229.587824
+@test value(compensated_demand(A[:oil],PA[:oil])) ≈ -WNDCnat["SPAA.oil","Countermge"]#  411.265605375987
+@test value(compensated_demand(A[:hos],PA[:hos])) ≈ -WNDCnat["SPAA.hos","Countermge"]#  1073.11067297167
+@test value(compensated_demand(A[:rnt],PA[:rnt])) ≈ -WNDCnat["SPAA.rnt","Countermge"]#  368.095713098834
+@test value(compensated_demand(A[:pla],PA[:pla])) ≈ -WNDCnat["SPAA.pla","Countermge"]#  362.202794356016
+@test value(compensated_demand(A[:fof],PA[:fof])) ≈ -WNDCnat["SPAA.fof","Countermge"]#  92.1024335819389
+@test value(compensated_demand(A[:fin],PA[:fin])) ≈ -WNDCnat["SPAA.fin","Countermge"]#  183.495134
+@test value(compensated_demand(A[:tsv],PA[:tsv])) ≈ -WNDCnat["SPAA.tsv","Countermge"]#  1988.87361079195
+@test value(compensated_demand(A[:nrs],PA[:nrs])) ≈ -WNDCnat["SPAA.nrs","Countermge"]#  245.658333
+@test value(compensated_demand(A[:sec],PA[:sec])) ≈ -WNDCnat["SPAA.sec","Countermge"]#  514.086810307178
+@test value(compensated_demand(A[:art],PA[:art])) ≈ -WNDCnat["SPAA.art","Countermge"]#  174.632096282488
+@test value(compensated_demand(A[:mov],PA[:mov])) ≈ -WNDCnat["SPAA.mov","Countermge"]#  146.421796945177
+@test value(compensated_demand(A[:fpd],PA[:fpd])) ≈ -WNDCnat["SPAA.fpd","Countermge"]#  221.263642518005
+@test value(compensated_demand(A[:slg],PA[:slg])) ≈ -WNDCnat["SPAA.slg","Countermge"]#  1744.23136
+@test value(compensated_demand(A[:pri],PA[:pri])) ≈ -WNDCnat["SPAA.pri","Countermge"]#  89.2774959690228
+@test value(compensated_demand(A[:grd],PA[:grd])) ≈ -WNDCnat["SPAA.grd","Countermge"]#  93.1481825
+@test value(compensated_demand(A[:pip],PA[:pip])) ≈ -WNDCnat["SPAA.pip","Countermge"] atol=1.0e-7 #  0.379117207466209
+@test value(compensated_demand(A[:sle],PA[:sle])) ≈ -WNDCnat["SPAA.sle","Countermge"]#  104.176032
+@test value(compensated_demand(A[:osv],PA[:osv])) ≈ -WNDCnat["SPAA.osv","Countermge"]#  868.463128476593
+@test value(compensated_demand(A[:trn],PA[:trn])) ≈ -WNDCnat["SPAA.trn","Countermge"]#  7.9177444003776
+@test value(compensated_demand(A[:smn],PA[:smn])) ≈ -WNDCnat["SPAA.smn","Countermge"]#  124.248422623903
+@test value(compensated_demand(A[:fmt],PA[:fmt])) ≈ -WNDCnat["SPAA.fmt","Countermge"]#  477.087153193648
+@test value(compensated_demand(A[:pet],PA[:pet])) ≈ -WNDCnat["SPAA.pet","Countermge"]#  753.406521409953
+@test value(compensated_demand(A[:cep],PA[:cep])) ≈ -WNDCnat["SPAA.cep","Countermge"]#  754.550491682529
+@test value(compensated_demand(A[:wst],PA[:wst])) ≈ -WNDCnat["SPAA.wst","Countermge"]#  117.575866726324
+@test value(compensated_demand(A[:mot],PA[:mot])) ≈ -WNDCnat["SPAA.mot","Countermge"]#  1115.45451278408
+@test value(compensated_demand(A[:adm],PA[:adm])) ≈ -WNDCnat["SPAA.adm","Countermge"]#  929.230785877763
+@test value(compensated_demand(A[:soc],PA[:soc])) ≈ -WNDCnat["SPAA.soc","Countermge"]#  211.263869
+@test value(compensated_demand(A[:alt],PA[:alt])) ≈ -WNDCnat["SPAA.alt","Countermge"]#  428.629726604932
+@test value(compensated_demand(A[:pmt],PA[:pmt])) ≈ -WNDCnat["SPAA.pmt","Countermge"]#  306.431094109142
+@test value(compensated_demand(A[:trk],PA[:trk])) ≈ -WNDCnat["SPAA.trk","Countermge"]#  37.6284978938027
+@test value(compensated_demand(A[:fdd],PA[:fdd])) ≈ -WNDCnat["SPAA.fdd","Countermge"]#  598.321003
+@test value(compensated_demand(A[:wtt],PA[:wtt])) ≈ -WNDCnat["SPAA.wtt","Countermge"]#  24.6916474208002
+@test value(compensated_demand(A[:wpd],PA[:wpd])) ≈ -WNDCnat["SPAA.wpd","Countermge"]#  169.415697653342
+@test value(compensated_demand(A[:wht],PA[:wht])) ≈ -WNDCnat["SPAA.wht","Countermge"]#  101.037762899492
+@test value(compensated_demand(A[:wrh],PA[:wrh])) ≈ -WNDCnat["SPAA.wrh","Countermge"]#  141.954773608058
+@test value(compensated_demand(A[:ott],PA[:ott])) ≈ -WNDCnat["SPAA.ott","Countermge"]#  7.216437
+@test value(compensated_demand(A[:che],PA[:che])) ≈ -WNDCnat["SPAA.che","Countermge"]#  1315.11234144772
+@test value(compensated_demand(A[:air],PA[:air])) ≈ -WNDCnat["SPAA.air","Countermge"]#  206.669586610514
+@test value(compensated_demand(A[:mmf],PA[:mmf])) ≈ -WNDCnat["SPAA.mmf","Countermge"]#  432.7463596551
+@test value(compensated_demand(A[:otr],PA[:otr])) ≈ -WNDCnat["SPAA.otr","Countermge"]#  234.219103766939
+@test value(compensated_demand(A[:min],PA[:min])) ≈ -WNDCnat["SPAA.min","Countermge"]#  110.649058719086
+@test value(compensated_demand(A[:ppd],PY[:ppd])) ≈ WNDCnat["DPYA.ppd","Countermge"]#  178.302361762145
+@test value(compensated_demand(A[:res],PY[:res])) ≈ WNDCnat["DPYA.res","Countermge"]#  899.582049
+@test value(compensated_demand(A[:com],PY[:com])) ≈ WNDCnat["DPYA.com","Countermge"]#  516.669955819314
+@test value(compensated_demand(A[:amb],PY[:amb])) ≈ WNDCnat["DPYA.amb","Countermge"]#  1092.93382
+@test value(compensated_demand(A[:fbp],PY[:fbp])) ≈ WNDCnat["DPYA.fbp","Countermge"]#  931.487295227378
+@test value(compensated_demand(A[:rec],PY[:rec])) ≈ WNDCnat["DPYA.rec","Countermge"]#  195.091973
+@test value(compensated_demand(A[:con],PY[:con])) ≈ WNDCnat["DPYA.con","Countermge"]#  1659.55143
+@test value(compensated_demand(A[:agr],PY[:agr])) ≈ WNDCnat["DPYA.agr","Countermge"]#  397.159192634641
+@test value(compensated_demand(A[:eec],PY[:eec])) ≈ WNDCnat["DPYA.eec","Countermge"]#  116.334102941302
+@test value(compensated_demand(A[:fnd],PY[:fnd])) ≈ WNDCnat["DPYA.fnd","Countermge"]#  380.898129
+@test value(compensated_demand(A[:pub],PY[:pub])) ≈ WNDCnat["DPYA.pub","Countermge"]#  279.10604025972
+@test value(compensated_demand(A[:hou],PY[:hou])) ≈ WNDCnat["DPYA.hou","Countermge"]#  2073.31916
+@test value(compensated_demand(A[:ins],PY[:ins])) ≈ WNDCnat["DPYA.ins","Countermge"]#  1122.67044865478
+@test value(compensated_demand(A[:tex],PY[:tex])) ≈ WNDCnat["DPYA.tex","Countermge"]#  44.7173450880499
+@test value(compensated_demand(A[:leg],PY[:leg])) ≈ WNDCnat["DPYA.leg","Countermge"]#  342.950931606667
+@test value(compensated_demand(A[:fen],PY[:fen])) ≈ WNDCnat["DPYA.fen","Countermge"]#  70.8982368935855
+@test value(compensated_demand(A[:uti],PY[:uti])) ≈ WNDCnat["DPYA.uti","Countermge"]#  624.245619014942
+@test value(compensated_demand(A[:nmp],PY[:nmp])) ≈ WNDCnat["DPYA.nmp","Countermge"]#  122.647906087377
+@test value(compensated_demand(A[:brd],PY[:brd])) ≈ WNDCnat["DPYA.brd","Countermge"]#  683.422688863694
+@test value(compensated_demand(A[:bnk],PY[:bnk])) ≈ WNDCnat["DPYA.bnk","Countermge"]#  852.551655382011
+@test value(compensated_demand(A[:ore],PY[:ore])) ≈ WNDCnat["DPYA.ore","Countermge"]#  1259.29276
+@test value(compensated_demand(A[:edu],PY[:edu])) ≈ WNDCnat["DPYA.edu","Countermge"]#  393.244804987551
+@test value(compensated_demand(A[:ote],PY[:ote])) ≈ WNDCnat["DPYA.ote","Countermge"]#  317.698887736103
+@test value(compensated_demand(A[:man],PY[:man])) ≈ WNDCnat["DPYA.man","Countermge"]#  582.277441
+@test value(compensated_demand(A[:mch],PY[:mch])) ≈ WNDCnat["DPYA.mch","Countermge"]#  351.025893693393
+@test value(compensated_demand(A[:dat],PY[:dat])) ≈ WNDCnat["DPYA.dat","Countermge"]#  249.640344193458
+@test value(compensated_demand(A[:amd],PY[:amd])) ≈ WNDCnat["DPYA.amd","Countermge"]#  211.274527
+@test value(compensated_demand(A[:oil],PY[:oil])) ≈ WNDCnat["DPYA.oil","Countermge"]#  232.433992418968
+@test value(compensated_demand(A[:hos],PY[:hos])) ≈ WNDCnat["DPYA.hos","Countermge"]#  1069.66225689397
+@test value(compensated_demand(A[:rnt],PY[:rnt])) ≈ WNDCnat["DPYA.rnt","Countermge"]#  433.205937
+@test value(compensated_demand(A[:pla],PY[:pla])) ≈ WNDCnat["DPYA.pla","Countermge"]#  229.76217795404
+@test value(compensated_demand(A[:fof],PY[:fof])) ≈ WNDCnat["DPYA.fof","Countermge"]#  65.7668539641593
+@test value(compensated_demand(A[:fin],PY[:fin])) ≈ WNDCnat["DPYA.fin","Countermge"]#  183.457238
+@test value(compensated_demand(A[:tsv],PY[:tsv])) ≈ WNDCnat["DPYA.tsv","Countermge"]#  2035.48578452599
+@test value(compensated_demand(A[:nrs],PY[:nrs])) ≈ WNDCnat["DPYA.nrs","Countermge"]#  242.743749
+@test value(compensated_demand(A[:sec],PY[:sec])) ≈ WNDCnat["DPYA.sec","Countermge"]#  584.314802811685
+@test value(compensated_demand(A[:art],PY[:art])) ≈ WNDCnat["DPYA.art","Countermge"]#  169.255170120476
+@test value(compensated_demand(A[:mov],PY[:mov])) ≈ WNDCnat["DPYA.mov","Countermge"]#  145.11676859954
+@test value(compensated_demand(A[:fpd],PY[:fpd])) ≈ WNDCnat["DPYA.fpd","Countermge"]#  72.1173745812346
+@test value(compensated_demand(A[:slg],PY[:slg])) ≈ WNDCnat["DPYA.slg","Countermge"]#  1744.23136
+@test value(compensated_demand(A[:pri],PY[:pri])) ≈ WNDCnat["DPYA.pri","Countermge"]#  71.1597078701849
+@test value(compensated_demand(A[:grd],PY[:grd])) ≈ WNDCnat["DPYA.grd","Countermge"]#  92.1405807
+@test value(compensated_demand(A[:pip],PY[:pip])) ≈ WNDCnat["DPYA.pip","Countermge"] atol=1.0e-7 #  0.551520281
+@test value(compensated_demand(A[:sle],PY[:sle])) ≈ WNDCnat["DPYA.sle","Countermge"]#  104.176032
+@test value(compensated_demand(A[:osv],PY[:osv])) ≈ WNDCnat["DPYA.osv","Countermge"]#  843.624530878845
+@test value(compensated_demand(A[:trn],PY[:trn])) ≈ WNDCnat["DPYA.trn","Countermge"]#  10.818151
+@test value(compensated_demand(A[:smn],PY[:smn])) ≈ WNDCnat["DPYA.smn","Countermge"]#  126.304327893962
+@test value(compensated_demand(A[:fmt],PY[:fmt])) ≈ WNDCnat["DPYA.fmt","Countermge"]#  326.869823793069
+@test value(compensated_demand(A[:pet],PY[:pet])) ≈ WNDCnat["DPYA.pet","Countermge"]#  530.474799018386
+@test value(compensated_demand(A[:cep],PY[:cep])) ≈ WNDCnat["DPYA.cep","Countermge"]#  294.430494107922
+@test value(compensated_demand(A[:wst],PY[:wst])) ≈ WNDCnat["DPYA.wst","Countermge"]#  115.756794370096
+@test value(compensated_demand(A[:mot],PY[:mot])) ≈ WNDCnat["DPYA.mot","Countermge"]#  662.904680000772
+@test value(compensated_demand(A[:adm],PY[:adm])) ≈ WNDCnat["DPYA.adm","Countermge"]#  923.384581727345
+@test value(compensated_demand(A[:soc],PY[:soc])) ≈ WNDCnat["DPYA.soc","Countermge"]#  210.448152
+@test value(compensated_demand(A[:alt],PY[:alt])) ≈ WNDCnat["DPYA.alt","Countermge"]#  15.145671960047
+@test value(compensated_demand(A[:pmt],PY[:pmt])) ≈ WNDCnat["DPYA.pmt","Countermge"]#  209.39716483577
+@test value(compensated_demand(A[:trk],PY[:trk])) ≈ WNDCnat["DPYA.trk","Countermge"]#  38.934866
+@test value(compensated_demand(A[:fdd],PY[:fdd])) ≈ WNDCnat["DPYA.fdd","Countermge"]#  598.321003
+@test value(compensated_demand(A[:wtt],PY[:wtt])) ≈ WNDCnat["DPYA.wtt","Countermge"]#  29.5450418
+@test value(compensated_demand(A[:wpd],PY[:wpd])) ≈ WNDCnat["DPYA.wpd","Countermge"]#  110.785996753944
+@test value(compensated_demand(A[:wht],PY[:wht])) ≈ WNDCnat["DPYA.wht","Countermge"]#  103.418245
+@test value(compensated_demand(A[:wrh],PY[:wrh])) ≈ WNDCnat["DPYA.wrh","Countermge"]#  141.952358
+@test value(compensated_demand(A[:ott],PY[:ott])) ≈ WNDCnat["DPYA.ott","Countermge"]#  7.216437
+@test value(compensated_demand(A[:che],PY[:che])) ≈ WNDCnat["DPYA.che","Countermge"]#  749.112013186912
+@test value(compensated_demand(A[:air],PY[:air])) ≈ WNDCnat["DPYA.air","Countermge"]#  191.390664071866
+@test value(compensated_demand(A[:mmf],PY[:mmf])) ≈ WNDCnat["DPYA.mmf","Countermge"]#  144.470044937235
+@test value(compensated_demand(A[:otr],PY[:otr])) ≈ WNDCnat["DPYA.otr","Countermge"]#  244.240036073202
+@test value(compensated_demand(A[:min],PY[:min])) ≈ WNDCnat["DPYA.min","Countermge"]#  83.8341797595734
+@test value(compensated_demand(MS[:trn],PM[:trn])) ≈ -WNDCnat["SPMMS.trn","Countermge"]#  441.38467
+@test value(compensated_demand(MS[:trd],PM[:trd])) ≈ -WNDCnat["SPMMS.trd","Countermge"]#  2963.50744
 @test value(MS[:trn]) ≈ WNDCnat["MS.trn","Countermge"]#  1.0274842107524
 @test value(MS[:trd]) ≈ WNDCnat["MS.trd","Countermge"]#  1.0227852178378
 @test value(PA[:ppd]) ≈ WNDCnat["PA.ppd","Countermge"]#  0.945634369221923
@@ -1274,202 +1273,202 @@ solve!(WiNnat)
  @test value(A[:mmf]) ≈ WNDCnat["A.mmf","delas=0"]#  1.00040257705607
  @test value(A[:otr]) ≈ WNDCnat["A.otr","delas=0"]#  1.00367228893136
  @test value(A[:min]) ≈ WNDCnat["A.min","delas=0"]#  1.00401399928603
- # @test value(PA[ppd]ρRA) ≈ WNDCnat["DPARA.ppd","delas=0"]#  44.9945365993808
- # @test value(PA[res]ρRA) ≈ WNDCnat["DPARA.res","delas=0"]#  739.686766872371
- # @test value(PA[amb]ρRA) ≈ WNDCnat["DPARA.amb","delas=0"]#  1051.5603648016
- # @test value(PA[fbp]ρRA) ≈ WNDCnat["DPARA.fbp","delas=0"]#  1032.70108735466
- # @test value(PA[rec]ρRA) ≈ WNDCnat["DPARA.rec","delas=0"]#  198.985950838732
- # @test value(PA[agr]ρRA) ≈ WNDCnat["DPARA.agr","delas=0"]#  147.869919600117
- # @test value(PA[eec]ρRA) ≈ WNDCnat["DPARA.eec","delas=0"]#  86.2991216794809
- # @test value(PA[pub]ρRA) ≈ WNDCnat["DPARA.pub","delas=0"]#  130.566354456531
- # @test value(PA[hou]ρRA) ≈ WNDCnat["DPARA.hou","delas=0"]#  2035.2383474762
- # @test value(PA[ins]ρRA) ≈ WNDCnat["DPARA.ins","delas=0"]#  387.00875602523
- # @test value(PA[tex]ρRA) ≈ WNDCnat["DPARA.tex","delas=0"]#  72.7468150502661
- # @test value(PA[leg]ρRA) ≈ WNDCnat["DPARA.leg","delas=0"]#  104.845945284567
- # @test value(PA[fen]ρRA) ≈ WNDCnat["DPARA.fen","delas=0"]#  6.15763031614277
- # @test value(PA[uti]ρRA) ≈ WNDCnat["DPARA.uti","delas=0"]#  264.769880065077
- # @test value(PA[nmp]ρRA) ≈ WNDCnat["DPARA.nmp","delas=0"]#  20.8812969161211
- # @test value(PA[brd]ρRA) ≈ WNDCnat["DPARA.brd","delas=0"]#  330.931479670374
- # @test value(PA[bnk]ρRA) ≈ WNDCnat["DPARA.bnk","delas=0"]#  279.364610523514
- # @test value(PA[ore]ρRA) ≈ WNDCnat["DPARA.ore","delas=0"]#  5.63104820910038
- # @test value(PA[edu]ρRA) ≈ WNDCnat["DPARA.edu","delas=0"]#  351.715247249131
- # @test value(PA[ote]ρRA) ≈ WNDCnat["DPARA.ote","delas=0"]#  32.6181905657221
- # @test value(PA[mch]ρRA) ≈ WNDCnat["DPARA.mch","delas=0"]#  24.0993923260659
- # @test value(PA[dat]ρRA) ≈ WNDCnat["DPARA.dat","delas=0"]#  55.6203913722785
- # @test value(PA[amd]ρRA) ≈ WNDCnat["DPARA.amd","delas=0"]#  157.455010946577
- # @test value(PA[hos]ρRA) ≈ WNDCnat["DPARA.hos","delas=0"]#  1066.51713067113
- # @test value(PA[rnt]ρRA) ≈ WNDCnat["DPARA.rnt","delas=0"]#  105.372006849386
- # @test value(PA[pla]ρRA) ≈ WNDCnat["DPARA.pla","delas=0"]#  67.3747264015542
- # @test value(PA[fof]ρRA) ≈ WNDCnat["DPARA.fof","delas=0"]#  11.7890180762624
- # @test value(PA[fin]ρRA) ≈ WNDCnat["DPARA.fin","delas=0"]#  162.347930833277
- # @test value(PA[tsv]ρRA) ≈ WNDCnat["DPARA.tsv","delas=0"]#  72.8077220205937
- # @test value(PA[nrs]ρRA) ≈ WNDCnat["DPARA.nrs","delas=0"]#  242.31260789127
- # @test value(PA[sec]ρRA) ≈ WNDCnat["DPARA.sec","delas=0"]#  224.469566352445
- # @test value(PA[art]ρRA) ≈ WNDCnat["DPARA.art","delas=0"]#  78.2371598193933
- # @test value(PA[mov]ρRA) ≈ WNDCnat["DPARA.mov","delas=0"]#  32.5361842892829
- # @test value(PA[fpd]ρRA) ≈ WNDCnat["DPARA.fpd","delas=0"]#  119.65836621871
- # @test value(PA[pri]ρRA) ≈ WNDCnat["DPARA.pri","delas=0"]#  8.42139342000007
- # @test value(PA[grd]ρRA) ≈ WNDCnat["DPARA.grd","delas=0"]#  45.8941685893515
- # @test value(PA[sle]ρRA) ≈ WNDCnat["DPARA.sle","delas=0"]#  70.8549198361681
- # @test value(PA[osv]ρRA) ≈ WNDCnat["DPARA.osv","delas=0"]#  615.338507334926
- # @test value(PA[trn]ρRA) ≈ WNDCnat["DPARA.trn","delas=0"]#  1.50811298680475
- # @test value(PA[fmt]ρRA) ≈ WNDCnat["DPARA.fmt","delas=0"]#  40.6909273928131
- # @test value(PA[pet]ρRA) ≈ WNDCnat["DPARA.pet","delas=0"]#  310.703777513767
- # @test value(PA[cep]ρRA) ≈ WNDCnat["DPARA.cep","delas=0"]#  164.529587884519
- # @test value(PA[wst]ρRA) ≈ WNDCnat["DPARA.wst","delas=0"]#  27.0315947383601
- # @test value(PA[mot]ρRA) ≈ WNDCnat["DPARA.mot","delas=0"]#  338.081915304201
- # @test value(PA[adm]ρRA) ≈ WNDCnat["DPARA.adm","delas=0"]#  63.9163383167582
- # @test value(PA[soc]ρRA) ≈ WNDCnat["DPARA.soc","delas=0"]#  210.509513182473
- # @test value(PA[alt]ρRA) ≈ WNDCnat["DPARA.alt","delas=0"]#  399.722630052903
- # @test value(PA[pmt]ρRA) ≈ WNDCnat["DPARA.pmt","delas=0"]#  1.74003550351761
- # @test value(PA[trk]ρRA) ≈ WNDCnat["DPARA.trk","delas=0"]#  12.2901422973838
- # @test value(PA[wtt]ρRA) ≈ WNDCnat["DPARA.wtt","delas=0"]#  21.4086095583859
- # @test value(PA[wpd]ρRA) ≈ WNDCnat["DPARA.wpd","delas=0"]#  7.89464284252885
- # @test value(PA[wrh]ρRA) ≈ WNDCnat["DPARA.wrh","delas=0"] atol=1.0e-8 #  0.0873319624154803
- # @test value(PA[ott]ρRA) ≈ WNDCnat["DPARA.ott","delas=0"]#  5.46861401392708
- # @test value(PA[che]ρRA) ≈ WNDCnat["DPARA.che","delas=0"]#  630.391967190115
- # @test value(PA[air]ρRA) ≈ WNDCnat["DPARA.air","delas=0"]#  129.282761998234
- # @test value(PA[mmf]ρRA) ≈ WNDCnat["DPARA.mmf","delas=0"]#  264.640159034949
- # @test value(PA[otr]ρRA) ≈ WNDCnat["DPARA.otr","delas=0"]#  23.3484934431293
- # @test value(PA[min]ρRA) ≈ WNDCnat["DPARA.min","delas=0"]#  0.643986262718571
- # @test value(PA[ppd]‡A[ppd]) ≈ WNDCnat["SPAA.ppd","delas=0"]#  237.095668402558
- # @test value(PA[res]‡A[res]) ≈ WNDCnat["SPAA.res","delas=0"]#  959.313391569356
- # @test value(PA[com]‡A[com]) ≈ WNDCnat["SPAA.com","delas=0"]#  525.388253527651
- # @test value(PA[amb]‡A[amb]) ≈ WNDCnat["SPAA.amb","delas=0"]#  1093.38061747821
- # @test value(PA[fbp]‡A[fbp]) ≈ WNDCnat["SPAA.fbp","delas=0"]#  1516.0675363974
- # @test value(PA[rec]‡A[rec]) ≈ WNDCnat["SPAA.rec","delas=0"]#  204.693237
- # @test value(PA[con]‡A[con]) ≈ WNDCnat["SPAA.con","delas=0"]#  1661.39244764186
- # @test value(PA[agr]‡A[agr]) ≈ WNDCnat["SPAA.agr","delas=0"]#  516.449182571726
- # @test value(PA[eec]‡A[eec]) ≈ WNDCnat["SPAA.eec","delas=0"]#  298.345645152308
- # @test value(PA[fnd]‡A[fnd]) ≈ WNDCnat["SPAA.fnd","delas=0"]#  380.898129
- # @test value(PA[pub]‡A[pub]) ≈ WNDCnat["SPAA.pub","delas=0"]#  349.054406441761
- # @test value(PA[hou]‡A[hou]) ≈ WNDCnat["SPAA.hou","delas=0"]#  2035.11236
- # @test value(PA[ins]‡A[ins]) ≈ WNDCnat["SPAA.ins","delas=0"]#  1174.62489838087
- # @test value(PA[tex]‡A[tex]) ≈ WNDCnat["SPAA.tex","delas=0"]#  145.384700102198
- # @test value(PA[leg]‡A[leg]) ≈ WNDCnat["SPAA.leg","delas=0"]#  348.543208876288
- # @test value(PA[fen]‡A[fen]) ≈ WNDCnat["SPAA.fen","delas=0"]#  70.4842836606326
- # @test value(PA[uti]‡A[uti]) ≈ WNDCnat["SPAA.uti","delas=0"]#  652.064819413625
- # @test value(PA[nmp]‡A[nmp]) ≈ WNDCnat["SPAA.nmp","delas=0"]#  214.170730815099
- # @test value(PA[brd]‡A[brd]) ≈ WNDCnat["SPAA.brd","delas=0"]#  706.92158293153
- # @test value(PA[bnk]‡A[bnk]) ≈ WNDCnat["SPAA.bnk","delas=0"]#  792.928809423471
- # @test value(PA[ore]‡A[ore]) ≈ WNDCnat["SPAA.ore","delas=0"]#  1255.22670672849
- # @test value(PA[edu]‡A[edu]) ≈ WNDCnat["SPAA.edu","delas=0"]#  392.721177238059
- # @test value(PA[ote]‡A[ote]) ≈ WNDCnat["SPAA.ote","delas=0"]#  277.512122111029
- # @test value(PA[man]‡A[man]) ≈ WNDCnat["SPAA.man","delas=0"]#  579.534061485011
- # @test value(PA[mch]‡A[mch]) ≈ WNDCnat["SPAA.mch","delas=0"]#  587.302459128392
- # @test value(PA[dat]‡A[dat]) ≈ WNDCnat["SPAA.dat","delas=0"]#  245.676944264987
- # @test value(PA[amd]‡A[amd]) ≈ WNDCnat["SPAA.amd","delas=0"]#  229.587824
- # @test value(PA[oil]‡A[oil]) ≈ WNDCnat["SPAA.oil","delas=0"]#  411.497048603792
- # @test value(PA[hos]‡A[hos]) ≈ WNDCnat["SPAA.hos","delas=0"]#  1073.11603511482
- # @test value(PA[rnt]‡A[rnt]) ≈ WNDCnat["SPAA.rnt","delas=0"]#  368.878804478233
- # @test value(PA[pla]‡A[pla]) ≈ WNDCnat["SPAA.pla","delas=0"]#  362.323320781291
- # @test value(PA[fof]‡A[fof]) ≈ WNDCnat["SPAA.fof","delas=0"]#  92.1228989157354
- # @test value(PA[fin]‡A[fin]) ≈ WNDCnat["SPAA.fin","delas=0"]#  183.495134
- # @test value(PA[tsv]‡A[tsv]) ≈ WNDCnat["SPAA.tsv","delas=0"]#  1989.37691817216
- # @test value(PA[nrs]‡A[nrs]) ≈ WNDCnat["SPAA.nrs","delas=0"]#  245.658333
- # @test value(PA[sec]‡A[sec]) ≈ WNDCnat["SPAA.sec","delas=0"]#  514.224717426736
- # @test value(PA[art]‡A[art]) ≈ WNDCnat["SPAA.art","delas=0"]#  174.641390742409
- # @test value(PA[mov]‡A[mov]) ≈ WNDCnat["SPAA.mov","delas=0"]#  146.569456555932
- # @test value(PA[fpd]‡A[fpd]) ≈ WNDCnat["SPAA.fpd","delas=0"]#  221.278857788401
- # @test value(PA[slg]‡A[slg]) ≈ WNDCnat["SPAA.slg","delas=0"]#  1744.23136
- # @test value(PA[pri]‡A[pri]) ≈ WNDCnat["SPAA.pri","delas=0"]#  89.2867852003098
- # @test value(PA[grd]‡A[grd]) ≈ WNDCnat["SPAA.grd","delas=0"]#  93.1481825
- # @test value(PA[pip]‡A[pip]) ≈ WNDCnat["SPAA.pip","delas=0"] atol=1.0e-7 #  0.382187262062218
- # @test value(PA[sle]‡A[sle]) ≈ WNDCnat["SPAA.sle","delas=0"]#  104.176032
- # @test value(PA[osv]‡A[osv]) ≈ WNDCnat["SPAA.osv","delas=0"]#  868.463326892784
- # @test value(PA[trn]‡A[trn]) ≈ WNDCnat["SPAA.trn","delas=0"]#  7.92415074551477
- # @test value(PA[smn]‡A[smn]) ≈ WNDCnat["SPAA.smn","delas=0"]#  124.258768865999
- # @test value(PA[fmt]‡A[fmt]) ≈ WNDCnat["SPAA.fmt","delas=0"]#  477.223423179182
- # @test value(PA[pet]‡A[pet]) ≈ WNDCnat["SPAA.pet","delas=0"]#  754.140207758403
- # @test value(PA[cep]‡A[cep]) ≈ WNDCnat["SPAA.cep","delas=0"]#  754.889357739978
- # @test value(PA[wst]‡A[wst]) ≈ WNDCnat["SPAA.wst","delas=0"]#  117.576542647166
- # @test value(PA[mot]‡A[mot]) ≈ WNDCnat["SPAA.mot","delas=0"]#  1115.85632282281
- # @test value(PA[adm]‡A[adm]) ≈ WNDCnat["SPAA.adm","delas=0"]#  929.237345902182
- # @test value(PA[soc]‡A[soc]) ≈ WNDCnat["SPAA.soc","delas=0"]#  211.263869
- # @test value(PA[alt]‡A[alt]) ≈ WNDCnat["SPAA.alt","delas=0"]#  428.649715680174
- # @test value(PA[pmt]‡A[pmt]) ≈ WNDCnat["SPAA.pmt","delas=0"]#  306.557469719843
- # @test value(PA[trk]‡A[trk]) ≈ WNDCnat["SPAA.trk","delas=0"]#  37.635985494279
- # @test value(PA[fdd]‡A[fdd]) ≈ WNDCnat["SPAA.fdd","delas=0"]#  598.321003
- # @test value(PA[wtt]‡A[wtt]) ≈ WNDCnat["SPAA.wtt","delas=0"]#  24.7107318426004
- # @test value(PA[wpd]‡A[wpd]) ≈ WNDCnat["SPAA.wpd","delas=0"]#  169.441222157702
- # @test value(PA[wht]‡A[wht]) ≈ WNDCnat["SPAA.wht","delas=0"]#  101.048663092556
- # @test value(PA[wrh]‡A[wrh]) ≈ WNDCnat["SPAA.wrh","delas=0"]#  141.955218141518
- # @test value(PA[ott]‡A[ott]) ≈ WNDCnat["SPAA.ott","delas=0"]#  7.216437
- # @test value(PA[che]‡A[che]) ≈ WNDCnat["SPAA.che","delas=0"]#  1316.08916247908
- # @test value(PA[air]‡A[air]) ≈ WNDCnat["SPAA.air","delas=0"]#  206.906400189041
- # @test value(PA[mmf]‡A[mmf]) ≈ WNDCnat["SPAA.mmf","delas=0"]#  432.903209984379
- # @test value(PA[otr]‡A[otr]) ≈ WNDCnat["SPAA.otr","delas=0"]#  234.249449781175
- # @test value(PA[min]‡A[min]) ≈ WNDCnat["SPAA.min","delas=0"]#  110.7701129422
- # @test value(PY[ppd]†A→dmppd) ≈ WNDCnat["DPYA.ppd","delas=0"]#  178.21075049051
- # @test value(PY[res]†A→dmres) ≈ WNDCnat["DPYA.res","delas=0"]#  899.582049
- # @test value(PY[com]†A→dmcom) ≈ WNDCnat["DPYA.com","delas=0"]#  516.642196501858
- # @test value(PY[amb]†A→dmamb) ≈ WNDCnat["DPYA.amb","delas=0"]#  1092.93382
- # @test value(PY[fbp]†A→dmfbp) ≈ WNDCnat["DPYA.fbp","delas=0"]#  931.00345778859
- # @test value(PY[rec]†A→dmrec) ≈ WNDCnat["DPYA.rec","delas=0"]#  195.091973
- # @test value(PY[con]†A→dmcon) ≈ WNDCnat["DPYA.con","delas=0"]#  1659.55143
- # @test value(PY[agr]†A→dmagr) ≈ WNDCnat["DPYA.agr","delas=0"]#  396.877165615111
- # @test value(PY[eec]†A→dmeec) ≈ WNDCnat["DPYA.eec","delas=0"]#  116.115975355055
- # @test value(PY[fnd]†A→dmfnd) ≈ WNDCnat["DPYA.fnd","delas=0"]#  380.898129
- # @test value(PY[pub]†A→dmpub) ≈ WNDCnat["DPYA.pub","delas=0"]#  279.081932129493
- # @test value(PY[hou]†A→dmhou) ≈ WNDCnat["DPYA.hou","delas=0"]#  2073.31916
- # @test value(PY[ins]†A→dmins) ≈ WNDCnat["DPYA.ins","delas=0"]#  1122.4038138215
- # @test value(PY[tex]†A→dmtex) ≈ WNDCnat["DPYA.tex","delas=0"]#  44.6512497935603
- # @test value(PY[leg]†A→dmleg) ≈ WNDCnat["DPYA.leg","delas=0"]#  342.931208808951
- # @test value(PY[fen]†A→dmfen) ≈ WNDCnat["DPYA.fen","delas=0"]#  70.8983536965506
- # @test value(PY[uti]†A→dmuti) ≈ WNDCnat["DPYA.uti","delas=0"]#  624.227774668326
- # @test value(PY[nmp]†A→dmnmp) ≈ WNDCnat["DPYA.nmp","delas=0"]#  122.525922980665
- # @test value(PY[brd]†A→dmbrd) ≈ WNDCnat["DPYA.brd","delas=0"]#  683.421349297816
- # @test value(PY[bnk]†A→dmbnk) ≈ WNDCnat["DPYA.bnk","delas=0"]#  852.551368068504
- # @test value(PY[ore]†A→dmore) ≈ WNDCnat["DPYA.ore","delas=0"]#  1259.29276
- # @test value(PY[edu]†A→dmedu) ≈ WNDCnat["DPYA.edu","delas=0"]#  393.241182081057
- # @test value(PY[ote]†A→dmote) ≈ WNDCnat["DPYA.ote","delas=0"]#  317.472450892451
- # @test value(PY[man]†A→dmman) ≈ WNDCnat["DPYA.man","delas=0"]#  582.277441
- # @test value(PY[mch]†A→dmmch) ≈ WNDCnat["DPYA.mch","delas=0"]#  350.621153933213
- # @test value(PY[dat]†A→dmdat) ≈ WNDCnat["DPYA.dat","delas=0"]#  249.628668046696
- # @test value(PY[amd]†A→dmamd) ≈ WNDCnat["DPYA.amd","delas=0"]#  211.274527
- # @test value(PY[oil]†A→dmoil) ≈ WNDCnat["DPYA.oil","delas=0"]#  231.642002005523
- # @test value(PY[hos]†A→dmhos) ≈ WNDCnat["DPYA.hos","delas=0"]#  1069.65355419784
- # @test value(PY[rnt]†A→dmrnt) ≈ WNDCnat["DPYA.rnt","delas=0"]#  433.205937
- # @test value(PY[pla]†A→dmpla) ≈ WNDCnat["DPYA.pla","delas=0"]#  229.566295840274
- # @test value(PY[fof]†A→dmfof) ≈ WNDCnat["DPYA.fof","delas=0"]#  65.7273275023142
- # @test value(PY[fin]†A→dmfin) ≈ WNDCnat["DPYA.fin","delas=0"]#  183.457238
- # @test value(PY[tsv]†A→dmtsv) ≈ WNDCnat["DPYA.tsv","delas=0"]#  2035.15069283442
- # @test value(PY[nrs]†A→dmnrs) ≈ WNDCnat["DPYA.nrs","delas=0"]#  242.743749
- # @test value(PY[sec]†A→dmsec) ≈ WNDCnat["DPYA.sec","delas=0"]#  584.314692597079
- # @test value(PY[art]†A→dmart) ≈ WNDCnat["DPYA.art","delas=0"]#  169.247278606401
- # @test value(PY[mov]†A→dmmov) ≈ WNDCnat["DPYA.mov","delas=0"]#  145.054508466726
- # @test value(PY[fpd]†A→dmfpd) ≈ WNDCnat["DPYA.fpd","delas=0"]#  72.0340376373278
- # @test value(PY[slg]†A→dmslg) ≈ WNDCnat["DPYA.slg","delas=0"]#  1744.23136
- # @test value(PY[pri]†A→dmpri) ≈ WNDCnat["DPYA.pri","delas=0"]#  71.1498911232477
- # @test value(PY[grd]†A→dmgrd) ≈ WNDCnat["DPYA.grd","delas=0"]#  92.1405807
- # @test value(PY[pip]†A→dmpip) ≈ WNDCnat["DPYA.pip","delas=0"] atol=1.0e-7 #  0.551520281
- # @test value(PY[sle]†A→dmsle) ≈ WNDCnat["DPYA.sle","delas=0"]#  104.176032
- # @test value(PY[osv]†A→dmosv) ≈ WNDCnat["DPYA.osv","delas=0"]#  843.612078140922
- # @test value(PY[trn]†A→dmtrn) ≈ WNDCnat["DPYA.trn","delas=0"]#  10.818151
- # @test value(PY[smn]†A→dmsmn) ≈ WNDCnat["DPYA.smn","delas=0"]#  126.300856150821
- # @test value(PY[fmt]†A→dmfmt) ≈ WNDCnat["DPYA.fmt","delas=0"]#  326.674921247834
- # @test value(PY[pet]†A→dmpet) ≈ WNDCnat["DPYA.pet","delas=0"]#  530.135768600117
- # @test value(PY[cep]†A→dmcep) ≈ WNDCnat["DPYA.cep","delas=0"]#  293.672381307298
- # @test value(PY[wst]†A→dmwst) ≈ WNDCnat["DPYA.wst","delas=0"]#  115.755819924613
- # @test value(PY[mot]†A→dmmot) ≈ WNDCnat["DPYA.mot","delas=0"]#  661.976681705433
- # @test value(PY[adm]†A→dmadm) ≈ WNDCnat["DPYA.adm","delas=0"]#  923.37937571617
- # @test value(PY[soc]†A→dmsoc) ≈ WNDCnat["DPYA.soc","delas=0"]#  210.448152
- # @test value(PY[alt]†A→dmalt) ≈ WNDCnat["DPYA.alt","delas=0"]#  15.1266248122091
- # @test value(PY[pmt]†A→dmpmt) ≈ WNDCnat["DPYA.pmt","delas=0"]#  209.112552452253
- # @test value(PY[trk]†A→dmtrk) ≈ WNDCnat["DPYA.trk","delas=0"]#  38.934866
- # @test value(PY[fdd]†A→dmfdd) ≈ WNDCnat["DPYA.fdd","delas=0"]#  598.321003
- # @test value(PY[wtt]†A→dmwtt) ≈ WNDCnat["DPYA.wtt","delas=0"]#  29.5450418
- # @test value(PY[wpd]†A→dmwpd) ≈ WNDCnat["DPYA.wpd","delas=0"]#  110.717249634737
- # @test value(PY[wht]†A→dmwht) ≈ WNDCnat["DPYA.wht","delas=0"]#  103.418245
- # @test value(PY[wrh]†A→dmwrh) ≈ WNDCnat["DPYA.wrh","delas=0"]#  141.952358
- # @test value(PY[ott]†A→dmott) ≈ WNDCnat["DPYA.ott","delas=0"]#  7.216437
- # @test value(PY[che]†A→dmche) ≈ WNDCnat["DPYA.che","delas=0"]#  747.766537670418
- # @test value(PY[air]†A→dmair) ≈ WNDCnat["DPYA.air","delas=0"]#  191.205489940419
- # @test value(PY[mmf]†A→dmmmf) ≈ WNDCnat["DPYA.mmf","delas=0"]#  144.225723685467
- # @test value(PY[otr]†A→dmotr) ≈ WNDCnat["DPYA.otr","delas=0"]#  244.239910468167
- # @test value(PY[min]†A→dmmin) ≈ WNDCnat["DPYA.min","delas=0"]#  83.8238663779317
- # @test value(PM[trn]‡MS[trn]) ≈ WNDCnat["SPMMS.trn","delas=0"]#  441.38467
- # @test value(PM[trd]‡MS[trd]) ≈ WNDCnat["SPMMS.trd","delas=0"]#  2963.50744
+ @test value(demand(RA,PA[:ppd])) ≈ WNDCnat["DPARA.ppd","delas=0"]#  44.9945365993808
+ @test value(demand(RA,PA[:res])) ≈ WNDCnat["DPARA.res","delas=0"]#  739.686766872371
+ @test value(demand(RA,PA[:amb])) ≈ WNDCnat["DPARA.amb","delas=0"]#  1051.5603648016
+ @test value(demand(RA,PA[:fbp])) ≈ WNDCnat["DPARA.fbp","delas=0"]#  1032.70108735466
+ @test value(demand(RA,PA[:rec])) ≈ WNDCnat["DPARA.rec","delas=0"]#  198.985950838732
+ @test value(demand(RA,PA[:agr])) ≈ WNDCnat["DPARA.agr","delas=0"]#  147.869919600117
+ @test value(demand(RA,PA[:eec])) ≈ WNDCnat["DPARA.eec","delas=0"]#  86.2991216794809
+ @test value(demand(RA,PA[:pub])) ≈ WNDCnat["DPARA.pub","delas=0"]#  130.566354456531
+ @test value(demand(RA,PA[:hou])) ≈ WNDCnat["DPARA.hou","delas=0"]#  2035.2383474762
+ @test value(demand(RA,PA[:ins])) ≈ WNDCnat["DPARA.ins","delas=0"]#  387.00875602523
+ @test value(demand(RA,PA[:tex])) ≈ WNDCnat["DPARA.tex","delas=0"]#  72.7468150502661
+ @test value(demand(RA,PA[:leg])) ≈ WNDCnat["DPARA.leg","delas=0"]#  104.845945284567
+ @test value(demand(RA,PA[:fen])) ≈ WNDCnat["DPARA.fen","delas=0"]#  6.15763031614277
+ @test value(demand(RA,PA[:uti])) ≈ WNDCnat["DPARA.uti","delas=0"]#  264.769880065077
+ @test value(demand(RA,PA[:nmp])) ≈ WNDCnat["DPARA.nmp","delas=0"]#  20.8812969161211
+ @test value(demand(RA,PA[:brd])) ≈ WNDCnat["DPARA.brd","delas=0"]#  330.931479670374
+ @test value(demand(RA,PA[:bnk])) ≈ WNDCnat["DPARA.bnk","delas=0"]#  279.364610523514
+ @test value(demand(RA,PA[:ore])) ≈ WNDCnat["DPARA.ore","delas=0"]#  5.63104820910038
+ @test value(demand(RA,PA[:edu])) ≈ WNDCnat["DPARA.edu","delas=0"]#  351.715247249131
+ @test value(demand(RA,PA[:ote])) ≈ WNDCnat["DPARA.ote","delas=0"]#  32.6181905657221
+ @test value(demand(RA,PA[:mch])) ≈ WNDCnat["DPARA.mch","delas=0"]#  24.0993923260659
+ @test value(demand(RA,PA[:dat])) ≈ WNDCnat["DPARA.dat","delas=0"]#  55.6203913722785
+ @test value(demand(RA,PA[:amd])) ≈ WNDCnat["DPARA.amd","delas=0"]#  157.455010946577
+ @test value(demand(RA,PA[:hos])) ≈ WNDCnat["DPARA.hos","delas=0"]#  1066.51713067113
+ @test value(demand(RA,PA[:rnt])) ≈ WNDCnat["DPARA.rnt","delas=0"]#  105.372006849386
+ @test value(demand(RA,PA[:pla])) ≈ WNDCnat["DPARA.pla","delas=0"]#  67.3747264015542
+ @test value(demand(RA,PA[:fof])) ≈ WNDCnat["DPARA.fof","delas=0"]#  11.7890180762624
+ @test value(demand(RA,PA[:fin])) ≈ WNDCnat["DPARA.fin","delas=0"]#  162.347930833277
+ @test value(demand(RA,PA[:tsv])) ≈ WNDCnat["DPARA.tsv","delas=0"]#  72.8077220205937
+ @test value(demand(RA,PA[:nrs])) ≈ WNDCnat["DPARA.nrs","delas=0"]#  242.31260789127
+ @test value(demand(RA,PA[:sec])) ≈ WNDCnat["DPARA.sec","delas=0"]#  224.469566352445
+ @test value(demand(RA,PA[:art])) ≈ WNDCnat["DPARA.art","delas=0"]#  78.2371598193933
+ @test value(demand(RA,PA[:mov])) ≈ WNDCnat["DPARA.mov","delas=0"]#  32.5361842892829
+ @test value(demand(RA,PA[:fpd])) ≈ WNDCnat["DPARA.fpd","delas=0"]#  119.65836621871
+ @test value(demand(RA,PA[:pri])) ≈ WNDCnat["DPARA.pri","delas=0"]#  8.42139342000007
+ @test value(demand(RA,PA[:grd])) ≈ WNDCnat["DPARA.grd","delas=0"]#  45.8941685893515
+ @test value(demand(RA,PA[:sle])) ≈ WNDCnat["DPARA.sle","delas=0"]#  70.8549198361681
+ @test value(demand(RA,PA[:osv])) ≈ WNDCnat["DPARA.osv","delas=0"]#  615.338507334926
+ @test value(demand(RA,PA[:trn])) ≈ WNDCnat["DPARA.trn","delas=0"]#  1.50811298680475
+ @test value(demand(RA,PA[:fmt])) ≈ WNDCnat["DPARA.fmt","delas=0"]#  40.6909273928131
+ @test value(demand(RA,PA[:pet])) ≈ WNDCnat["DPARA.pet","delas=0"]#  310.703777513767
+ @test value(demand(RA,PA[:cep])) ≈ WNDCnat["DPARA.cep","delas=0"]#  164.529587884519
+ @test value(demand(RA,PA[:wst])) ≈ WNDCnat["DPARA.wst","delas=0"]#  27.0315947383601
+ @test value(demand(RA,PA[:mot])) ≈ WNDCnat["DPARA.mot","delas=0"]#  338.081915304201
+ @test value(demand(RA,PA[:adm])) ≈ WNDCnat["DPARA.adm","delas=0"]#  63.9163383167582
+ @test value(demand(RA,PA[:soc])) ≈ WNDCnat["DPARA.soc","delas=0"]#  210.509513182473
+ @test value(demand(RA,PA[:alt])) ≈ WNDCnat["DPARA.alt","delas=0"]#  399.722630052903
+ @test value(demand(RA,PA[:pmt])) ≈ WNDCnat["DPARA.pmt","delas=0"]#  1.74003550351761
+ @test value(demand(RA,PA[:trk])) ≈ WNDCnat["DPARA.trk","delas=0"]#  12.2901422973838
+ @test value(demand(RA,PA[:wtt])) ≈ WNDCnat["DPARA.wtt","delas=0"]#  21.4086095583859
+ @test value(demand(RA,PA[:wpd])) ≈ WNDCnat["DPARA.wpd","delas=0"]#  7.89464284252885
+ @test value(demand(RA,PA[:wrh])) ≈ WNDCnat["DPARA.wrh","delas=0"] atol=1.0e-8 #  0.0873319624154803
+ @test value(demand(RA,PA[:ott])) ≈ WNDCnat["DPARA.ott","delas=0"]#  5.46861401392708
+ @test value(demand(RA,PA[:che])) ≈ WNDCnat["DPARA.che","delas=0"]#  630.391967190115
+ @test value(demand(RA,PA[:air])) ≈ WNDCnat["DPARA.air","delas=0"]#  129.282761998234
+ @test value(demand(RA,PA[:mmf])) ≈ WNDCnat["DPARA.mmf","delas=0"]#  264.640159034949
+ @test value(demand(RA,PA[:otr])) ≈ WNDCnat["DPARA.otr","delas=0"]#  23.3484934431293
+ @test value(demand(RA,PA[:min])) ≈ WNDCnat["DPARA.min","delas=0"]#  0.643986262718571
+ @test value(compensated_demand(A[:ppd],PA[:ppd])) ≈ -WNDCnat["SPAA.ppd","delas=0"]#  237.095668402558
+ @test value(compensated_demand(A[:res],PA[:res])) ≈ -WNDCnat["SPAA.res","delas=0"]#  959.313391569356
+ @test value(compensated_demand(A[:com],PA[:com])) ≈ -WNDCnat["SPAA.com","delas=0"]#  525.388253527651
+ @test value(compensated_demand(A[:amb],PA[:amb])) ≈ -WNDCnat["SPAA.amb","delas=0"]#  1093.38061747821
+ @test value(compensated_demand(A[:fbp],PA[:fbp])) ≈ -WNDCnat["SPAA.fbp","delas=0"]#  1516.0675363974
+ @test value(compensated_demand(A[:rec],PA[:rec])) ≈ -WNDCnat["SPAA.rec","delas=0"]#  204.693237
+ @test value(compensated_demand(A[:con],PA[:con])) ≈ -WNDCnat["SPAA.con","delas=0"]#  1661.39244764186
+ @test value(compensated_demand(A[:agr],PA[:agr])) ≈ -WNDCnat["SPAA.agr","delas=0"]#  516.449182571726
+ @test value(compensated_demand(A[:eec],PA[:eec])) ≈ -WNDCnat["SPAA.eec","delas=0"]#  298.345645152308
+ @test value(compensated_demand(A[:fnd],PA[:fnd])) ≈ -WNDCnat["SPAA.fnd","delas=0"]#  380.898129
+ @test value(compensated_demand(A[:pub],PA[:pub])) ≈ -WNDCnat["SPAA.pub","delas=0"]#  349.054406441761
+ @test value(compensated_demand(A[:hou],PA[:hou])) ≈ -WNDCnat["SPAA.hou","delas=0"]#  2035.11236
+ @test value(compensated_demand(A[:ins],PA[:ins])) ≈ -WNDCnat["SPAA.ins","delas=0"]#  1174.62489838087
+ @test value(compensated_demand(A[:tex],PA[:tex])) ≈ -WNDCnat["SPAA.tex","delas=0"]#  145.384700102198
+ @test value(compensated_demand(A[:leg],PA[:leg])) ≈ -WNDCnat["SPAA.leg","delas=0"]#  348.543208876288
+ @test value(compensated_demand(A[:fen],PA[:fen])) ≈ -WNDCnat["SPAA.fen","delas=0"]#  70.4842836606326
+ @test value(compensated_demand(A[:uti],PA[:uti])) ≈ -WNDCnat["SPAA.uti","delas=0"]#  652.064819413625
+ @test value(compensated_demand(A[:nmp],PA[:nmp])) ≈ -WNDCnat["SPAA.nmp","delas=0"]#  214.170730815099
+ @test value(compensated_demand(A[:brd],PA[:brd])) ≈ -WNDCnat["SPAA.brd","delas=0"]#  706.92158293153
+ @test value(compensated_demand(A[:bnk],PA[:bnk])) ≈ -WNDCnat["SPAA.bnk","delas=0"]#  792.928809423471
+ @test value(compensated_demand(A[:ore],PA[:ore])) ≈ -WNDCnat["SPAA.ore","delas=0"]#  1255.22670672849
+ @test value(compensated_demand(A[:edu],PA[:edu])) ≈ -WNDCnat["SPAA.edu","delas=0"]#  392.721177238059
+ @test value(compensated_demand(A[:ote],PA[:ote])) ≈ -WNDCnat["SPAA.ote","delas=0"]#  277.512122111029
+ @test value(compensated_demand(A[:man],PA[:man])) ≈ -WNDCnat["SPAA.man","delas=0"]#  579.534061485011
+ @test value(compensated_demand(A[:mch],PA[:mch])) ≈ -WNDCnat["SPAA.mch","delas=0"]#  587.302459128392
+ @test value(compensated_demand(A[:dat],PA[:dat])) ≈ -WNDCnat["SPAA.dat","delas=0"]#  245.676944264987
+ @test value(compensated_demand(A[:amd],PA[:amd])) ≈ -WNDCnat["SPAA.amd","delas=0"]#  229.587824
+ @test value(compensated_demand(A[:oil],PA[:oil])) ≈ -WNDCnat["SPAA.oil","delas=0"]#  411.497048603792
+ @test value(compensated_demand(A[:hos],PA[:hos])) ≈ -WNDCnat["SPAA.hos","delas=0"]#  1073.11603511482
+ @test value(compensated_demand(A[:rnt],PA[:rnt])) ≈ -WNDCnat["SPAA.rnt","delas=0"]#  368.878804478233
+ @test value(compensated_demand(A[:pla],PA[:pla])) ≈ -WNDCnat["SPAA.pla","delas=0"]#  362.323320781291
+ @test value(compensated_demand(A[:fof],PA[:fof])) ≈ -WNDCnat["SPAA.fof","delas=0"]#  92.1228989157354
+ @test value(compensated_demand(A[:fin],PA[:fin])) ≈ -WNDCnat["SPAA.fin","delas=0"]#  183.495134
+ @test value(compensated_demand(A[:tsv],PA[:tsv])) ≈ -WNDCnat["SPAA.tsv","delas=0"]#  1989.37691817216
+ @test value(compensated_demand(A[:nrs],PA[:nrs])) ≈ -WNDCnat["SPAA.nrs","delas=0"]#  245.658333
+ @test value(compensated_demand(A[:sec],PA[:sec])) ≈ -WNDCnat["SPAA.sec","delas=0"]#  514.224717426736
+ @test value(compensated_demand(A[:art],PA[:art])) ≈ -WNDCnat["SPAA.art","delas=0"]#  174.641390742409
+ @test value(compensated_demand(A[:mov],PA[:mov])) ≈ -WNDCnat["SPAA.mov","delas=0"]#  146.569456555932
+ @test value(compensated_demand(A[:fpd],PA[:fpd])) ≈ -WNDCnat["SPAA.fpd","delas=0"]#  221.278857788401
+ @test value(compensated_demand(A[:slg],PA[:slg])) ≈ -WNDCnat["SPAA.slg","delas=0"]#  1744.23136
+ @test value(compensated_demand(A[:pri],PA[:pri])) ≈ -WNDCnat["SPAA.pri","delas=0"]#  89.2867852003098
+ @test value(compensated_demand(A[:grd],PA[:grd])) ≈ -WNDCnat["SPAA.grd","delas=0"]#  93.1481825
+ @test value(compensated_demand(A[:pip],PA[:pip])) ≈ -WNDCnat["SPAA.pip","delas=0"] atol=1.0e-7 #  0.382187262062218
+ @test value(compensated_demand(A[:sle],PA[:sle])) ≈ -WNDCnat["SPAA.sle","delas=0"]#  104.176032
+ @test value(compensated_demand(A[:osv],PA[:osv])) ≈ -WNDCnat["SPAA.osv","delas=0"]#  868.463326892784
+ @test value(compensated_demand(A[:trn],PA[:trn])) ≈ -WNDCnat["SPAA.trn","delas=0"]#  7.92415074551477
+ @test value(compensated_demand(A[:smn],PA[:smn])) ≈ -WNDCnat["SPAA.smn","delas=0"]#  124.258768865999
+ @test value(compensated_demand(A[:fmt],PA[:fmt])) ≈ -WNDCnat["SPAA.fmt","delas=0"]#  477.223423179182
+ @test value(compensated_demand(A[:pet],PA[:pet])) ≈ -WNDCnat["SPAA.pet","delas=0"]#  754.140207758403
+ @test value(compensated_demand(A[:cep],PA[:cep])) ≈ -WNDCnat["SPAA.cep","delas=0"]#  754.889357739978
+ @test value(compensated_demand(A[:wst],PA[:wst])) ≈ -WNDCnat["SPAA.wst","delas=0"]#  117.576542647166
+ @test value(compensated_demand(A[:mot],PA[:mot])) ≈ -WNDCnat["SPAA.mot","delas=0"]#  1115.85632282281
+ @test value(compensated_demand(A[:adm],PA[:adm])) ≈ -WNDCnat["SPAA.adm","delas=0"]#  929.237345902182
+ @test value(compensated_demand(A[:soc],PA[:soc])) ≈ -WNDCnat["SPAA.soc","delas=0"]#  211.263869
+ @test value(compensated_demand(A[:alt],PA[:alt])) ≈ -WNDCnat["SPAA.alt","delas=0"]#  428.649715680174
+ @test value(compensated_demand(A[:pmt],PA[:pmt])) ≈ -WNDCnat["SPAA.pmt","delas=0"]#  306.557469719843
+ @test value(compensated_demand(A[:trk],PA[:trk])) ≈ -WNDCnat["SPAA.trk","delas=0"]#  37.635985494279
+ @test value(compensated_demand(A[:fdd],PA[:fdd])) ≈ -WNDCnat["SPAA.fdd","delas=0"]#  598.321003
+ @test value(compensated_demand(A[:wtt],PA[:wtt])) ≈ -WNDCnat["SPAA.wtt","delas=0"]#  24.7107318426004
+ @test value(compensated_demand(A[:wpd],PA[:wpd])) ≈ -WNDCnat["SPAA.wpd","delas=0"]#  169.441222157702
+ @test value(compensated_demand(A[:wht],PA[:wht])) ≈ -WNDCnat["SPAA.wht","delas=0"]#  101.048663092556
+ @test value(compensated_demand(A[:wrh],PA[:wrh])) ≈ -WNDCnat["SPAA.wrh","delas=0"]#  141.955218141518
+ @test value(compensated_demand(A[:ott],PA[:ott])) ≈ -WNDCnat["SPAA.ott","delas=0"]#  7.216437
+ @test value(compensated_demand(A[:che],PA[:che])) ≈ -WNDCnat["SPAA.che","delas=0"]#  1316.08916247908
+ @test value(compensated_demand(A[:air],PA[:air])) ≈ -WNDCnat["SPAA.air","delas=0"]#  206.906400189041
+ @test value(compensated_demand(A[:mmf],PA[:mmf])) ≈ -WNDCnat["SPAA.mmf","delas=0"]#  432.903209984379
+ @test value(compensated_demand(A[:otr],PA[:otr])) ≈ -WNDCnat["SPAA.otr","delas=0"]#  234.249449781175
+ @test value(compensated_demand(A[:min],PA[:min])) ≈ -WNDCnat["SPAA.min","delas=0"]#  110.7701129422
+ @test value(compensated_demand(A[:ppd],PY[:ppd])) ≈ WNDCnat["DPYA.ppd","delas=0"]#  178.21075049051
+ @test value(compensated_demand(A[:res],PY[:res])) ≈ WNDCnat["DPYA.res","delas=0"]#  899.582049
+ @test value(compensated_demand(A[:com],PY[:com])) ≈ WNDCnat["DPYA.com","delas=0"]#  516.642196501858
+ @test value(compensated_demand(A[:amb],PY[:amb])) ≈ WNDCnat["DPYA.amb","delas=0"]#  1092.93382
+ @test value(compensated_demand(A[:fbp],PY[:fbp])) ≈ WNDCnat["DPYA.fbp","delas=0"]#  931.00345778859
+ @test value(compensated_demand(A[:rec],PY[:rec])) ≈ WNDCnat["DPYA.rec","delas=0"]#  195.091973
+ @test value(compensated_demand(A[:con],PY[:con])) ≈ WNDCnat["DPYA.con","delas=0"]#  1659.55143
+ @test value(compensated_demand(A[:agr],PY[:agr])) ≈ WNDCnat["DPYA.agr","delas=0"]#  396.877165615111
+ @test value(compensated_demand(A[:eec],PY[:eec])) ≈ WNDCnat["DPYA.eec","delas=0"]#  116.115975355055
+ @test value(compensated_demand(A[:fnd],PY[:fnd])) ≈ WNDCnat["DPYA.fnd","delas=0"]#  380.898129
+ @test value(compensated_demand(A[:pub],PY[:pub])) ≈ WNDCnat["DPYA.pub","delas=0"]#  279.081932129493
+ @test value(compensated_demand(A[:hou],PY[:hou])) ≈ WNDCnat["DPYA.hou","delas=0"]#  2073.31916
+ @test value(compensated_demand(A[:ins],PY[:ins])) ≈ WNDCnat["DPYA.ins","delas=0"]#  1122.4038138215
+ @test value(compensated_demand(A[:tex],PY[:tex])) ≈ WNDCnat["DPYA.tex","delas=0"]#  44.6512497935603
+ @test value(compensated_demand(A[:leg],PY[:leg])) ≈ WNDCnat["DPYA.leg","delas=0"]#  342.931208808951
+ @test value(compensated_demand(A[:fen],PY[:fen])) ≈ WNDCnat["DPYA.fen","delas=0"]#  70.8983536965506
+ @test value(compensated_demand(A[:uti],PY[:uti])) ≈ WNDCnat["DPYA.uti","delas=0"]#  624.227774668326
+ @test value(compensated_demand(A[:nmp],PY[:nmp])) ≈ WNDCnat["DPYA.nmp","delas=0"]#  122.525922980665
+ @test value(compensated_demand(A[:brd],PY[:brd])) ≈ WNDCnat["DPYA.brd","delas=0"]#  683.421349297816
+ @test value(compensated_demand(A[:bnk],PY[:bnk])) ≈ WNDCnat["DPYA.bnk","delas=0"]#  852.551368068504
+ @test value(compensated_demand(A[:ore],PY[:ore])) ≈ WNDCnat["DPYA.ore","delas=0"]#  1259.29276
+ @test value(compensated_demand(A[:edu],PY[:edu])) ≈ WNDCnat["DPYA.edu","delas=0"]#  393.241182081057
+ @test value(compensated_demand(A[:ote],PY[:ote])) ≈ WNDCnat["DPYA.ote","delas=0"]#  317.472450892451
+ @test value(compensated_demand(A[:man],PY[:man])) ≈ WNDCnat["DPYA.man","delas=0"]#  582.277441
+ @test value(compensated_demand(A[:mch],PY[:mch])) ≈ WNDCnat["DPYA.mch","delas=0"]#  350.621153933213
+ @test value(compensated_demand(A[:dat],PY[:dat])) ≈ WNDCnat["DPYA.dat","delas=0"]#  249.628668046696
+ @test value(compensated_demand(A[:amd],PY[:amd])) ≈ WNDCnat["DPYA.amd","delas=0"]#  211.274527
+ @test value(compensated_demand(A[:oil],PY[:oil])) ≈ WNDCnat["DPYA.oil","delas=0"]#  231.642002005523
+ @test value(compensated_demand(A[:hos],PY[:hos])) ≈ WNDCnat["DPYA.hos","delas=0"]#  1069.65355419784
+ @test value(compensated_demand(A[:rnt],PY[:rnt])) ≈ WNDCnat["DPYA.rnt","delas=0"]#  433.205937
+ @test value(compensated_demand(A[:pla],PY[:pla])) ≈ WNDCnat["DPYA.pla","delas=0"]#  229.566295840274
+ @test value(compensated_demand(A[:fof],PY[:fof])) ≈ WNDCnat["DPYA.fof","delas=0"]#  65.7273275023142
+ @test value(compensated_demand(A[:fin],PY[:fin])) ≈ WNDCnat["DPYA.fin","delas=0"]#  183.457238
+ @test value(compensated_demand(A[:tsv],PY[:tsv])) ≈ WNDCnat["DPYA.tsv","delas=0"]#  2035.15069283442
+ @test value(compensated_demand(A[:nrs],PY[:nrs])) ≈ WNDCnat["DPYA.nrs","delas=0"]#  242.743749
+ @test value(compensated_demand(A[:sec],PY[:sec])) ≈ WNDCnat["DPYA.sec","delas=0"]#  584.314692597079
+ @test value(compensated_demand(A[:art],PY[:art])) ≈ WNDCnat["DPYA.art","delas=0"]#  169.247278606401
+ @test value(compensated_demand(A[:mov],PY[:mov])) ≈ WNDCnat["DPYA.mov","delas=0"]#  145.054508466726
+ @test value(compensated_demand(A[:fpd],PY[:fpd])) ≈ WNDCnat["DPYA.fpd","delas=0"]#  72.0340376373278
+ @test value(compensated_demand(A[:slg],PY[:slg])) ≈ WNDCnat["DPYA.slg","delas=0"]#  1744.23136
+ @test value(compensated_demand(A[:pri],PY[:pri])) ≈ WNDCnat["DPYA.pri","delas=0"]#  71.1498911232477
+ @test value(compensated_demand(A[:grd],PY[:grd])) ≈ WNDCnat["DPYA.grd","delas=0"]#  92.1405807
+ @test value(compensated_demand(A[:pip],PY[:pip])) ≈ WNDCnat["DPYA.pip","delas=0"] atol=1.0e-7 #  0.551520281
+ @test value(compensated_demand(A[:sle],PY[:sle])) ≈ WNDCnat["DPYA.sle","delas=0"]#  104.176032
+ @test value(compensated_demand(A[:osv],PY[:osv])) ≈ WNDCnat["DPYA.osv","delas=0"]#  843.612078140922
+ @test value(compensated_demand(A[:trn],PY[:trn])) ≈ WNDCnat["DPYA.trn","delas=0"]#  10.818151
+ @test value(compensated_demand(A[:smn],PY[:smn])) ≈ WNDCnat["DPYA.smn","delas=0"]#  126.300856150821
+ @test value(compensated_demand(A[:fmt],PY[:fmt])) ≈ WNDCnat["DPYA.fmt","delas=0"]#  326.674921247834
+ @test value(compensated_demand(A[:pet],PY[:pet])) ≈ WNDCnat["DPYA.pet","delas=0"]#  530.135768600117
+ @test value(compensated_demand(A[:cep],PY[:cep])) ≈ WNDCnat["DPYA.cep","delas=0"]#  293.672381307298
+ @test value(compensated_demand(A[:wst],PY[:wst])) ≈ WNDCnat["DPYA.wst","delas=0"]#  115.755819924613
+ @test value(compensated_demand(A[:mot],PY[:mot])) ≈ WNDCnat["DPYA.mot","delas=0"]#  661.976681705433
+ @test value(compensated_demand(A[:adm],PY[:adm])) ≈ WNDCnat["DPYA.adm","delas=0"]#  923.37937571617
+ @test value(compensated_demand(A[:soc],PY[:soc])) ≈ WNDCnat["DPYA.soc","delas=0"]#  210.448152
+ @test value(compensated_demand(A[:alt],PY[:alt])) ≈ WNDCnat["DPYA.alt","delas=0"]#  15.1266248122091
+ @test value(compensated_demand(A[:pmt],PY[:pmt])) ≈ WNDCnat["DPYA.pmt","delas=0"]#  209.112552452253
+ @test value(compensated_demand(A[:trk],PY[:trk])) ≈ WNDCnat["DPYA.trk","delas=0"]#  38.934866
+ @test value(compensated_demand(A[:fdd],PY[:fdd])) ≈ WNDCnat["DPYA.fdd","delas=0"]#  598.321003
+ @test value(compensated_demand(A[:wtt],PY[:wtt])) ≈ WNDCnat["DPYA.wtt","delas=0"]#  29.5450418
+ @test value(compensated_demand(A[:wpd],PY[:wpd])) ≈ WNDCnat["DPYA.wpd","delas=0"]#  110.717249634737
+ @test value(compensated_demand(A[:wht],PY[:wht])) ≈ WNDCnat["DPYA.wht","delas=0"]#  103.418245
+ @test value(compensated_demand(A[:wrh],PY[:wrh])) ≈ WNDCnat["DPYA.wrh","delas=0"]#  141.952358
+ @test value(compensated_demand(A[:ott],PY[:ott])) ≈ WNDCnat["DPYA.ott","delas=0"]#  7.216437
+ @test value(compensated_demand(A[:che],PY[:che])) ≈ WNDCnat["DPYA.che","delas=0"]#  747.766537670418
+ @test value(compensated_demand(A[:air],PY[:air])) ≈ WNDCnat["DPYA.air","delas=0"]#  191.205489940419
+ @test value(compensated_demand(A[:mmf],PY[:mmf])) ≈ WNDCnat["DPYA.mmf","delas=0"]#  144.225723685467
+ @test value(compensated_demand(A[:otr],PY[:otr])) ≈ WNDCnat["DPYA.otr","delas=0"]#  244.239910468167
+ @test value(compensated_demand(A[:min],PY[:min])) ≈ WNDCnat["DPYA.min","delas=0"]#  83.8238663779317
+ @test value(compensated_demand(MS[:trn],PM[:trn])) ≈ -WNDCnat["SPMMS.trn","delas=0"]#  441.38467
+ @test value(compensated_demand(MS[:trd],PM[:trd])) ≈ -WNDCnat["SPMMS.trd","delas=0"]#  2963.50744
  @test value(MS[:trn]) ≈ WNDCnat["MS.trn","delas=0"]#  1.00331384764837
  @test value(MS[:trd]) ≈ WNDCnat["MS.trd","delas=0"]#  1.00176499491427
  @test value(PA[:ppd]) ≈ WNDCnat["PA.ppd","delas=0"]#  0.944559101695778
@@ -1767,202 +1766,202 @@ solve!(WiNnat, convergence_tolerance=1e-6, cumulative_iteration_limit=10000);
 @test value(A[:mmf]) ≈ WNDCnat["A.mmf","delas=0.5"]#  1.00407319647858
 @test value(A[:otr]) ≈ WNDCnat["A.otr","delas=0.5"]#  1.01237698718806
 @test value(A[:min]) ≈ WNDCnat["A.min","delas=0.5"]#  1.01021085069484
-# @test value(PA[ppd]ρRA) ≈ WNDCnat["DPARA.ppd","delas=0.5"]#  45.0601240268544
-# @test value(PA[res]ρRA) ≈ WNDCnat["DPARA.res","delas=0.5"]#  757.159852022435
-# @test value(PA[amb]ρRA) ≈ WNDCnat["DPARA.amb","delas=0.5"]#  1036.26147061985
-# @test value(PA[fbp]ρRA) ≈ WNDCnat["DPARA.fbp","delas=0.5"]#  1056.76295080827
-# @test value(PA[rec]ρRA) ≈ WNDCnat["DPARA.rec","delas=0.5"]#  201.622836574546
-# @test value(PA[agr]ρRA) ≈ WNDCnat["DPARA.agr","delas=0.5"]#  146.243621187287
-# @test value(PA[eec]ρRA) ≈ WNDCnat["DPARA.eec","delas=0.5"]#  86.797819897891
-# @test value(PA[pub]ρRA) ≈ WNDCnat["DPARA.pub","delas=0.5"]#  130.040069459569
-# @test value(PA[hou]ρRA) ≈ WNDCnat["DPARA.hou","delas=0.5"]#  1979.63604680992
-# @test value(PA[ins]ρRA) ≈ WNDCnat["DPARA.ins","delas=0.5"]#  385.566129845515
-# @test value(PA[tex]ρRA) ≈ WNDCnat["DPARA.tex","delas=0.5"]#  74.1659091322046
-# @test value(PA[leg]ρRA) ≈ WNDCnat["DPARA.leg","delas=0.5"]#  105.577046670679
-# @test value(PA[fen]ρRA) ≈ WNDCnat["DPARA.fen","delas=0.5"]#  6.06867376929024
-# @test value(PA[uti]ρRA) ≈ WNDCnat["DPARA.uti","delas=0.5"]#  268.845203837184
-# @test value(PA[nmp]ρRA) ≈ WNDCnat["DPARA.nmp","delas=0.5"]#  20.9808628913747
-# @test value(PA[brd]ρRA) ≈ WNDCnat["DPARA.brd","delas=0.5"]#  337.157926326524
-# @test value(PA[bnk]ρRA) ≈ WNDCnat["DPARA.bnk","delas=0.5"]#  274.89115487289
-# @test value(PA[ore]ρRA) ≈ WNDCnat["DPARA.ore","delas=0.5"]#  5.5803628866489
-# @test value(PA[edu]ρRA) ≈ WNDCnat["DPARA.edu","delas=0.5"]#  346.338341665916
-# @test value(PA[ote]ρRA) ≈ WNDCnat["DPARA.ote","delas=0.5"]#  32.3881248792287
-# @test value(PA[mch]ρRA) ≈ WNDCnat["DPARA.mch","delas=0.5"]#  24.1116591528413
-# @test value(PA[dat]ρRA) ≈ WNDCnat["DPARA.dat","delas=0.5"]#  55.0248135435681
-# @test value(PA[amd]ρRA) ≈ WNDCnat["DPARA.amd","delas=0.5"]#  162.283228323791
-# @test value(PA[hos]ρRA) ≈ WNDCnat["DPARA.hos","delas=0.5"]#  1054.16888132703
-# @test value(PA[rnt]ρRA) ≈ WNDCnat["DPARA.rnt","delas=0.5"]#  106.208566618766
-# @test value(PA[pla]ρRA) ≈ WNDCnat["DPARA.pla","delas=0.5"]#  67.7954100210675
-# @test value(PA[fof]ρRA) ≈ WNDCnat["DPARA.fof","delas=0.5"]#  11.6825512065375
-# @test value(PA[fin]ρRA) ≈ WNDCnat["DPARA.fin","delas=0.5"]#  160.488498183504
-# @test value(PA[tsv]ρRA) ≈ WNDCnat["DPARA.tsv","delas=0.5"]#  71.843019788449
-# @test value(PA[nrs]ρRA) ≈ WNDCnat["DPARA.nrs","delas=0.5"]#  240.782367299231
-# @test value(PA[sec]ρRA) ≈ WNDCnat["DPARA.sec","delas=0.5"]#  221.599693829797
-# @test value(PA[art]ρRA) ≈ WNDCnat["DPARA.art","delas=0.5"]#  78.332736118235
-# @test value(PA[mov]ρRA) ≈ WNDCnat["DPARA.mov","delas=0.5"]#  32.4892083513815
-# @test value(PA[fpd]ρRA) ≈ WNDCnat["DPARA.fpd","delas=0.5"]#  121.062232092821
-# @test value(PA[pri]ρRA) ≈ WNDCnat["DPARA.pri","delas=0.5"]#  8.40015228867906
-# @test value(PA[grd]ρRA) ≈ WNDCnat["DPARA.grd","delas=0.5"]#  45.5828317793725
-# @test value(PA[sle]ρRA) ≈ WNDCnat["DPARA.sle","delas=0.5"]#  70.6524090594336
-# @test value(PA[osv]ρRA) ≈ WNDCnat["DPARA.osv","delas=0.5"]#  614.384644587196
-# @test value(PA[trn]ρRA) ≈ WNDCnat["DPARA.trn","delas=0.5"]#  1.37381536268478
-# @test value(PA[fmt]ρRA) ≈ WNDCnat["DPARA.fmt","delas=0.5"]#  40.7257821156265
-# @test value(PA[pet]ρRA) ≈ WNDCnat["DPARA.pet","delas=0.5"]#  333.867745419442
-# @test value(PA[cep]ρRA) ≈ WNDCnat["DPARA.cep","delas=0.5"]#  163.759555533644
-# @test value(PA[wst]ρRA) ≈ WNDCnat["DPARA.wst","delas=0.5"]#  26.9531426343918
-# @test value(PA[mot]ρRA) ≈ WNDCnat["DPARA.mot","delas=0.5"]#  341.464580579289
-# @test value(PA[adm]ρRA) ≈ WNDCnat["DPARA.adm","delas=0.5"]#  63.2880744886363
-# @test value(PA[soc]ρRA) ≈ WNDCnat["DPARA.soc","delas=0.5"]#  208.320131495183
-# @test value(PA[alt]ρRA) ≈ WNDCnat["DPARA.alt","delas=0.5"]#  415.991408372126
-# @test value(PA[pmt]ρRA) ≈ WNDCnat["DPARA.pmt","delas=0.5"]#  1.7298687899749
-# @test value(PA[trk]ρRA) ≈ WNDCnat["DPARA.trk","delas=0.5"]#  12.3315496707354
-# @test value(PA[wtt]ρRA) ≈ WNDCnat["DPARA.wtt","delas=0.5"]#  21.4185797442208
-# @test value(PA[wpd]ρRA) ≈ WNDCnat["DPARA.wpd","delas=0.5"]#  7.90974168013956
-# @test value(PA[wrh]ρRA) ≈ WNDCnat["DPARA.wrh","delas=0.5"] atol=1.0e-8 #  0.0864360974265916
-# @test value(PA[ott]ρRA) ≈ WNDCnat["DPARA.ott","delas=0.5"]#  5.39308235257145
-# @test value(PA[che]ρRA) ≈ WNDCnat["DPARA.che","delas=0.5"]#  631.55244405337
-# @test value(PA[air]ρRA) ≈ WNDCnat["DPARA.air","delas=0.5"]#  136.190640936229
-# @test value(PA[mmf]ρRA) ≈ WNDCnat["DPARA.mmf","delas=0.5"]#  266.752381548512
-# @test value(PA[otr]ρRA) ≈ WNDCnat["DPARA.otr","delas=0.5"]#  23.1992665259564
-# @test value(PA[min]ρRA) ≈ WNDCnat["DPARA.min","delas=0.5"] atol=1.0e-7#  0.648907418888096
-# @test value(PA[ppd]‡A[ppd]) ≈ WNDCnat["SPAA.ppd","delas=0.5"]#  237.042258809771
-# @test value(PA[res]‡A[res]) ≈ WNDCnat["SPAA.res","delas=0.5"]#  959.30920358167
-# @test value(PA[com]‡A[com]) ≈ WNDCnat["SPAA.com","delas=0.5"]#  525.381541371094
-# @test value(PA[amb]‡A[amb]) ≈ WNDCnat["SPAA.amb","delas=0.5"]#  1093.38052789571
-# @test value(PA[fbp]‡A[fbp]) ≈ WNDCnat["SPAA.fbp","delas=0.5"]#  1515.85960332083
-# @test value(PA[rec]‡A[rec]) ≈ WNDCnat["SPAA.rec","delas=0.5"]#  204.693237
-# @test value(PA[con]‡A[con]) ≈ WNDCnat["SPAA.con","delas=0.5"]#  1661.39225288267
-# @test value(PA[agr]‡A[agr]) ≈ WNDCnat["SPAA.agr","delas=0.5"]#  516.24630188779
-# @test value(PA[eec]‡A[eec]) ≈ WNDCnat["SPAA.eec","delas=0.5"]#  298.28950099067
-# @test value(PA[fnd]‡A[fnd]) ≈ WNDCnat["SPAA.fnd","delas=0.5"]#  380.898129
-# @test value(PA[pub]‡A[pub]) ≈ WNDCnat["SPAA.pub","delas=0.5"]#  348.938289320993
-# @test value(PA[hou]‡A[hou]) ≈ WNDCnat["SPAA.hou","delas=0.5"]#  2035.11236
-# @test value(PA[ins]‡A[ins]) ≈ WNDCnat["SPAA.ins","delas=0.5"]#  1174.57356283324
-# @test value(PA[tex]‡A[tex]) ≈ WNDCnat["SPAA.tex","delas=0.5"]#  145.366271676348
-# @test value(PA[leg]‡A[leg]) ≈ WNDCnat["SPAA.leg","delas=0.5"]#  348.505781910617
-# @test value(PA[fen]‡A[fen]) ≈ WNDCnat["SPAA.fen","delas=0.5"]#  70.484605514581
-# @test value(PA[uti]‡A[uti]) ≈ WNDCnat["SPAA.uti","delas=0.5"]#  652.048199468549
-# @test value(PA[nmp]‡A[nmp]) ≈ WNDCnat["SPAA.nmp","delas=0.5"]#  214.143191827356
-# @test value(PA[brd]‡A[brd]) ≈ WNDCnat["SPAA.brd","delas=0.5"]#  706.859057988137
-# @test value(PA[bnk]‡A[bnk]) ≈ WNDCnat["SPAA.bnk","delas=0.5"]#  792.736754302412
-# @test value(PA[ore]‡A[ore]) ≈ WNDCnat["SPAA.ore","delas=0.5"]#  1255.2142585677
-# @test value(PA[edu]‡A[edu]) ≈ WNDCnat["SPAA.edu","delas=0.5"]#  392.718862367539
-# @test value(PA[ote]‡A[ote]) ≈ WNDCnat["SPAA.ote","delas=0.5"]#  277.22539563263
-# @test value(PA[man]‡A[man]) ≈ WNDCnat["SPAA.man","delas=0.5"]#  579.531360390116
-# @test value(PA[mch]‡A[mch]) ≈ WNDCnat["SPAA.mch","delas=0.5"]#  587.112660860874
-# @test value(PA[dat]‡A[dat]) ≈ WNDCnat["SPAA.dat","delas=0.5"]#  245.647070841696
-# @test value(PA[amd]‡A[amd]) ≈ WNDCnat["SPAA.amd","delas=0.5"]#  229.587824
-# @test value(PA[oil]‡A[oil]) ≈ WNDCnat["SPAA.oil","delas=0.5"]#  411.376147896077
-# @test value(PA[hos]‡A[hos]) ≈ WNDCnat["SPAA.hos","delas=0.5"]#  1073.11371300456
-# @test value(PA[rnt]‡A[rnt]) ≈ WNDCnat["SPAA.rnt","delas=0.5"]#  368.467575126058
-# @test value(PA[pla]‡A[pla]) ≈ WNDCnat["SPAA.pla","delas=0.5"]#  362.263068479548
-# @test value(PA[fof]‡A[fof]) ≈ WNDCnat["SPAA.fof","delas=0.5"]#  92.1131343757475
-# @test value(PA[fin]‡A[fin]) ≈ WNDCnat["SPAA.fin","delas=0.5"]#  183.495134
-# @test value(PA[tsv]‡A[tsv]) ≈ WNDCnat["SPAA.tsv","delas=0.5"]#  1989.13386888999
-# @test value(PA[nrs]‡A[nrs]) ≈ WNDCnat["SPAA.nrs","delas=0.5"]#  245.658333
-# @test value(PA[sec]‡A[sec]) ≈ WNDCnat["SPAA.sec","delas=0.5"]#  514.165906249902
-# @test value(PA[art]‡A[art]) ≈ WNDCnat["SPAA.art","delas=0.5"]#  174.636633032318
-# @test value(PA[mov]‡A[mov]) ≈ WNDCnat["SPAA.mov","delas=0.5"]#  146.493343776654
-# @test value(PA[fpd]‡A[fpd]) ≈ WNDCnat["SPAA.fpd","delas=0.5"]#  221.271403128093
-# @test value(PA[slg]‡A[slg]) ≈ WNDCnat["SPAA.slg","delas=0.5"]#  1744.23136
-# @test value(PA[pri]‡A[pri]) ≈ WNDCnat["SPAA.pri","delas=0.5"]#  89.2821943716604
-# @test value(PA[grd]‡A[grd]) ≈ WNDCnat["SPAA.grd","delas=0.5"]#  93.1481825
-# @test value(PA[pip]‡A[pip]) ≈ WNDCnat["SPAA.pip","delas=0.5"] atol=1.0e-7 #  0.380571076520651
-# @test value(PA[sle]‡A[sle]) ≈ WNDCnat["SPAA.sle","delas=0.5"]#  104.176032
-# @test value(PA[osv]‡A[osv]) ≈ WNDCnat["SPAA.osv","delas=0.5"]#  868.463235119891
-# @test value(PA[trn]‡A[trn]) ≈ WNDCnat["SPAA.trn","delas=0.5"]#  7.92090092170896
-# @test value(PA[smn]‡A[smn]) ≈ WNDCnat["SPAA.smn","delas=0.5"]#  124.253788843119
-# @test value(PA[fmt]‡A[fmt]) ≈ WNDCnat["SPAA.fmt","delas=0.5"]#  477.156574865818
-# @test value(PA[pet]‡A[pet]) ≈ WNDCnat["SPAA.pet","delas=0.5"]#  753.75904815071
-# @test value(PA[cep]‡A[cep]) ≈ WNDCnat["SPAA.cep","delas=0.5"]#  754.719744960267
-# @test value(PA[wst]‡A[wst]) ≈ WNDCnat["SPAA.wst","delas=0.5"]#  117.576207274571
-# @test value(PA[mot]‡A[mot]) ≈ WNDCnat["SPAA.mot","delas=0.5"]#  1115.65463827953
-# @test value(PA[adm]‡A[adm]) ≈ WNDCnat["SPAA.adm","delas=0.5"]#  929.23430111397
-# @test value(PA[soc]‡A[soc]) ≈ WNDCnat["SPAA.soc","delas=0.5"]#  211.263869
-# @test value(PA[alt]‡A[alt]) ≈ WNDCnat["SPAA.alt","delas=0.5"]#  428.63988823013
-# @test value(PA[pmt]‡A[pmt]) ≈ WNDCnat["SPAA.pmt","delas=0.5"]#  306.493613096515
-# @test value(PA[trk]‡A[trk]) ≈ WNDCnat["SPAA.trk","delas=0.5"]#  37.6322704279848
-# @test value(PA[fdd]‡A[fdd]) ≈ WNDCnat["SPAA.fdd","delas=0.5"]#  598.321003
-# @test value(PA[wtt]‡A[wtt]) ≈ WNDCnat["SPAA.wtt","delas=0.5"]#  24.7014719142186
-# @test value(PA[wpd]‡A[wpd]) ≈ WNDCnat["SPAA.wpd","delas=0.5"]#  169.42858714196
-# @test value(PA[wht]‡A[wht]) ≈ WNDCnat["SPAA.wht","delas=0.5"]#  101.043210787764
-# @test value(PA[wrh]‡A[wrh]) ≈ WNDCnat["SPAA.wrh","delas=0.5"]#  141.955011912645
-# @test value(PA[ott]‡A[ott]) ≈ WNDCnat["SPAA.ott","delas=0.5"]#  7.216437
-# @test value(PA[che]‡A[che]) ≈ WNDCnat["SPAA.che","delas=0.5"]#  1315.58772751069
-# @test value(PA[air]‡A[air]) ≈ WNDCnat["SPAA.air","delas=0.5"]#  206.785758150423
-# @test value(PA[mmf]‡A[mmf]) ≈ WNDCnat["SPAA.mmf","delas=0.5"]#  432.825451495033
-# @test value(PA[otr]‡A[otr]) ≈ WNDCnat["SPAA.otr","delas=0.5"]#  234.235207264151
-# @test value(PA[min]‡A[min]) ≈ WNDCnat["SPAA.min","delas=0.5"]#  110.707702826321
-# @test value(PY[ppd]†A→dmppd) ≈ WNDCnat["DPYA.ppd","delas=0.5"]#  178.256813902463
-# @test value(PY[res]†A→dmres) ≈ WNDCnat["DPYA.res","delas=0.5"]#  899.582049
-# @test value(PY[com]†A→dmcom) ≈ WNDCnat["DPYA.com","delas=0.5"]#  516.649898560368
-# @test value(PY[amb]†A→dmamb) ≈ WNDCnat["DPYA.amb","delas=0.5"]#  1092.93382
-# @test value(PY[fbp]†A→dmfbp) ≈ WNDCnat["DPYA.fbp","delas=0.5"]#  931.251070587899
-# @test value(PY[rec]†A→dmrec) ≈ WNDCnat["DPYA.rec","delas=0.5"]#  195.091973
-# @test value(PY[con]†A→dmcon) ≈ WNDCnat["DPYA.con","delas=0.5"]#  1659.55143
-# @test value(PY[agr]†A→dmagr) ≈ WNDCnat["DPYA.agr","delas=0.5"]#  397.024445520014
-# @test value(PY[eec]†A→dmeec) ≈ WNDCnat["DPYA.eec","delas=0.5"]#  116.224602225512
-# @test value(PY[fnd]†A→dmfnd) ≈ WNDCnat["DPYA.fnd","delas=0.5"]#  380.898129
-# @test value(PY[pub]†A→dmpub) ≈ WNDCnat["DPYA.pub","delas=0.5"]#  279.094208134003
-# @test value(PY[hou]†A→dmhou) ≈ WNDCnat["DPYA.hou","delas=0.5"]#  2073.31916
-# @test value(PY[ins]†A→dmins) ≈ WNDCnat["DPYA.ins","delas=0.5"]#  1122.53945097812
-# @test value(PY[tex]†A→dmtex) ≈ WNDCnat["DPYA.tex","delas=0.5"]#  44.6835445946073
-# @test value(PY[leg]†A→dmleg) ≈ WNDCnat["DPYA.leg","delas=0.5"]#  342.941202554652
-# @test value(PY[fen]†A→dmfen) ≈ WNDCnat["DPYA.fen","delas=0.5"]#  70.8982207884942
-# @test value(PY[uti]†A→dmuti) ≈ WNDCnat["DPYA.uti","delas=0.5"]#  624.237086740571
-# @test value(PY[nmp]†A→dmnmp) ≈ WNDCnat["DPYA.nmp","delas=0.5"]#  122.588272442773
-# @test value(PY[brd]†A→dmbrd) ≈ WNDCnat["DPYA.brd","delas=0.5"]#  683.422053280957
-# @test value(PY[bnk]†A→dmbnk) ≈ WNDCnat["DPYA.bnk","delas=0.5"]#  852.551516138285
-# @test value(PY[ore]†A→dmore) ≈ WNDCnat["DPYA.ore","delas=0.5"]#  1259.29276
-# @test value(PY[edu]†A→dmedu) ≈ WNDCnat["DPYA.edu","delas=0.5"]#  393.242773982239
-# @test value(PY[ote]†A→dmote) ≈ WNDCnat["DPYA.ote","delas=0.5"]#  317.58715531611
-# @test value(PY[man]†A→dmman) ≈ WNDCnat["DPYA.man","delas=0.5"]#  582.277441
-# @test value(PY[mch]†A→dmmch) ≈ WNDCnat["DPYA.mch","delas=0.5"]#  350.820648889152
-# @test value(PY[dat]†A→dmdat) ≈ WNDCnat["DPYA.dat","delas=0.5"]#  249.63483299757
-# @test value(PY[amd]†A→dmamd) ≈ WNDCnat["DPYA.amd","delas=0.5"]#  211.274527
-# @test value(PY[oil]†A→dmoil) ≈ WNDCnat["DPYA.oil","delas=0.5"]#  232.058988306448
-# @test value(PY[hos]†A→dmhos) ≈ WNDCnat["DPYA.hos","delas=0.5"]#  1069.65732716006
-# @test value(PY[rnt]†A→dmrnt) ≈ WNDCnat["DPYA.rnt","delas=0.5"]#  433.205937
-# @test value(PY[pla]†A→dmpla) ≈ WNDCnat["DPYA.pla","delas=0.5"]#  229.66487257659
-# @test value(PY[fof]†A→dmfof) ≈ WNDCnat["DPYA.fof","delas=0.5"]#  65.745918634565
-# @test value(PY[fin]†A→dmfin) ≈ WNDCnat["DPYA.fin","delas=0.5"]#  183.457238
-# @test value(PY[tsv]†A→dmtsv) ≈ WNDCnat["DPYA.tsv","delas=0.5"]#  2035.31278550717
-# @test value(PY[nrs]†A→dmnrs) ≈ WNDCnat["DPYA.nrs","delas=0.5"]#  242.743749
-# @test value(PY[sec]†A→dmsec) ≈ WNDCnat["DPYA.sec","delas=0.5"]#  584.314739652457
-# @test value(PY[art]†A→dmart) ≈ WNDCnat["DPYA.art","delas=0.5"]#  169.25132985919
-# @test value(PY[mov]†A→dmmov) ≈ WNDCnat["DPYA.mov","delas=0.5"]#  145.086764881248
-# @test value(PY[fpd]†A→dmfpd) ≈ WNDCnat["DPYA.fpd","delas=0.5"]#  72.0740621404007
-# @test value(PY[slg]†A→dmslg) ≈ WNDCnat["DPYA.slg","delas=0.5"]#  1744.23136
-# @test value(PY[pri]†A→dmpri) ≈ WNDCnat["DPYA.pri","delas=0.5"]#  71.1547479575622
-# @test value(PY[grd]†A→dmgrd) ≈ WNDCnat["DPYA.grd","delas=0.5"]#  92.1405807
-# @test value(PY[pip]†A→dmpip) ≈ WNDCnat["DPYA.pip","delas=0.5"] atol=1.0e-7 #  0.551520281
-# @test value(PY[sle]†A→dmsle) ≈ WNDCnat["DPYA.sle","delas=0.5"]#  104.176032
-# @test value(PY[osv]†A→dmosv) ≈ WNDCnat["DPYA.osv","delas=0.5"]#  843.617845888317
-# @test value(PY[trn]†A→dmtrn) ≈ WNDCnat["DPYA.trn","delas=0.5"]#  10.818151
-# @test value(PY[smn]†A→dmsmn) ≈ WNDCnat["DPYA.smn","delas=0.5"]#  126.30253012871
-# @test value(PY[fmt]†A→dmfmt) ≈ WNDCnat["DPYA.fmt","delas=0.5"]#  326.770351755691
-# @test value(PY[pet]†A→dmpet) ≈ WNDCnat["DPYA.pet","delas=0.5"]#  530.314023931433
-# @test value(PY[cep]†A→dmcep) ≈ WNDCnat["DPYA.cep","delas=0.5"]#  294.0555382098
-# @test value(PY[wst]†A→dmwst) ≈ WNDCnat["DPYA.wst","delas=0.5"]#  115.756304435511
-# @test value(PY[mot]†A→dmmot) ≈ WNDCnat["DPYA.mot","delas=0.5"]#  662.445547589631
-# @test value(PY[adm]†A→dmadm) ≈ WNDCnat["DPYA.adm","delas=0.5"]#  923.381795523787
-# @test value(PY[soc]†A→dmsoc) ≈ WNDCnat["DPYA.soc","delas=0.5"]#  210.448152
-# @test value(PY[alt]†A→dmalt) ≈ WNDCnat["DPYA.alt","delas=0.5"]#  15.1340936958987
-# @test value(PY[pmt]†A→dmpmt) ≈ WNDCnat["DPYA.pmt","delas=0.5"]#  209.257117915282
-# @test value(PY[trk]†A→dmtrk) ≈ WNDCnat["DPYA.trk","delas=0.5"]#  38.934866
-# @test value(PY[fdd]†A→dmfdd) ≈ WNDCnat["DPYA.fdd","delas=0.5"]#  598.321003
-# @test value(PY[wtt]†A→dmwtt) ≈ WNDCnat["DPYA.wtt","delas=0.5"]#  29.5450418
-# @test value(PY[wpd]†A→dmwpd) ≈ WNDCnat["DPYA.wpd","delas=0.5"]#  110.751311022094
-# @test value(PY[wht]†A→dmwht) ≈ WNDCnat["DPYA.wht","delas=0.5"]#  103.418245
-# @test value(PY[wrh]†A→dmwrh) ≈ WNDCnat["DPYA.wrh","delas=0.5"]#  141.952358
-# @test value(PY[ott]†A→dmott) ≈ WNDCnat["DPYA.ott","delas=0.5"]#  7.216437
-# @test value(PY[che]†A→dmche) ≈ WNDCnat["DPYA.che","delas=0.5"]#  748.468424078777
-# @test value(PY[air]†A→dmair) ≈ WNDCnat["DPYA.air","delas=0.5"]#  191.300045170429
-# @test value(PY[mmf]†A→dmmmf) ≈ WNDCnat["DPYA.mmf","delas=0.5"]#  144.347624373182
-# @test value(PY[otr]†A→dmotr) ≈ WNDCnat["DPYA.otr","delas=0.5"]#  244.239969510576
-# @test value(PY[min]†A→dmmin) ≈ WNDCnat["DPYA.min","delas=0.5"]#  83.8292439906876
-# @test value(PM[trn]‡MS[trn]) ≈ WNDCnat["SPMMS.trn","delas=0.5"]#  441.38467
-# @test value(PM[trd]‡MS[trd]) ≈ WNDCnat["SPMMS.trd","delas=0.5"]#  2963.50744
+@test value(demand(RA,PA[:ppd])) ≈ WNDCnat["DPARA.ppd","delas=0.5"]#  45.0601240268544
+@test value(demand(RA,PA[:res])) ≈ WNDCnat["DPARA.res","delas=0.5"]#  757.159852022435
+@test value(demand(RA,PA[:amb])) ≈ WNDCnat["DPARA.amb","delas=0.5"]#  1036.26147061985
+@test value(demand(RA,PA[:fbp])) ≈ WNDCnat["DPARA.fbp","delas=0.5"]#  1056.76295080827
+@test value(demand(RA,PA[:rec])) ≈ WNDCnat["DPARA.rec","delas=0.5"]#  201.622836574546
+@test value(demand(RA,PA[:agr])) ≈ WNDCnat["DPARA.agr","delas=0.5"]#  146.243621187287
+@test value(demand(RA,PA[:eec])) ≈ WNDCnat["DPARA.eec","delas=0.5"]#  86.797819897891
+@test value(demand(RA,PA[:pub])) ≈ WNDCnat["DPARA.pub","delas=0.5"]#  130.040069459569
+@test value(demand(RA,PA[:hou])) ≈ WNDCnat["DPARA.hou","delas=0.5"]#  1979.63604680992
+@test value(demand(RA,PA[:ins])) ≈ WNDCnat["DPARA.ins","delas=0.5"]#  385.566129845515
+@test value(demand(RA,PA[:tex])) ≈ WNDCnat["DPARA.tex","delas=0.5"]#  74.1659091322046
+@test value(demand(RA,PA[:leg])) ≈ WNDCnat["DPARA.leg","delas=0.5"]#  105.577046670679
+@test value(demand(RA,PA[:fen])) ≈ WNDCnat["DPARA.fen","delas=0.5"]#  6.06867376929024
+@test value(demand(RA,PA[:uti])) ≈ WNDCnat["DPARA.uti","delas=0.5"]#  268.845203837184
+@test value(demand(RA,PA[:nmp])) ≈ WNDCnat["DPARA.nmp","delas=0.5"]#  20.9808628913747
+@test value(demand(RA,PA[:brd])) ≈ WNDCnat["DPARA.brd","delas=0.5"]#  337.157926326524
+@test value(demand(RA,PA[:bnk])) ≈ WNDCnat["DPARA.bnk","delas=0.5"]#  274.89115487289
+@test value(demand(RA,PA[:ore])) ≈ WNDCnat["DPARA.ore","delas=0.5"]#  5.5803628866489
+@test value(demand(RA,PA[:edu])) ≈ WNDCnat["DPARA.edu","delas=0.5"]#  346.338341665916
+@test value(demand(RA,PA[:ote])) ≈ WNDCnat["DPARA.ote","delas=0.5"]#  32.3881248792287
+@test value(demand(RA,PA[:mch])) ≈ WNDCnat["DPARA.mch","delas=0.5"]#  24.1116591528413
+@test value(demand(RA,PA[:dat])) ≈ WNDCnat["DPARA.dat","delas=0.5"]#  55.0248135435681
+@test value(demand(RA,PA[:amd])) ≈ WNDCnat["DPARA.amd","delas=0.5"]#  162.283228323791
+@test value(demand(RA,PA[:hos])) ≈ WNDCnat["DPARA.hos","delas=0.5"]#  1054.16888132703
+@test value(demand(RA,PA[:rnt])) ≈ WNDCnat["DPARA.rnt","delas=0.5"]#  106.208566618766
+@test value(demand(RA,PA[:pla])) ≈ WNDCnat["DPARA.pla","delas=0.5"]#  67.7954100210675
+@test value(demand(RA,PA[:fof])) ≈ WNDCnat["DPARA.fof","delas=0.5"]#  11.6825512065375
+@test value(demand(RA,PA[:fin])) ≈ WNDCnat["DPARA.fin","delas=0.5"]#  160.488498183504
+@test value(demand(RA,PA[:tsv])) ≈ WNDCnat["DPARA.tsv","delas=0.5"]#  71.843019788449
+@test value(demand(RA,PA[:nrs])) ≈ WNDCnat["DPARA.nrs","delas=0.5"]#  240.782367299231
+@test value(demand(RA,PA[:sec])) ≈ WNDCnat["DPARA.sec","delas=0.5"]#  221.599693829797
+@test value(demand(RA,PA[:art])) ≈ WNDCnat["DPARA.art","delas=0.5"]#  78.332736118235
+@test value(demand(RA,PA[:mov])) ≈ WNDCnat["DPARA.mov","delas=0.5"]#  32.4892083513815
+@test value(demand(RA,PA[:fpd])) ≈ WNDCnat["DPARA.fpd","delas=0.5"]#  121.062232092821
+@test value(demand(RA,PA[:pri])) ≈ WNDCnat["DPARA.pri","delas=0.5"]#  8.40015228867906
+@test value(demand(RA,PA[:grd])) ≈ WNDCnat["DPARA.grd","delas=0.5"]#  45.5828317793725
+@test value(demand(RA,PA[:sle])) ≈ WNDCnat["DPARA.sle","delas=0.5"]#  70.6524090594336
+@test value(demand(RA,PA[:osv])) ≈ WNDCnat["DPARA.osv","delas=0.5"]#  614.384644587196
+@test value(demand(RA,PA[:trn])) ≈ WNDCnat["DPARA.trn","delas=0.5"]#  1.37381536268478
+@test value(demand(RA,PA[:fmt])) ≈ WNDCnat["DPARA.fmt","delas=0.5"]#  40.7257821156265
+@test value(demand(RA,PA[:pet])) ≈ WNDCnat["DPARA.pet","delas=0.5"]#  333.867745419442
+@test value(demand(RA,PA[:cep])) ≈ WNDCnat["DPARA.cep","delas=0.5"]#  163.759555533644
+@test value(demand(RA,PA[:wst])) ≈ WNDCnat["DPARA.wst","delas=0.5"]#  26.9531426343918
+@test value(demand(RA,PA[:mot])) ≈ WNDCnat["DPARA.mot","delas=0.5"]#  341.464580579289
+@test value(demand(RA,PA[:adm])) ≈ WNDCnat["DPARA.adm","delas=0.5"]#  63.2880744886363
+@test value(demand(RA,PA[:soc])) ≈ WNDCnat["DPARA.soc","delas=0.5"]#  208.320131495183
+@test value(demand(RA,PA[:alt])) ≈ WNDCnat["DPARA.alt","delas=0.5"]#  415.991408372126
+@test value(demand(RA,PA[:pmt])) ≈ WNDCnat["DPARA.pmt","delas=0.5"]#  1.7298687899749
+@test value(demand(RA,PA[:trk])) ≈ WNDCnat["DPARA.trk","delas=0.5"]#  12.3315496707354
+@test value(demand(RA,PA[:wtt])) ≈ WNDCnat["DPARA.wtt","delas=0.5"]#  21.4185797442208
+@test value(demand(RA,PA[:wpd])) ≈ WNDCnat["DPARA.wpd","delas=0.5"]#  7.90974168013956
+@test value(demand(RA,PA[:wrh])) ≈ WNDCnat["DPARA.wrh","delas=0.5"] atol=1.0e-8 #  0.0864360974265916
+@test value(demand(RA,PA[:ott])) ≈ WNDCnat["DPARA.ott","delas=0.5"]#  5.39308235257145
+@test value(demand(RA,PA[:che])) ≈ WNDCnat["DPARA.che","delas=0.5"]#  631.55244405337
+@test value(demand(RA,PA[:air])) ≈ WNDCnat["DPARA.air","delas=0.5"]#  136.190640936229
+@test value(demand(RA,PA[:mmf])) ≈ WNDCnat["DPARA.mmf","delas=0.5"]#  266.752381548512
+@test value(demand(RA,PA[:otr])) ≈ WNDCnat["DPARA.otr","delas=0.5"]#  23.1992665259564
+@test value(demand(RA,PA[:min])) ≈ WNDCnat["DPARA.min","delas=0.5"] atol=1.0e-7#  0.648907418888096
+@test value(compensated_demand(A[:ppd],PA[:ppd])) ≈ -WNDCnat["SPAA.ppd","delas=0.5"]#  237.042258809771
+@test value(compensated_demand(A[:res],PA[:res])) ≈ -WNDCnat["SPAA.res","delas=0.5"]#  959.30920358167
+@test value(compensated_demand(A[:com],PA[:com])) ≈ -WNDCnat["SPAA.com","delas=0.5"]#  525.381541371094
+@test value(compensated_demand(A[:amb],PA[:amb])) ≈ -WNDCnat["SPAA.amb","delas=0.5"]#  1093.38052789571
+@test value(compensated_demand(A[:fbp],PA[:fbp])) ≈ -WNDCnat["SPAA.fbp","delas=0.5"]#  1515.85960332083
+@test value(compensated_demand(A[:rec],PA[:rec])) ≈ -WNDCnat["SPAA.rec","delas=0.5"]#  204.693237
+@test value(compensated_demand(A[:con],PA[:con])) ≈ -WNDCnat["SPAA.con","delas=0.5"]#  1661.39225288267
+@test value(compensated_demand(A[:agr],PA[:agr])) ≈ -WNDCnat["SPAA.agr","delas=0.5"]#  516.24630188779
+@test value(compensated_demand(A[:eec],PA[:eec])) ≈ -WNDCnat["SPAA.eec","delas=0.5"]#  298.28950099067
+@test value(compensated_demand(A[:fnd],PA[:fnd])) ≈ -WNDCnat["SPAA.fnd","delas=0.5"]#  380.898129
+@test value(compensated_demand(A[:pub],PA[:pub])) ≈ -WNDCnat["SPAA.pub","delas=0.5"]#  348.938289320993
+@test value(compensated_demand(A[:hou],PA[:hou])) ≈ -WNDCnat["SPAA.hou","delas=0.5"]#  2035.11236
+@test value(compensated_demand(A[:ins],PA[:ins])) ≈ -WNDCnat["SPAA.ins","delas=0.5"]#  1174.57356283324
+@test value(compensated_demand(A[:tex],PA[:tex])) ≈ -WNDCnat["SPAA.tex","delas=0.5"]#  145.366271676348
+@test value(compensated_demand(A[:leg],PA[:leg])) ≈ -WNDCnat["SPAA.leg","delas=0.5"]#  348.505781910617
+@test value(compensated_demand(A[:fen],PA[:fen])) ≈ -WNDCnat["SPAA.fen","delas=0.5"]#  70.484605514581
+@test value(compensated_demand(A[:uti],PA[:uti])) ≈ -WNDCnat["SPAA.uti","delas=0.5"]#  652.048199468549
+@test value(compensated_demand(A[:nmp],PA[:nmp])) ≈ -WNDCnat["SPAA.nmp","delas=0.5"]#  214.143191827356
+@test value(compensated_demand(A[:brd],PA[:brd])) ≈ -WNDCnat["SPAA.brd","delas=0.5"]#  706.859057988137
+@test value(compensated_demand(A[:bnk],PA[:bnk])) ≈ -WNDCnat["SPAA.bnk","delas=0.5"]#  792.736754302412
+@test value(compensated_demand(A[:ore],PA[:ore])) ≈ -WNDCnat["SPAA.ore","delas=0.5"]#  1255.2142585677
+@test value(compensated_demand(A[:edu],PA[:edu])) ≈ -WNDCnat["SPAA.edu","delas=0.5"]#  392.718862367539
+@test value(compensated_demand(A[:ote],PA[:ote])) ≈ -WNDCnat["SPAA.ote","delas=0.5"]#  277.22539563263
+@test value(compensated_demand(A[:man],PA[:man])) ≈ -WNDCnat["SPAA.man","delas=0.5"]#  579.531360390116
+@test value(compensated_demand(A[:mch],PA[:mch])) ≈ -WNDCnat["SPAA.mch","delas=0.5"]#  587.112660860874
+@test value(compensated_demand(A[:dat],PA[:dat])) ≈ -WNDCnat["SPAA.dat","delas=0.5"]#  245.647070841696
+@test value(compensated_demand(A[:amd],PA[:amd])) ≈ -WNDCnat["SPAA.amd","delas=0.5"]#  229.587824
+@test value(compensated_demand(A[:oil],PA[:oil])) ≈ -WNDCnat["SPAA.oil","delas=0.5"]#  411.376147896077
+@test value(compensated_demand(A[:hos],PA[:hos])) ≈ -WNDCnat["SPAA.hos","delas=0.5"]#  1073.11371300456
+@test value(compensated_demand(A[:rnt],PA[:rnt])) ≈ -WNDCnat["SPAA.rnt","delas=0.5"]#  368.467575126058
+@test value(compensated_demand(A[:pla],PA[:pla])) ≈ -WNDCnat["SPAA.pla","delas=0.5"]#  362.263068479548
+@test value(compensated_demand(A[:fof],PA[:fof])) ≈ -WNDCnat["SPAA.fof","delas=0.5"]#  92.1131343757475
+@test value(compensated_demand(A[:fin],PA[:fin])) ≈ -WNDCnat["SPAA.fin","delas=0.5"]#  183.495134
+@test value(compensated_demand(A[:tsv],PA[:tsv])) ≈ -WNDCnat["SPAA.tsv","delas=0.5"]#  1989.13386888999
+@test value(compensated_demand(A[:nrs],PA[:nrs])) ≈ -WNDCnat["SPAA.nrs","delas=0.5"]#  245.658333
+@test value(compensated_demand(A[:sec],PA[:sec])) ≈ -WNDCnat["SPAA.sec","delas=0.5"]#  514.165906249902
+@test value(compensated_demand(A[:art],PA[:art])) ≈ -WNDCnat["SPAA.art","delas=0.5"]#  174.636633032318
+@test value(compensated_demand(A[:mov],PA[:mov])) ≈ -WNDCnat["SPAA.mov","delas=0.5"]#  146.493343776654
+@test value(compensated_demand(A[:fpd],PA[:fpd])) ≈ -WNDCnat["SPAA.fpd","delas=0.5"]#  221.271403128093
+@test value(compensated_demand(A[:slg],PA[:slg])) ≈ -WNDCnat["SPAA.slg","delas=0.5"]#  1744.23136
+@test value(compensated_demand(A[:pri],PA[:pri])) ≈ -WNDCnat["SPAA.pri","delas=0.5"]#  89.2821943716604
+@test value(compensated_demand(A[:grd],PA[:grd])) ≈ -WNDCnat["SPAA.grd","delas=0.5"]#  93.1481825
+@test value(compensated_demand(A[:pip],PA[:pip])) ≈ -WNDCnat["SPAA.pip","delas=0.5"] atol=1.0e-7 #  0.380571076520651
+@test value(compensated_demand(A[:sle],PA[:sle])) ≈ -WNDCnat["SPAA.sle","delas=0.5"]#  104.176032
+@test value(compensated_demand(A[:osv],PA[:osv])) ≈ -WNDCnat["SPAA.osv","delas=0.5"]#  868.463235119891
+@test value(compensated_demand(A[:trn],PA[:trn])) ≈ -WNDCnat["SPAA.trn","delas=0.5"]#  7.92090092170896
+@test value(compensated_demand(A[:smn],PA[:smn])) ≈ -WNDCnat["SPAA.smn","delas=0.5"]#  124.253788843119
+@test value(compensated_demand(A[:fmt],PA[:fmt])) ≈ -WNDCnat["SPAA.fmt","delas=0.5"]#  477.156574865818
+@test value(compensated_demand(A[:pet],PA[:pet])) ≈ -WNDCnat["SPAA.pet","delas=0.5"]#  753.75904815071
+@test value(compensated_demand(A[:cep],PA[:cep])) ≈ -WNDCnat["SPAA.cep","delas=0.5"]#  754.719744960267
+@test value(compensated_demand(A[:wst],PA[:wst])) ≈ -WNDCnat["SPAA.wst","delas=0.5"]#  117.576207274571
+@test value(compensated_demand(A[:mot],PA[:mot])) ≈ -WNDCnat["SPAA.mot","delas=0.5"]#  1115.65463827953
+@test value(compensated_demand(A[:adm],PA[:adm])) ≈ -WNDCnat["SPAA.adm","delas=0.5"]#  929.23430111397
+@test value(compensated_demand(A[:soc],PA[:soc])) ≈ -WNDCnat["SPAA.soc","delas=0.5"]#  211.263869
+@test value(compensated_demand(A[:alt],PA[:alt])) ≈ -WNDCnat["SPAA.alt","delas=0.5"]#  428.63988823013
+@test value(compensated_demand(A[:pmt],PA[:pmt])) ≈ -WNDCnat["SPAA.pmt","delas=0.5"]#  306.493613096515
+@test value(compensated_demand(A[:trk],PA[:trk])) ≈ -WNDCnat["SPAA.trk","delas=0.5"]#  37.6322704279848
+@test value(compensated_demand(A[:fdd],PA[:fdd])) ≈ -WNDCnat["SPAA.fdd","delas=0.5"]#  598.321003
+@test value(compensated_demand(A[:wtt],PA[:wtt])) ≈ -WNDCnat["SPAA.wtt","delas=0.5"]#  24.7014719142186
+@test value(compensated_demand(A[:wpd],PA[:wpd])) ≈ -WNDCnat["SPAA.wpd","delas=0.5"]#  169.42858714196
+@test value(compensated_demand(A[:wht],PA[:wht])) ≈ -WNDCnat["SPAA.wht","delas=0.5"]#  101.043210787764
+@test value(compensated_demand(A[:wrh],PA[:wrh])) ≈ -WNDCnat["SPAA.wrh","delas=0.5"]#  141.955011912645
+@test value(compensated_demand(A[:ott],PA[:ott])) ≈ -WNDCnat["SPAA.ott","delas=0.5"]#  7.216437
+@test value(compensated_demand(A[:che],PA[:che])) ≈ -WNDCnat["SPAA.che","delas=0.5"]#  1315.58772751069
+@test value(compensated_demand(A[:air],PA[:air])) ≈ -WNDCnat["SPAA.air","delas=0.5"]#  206.785758150423
+@test value(compensated_demand(A[:mmf],PA[:mmf])) ≈ -WNDCnat["SPAA.mmf","delas=0.5"]#  432.825451495033
+@test value(compensated_demand(A[:otr],PA[:otr])) ≈ -WNDCnat["SPAA.otr","delas=0.5"]#  234.235207264151
+@test value(compensated_demand(A[:min],PA[:min])) ≈ -WNDCnat["SPAA.min","delas=0.5"]#  110.707702826321
+@test value(compensated_demand(A[:ppd],PY[:ppd])) ≈ WNDCnat["DPYA.ppd","delas=0.5"]#  178.256813902463
+@test value(compensated_demand(A[:res],PY[:res])) ≈ WNDCnat["DPYA.res","delas=0.5"]#  899.582049
+@test value(compensated_demand(A[:com],PY[:com])) ≈ WNDCnat["DPYA.com","delas=0.5"]#  516.649898560368
+@test value(compensated_demand(A[:amb],PY[:amb])) ≈ WNDCnat["DPYA.amb","delas=0.5"]#  1092.93382
+@test value(compensated_demand(A[:fbp],PY[:fbp])) ≈ WNDCnat["DPYA.fbp","delas=0.5"]#  931.251070587899
+@test value(compensated_demand(A[:rec],PY[:rec])) ≈ WNDCnat["DPYA.rec","delas=0.5"]#  195.091973
+@test value(compensated_demand(A[:con],PY[:con])) ≈ WNDCnat["DPYA.con","delas=0.5"]#  1659.55143
+@test value(compensated_demand(A[:agr],PY[:agr])) ≈ WNDCnat["DPYA.agr","delas=0.5"]#  397.024445520014
+@test value(compensated_demand(A[:eec],PY[:eec])) ≈ WNDCnat["DPYA.eec","delas=0.5"]#  116.224602225512
+@test value(compensated_demand(A[:fnd],PY[:fnd])) ≈ WNDCnat["DPYA.fnd","delas=0.5"]#  380.898129
+@test value(compensated_demand(A[:pub],PY[:pub])) ≈ WNDCnat["DPYA.pub","delas=0.5"]#  279.094208134003
+@test value(compensated_demand(A[:hou],PY[:hou])) ≈ WNDCnat["DPYA.hou","delas=0.5"]#  2073.31916
+@test value(compensated_demand(A[:ins],PY[:ins])) ≈ WNDCnat["DPYA.ins","delas=0.5"]#  1122.53945097812
+@test value(compensated_demand(A[:tex],PY[:tex])) ≈ WNDCnat["DPYA.tex","delas=0.5"]#  44.6835445946073
+@test value(compensated_demand(A[:leg],PY[:leg])) ≈ WNDCnat["DPYA.leg","delas=0.5"]#  342.941202554652
+@test value(compensated_demand(A[:fen],PY[:fen])) ≈ WNDCnat["DPYA.fen","delas=0.5"]#  70.8982207884942
+@test value(compensated_demand(A[:uti],PY[:uti])) ≈ WNDCnat["DPYA.uti","delas=0.5"]#  624.237086740571
+@test value(compensated_demand(A[:nmp],PY[:nmp])) ≈ WNDCnat["DPYA.nmp","delas=0.5"]#  122.588272442773
+@test value(compensated_demand(A[:brd],PY[:brd])) ≈ WNDCnat["DPYA.brd","delas=0.5"]#  683.422053280957
+@test value(compensated_demand(A[:bnk],PY[:bnk])) ≈ WNDCnat["DPYA.bnk","delas=0.5"]#  852.551516138285
+@test value(compensated_demand(A[:ore],PY[:ore])) ≈ WNDCnat["DPYA.ore","delas=0.5"]#  1259.29276
+@test value(compensated_demand(A[:edu],PY[:edu])) ≈ WNDCnat["DPYA.edu","delas=0.5"]#  393.242773982239
+@test value(compensated_demand(A[:ote],PY[:ote])) ≈ WNDCnat["DPYA.ote","delas=0.5"]#  317.58715531611
+@test value(compensated_demand(A[:man],PY[:man])) ≈ WNDCnat["DPYA.man","delas=0.5"]#  582.277441
+@test value(compensated_demand(A[:mch],PY[:mch])) ≈ WNDCnat["DPYA.mch","delas=0.5"]#  350.820648889152
+@test value(compensated_demand(A[:dat],PY[:dat])) ≈ WNDCnat["DPYA.dat","delas=0.5"]#  249.63483299757
+@test value(compensated_demand(A[:amd],PY[:amd])) ≈ WNDCnat["DPYA.amd","delas=0.5"]#  211.274527
+@test value(compensated_demand(A[:oil],PY[:oil])) ≈ WNDCnat["DPYA.oil","delas=0.5"]#  232.058988306448
+@test value(compensated_demand(A[:hos],PY[:hos])) ≈ WNDCnat["DPYA.hos","delas=0.5"]#  1069.65732716006
+@test value(compensated_demand(A[:rnt],PY[:rnt])) ≈ WNDCnat["DPYA.rnt","delas=0.5"]#  433.205937
+@test value(compensated_demand(A[:pla],PY[:pla])) ≈ WNDCnat["DPYA.pla","delas=0.5"]#  229.66487257659
+@test value(compensated_demand(A[:fof],PY[:fof])) ≈ WNDCnat["DPYA.fof","delas=0.5"]#  65.745918634565
+@test value(compensated_demand(A[:fin],PY[:fin])) ≈ WNDCnat["DPYA.fin","delas=0.5"]#  183.457238
+@test value(compensated_demand(A[:tsv],PY[:tsv])) ≈ WNDCnat["DPYA.tsv","delas=0.5"]#  2035.31278550717
+@test value(compensated_demand(A[:nrs],PY[:nrs])) ≈ WNDCnat["DPYA.nrs","delas=0.5"]#  242.743749
+@test value(compensated_demand(A[:sec],PY[:sec])) ≈ WNDCnat["DPYA.sec","delas=0.5"]#  584.314739652457
+@test value(compensated_demand(A[:art],PY[:art])) ≈ WNDCnat["DPYA.art","delas=0.5"]#  169.25132985919
+@test value(compensated_demand(A[:mov],PY[:mov])) ≈ WNDCnat["DPYA.mov","delas=0.5"]#  145.086764881248
+@test value(compensated_demand(A[:fpd],PY[:fpd])) ≈ WNDCnat["DPYA.fpd","delas=0.5"]#  72.0740621404007
+@test value(compensated_demand(A[:slg],PY[:slg])) ≈ WNDCnat["DPYA.slg","delas=0.5"]#  1744.23136
+@test value(compensated_demand(A[:pri],PY[:pri])) ≈ WNDCnat["DPYA.pri","delas=0.5"]#  71.1547479575622
+@test value(compensated_demand(A[:grd],PY[:grd])) ≈ WNDCnat["DPYA.grd","delas=0.5"]#  92.1405807
+@test value(compensated_demand(A[:pip],PY[:pip])) ≈ WNDCnat["DPYA.pip","delas=0.5"] atol=1.0e-7 #  0.551520281
+@test value(compensated_demand(A[:sle],PY[:sle])) ≈ WNDCnat["DPYA.sle","delas=0.5"]#  104.176032
+@test value(compensated_demand(A[:osv],PY[:osv])) ≈ WNDCnat["DPYA.osv","delas=0.5"]#  843.617845888317
+@test value(compensated_demand(A[:trn],PY[:trn])) ≈ WNDCnat["DPYA.trn","delas=0.5"]#  10.818151
+@test value(compensated_demand(A[:smn],PY[:smn])) ≈ WNDCnat["DPYA.smn","delas=0.5"]#  126.30253012871
+@test value(compensated_demand(A[:fmt],PY[:fmt])) ≈ WNDCnat["DPYA.fmt","delas=0.5"]#  326.770351755691
+@test value(compensated_demand(A[:pet],PY[:pet])) ≈ WNDCnat["DPYA.pet","delas=0.5"]#  530.314023931433
+@test value(compensated_demand(A[:cep],PY[:cep])) ≈ WNDCnat["DPYA.cep","delas=0.5"]#  294.0555382098
+@test value(compensated_demand(A[:wst],PY[:wst])) ≈ WNDCnat["DPYA.wst","delas=0.5"]#  115.756304435511
+@test value(compensated_demand(A[:mot],PY[:mot])) ≈ WNDCnat["DPYA.mot","delas=0.5"]#  662.445547589631
+@test value(compensated_demand(A[:adm],PY[:adm])) ≈ WNDCnat["DPYA.adm","delas=0.5"]#  923.381795523787
+@test value(compensated_demand(A[:soc],PY[:soc])) ≈ WNDCnat["DPYA.soc","delas=0.5"]#  210.448152
+@test value(compensated_demand(A[:alt],PY[:alt])) ≈ WNDCnat["DPYA.alt","delas=0.5"]#  15.1340936958987
+@test value(compensated_demand(A[:pmt],PY[:pmt])) ≈ WNDCnat["DPYA.pmt","delas=0.5"]#  209.257117915282
+@test value(compensated_demand(A[:trk],PY[:trk])) ≈ WNDCnat["DPYA.trk","delas=0.5"]#  38.934866
+@test value(compensated_demand(A[:fdd],PY[:fdd])) ≈ WNDCnat["DPYA.fdd","delas=0.5"]#  598.321003
+@test value(compensated_demand(A[:wtt],PY[:wtt])) ≈ WNDCnat["DPYA.wtt","delas=0.5"]#  29.5450418
+@test value(compensated_demand(A[:wpd],PY[:wpd])) ≈ WNDCnat["DPYA.wpd","delas=0.5"]#  110.751311022094
+@test value(compensated_demand(A[:wht],PY[:wht])) ≈ WNDCnat["DPYA.wht","delas=0.5"]#  103.418245
+@test value(compensated_demand(A[:wrh],PY[:wrh])) ≈ WNDCnat["DPYA.wrh","delas=0.5"]#  141.952358
+@test value(compensated_demand(A[:ott],PY[:ott])) ≈ WNDCnat["DPYA.ott","delas=0.5"]#  7.216437
+@test value(compensated_demand(A[:che],PY[:che])) ≈ WNDCnat["DPYA.che","delas=0.5"]#  748.468424078777
+@test value(compensated_demand(A[:air],PY[:air])) ≈ WNDCnat["DPYA.air","delas=0.5"]#  191.300045170429
+@test value(compensated_demand(A[:mmf],PY[:mmf])) ≈ WNDCnat["DPYA.mmf","delas=0.5"]#  144.347624373182
+@test value(compensated_demand(A[:otr],PY[:otr])) ≈ WNDCnat["DPYA.otr","delas=0.5"]#  244.239969510576
+@test value(compensated_demand(A[:min],PY[:min])) ≈ WNDCnat["DPYA.min","delas=0.5"]#  83.8292439906876
+@test value(compensated_demand(MS[:trn],PM[:trn])) ≈ -WNDCnat["SPMMS.trn","delas=0.5"]#  441.38467
+@test value(compensated_demand(MS[:trd],PM[:trd])) ≈ -WNDCnat["SPMMS.trd","delas=0.5"]#  2963.50744
 @test value(MS[:trn]) ≈ WNDCnat["MS.trn","delas=0.5"]#  1.01527815024853
 @test value(MS[:trd]) ≈ WNDCnat["MS.trd","delas=0.5"]#  1.01230852907687
 @test value(PA[:ppd]) ≈ WNDCnat["PA.ppd","delas=0.5"]#  0.945140197709488

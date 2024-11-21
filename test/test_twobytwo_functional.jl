@@ -46,8 +46,7 @@
     end)
 
     @demand(m, RA, begin
-            @final_demand(PU,150)
-        end,begin
+            @final_demand(PU,150)            
             @endowment(PL, endow * 35)
             @endowment(PK, 80) 
     end)
@@ -75,8 +74,6 @@
     @test value(compensated_demand(U,PX)) ≈ two_by_two_scalar_results["DX.L","benchmark"]#    100.
     @test value(compensated_demand(U,PY)) ≈ two_by_two_scalar_results["DY.L","benchmark"]#    50.
 
-
-    unfix(RA)
     fix(PX, 1)
     set_value!(endow, 2.2)
     solve!(m)
