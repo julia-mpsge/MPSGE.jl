@@ -1,5 +1,6 @@
 using MPSGE
 using Documenter
+using Literate
 
 DocMeta.setdocmeta!(MPSGE, :DocTestSetup, :(using MPSGE); recursive=true)
 
@@ -10,10 +11,24 @@ const _PAGES = [
         "Getting Started" => ["Tutorials/getting_started/introduction.md", "Tutorials/getting_started/getting_started_mpsge.md"],
         "Basic Examples" => ["Tutorials/basic_examples/m1_mpsge.md"],
         "Intermediate Examples" => ["Tutorials/intermediate_examples/M22.md"],
+        "Robinson Crusoe" => ["Tutorials/robinson_crusoe/introduction.md","Tutorials/robinson_crusoe/basic_rc.md"],
     ],
     "How it works" => ["how_it_works.md"], 
     "Docstrings" => ["docs.md"],
 ]
+
+
+
+
+
+
+Literate.markdown(
+    "src/Tutorials/robinson_crusoe/basic_rc.jl", 
+    "src/Tutorials/robinson_crusoe/";
+    name = "basic_rc.md",
+    # preprocess = replace_includes)
+)
+
 
 
 makedocs(;
