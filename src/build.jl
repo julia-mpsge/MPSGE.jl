@@ -94,15 +94,10 @@ function total_tax(N::Netput, H::ScalarConsumer)
     sum(taxes(N, H); init=0)
 end
 
-#temporary fix
-function tau(S::ScalarSector,H::ScalarConsumer)
-    P = production(S)
-    #jm = jump_model(model(S))
-    -sum( compensated_demand(netput) * total_tax(netput, H) * commodity(netput) for (_,N)∈netputs(P) for netput∈N if total_tax(netput,H)!=0; init=0)
-end
 
 function tax_revenue(S::ScalarSector, H::ScalarConsumer; virtual = false)
-    return -sum(compensated_demand(N,virtual=virtual)*total_tax(N,H)*get_variable(S)*get_variable(commodity(N)) for N∈taxes(S,H); init=0)
+    jm = jump_model(model(S))
+    return @expression(jm, -sum(compensated_demand(N,virtual=virtual)*total_tax(N,H)*get_variable(S)*get_variable(commodity(N)) for N∈taxes(S,H); init=0))
 end
 
 ########################
@@ -117,7 +112,7 @@ end
 function is_demand(H,C)
     D = demand(H)
     Final_Demands = final_demands(D)
-    return haskey(Final_Demands, C) && length(Final_Demands[C])!=0
+    return haskey(Final_Demands, C) && !isempty(Final_Demands[C])
 end
 
 
