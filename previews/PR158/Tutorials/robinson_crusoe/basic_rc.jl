@@ -76,7 +76,6 @@ end)
 @demand(M, rc_consumer, begin
     @final_demand(price_coconuts, 1)
     @final_demand(price_fish, 1)
-    end, begin
     @endowment(price_labor, 1)
 end)
 

@@ -37,7 +37,6 @@ for person∈people
     @demand(M, consumer[person], begin
         [@final_demand(price_good[good], 1) for good∈goods]...
         @final_demand(price_labor, 3)
-        end, begin
         @endowment(price_labor, 13)
     end)
 end

@@ -64,7 +64,6 @@ end)
     @final_demand(price_coconuts, 3)
     @final_demand(price_fish, 7)
     @final_demand(price_labor, 3)
-    end, begin
     @endowment(price_labor, 13)
 end)
 
@@ -72,7 +71,6 @@ end)
     @final_demand(price_coconuts, 9)
     @final_demand(price_fish, 5)
     @final_demand(price_labor, 5)
-    end, begin
     @endowment(price_labor, mf_labor)
 end)
 
