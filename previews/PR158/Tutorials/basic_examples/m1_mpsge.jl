@@ -1,4 +1,4 @@
-#  Closed 2x2 Economy - An Introduction to the Basics
+#  # Closed 2x2 Economy - An Introduction to the Basics
 
 
 # Take a very simply economy, two sectors ($X$ and $Y$), two factors ($L$ and $K$), 
