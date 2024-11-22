@@ -161,6 +161,11 @@ macro parameter(model, name, value, kwargs...)
     return :($(esc(name)) = $constr_call)
 end
 
+"""
+    @parameters(model, block)
+
+Pluralized version of [`@parameter`](@ref). 
+"""
 macro parameters(model, block)
     return _plural_macro_code(model, block, Symbol("@parameter"))
 end
