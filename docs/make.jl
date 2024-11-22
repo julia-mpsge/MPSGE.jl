@@ -19,11 +19,17 @@ const _PAGES = [
 
 
 
+EXAMPLE = joinpath(@__DIR__, "src/Tutorials/basic_examples/m1_mpsge.jl")
+OUTPUT = joinpath(@__DIR__,"src/Tutorials/basic_examples/")
+Literate.markdown(EXAMPLE, 
+                  OUTPUT;
+                  name = "m1_mpsge")#, preprocess = replace_includes)
+
 EXAMPLE = joinpath(@__DIR__, "src/Tutorials/robinson_crusoe/basic_rc.jl")
 OUTPUT = joinpath(@__DIR__,"src/Tutorials/robinson_crusoe/")
 Literate.markdown(EXAMPLE, 
                   OUTPUT;
-                  name = "basic_rc")#, preprocess = replace_includes)
+                  name = "basic_rc")
 
 
 
