@@ -94,17 +94,28 @@ function total_tax(N::Netput, H::ScalarConsumer)
     sum(taxes(N, H); init=0)
 end
 
-#temporary fix
-function tau(S::ScalarSector,H::ScalarConsumer)
-    P = production(S)
-    #jm = jump_model(model(S))
-    -sum( compensated_demand(netput) * total_tax(netput, H) * commodity(netput) for (_,N)∈netputs(P) for netput∈N if total_tax(netput,H)!=0; init=0)
-end
 
+function tax_revenue(S::ScalarSector, H::ScalarConsumer; virtual = false)
+    jm = jump_model(model(S))
+    return @expression(jm, -sum(compensated_demand(N,virtual=virtual)*total_tax(N,H)*get_variable(S)*get_variable(commodity(N)) for N∈taxes(S,H); init=0))
+end
 
 ########################
 ## Demands/Endowments ##
 ########################
+function is_endowment(H,C)
+    endows = endowments(demand(H))
+    return haskey(endows, C) && length(endows[C])!=0
+
+end
+
+function is_demand(H,C)
+    D = demand(H)
+    Final_Demands = final_demands(D)
+    return haskey(Final_Demands, C) && !isempty(Final_Demands[C])
+end
+
+
 
 function demand(H::Consumer)
     D = demands(model(H))
@@ -112,29 +123,29 @@ function demand(H::Consumer)
 end
 
 function endowment(H::Consumer, C::Commodity)
-    D = demand(H)
-    endows = endowments(D)
-    if !haskey(endows,C) || length(endows[C])==0
+    if !is_endowment(H,C)
         return 0
     else
+        D = demand(H)
+        endows = endowments(D)
         return sum(quantity.(endows[C]))
     end
 end
 
 function demand(H::Consumer, C::Commodity)
+    if !is_demand(H,C)
+        return 0
+    end
     jm = jump_model(model(H))
     D = demand(H)
     total_quantity = quantity(D)
     Final_Demands = final_demands(D)
-    if !haskey(Final_Demands, C) || length(Final_Demands[C])==0
-        return 0
-    end
     DF = Final_Demands[C]
 
     total_income = []
     for d in DF
         if !(isa(elasticity(D), Real))
-            income =  @expression(jm, 
+            income =  @expression(jm,
                 quantity(d)/total_quantity * H/C * ifelse(1*elasticity(D) == 1, 1, (expenditure(D)*reference_price(d)/C)^(elasticity(D)-1))
             )
         elseif elasticity(D) == 1
@@ -146,7 +157,7 @@ function demand(H::Consumer, C::Commodity)
         push!(total_income, income)
     end
 
-    return sum(total_income)
+    return sum(total_income; init = 0)
 end
 
 
@@ -154,7 +165,7 @@ function expenditure(D::ScalarDemand)
     jm = jump_model(model(consumer(D)))
     total_quantity = quantity(D)
     σ = elasticity(D)
-    return @expression(jm, sum( quantity(d)/total_quantity * (get_variable(commodity(d))/reference_price(d))^(1-σ) for (_,DF)∈final_demands(D) for d∈DF)^(1/(1-σ)))
+    return @expression(jm,sum( quantity(d)/total_quantity * (get_variable(commodity(d))/reference_price(d))^(1-σ) for (_,DF)∈final_demands(D) for d∈DF)^(1/(1-σ)))
 end
 
 #################
@@ -172,13 +183,15 @@ end
 function market_clearance(C::ScalarCommodity; virtual = false)
     M = model(C)
     jm = jump_model(M)
-    @expression(jm, -sum(compensated_demand(S,C;virtual = virtual) * get_variable(S) for S∈sectors(C);init=0) + sum( endowment(H,C) - demand(H,C) for H∈consumers(M); init=0))
+    @expression(jm,-sum(compensated_demand(S,C;virtual = virtual) * get_variable(S) for S∈sectors(C);init=0) + sum( endowment(H,C)  for H∈endowments(C); init=0)  - sum(demand(H,C) for H∈final_demands(C); init=0))
 end
 
 function income_balance(H::ScalarConsumer; virtual = false)
     M = model(H)
     jm = jump_model(M)
-    @expression(jm, get_variable(H) - (sum(get_variable(endowment(H,C))* get_variable(C) for C∈commodities(M) if endowment(H,C)!=0) - sum(tau(S,H)*S for S∈production_sectors(M) if tau(S,H)!=0; init=0)))
+    household_commodities = [C for C∈commodities(M) if H∈MPSGE.endowments(C)]
+
+    @expression(jm, get_variable(H) - (sum(get_variable(endowment(H,C))* get_variable(C) for C∈household_commodities) - sum(tax_revenue(S,H;virtual = virtual) for S∈production_sectors(M); init=0)))  
 end
 
 
@@ -208,30 +221,17 @@ end
 
 
 function consumer_income(consumer)
-    m = model(consumer)
-    jm = jump_model(m)
-    
-    if termination_status(jm) == OPTIMIZE_NOT_CALLED
-        new_start = sum(
-            raw_quantity(
-                start_value, 
-                endowment
-            ) 
-            for (_,E)∈endowments(demand(consumer)) for endowment∈E; init=0
-        )
-        new_start += -value(
-            start_value, 
-            sum(tau(sector, consumer) for sector in production_sectors(m); init = 0)
-        )
-    else
-        __value_function(x) = is_fixed(x) ? fix_value(x) : value(x)
-        new_start = sum(raw_quantity(__value_function, e) for (_,E)∈endowments(demand(consumer)) for e∈E; init=0)
-        new_start += -value(
-            __value_function,
-            sum(tau(sector, consumer) for sector in production_sectors(m); init=0)
-        )
-    end
-    return new_start
+    M = model(consumer)
+    jm = jump_model(M)
+    household_commodities = [C for C∈commodities(M) if consumer∈MPSGE.endowments(C)]
+
+    value_function = ifelse(
+        termination_status(jm) == OPTIMIZE_NOT_CALLED,
+        start_value,
+        x -> is_fixed(x) ? fix_value(x) : value(x)
+    )
+
+    return sum(value(value_function,get_variable(endowment(consumer,C))* get_variable(C)) for C∈household_commodities) - sum(value(value_function,tax_revenue(S,consumer;virtual = true)) for S∈production_sectors(M); init=0)
 end
 
 
@@ -246,12 +246,9 @@ julia> solve!(m, cumulative_iteration_limit=0)
 function solve!(m::AbstractMPSGEModel; kwargs...)
     jm = jump_model(m)
 
-    
-
     if !haskey(JuMP.object_dictionary(jm), :zero_profit)
         build_constraints!(m)
     end
-
 
     #Set the default iteration limit to 10_000
     JuMP.set_attribute(jm, "cumulative_iteration_limit", 10_000)

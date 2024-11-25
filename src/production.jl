@@ -121,7 +121,7 @@ function Production(
     @assert !(isnothing(input)  && !isnothing(output)) "Production block for $(sector) has a 0 quantity in input but not output."
 
     if isnothing(input) && isnothing(output)
-        return Production(sector, netput_dict, nothing, nothing)
+        return Production(sector, netput_dict, nothing, nothing, Dict())
     end
 
 
@@ -134,11 +134,21 @@ function Production(
 
     #Store sectors by commodity
     M = model(sector) 
-    for (C,_)∈netput_dict
+    tax_dict = Dict{Consumer, Vector{Netput}}()
+    for (C,netputs)∈netput_dict
         push!(M.commodities[C], sector)
+        for n∈netputs
+            tax = taxes(n)
+            for t∈tax
+                if !haskey(tax_dict, tax_agent(t))
+                    tax_dict[tax_agent(t)] = []
+                end
+                push!(tax_dict[tax_agent(t)], n)
+            end
+        end
     end
 
-    return Production(sector, netput_dict, input, output)
+    return Production(sector, netput_dict, input, output, tax_dict)
 end
 
 #####################
