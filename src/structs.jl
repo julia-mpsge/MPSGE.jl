@@ -555,6 +555,7 @@ commodity(C::ScalarFinalDemand) = C.commodity
 base_quantity(D::ScalarFinalDemand) = D.quantity
 quantity(D::ScalarFinalDemand) = base_quantity(D) * reference_price(D)
 reference_price(D::ScalarFinalDemand) = D.reference_price
+raw_quantity(F::Function, D::ScalarFinalDemand) = value(F, D.quantity)*value(F,D.reference_price)
 raw_quantity(D::ScalarFinalDemand) = value(D.quantity)*value(D.reference_price)
 
 commodity(C::ScalarEndowment) = C.commodity
@@ -611,7 +612,7 @@ struct ScalarDemand
             _demand_flow
             )
 
-        set_start_value(consumer, raw_quantity(D))
+        set_start_value(consumer, raw_quantity(start_value,D))
 
         return D
     end
@@ -624,6 +625,7 @@ final_demands(D::Demand) = Dict(C => [d for d in DF if isa(d,ScalarFinalDemand)]
 endowments(D::Demand) = Dict(C => [e for e in E if isa(e,ScalarEndowment)] for (C,E) in D.demand_flow)#D.endowments
 quantity(D::Demand) = sum(sum(quantity.(d);init=0) for (_,d)∈final_demands(D);init=0)
 elasticity(D::Demand) = D.elasticity
+raw_quantity(F::Function, D::Demand) = sum(sum(raw_quantity.(F,d);init=0) for (_,d)∈final_demands(D); init=0)
 raw_quantity(D::Demand) = sum(sum(raw_quantity.(d);init=0) for (_,d)∈final_demands(D); init=0)
 
 
