@@ -199,21 +199,21 @@ end
 function build_constraints!(M::MPSGEModel)
     jm = jump_model(M)
 
-    JuMP.@constraint(jm, zero_profit[S = MPSGE.production_sectors(M)],
+    JuMP.@constraint(jm, z_p[S = MPSGE.production_sectors(M)],
         MPSGE.zero_profit(S; virtual = true) ⟂ get_variable(S)
     )
     
-    JuMP.@constraint(jm, market_clearance[C = MPSGE.commodities(M)],
+    JuMP.@constraint(jm, m_c[C = MPSGE.commodities(M)],
         MPSGE.market_clearance(C; virtual = true) ⟂ get_variable(C)
     )
     
-    JuMP.@constraint(jm, income_balance[H = MPSGE.consumers(M)],
+    JuMP.@constraint(jm, i_b[H = MPSGE.consumers(M)],
         MPSGE.income_balance(H; virtual = true) ⟂ get_variable(H)
     )
 
     aux_cons = aux_constraints(M)
 
-    @constraint(jm, auxiliary_constraints[A∈keys(aux_cons)],
+    @constraint(jm, a_c[A∈keys(aux_cons)],
         constraint(aux_cons[A]) ⟂ get_variable(A)
     )
 
@@ -246,7 +246,7 @@ julia> solve!(m, cumulative_iteration_limit=0)
 function solve!(m::AbstractMPSGEModel; kwargs...)
     jm = jump_model(m)
 
-    if !haskey(JuMP.object_dictionary(jm), :zero_profit)
+    if !haskey(JuMP.object_dictionary(jm), :z_p)
         build_constraints!(m)
     end
 
