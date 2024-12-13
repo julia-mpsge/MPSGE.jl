@@ -59,7 +59,7 @@ export  @sector,    @sectors,
         @final_demand, @endowment
 
 #Building
-export  compensated_demand, tau, final_demand, endowment,
+export  compensated_demand, tau, demand, endowment,
         zero_profit, market_clearance, income_balance
 
 #Reporting
