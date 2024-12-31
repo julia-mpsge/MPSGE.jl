@@ -231,7 +231,7 @@ function consumer_income(consumer)
         x -> is_fixed(x) ? fix_value(x) : value(x)
     )
 
-    return sum(value(value_function,get_variable(endowment(consumer,C))* get_variable(C)) for C∈household_commodities) - sum(value(value_function,tax_revenue(S,consumer;virtual = true)) for S∈production_sectors(M); init=0)
+    return sum(value(value_function,get_variable(endowment(consumer,C))* get_variable(C)) for C∈household_commodities; init=0) - sum(value(value_function,tax_revenue(S,consumer;virtual = true)) for S∈production_sectors(M); init=0)
 end
 
 
