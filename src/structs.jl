@@ -452,7 +452,7 @@ input(P::Production) = P.input
 output(P::Production) = P.output
 commodities(P::Production) = collect(keys(P.netputs))
 netputs(P::Production) = P.netputs
-netputs(S::ScalarSector, C::ScalarCommodity) = get(netputs(production(S)), C, [])
+netputs(S::ScalarSector, C::ScalarCommodity) = !ismissing(production(S)) ? get(netputs(production(S)), C, []) : []
 function taxes(S::ScalarSector,H::ScalarConsumer)
     P = production(S)
     if !haskey(P.taxes, H)
@@ -786,6 +786,9 @@ end
 ## Production
 function production(S::ScalarSector) #Key errors are possible
     M = model(S)
-    return M.productions[S]
+    if haskey(M.productions, S)
+        return M.productions[S]
+    end
+    return missing
 end
 
