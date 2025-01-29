@@ -1,7 +1,7 @@
 name = "MPSGE"
 uuid = "d5dc2f44-7ae2-49e9-bc77-b47b6bca565d"
 authors = ["Mitch Phillipson"]
-version = "0.5.1"
+version = "0.5.2"
 
 [deps]
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
