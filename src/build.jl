@@ -165,7 +165,7 @@ function expenditure(D::ScalarDemand)
     jm = jump_model(model(consumer(D)))
     total_quantity = quantity(D)
     σ = elasticity(D)
-    return @expression(jm,sum( quantity(d)/total_quantity * (get_variable(commodity(d))/reference_price(d))^(1-σ) for (_,DF)∈final_demands(D) for d∈DF)^(1/(1-σ)))
+    return @expression(jm,sum( quantity(d)/total_quantity * (get_variable(commodity(d))/reference_price(d))^(1-σ) for (_,DF)∈final_demands(D) for d∈DF; init=0)^(1/(1-σ)))
 end
 
 #################
@@ -191,7 +191,7 @@ function income_balance(H::ScalarConsumer; virtual = false)
     jm = jump_model(M)
     household_commodities = [C for C∈commodities(M) if H∈MPSGE.endowments(C)]
 
-    @expression(jm, get_variable(H) - (sum(get_variable(endowment(H,C))* get_variable(C) for C∈household_commodities) - sum(tax_revenue(S,H;virtual = virtual) for S∈production_sectors(M); init=0)))  
+    @expression(jm, get_variable(H) - (sum(get_variable(endowment(H,C))* get_variable(C) for C∈household_commodities; init=0) - sum(tax_revenue(S,H;virtual = virtual) for S∈production_sectors(M); init=0)))  
 end
 
 
