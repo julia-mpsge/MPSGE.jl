@@ -71,7 +71,7 @@ end)
 @consumer(M_basic, CONS)
 
 # We now define the production and demand relationships. We use the [`@production`](@ref)
-# and [`@demand`](@ref) macros to define these relationships.
+# and `@demand` macros to define these relationships.
 #
 # In this first example we will assume a Cobb-Douglass production function on the inputs
 # of each sector. To do this we set the elasticity of substitution, `s`, to 1. Since each

@@ -9,7 +9,7 @@ const _PAGES = [
     "Introduction" => ["index.md"],
     "Tutorials" => [
         "Getting Started" => ["Tutorials/getting_started/introduction.md", "Tutorials/getting_started/first_example.md"],
-        "Basic Examples" => ["Tutorials/basic_examples/m1_mpsge.md"],
+        #"Basic Examples" => ["Tutorials/basic_examples/m1_mpsge.md"],
         "Intermediate Examples" => ["Tutorials/intermediate_examples/M22.md"],
         "Robinson Crusoe" => ["Tutorials/robinson_crusoe/introduction.md","Tutorials/robinson_crusoe/basic_rc.md"],
     ],
