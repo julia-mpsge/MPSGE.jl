@@ -8,7 +8,7 @@ DocMeta.setdocmeta!(MPSGE, :DocTestSetup, :(using MPSGE); recursive=true)
 const _PAGES = [
     "Introduction" => ["index.md"],
     "Tutorials" => [
-        "Getting Started" => ["Tutorials/getting_started/introduction.md", "Tutorials/getting_started/getting_started_mpsge.md"],
+        "Getting Started" => ["Tutorials/getting_started/introduction.md", "Tutorials/getting_started/first_example.md"],
         "Basic Examples" => ["Tutorials/basic_examples/m1_mpsge.md"],
         "Intermediate Examples" => ["Tutorials/intermediate_examples/M22.md"],
         "Robinson Crusoe" => ["Tutorials/robinson_crusoe/introduction.md","Tutorials/robinson_crusoe/basic_rc.md"],
@@ -31,7 +31,11 @@ Literate.markdown(EXAMPLE,
                   OUTPUT;
                   name = "basic_rc")
 
-
+EXAMPLE = joinpath(@__DIR__, "src/Tutorials/getting_started/first_example.jl")
+OUTPUT = joinpath(@__DIR__,"src/Tutorials/getting_started/")
+Literate.markdown(EXAMPLE, 
+                  OUTPUT;
+                  name = "first_example")
 
 makedocs(;
     modules=[MPSGE],
