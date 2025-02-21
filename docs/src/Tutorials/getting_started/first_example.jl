@@ -233,8 +233,8 @@ value(PL/PW)
 # We see some interesting information in this model. The real wage `PL/PW` has 
 # declined by 2.3% (from 1 to .976), while the return to capital, `PK` (in real terms) 
 # is, essentially, unchanged.  
-# The price of `Y `(the labor-intensive good) decreases because the tax is applied 
-# on the other sector.  The price of the capital-intensive good, `X` increases because 
+# The price of `Y` (the labor-intensive good) decreases because the tax is applied 
+# on the other sector.  The price of the capital-intensive good, `X`, increases because 
 # it is taxed while the other good is not."
 
 
