@@ -124,10 +124,21 @@ generate_report(M_basic)
 # value was not zero and then adjust the model accordingly. The margin value is 
 # is a measure of how far the model is from solving in the given variable.
 
-# You can also access the values of the variables directly. For example, to get the
+# The last line of the report shows what variable and value was selected as numeraire.
+# In this case it was `CONS` with a value of 200. If no varaibles are fixed before
+# solve, the largest consumer is selected as the numeraire. To set a different numeraire
+# use the `fix` function to set the value of a variable. 
+
+# You can access the values of the variables directly. For example, to get the
 # value of `PX` you can use the following code.
 
 value(PX)
+
+# If you have multiple models, or your model is created in a function, you can 
+# also access variables using the model. For example, to get the value of `PX`
+# in the `M_basic` model you can use the following code.
+
+value(M_basic[:PX])
 
 # ## Expanding the Model
 
@@ -194,7 +205,12 @@ end)
 end)
 
 # First, we check the model at the benchmark level. This is to ensure we've 
-# entered our data correctly.
+# entered our data correctly. We will also fix the numeraire to be `PW` and set
+# the value to 1. This is not necessary, but it in this case it makes the results
+# easier to interpret as it is the only welfare price variable.
+
+fix(PW, 1)
+
 solve!(M_tax, cumulative_iteration_limit=0)
 
 # Let's impose a 10% tax on labor. We do this by setting the value of `labor_tax`
@@ -212,10 +228,15 @@ solve!(M_tax)
 
 generate_report(M_tax)
 
+value(PL/PW)
 
+# We see some interesting information in this model. The real wage `PL/PW` has 
+# declined by 2.3% (from 1 to .976), while the return to capital, `PK` (in real terms) 
+# is, essentially, unchanged.  
+# The price of `Y `(the labor-intensive good) decreases because the tax is applied 
+# on the other sector.  The price of the capital-intensive good, `X` increases because 
+# it is taxed while the other good is not."
 
-# We see some interesting information in this model. The value of `PL` has changed from
-# 1 to 0.988378, so the value of labor has decreased by about 1.2%. 
 
 # What does this really mean? What impact does have on the welfare of the consumer?
 # We can answer this question by calculating the welfare index of the consumer.
@@ -243,16 +264,16 @@ generate_report(M_tax)
 
 capital_tax_welfare = value(CONS/PW)
 
-# Subtracting, it appears the labor_tax is less harmful to the consumer than the capital_tax.
+# Subtracting, it appears the `labor_tax` is less harmful to the consumer than the `capital_tax`.
 labor_tax_welfare - capital_tax_welfare
 
 # ## Plotting Welfare
 
 # Let's make a graph comparing the welfare of the consumer under different tax rates.
-# We'll use the PlotlyJS and DataFrames packages. The PlotlyDocumenter package is used
-# to display the plot in the documentation. 
+# We'll use the PlotlyJS and DataFrames packages. 
 
-using PlotlyJS, DataFrames, PlotlyDocumenter
+using PlotlyJS, DataFrames 
+using PlotlyDocumenter # hide
 
 # We'll be solving about 100 models, so we'll suppress the output.
 set_silent(M_tax)
@@ -276,4 +297,4 @@ p = plot(df, x=:tax_value, y=:welfare, color=:type,
     Layout(title= "Labor vs Capital tax rates")
 )
 
-to_documenter(p)
+to_documenter(p) # hide
