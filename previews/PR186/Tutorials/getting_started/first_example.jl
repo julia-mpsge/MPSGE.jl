@@ -270,10 +270,10 @@ labor_tax_welfare - capital_tax_welfare
 # ## Plotting Welfare
 
 # Let's make a graph comparing the welfare of the consumer under different tax rates.
-# We'll use the PlotlyJS and DataFrames packages. The PlotlyDocumenter package is used
-# to display the plot in the documentation. 
+# We'll use the PlotlyJS and DataFrames packages. 
 
-using PlotlyJS, DataFrames, PlotlyDocumenter
+using PlotlyJS, DataFrames 
+using PlotlyDocumenter # hide
 
 # We'll be solving about 100 models, so we'll suppress the output.
 set_silent(M_tax)
@@ -297,4 +297,4 @@ p = plot(df, x=:tax_value, y=:welfare, color=:type,
     Layout(title= "Labor vs Capital tax rates")
 )
 
-to_documenter(p)
+to_documenter(p) # hide
