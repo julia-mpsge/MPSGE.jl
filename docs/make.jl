@@ -1,5 +1,6 @@
 using MPSGE
 using Documenter
+using Literate
 
 DocMeta.setdocmeta!(MPSGE, :DocTestSetup, :(using MPSGE); recursive=true)
 
@@ -7,14 +8,28 @@ DocMeta.setdocmeta!(MPSGE, :DocTestSetup, :(using MPSGE); recursive=true)
 const _PAGES = [
     "Introduction" => ["index.md"],
     "Tutorials" => [
-        "Getting Started" => ["Tutorials/getting_started/introduction.md", "Tutorials/getting_started/getting_started_mpsge.md"],
-        "Basic Examples" => ["Tutorials/basic_examples/m1_mpsge.md"],
+        "Getting Started" => ["Tutorials/getting_started/introduction.md", "Tutorials/getting_started/first_example.md"],
         "Intermediate Examples" => ["Tutorials/intermediate_examples/M22.md"],
+        "Robinson Crusoe" => ["Tutorials/robinson_crusoe/introduction.md","Tutorials/robinson_crusoe/basic_rc.md"],
     ],
     "How it works" => ["how_it_works.md"], 
     "Docstrings" => ["docs.md"],
 ]
 
+
+
+
+EXAMPLE = joinpath(@__DIR__, "src/Tutorials/robinson_crusoe/basic_rc.jl")
+OUTPUT = joinpath(@__DIR__,"src/Tutorials/robinson_crusoe/")
+Literate.markdown(EXAMPLE, 
+                  OUTPUT;
+                  name = "basic_rc")
+
+EXAMPLE = joinpath(@__DIR__, "src/Tutorials/getting_started/first_example.jl")
+OUTPUT = joinpath(@__DIR__,"src/Tutorials/getting_started/")
+Literate.markdown(EXAMPLE, 
+                  OUTPUT;
+                  name = "first_example")
 
 makedocs(;
     modules=[MPSGE],
@@ -31,7 +46,8 @@ makedocs(;
 deploydocs(;
     repo = "github.com/julia-mpsge/MPSGE.jl",
     devbranch = "main",
-    branch = "gh-pages"
+    branch = "gh-pages",
+    push_preview = true
 )
 
 #deploydocs(
