@@ -357,19 +357,40 @@ end
 ## Demand Blocks ##
 ###################
 
+"""
+    @final_demand(commodity, quantity, kwargs...)
+
+
+"""
 macro final_demand(commodity, quantity, kwargs...)
     constr_call = :(ScalarFinalDemand($(esc(commodity)), $(esc(quantity))))
     _add_kw_args(constr_call, kwargs)
     return :($constr_call)
 end
 
+"""
+    @endowment(commodity, quantity, kwargs...)
+
+"""
 macro endowment(commodity, quantity, kwargs...)
     constr_call = :(ScalarEndowment($(esc(commodity)), $(esc(quantity))))
     _add_kw_args(constr_call, kwargs)
     return :($constr_call)
 end
 
+"""
+    @demand(model, consumer, demand_flow_block, kwargs...)
 
+# Example
+
+```julia
+@demand(M, CONS, begin
+    @final_demand(X, 10)
+    @endowment(Y, 5)
+    @endowment(Z, 10)
+end)
+```
+"""
 macro demand(model, consumer, demand_flow_block, kwargs...)
     local demand_flow = :(abstractDemandFlow[])
     #local endows = :(ScalarEndowment[])
