@@ -45,10 +45,56 @@ function build_parameter(
     return P
 end
 
-
 """
-    @parameter(model, expr, args..., kwargs...)
+    @parameter(model, expr, value, kwargs...)
 
+Add a parameter to the `model` described by `expr` with initial value `value` and 
+keyword arguments `kwargs...`.
+
+## Required Arguments
+
+- `model` is the MPSGE model
+- `expr` an expression that describes the name and index of the parameter. See
+    the examples below
+- `value` The initial value of the parameter. 
+
+## Optional Arguments
+
+- `description` A string describing the parameter.
+
+## Examples
+
+### Non-Indexed Parameters
+
+```julia
+using MPSGE
+
+M = MPSGEModel()
+
+initial_value = 10
+
+@parameter(M, X, 1)
+@parameter(M, Y, initial_value, description="A parameter")
+```
+
+### Indexed Parameters
+
+```julia
+using MPSGE
+
+M = MPSGEModel()
+
+R = 1:5
+S = 1:3
+
+one_dimension = Dict(r => 2*r for r in R)
+two_dimension = Dict((r,s) => r+s for r in R, s in S)
+
+@parameter(M, X[r=R], 1) # Index `R` and value 1.
+@parameter(M, Y[R, S], 1) # Indices `R` and `S` and value 1.
+@parameter(M, Z[r=R], one_dimension[r]) # Index `R` and values `one_dimension[r]`.
+@parameter(M, W[r=R, s=S], two_dimension[r, s]) # Indices `R` and `S` and values `two_dimension[r, s]`.
+```
 """
 macro parameter(input_args...)
 
@@ -121,6 +167,33 @@ macro parameter(input_args...)
     return code
 end
 
+"""
+    @parameters(model, args...)
+
+Adds multiple variables to model at once, in the same fashion as the
+[`@parameters`](@ref) macro.
+
+The model must be the first argument, and multiple variables can be added on
+multiple lines wrapped in a `begin ... end` block.
+
+The macro returns a tuple containing the variables that were defined.
+
+## Example
+
+```julia
+using MPSGE
+model = MPSGEModel();
+
+@parameters(model, begin
+           x, 1
+           y[i = 1:2], i, (description = "y parameter")
+       end)
+```
+
+!!! note
+    Keyword arguments must be contained within parentheses (refer to the example
+    above).
+"""
 macro parameters(model, block)
     return _plural_macro_code(model, block, Symbol("@parameter"))
 end
