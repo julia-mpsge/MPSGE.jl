@@ -22,7 +22,8 @@ function build_parameter(
         description = description
     )
 
-    add_variable!(model, P)
+    v = add_variable!(model, P)
+    fix(P, pre_parameter.value)
     return P
 end
 
