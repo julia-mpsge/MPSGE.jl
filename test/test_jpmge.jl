@@ -17,7 +17,7 @@
 
     M = MPSGEModel()
 
-    @parameter(M, endow, raw_endow, index = (factors,))
+    @parameter(M, endow[f=factors], raw_endow[f])
 
     @sector(M, X, index = (secs,))
 
@@ -181,7 +181,7 @@ end
     e0 = DenseAxisArray(Float64[sum(fd0[f,:]) for f in factors], factors)
 
     
-    @parameter(M, endow, e0, index = (factors,))
+    @parameter(M, endow[f=factors], e0[f])
 
     @sector(M, X, index = (secs,))
 
@@ -347,7 +347,7 @@ end
     e0 = DenseAxisArray(Float64[sum(fd0[f,:]) for f in factors], factors)
 
     # All indices and data as above
-    @parameter(M, endow, e0, index = (factors,))
+    @parameter(M, endow[f=factors], e0[f])
 
     @sector(M, X, index = (secs,))
 

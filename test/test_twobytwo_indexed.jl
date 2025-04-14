@@ -13,9 +13,9 @@
     raw_intax = DenseAxisArray([0,0], goods)
     
     @parameters(m, begin
-        endow, raw_endow, (index = [factors],)
-        outax, raw_outax, (index = [goods],)
-        intax, raw_intax, (index = [goods],)
+        endow[f=factors], raw_endow[f]
+        outax[g=goods], raw_outax[g]
+        intax[g=goods], raw_intax[g]
     end)
 
     @sectors(m, begin
@@ -205,8 +205,8 @@ end
     raw_endow = DenseAxisArray([70,80], factors)
     
     @parameters(m, begin
-        endow, raw_endow, (index = [factors],)
-        pricepci, raw_pricepci, (index = [goods],)
+        endow[f=factors], raw_endow[f]
+        pricepci[g=goods], raw_pricepci[g]
     end)
     
     @sectors(m, begin
@@ -384,8 +384,8 @@ end
     raw_endow = DenseAxisArray([70,80], factors)
     
     @parameters(m, begin
-        endow, raw_endow, (index = [factors],)
-        pricepci, raw_pricepci, (index = [goods],)
+        endow[f=factors], raw_endow[f]
+        pricepci[g=goods], raw_pricepci[g]
     end)
     
     @sectors(m, begin
@@ -566,8 +566,8 @@ end
     raw_pricepu = DenseAxisArray([1, 1], factors)
     
     @parameters(m, begin
-        endow, raw_endow, (index = [factors],)
-        pricepu, raw_pricepu, (index = [factors],)
+        endow[f=factors], raw_endow[f]
+        pricepu[f=factors], raw_pricepu[f]
     end)
 
     @sectors(m, begin
