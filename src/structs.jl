@@ -28,7 +28,7 @@ abstract type AbstractNest end;
 ####################
 
 #Getters
-base_name(V::MPSGEVariable) = V.name
+base_name(V::MPSGEVariable) = Symbol(V.name)
 name(V::MPSGEVariable) = ismissing(subindex(V)) ? Symbol(V.name) : Symbol(V.name,"_",join(subindex(V),"_"))
 string_name(V::MPSGEVariable) = name(V)
 model(V::MPSGEVariable) = V.model
