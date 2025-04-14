@@ -3,7 +3,12 @@
 ###########
 
 function Base.show(io::IO,M::MPSGEModel)
-    println(io,"\$Sectors:")
+    println(io, "\$Parameters:")
+    for p∈raw_parameters(M)
+        println(io,p)
+    end
+
+    println(io,"\n\$Sectors:")
     for s∈sectors(M)
         println(io,s)
     end
@@ -41,6 +46,15 @@ function Base.show(io::IO,S::MPSGEScalarVariable)
     end
 end
 
+function Base.show(io::IO, S::IndexedParameter)
+    out = string(name(S), "[", join(index_names(S), ", "), "]")
+    if description(S) != ""
+        out *= "  --  $(description(S))"
+    end
+
+    print(io, out)
+        
+end
 
 function Base.show(io::IO, S::MPSGEIndexedVariable)#This could be smarter
     print(io,S.subsectors)
