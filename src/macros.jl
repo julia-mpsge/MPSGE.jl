@@ -113,22 +113,6 @@ macro consumers(model, block)
     return _plural_macro_code(model, block, Symbol("@consumer"))
 end
 
-#macro parameter(model, name, value, kwargs...)
-#    name, index, _ = _parse_ref_sets(name)
-#    if isempty(index.args) #This could be better
-#        constr_call = :(add_parameter!($(esc(model)),$(QuoteNode(name)), $(esc(value))))
-#    else
-#        constr_call = :(add_parameter!($(esc(model)),$(QuoteNode(name)), $(esc(value)); index = $index))
-#    end
-#    _add_kw_args(constr_call, kwargs)
-#    return :($(esc(name)) = $constr_call)
-#end
-#
-#macro parameters(model, block)
-#    return _plural_macro_code(model, block, Symbol("@parameter"))
-#end
-
-
 macro auxiliary(model, name, kwargs...)
     name, index, _ = _parse_ref_sets(name)
     if isempty(index.args) #This could be better
