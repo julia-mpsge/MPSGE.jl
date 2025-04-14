@@ -97,12 +97,10 @@ two_dimension = Dict((r,s) => r+s for r in R, s in S)
 ```
 """
 macro parameter(input_args...)
-
-
-    
     # Create specific error message that points to a particular line in the code
     error_fn = Containers.build_error_fn("new_parameter", input_args, __source__)
     
+    # Extract the model, name expression, value, and keyword arguments
     args, kwargs = Containers.parse_macro_arguments(
         error, 
         input_args; 
@@ -111,7 +109,7 @@ macro parameter(input_args...)
         )
 
     # Re-examine this line
-    if length(args) >= 3 && Meta.isexpr(args[3], :block)
+    if length(args) >= 2 && Meta.isexpr(args[2], :block)
         error_fn("Invalid syntax. Did you mean to use `@variables`?")
     end
 
@@ -122,23 +120,22 @@ macro parameter(input_args...)
     x = args[2]
     value = args[3]
 
-
+    # Extract indices from the name expression
     name, index_vars, indices = Containers.parse_ref_sets(
         error_fn,
         x;
         invalid_index_variables = [model_sym]
         )
 
-
-    #info_kwargs  =
-    #    [(k, JuMP._esc_non_constant(v)) for (k, v) in kwargs if k in _PARAMETER_KWARGS] 
     
     description = get(kwargs, :description, "")
     
+    #Build the name and base name
     name_expr = Containers.build_name_expr(name, index_vars, kwargs)
-
     base_name = string(name)
 
+    # This is needed because the value might be an expression. By having this
+    # the expression gets stored and evaluated later.
     build_code = JuMP.Containers.container_code(
         index_vars,
         indices,
@@ -152,6 +149,7 @@ macro parameter(input_args...)
         :DenseAxisArray
     )
 
+    # The actual code that builds the parameter and adds it to the model. 
     code = quote
         $(esc(name))  = build_parameter(
             $error_fn,
