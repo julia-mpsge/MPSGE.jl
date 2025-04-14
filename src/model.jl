@@ -1,15 +1,50 @@
+###########################
+## Create JuMP Variables ##
+###########################
+function add_variable!(m::MPSGEModel, S::MPSGEScalarVariable; start = 1)
+    jm = jump_model(m)
+    jm[name(S)] = @variable(jm,base_name = string(name(S)),start=start, lower_bound = 0)
+end
 
+function add_variable!(m::MPSGEModel, S::MPSGEIndexedVariable; start = 1)
 
+    jm = jump_model(m)
+    index = S.index
+
+    dim = length.(index)
+    
+    x = JuMP.@variable(jm, [1:prod(dim)], lower_bound=0, start = start)
+
+    for (i, ind) in enumerate(Iterators.product(index...))
+        new_index = join(ind,",")
+        JuMP.set_name(x[i], "$(name(S))[$new_index]")
+    end
+
+    output = JuMP.Containers.DenseAxisArray(reshape(x, Tuple(dim)), index...)
+    jm[name(S)] = output
+    return output
+
+end
+
+function add_variable!(m::MPSGEModel, S::Auxiliary)
+    add_variable!(m, S; start = 0)
+end
+
+#########################
+### Add MPSGE Objects ###
+#########################
 function add!(m::MPSGEModel,S::MPSGEScalarVariable)
     @assert !haskey(m.object_dict,name(S)) "Variable $(name(S)) already exists in model"
     m.object_dict[name(S)] = S
     #add_variable!(m,S)
+    return S
 end
 
 function add!(m::MPSGEModel, S::MPSGEIndexedVariable)
     @assert !haskey(m.object_dict,name(S)) "Variable $(name(S)) already exists in model"
     m.object_dict[name(S)] = S
     #add_variable!(m,S)
+    return S
 end
 
 
@@ -31,14 +66,20 @@ function add_consumer!(model::MPSGEModel, name::Symbol; index = nothing, descrip
     return S
 end
 
-function add_parameter!(model::MPSGEModel, name::Symbol, value::Number; index=nothing, description = "")
+# Passing a number
+function add_parameter!(model::MPSGEModel, name::Symbol, value::Number; index=nothing, description = "", error_fn = error)
     S = index === nothing ? ScalarParameter(model,name, value; description = description) : IndexedParameter(model,name,index, value; description = description)
     add!(model,S)
     return S
 end
 
-function add_parameter!(model::MPSGEModel, name::Symbol, value::AbstractArray; index=nothing, description = "")
-    @assert( !isnothing(index), "Parameter $name is being created with an array of values, but the index is nothing") 
+# Passing an array
+function add_parameter!(model::MPSGEModel, name::Symbol, value::AbstractArray; index=nothing, description = "", error_fn = error)
+    if isnothing(index)
+        error_string = "Passing arrays as a value without passing an index is not allowed. Please pass an index to the parameter"
+        error_fn == error ? error("Parameter Error: ", error_string) : error_fn(error_string)
+    end
+    #@assert( !isnothing(index), "Parameter $name is being created with an array of values, but the index is nothing") 
     S = IndexedParameter(model,name,index, value; description = description)
     add!(model,S)
     return S
