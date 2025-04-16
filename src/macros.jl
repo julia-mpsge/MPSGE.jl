@@ -139,39 +139,7 @@ end
 ## Production Blocks ##
 #######################
 
-function _strip_value(nest)
-    value = nest.args[2]
-    if Meta.isexpr(value, :block)
-        value = value.args[2]
-    end
-    return value
-end
 
-function _strip_nest_name(nest)
-    parent = missing
-    name = nest.args[1]
-    if Meta.isexpr(name, :call)
-        parent = name.args[3]
-        name = name.args[2]
-    end
-    return parent, name
-end
-
-function _parse_nest(nest)
-    if !Meta.isexpr(nest, :(=))
-        error("Invalid syntax for nesting $nest. Required to have an = in "*
-        "statement. `s = 0` or `va => s = 0`."
-        )
-    end
-    value = _strip_value(nest)
-    parent, name = _strip_nest_name(nest)
-    if !ismissing(parent)
-        return :(Node($(QuoteNode(name)), $(value); parent = $(QuoteNode(parent))))
-    else
-        return :(Node($(QuoteNode(name)), $(value)))
-    end
-
-end
 
 macro input(commodity, quantity, nest, kwargs...)
     constr_call = :(Input($(esc(commodity)), $(esc(quantity))))
@@ -188,6 +156,23 @@ end
 
 macro production(model, sector, nestings, netputs)
 
+    args,kwargs = Containers.parse_macro_arguments(
+        error, 
+        (model, sector, nestings, netputs); 
+        num_positional_args = 4,
+        #valid_kwargs = [:description]
+        )
+
+    model_sym = args[1]
+    model = esc(model_sym)
+
+    sector = esc(args[2])
+    nestings = esc(args[3])
+    
+    #return model
+
+    return nestings
+
     #nests
     nests = :(Nest[])
     top_nests = :(Symbol[])
@@ -198,10 +183,9 @@ macro production(model, sector, nestings, netputs)
             "statement. `s = 0` or `va => s = 0`."
             )
         end
-        elasticity = _strip_value(nest)
-        parent, nest = _strip_nest_name(nest)
+        name, elasticity, parent = _parse_nest(nest)
 
-        name, index, _ = _parse_ref_sets(nest)
+        name, index, _ = JuMP.Containers.parse_ref_sets(error, nest)
     
         if isempty(index.args)
             push!(nests.args, :(ScalarNest($(QuoteNode(name)), $(esc(elasticity)))))
@@ -215,6 +199,8 @@ macro production(model, sector, nestings, netputs)
             push!(top_nests.args, :($(QuoteNode(name))))
         end
     end
+
+    #return nests
 
     #netputs
     nets = :(Tuple{Netput,Symbol}[])

@@ -8,6 +8,35 @@ struct NestParent
     name::Any
 end
 
+function _strip_nest_elasticity(nest)
+    value = nest.args[2]
+    if Meta.isexpr(value, :block)
+        value = value.args[2]
+    end
+    return value
+end
+
+function _strip_nest_name(nest)
+    parent = missing
+    name = nest.args[1]
+    if Meta.isexpr(name, :call)
+        parent = name.args[3]
+        name = name.args[2]
+    end
+    return parent, name
+end
+
+function _parse_nest(nest)
+    if !Meta.isexpr(nest, :(=))
+        error("Invalid syntax for nesting $nest. Required to have an = in "*
+        "statement. `s = 0` or `va => s = 0`."
+        )
+    end
+    value = _strip_nest_elasticity(nest)
+    parent, name = _strip_nest_name(nest)
+    
+    return name, value, parent
+end
 
 function build_nest(
     error_fn::Function,
