@@ -269,50 +269,33 @@ tax(T::Tax) = T.tax
 
 
 struct ScalarNest
-    name::Symbol
-    subindex::Any
+    name::String
+    base_name::String
     elasticity::MPSGEquantity
-    function ScalarNest(name::Symbol, elasticity::MPSGEquantity; subindex = missing)
-        new(name, subindex, elasticity)
+    function ScalarNest(name::String, base_name::String, elasticity::MPSGEquantity)
+        new(name, base_name, elasticity)
     end
 end
 
 
-base_name(N::ScalarNest) = N.name
-name(N::ScalarNest) = ismissing(subindex(N)) ? N.name : Symbol(N.name,"_",join(subindex(N),"_"))
+base_name(N::ScalarNest) = Symbol(N.base_name)
+name(N::ScalarNest) = Symbol(N.name)
 elasticity(N::ScalarNest) = N.elasticity
-subindex(N::ScalarNest) = N.subindex
 
 struct IndexedNest{N} <: AbstractArray{ScalarNest, N}
-    name::Symbol
+    name::String
     subsectors::DenseAxisArray{ScalarNest,N}
     index::Any
-    function IndexedNest(name::Symbol, elasticity::MPSGEquantity, index)
-        temp_array = Array{ScalarNest}(undef, length.(index)...)
-        for i in CartesianIndices(temp_array)
-            temp_array[i] = ScalarNest(name, elasticity; subindex = Tuple(index[j][v] for (j,v) in enumerate(Tuple(i))))
-        end
-        sr = JuMP.Containers.DenseAxisArray(temp_array, index...)
-        S = new{length(index)}(name, sr, index)
-        return S  
-    end
-
-    function IndexedNest(name::Symbol, elasticity::AbstractArray, index) 
-        temp_array = Array{ScalarNest}(undef, length.(index)...)
-        for i in CartesianIndices(temp_array)
-            ind = Tuple(index[j][v] for (j,v) in enumerate(Tuple(i)))
-            temp_array[i] = ScalarNest(name, elasticity[ind...]; subindex = ind)
-        end
-        sr = JuMP.Containers.DenseAxisArray(temp_array, index...)
-        S = new{length(index)}(name, sr, index)
-        return S
+    function IndexedNest(name::String, subsectors::AbstractArray{<:ScalarNest}, index) 
+        N = new{length(axes(subsectors))}(name, subsectors, index)
+        return N
     end
 end
 
 const Nest = Union{ScalarNest, IndexedNest}
 
 
-name(N::IndexedNest) = N.name
+name(N::IndexedNest) = Symbol(N.name)
 
 Base.getindex(V::IndexedNest, index...) = V.subsectors[index...]
 Base.getindex(A::IndexedNest, idx::CartesianIndex) = A.subsectors[idx]
