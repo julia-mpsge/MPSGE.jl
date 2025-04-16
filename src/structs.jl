@@ -296,10 +296,11 @@ const Nest = Union{ScalarNest, IndexedNest}
 
 
 name(N::IndexedNest) = Symbol(N.name)
-
+base_name(N::IndexedNest) = Symbol(N.name)
 Base.getindex(V::IndexedNest, index...) = V.subsectors[index...]
 Base.getindex(A::IndexedNest, idx::CartesianIndex) = A.subsectors[idx]
 
+JuMP.index(N::IndexedNest) = N.index
 Base.axes(N::IndexedNest) = axes(N.subsectors)
 Base.size(N::IndexedNest) = size(N.subsectors)
 Base.length(N::IndexedNest) = length(N.subsectors)
