@@ -1,4 +1,4 @@
-_PARAMETER_KWARGS = [:description]
+__PARAMETER_KWARGS__ = [:description]
 
 
 struct PreParameter
@@ -9,12 +9,24 @@ end
 
 function build_parameter(
     error_fn::Function,
+    args...;
+    kwargs...
+)
+    error_fn("Invalid syntax for `@parameter` macro. Expected 3 arguments: model, name, value")
+end
+
+function build_parameter(
+    error_fn::Function,
     model::MPSGE.AbstractMPSGEModel,
     base_name::String,
     index_vars::Vector{Any},
     pre_parameter::PreParameter,
-    description::String
+    description::String;
+    kwargs...
 )
+
+   # if length(kwargs) > 0
+
     P = ScalarParameter(
         model,
         pre_parameter.name,
@@ -22,7 +34,7 @@ function build_parameter(
         description = description
     )
 
-    v = add_variable!(model, P)
+    add_variable!(model, P)
     fix(P, pre_parameter.value)
     return P
 end
@@ -45,6 +57,39 @@ function build_parameter(
     return P
 end
 
+
+function parse_parameter_arguments(
+        error_fn::Function, 
+        input_args; 
+        num_positional_args = 3, 
+        valid_kwargs = __PARAMETER_KWARGS__
+        )
+
+    # Extract the model, name expression, value, and keyword arguments
+    args, kwargs = Containers.parse_macro_arguments(
+        error_fn, 
+        input_args
+        )
+
+    if length(args) != num_positional_args
+        error_fn("Invalid number of positional arguments. Expected " *
+            "$num_positional_args, got $(length(args)). Recall the syntax for" *
+            " the `@parameter` macro is `@parameter(model, expr, value, kwargs...)`\n\n")
+    end
+
+    non_valid_kwargs = filter(x -> !(x in valid_kwargs), keys(kwargs))
+    if length(non_valid_kwargs) > 0
+        error_fn("The following keyword arguments are not valid: \n\n" *
+            "$(join(string.("* ", non_valid_kwargs), "\n"))\n\n " *
+            " Valid keyword arguments for a parameter are: \n\n" *
+            "$(join(string.("* ", valid_kwargs), "\n"))\n\n")
+    end
+
+    return args, kwargs
+
+end
+
+
 """
     @parameter(model, expr, value, kwargs...)
 
@@ -58,7 +103,7 @@ keyword arguments `kwargs...`.
     the examples below
 - `value` The initial value of the parameter. 
 
-## Optional Arguments
+## Keyword Arguments
 
 - `description` A string describing the parameter.
 
@@ -90,7 +135,7 @@ S = 1:3
 one_dimension = Dict(r => 2*r for r in R)
 two_dimension = Dict((r,s) => r+s for r in R, s in S)
 
-@parameter(M, X[r=R], 1) # Index `R` and value 1.
+@parameter(M, X[r=R], 1, description = "example") # Index `R` and value 1 with a description
 @parameter(M, Y[R, S], 1) # Indices `R` and `S` and value 1.
 @parameter(M, Z[r=R], one_dimension[r]) # Index `R` and values `one_dimension[r]`.
 @parameter(M, W[r=R, s=S], two_dimension[r, s]) # Indices `R` and `S` and values `two_dimension[r, s]`.
@@ -98,20 +143,20 @@ two_dimension = Dict((r,s) => r+s for r in R, s in S)
 """
 macro parameter(input_args...)
     # Create specific error message that points to a particular line in the code
-    error_fn = Containers.build_error_fn("new_parameter", input_args, __source__)
+    error_fn = Containers.build_error_fn("parameter", input_args, __source__)
     
-    # Extract the model, name expression, value, and keyword arguments
-    args, kwargs = Containers.parse_macro_arguments(
-        error, 
-        input_args; 
-        num_positional_args = 3,
-        #valid_kwargs = [:description]
-        )
-
     # Re-examine this line
-    if length(args) >= 2 && Meta.isexpr(args[2], :block)
-        error_fn("Invalid syntax. Did you mean to use `@variables`?")
+    if length(input_args) >= 2 && Meta.isexpr(input_args[2], :block)
+        error_fn("Invalid syntax. Did you mean to use `@parameters`?")
     end
+
+    args, kwargs = parse_parameter_arguments(
+        error_fn, 
+        input_args; 
+        num_positional_args = 3, 
+        valid_kwargs = __PARAMETER_KWARGS__
+    )
+
 
     # Extract the model
     model_sym = args[1]
@@ -140,11 +185,16 @@ macro parameter(input_args...)
         index_vars,
         indices,
         quote
-            PreParameter(
-                $model,
-                $name_expr,
-                $(esc(value))
-            )
+            try
+                PreParameter(
+                    $model,
+                    $name_expr,
+                    $(esc(value))
+                )
+            catch e
+                $error_fn("There is an issue with your inputs. Double check the " *
+                    "syntax of your parameter.")
+            end
         end,
         :DenseAxisArray
     )
@@ -168,13 +218,13 @@ end
 """
     @parameters(model, args...)
 
-Adds multiple variables to model at once, in the same fashion as the
-[`@parameters`](@ref) macro.
+Adds multiple parameters to model at once, in the same fashion as the
+[`@parameter`](@ref) macro.
 
-The model must be the first argument, and multiple variables can be added on
+The model must be the first argument, and multiple parameters can be added on
 multiple lines wrapped in a `begin ... end` block.
 
-The macro returns a tuple containing the variables that were defined.
+The macro returns a tuple containing the parameters that were defined.
 
 ## Example
 
