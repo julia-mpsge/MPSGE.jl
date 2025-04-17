@@ -315,7 +315,7 @@ mutable struct Node
     cost_function_virtual::Union{Nothing,JuMP.VariableRef}
     cost_function::MPSGEquantity 
     netput_sign::Int
-    function Node(data::ScalarNest; children = [], netput_sign::Int = 1)
+    function Node(data::ScalarNest; children = [], netput_sign::Int = 0)
         N = new(nothing, children, data, nothing, 0, netput_sign) #Cost function is set after trees are built
         for child in children 
             set_parent!(child, N)
@@ -333,11 +333,25 @@ children(N::Node) = N.children
 elasticity(N::Node) = elasticity(N.data)
 parent(N::Node) = N.parent
 
+function set_sign(N::Node, sign::Int)
+    if sign != 0 && sign != N.netput_sign
+        error("The nest $(name(N)) appears in both an input and output nest "*
+              "This is not allowed, please check you model.")
+    end
+
+    if N.netput_sign == sign
+        return
+    end
+
+    N.netput_sign = sign
+    set_sign(parent(N), sign)
+    return 
+end
+
 
 
 cost_function(N::Node; virtual = false) = !virtual ? N.cost_function : N.cost_function_virtual
-#name(N::Node) = N.data.name
-#elasticity(N::Node) = N.data.elasticity
+
 
 
 
