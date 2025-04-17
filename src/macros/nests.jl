@@ -8,6 +8,13 @@ struct NestParent
     name::Any
 end
 
+
+struct GeneratedNest
+    nest::Union{Nest, AbstractArray{<:Nest}}
+    parent::Union{Missing, String, AbstractArray{String}}
+end
+
+
 function _strip_nest_elasticity(nest)
     value = nest.args[2]
     if Meta.isexpr(value, :block)
@@ -150,10 +157,13 @@ function build_nest_and_parent(nest_arg::Any, source)
             indices
         )
     else
-        (missing, missing)
+        missing
     end
 
-    return :(($nest_code, $parent_code))
+    return :(MPSGE.GeneratedNest(
+                $nest_code, 
+                $parent_code,  
+    ))
 end
 
 function nest_container(
@@ -178,7 +188,7 @@ function nest_container(
         end,
         :DenseAxisArray
     )
-    return :((MPSGE.build_nest($error_fn, $base_name, $index_vars, $build_nests), $base_name))
+    return :(MPSGE.build_nest($error_fn, $base_name, $index_vars, $build_nests))
 end
 
 function parent_container(
@@ -190,8 +200,6 @@ function parent_container(
 
     parent_name, parent_index_vars = MPSGE.parse_nest_parent(error_fn, parent)
     parent_expr = Containers.build_name_expr(parent_name, parent_index_vars, Dict{Symbol, Any}())
-
-    parent_base_name = string(parent_name)
     
     build_parents = JuMP.Containers.container_code(
         index_vars,
@@ -204,5 +212,5 @@ function parent_container(
         :DenseAxisArray
     )
     
-    return :((MPSGE.build_nest_structure($error_fn, $build_parents), $parent_base_name))
+    return :(MPSGE.build_nest_structure($error_fn, $build_parents))
 end
