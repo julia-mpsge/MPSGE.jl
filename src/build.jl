@@ -31,9 +31,10 @@ function compensated_demand(N::MPSGE.Netput; virtual = false)
     child, parent = N, MPSGE.parent(N)[1]
     sign = -MPSGE.netput_sign(N)
     compensated_demand = sign * MPSGE.base_quantity(N)
+    v = virtual ? :virtual : :full
     while !isnothing(parent)
         if MPSGE.elasticity(parent)!=0
-            compensated_demand *= (cost_function(parent; virtual=virtual)/cost_function(child; virtual=virtual)) ^ (sign*MPSGE.elasticity(parent))
+            compensated_demand *= (cost_function(parent; virtual=v)/cost_function(child; virtual=v)) ^ (sign*MPSGE.elasticity(parent))
         end
         child,parent = parent, MPSGE.parent(parent)
     end

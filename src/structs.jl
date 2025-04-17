@@ -309,14 +309,15 @@ Base.broadcastable(N::IndexedNest) = N.subsectors
 
 
 mutable struct Node
+    model::AbstractMPSGEModel
     parent::Union{Node, Nothing}
     children::Vector{Union{Node,Netput}}
     data::ScalarNest
     cost_function_virtual::Union{Nothing,JuMP.VariableRef}
     cost_function::MPSGEquantity 
     netput_sign::Int
-    function Node(data::ScalarNest; children = [], netput_sign::Int = 0)
-        N = new(nothing, children, data, nothing, 0, netput_sign) #Cost function is set after trees are built
+    function Node(model::AbstractMPSGEModel, data::ScalarNest; children = [], netput_sign::Int = 0)
+        N = new(model, nothing, children, data, nothing, 0, netput_sign) #Cost function is set after trees are built
         for child in children 
             set_parent!(child, N)
         end
@@ -324,6 +325,7 @@ mutable struct Node
     end
 end
 
+model(N::Node) = N.model
 quantity(N::Node) = base_quantity(N)
 base_quantity(N::Node) = sum(quantity(c) for c∈children(N); init=0)
 base_name(N::Node) = base_name(N.data)
@@ -332,27 +334,74 @@ children(N::Node) = N.children
 #
 elasticity(N::Node) = elasticity(N.data)
 parent(N::Node) = N.parent
+netput_sign(N::Node) = N.netput_sign
 
-function set_sign(N::Node, sign::Int)
-    if sign != 0 && sign != N.netput_sign
+set_sign(::Nothing, ::Int) = nothing
+
+function set_sign(N::Node, new_sign::Int)
+    if netput_sign(N) != 0 && new_sign != netput_sign(N)
         error("The nest $(name(N)) appears in both an input and output nest "*
               "This is not allowed, please check you model.")
     end
 
-    if N.netput_sign == sign
+    if netput_sign(N) == new_sign
         return
     end
 
-    N.netput_sign = sign
-    set_sign(parent(N), sign)
+    N.netput_sign = new_sign
+    set_sign(parent(N), new_sign)
     return 
 end
 
+function set_sign(N::Node, netput::Netput)
+    set_sign(N, netput_sign(netput))
+end
 
 
-cost_function(N::Node; virtual = false) = !virtual ? N.cost_function : N.cost_function_virtual
+#cost_function(N::Node; virtual = false) = !virtual ? N.cost_function : N.cost_function_virtual
+
+function cost_function(N::MPSGE.Netput; virtual = false)
+    C = commodity(N)
+    sign = MPSGE.netput_sign(N)
+    rp = MPSGE.reference_price(N)
+    return C*(1-sign*sum(MPSGE.tax(t) for t∈taxes(N);init = 0))/rp
+end
 
 
+function cost_function(N::MPSGE.Node; virtual = :full, cf = cost_function)
+
+    @assert virtual in [:full, :virtual, :partial] "virtual must be one of :full, :virtual, or :partial"
+
+    if virtual == :virtual
+        return N.cost_function_virtual
+    end
+
+    virtual_adjust = if virtual == :partial
+        :virtual
+    else
+        :full
+    end
+
+    sign = MPSGE.netput_sign(N)
+    if !(isa(MPSGE.elasticity(N), Real))
+
+        jm = jump_model(model(N))
+
+        #This must be an explicit expression, otherwise it's evaluated now. 
+        cost_function = @expression(jm, ifelse(
+                    MPSGE.elasticity(N) * sign == -1,
+                    cobb_douglass(N, virtual = virtual_adjust), 
+                    CES(N, virtual = virtual_adjust)
+                ))
+    elseif MPSGE.elasticity(N)*sign == -1 #Cobb-Douglas is only on demand side with σ=1
+        cost_function = cobb_douglass(N; virtual = virtual_adjust, cf = cf)
+    else
+        cost_function = CES(N; virtual = virtual_adjust, cf = cf)
+    end
+
+    return cost_function
+
+end
 
 
 function set_parent!(child::Node,   parent::Node; add_child=false) 
@@ -364,6 +413,7 @@ end
 
 # Going to need to modify so child can be either scalar or indexed FUTURE
 function set_parent!(child::Netput, parent::Node; add_child=false) 
+    set_sign(parent, child)
     push!(child.parents, parent)
     if add_child
         push!(parent.children, child)
@@ -468,7 +518,8 @@ end
 function cost_function(P::Production, nest::Symbol; virtual = false, search = :all)
     N = find_nodes(P; search = search)
     if haskey(N, nest)
-        return sum(quantity.(N[nest]).*cost_function.(N[nest]; virtual = virtual))
+        v = virtual ? :virtual : :full
+        return sum(quantity.(N[nest]).*cost_function.(N[nest]; virtual = v))
     end
     return 0
 end
@@ -628,7 +679,7 @@ mutable struct MPSGEModel <:AbstractMPSGEModel
     jump_model::Union{JuMP.Model,Nothing}
     productions::Dict{ScalarSector,Production} # all scalars
     demands::Dict{ScalarConsumer,Demand}
-    commodities::Dict{ScalarCommodity,Vector{ScalarSector}} #Generated on model build
+    commodities::Dict{ScalarCommodity,Vector{ScalarSector}} # Generated when production is added
     endowments::Dict{ScalarCommodity, Vector{ScalarConsumer}}
     final_demands::Dict{ScalarCommodity, Vector{ScalarConsumer}}
     auxiliaries::Dict{ScalarAuxiliary, AuxConstraint}

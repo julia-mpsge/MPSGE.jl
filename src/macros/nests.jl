@@ -214,3 +214,96 @@ function parent_container(
     
     return :(MPSGE.build_nest_structure($error_fn, $build_parents))
 end
+
+
+function nest_to_node(model::MPSGEModel, nest::ScalarNest)
+    return MPSGE.Node(model, nest)
+end
+
+function nest_to_node(model::MPSGEModel, nest::IndexedNest)
+    return MPSGE.Node.(Ref(model), nest)
+end
+
+function build_node_dict!(nodes::Dict{Symbol, MPSGE.Node}, node::MPSGE.Node)
+    node_name = MPSGE.name(node)
+    if haskey(nodes, node_name)
+        error("Duplicate node name: $(node.name)")
+    end
+
+    nodes[node_name] = node
+end
+
+function build_node_dict!(nodes::Dict{Symbol, MPSGE.Node}, node::AbstractArray{<:MPSGE.Node})
+    build_node_dict!.(Ref(nodes), node)
+end
+
+function is_root_nest(gen_nest::MPSGE.GeneratedNest)
+    return ismissing(gen_nest.parent)
+end
+
+function is_root_nest(gen_nest)
+    return false
+end
+
+function create_parent_child_dict!(parent_child::Dict{Symbol, Vector{Symbol}}, nest::MPSGE.ScalarNest, parent)
+    parent_name = Symbol(parent)
+    if !haskey(parent_child, parent_name)
+        parent_child[parent_name] = Vector{Symbol}()
+    end
+    push!(parent_child[parent_name], MPSGE.name(nest))
+end
+
+function create_parent_child_dict!(parent_child::Dict{Symbol, Vector{Symbol}}, nest::MPSGE.IndexedNest, parent)
+    create_parent_child_dict!.(Ref(parent_child), nest, parent)
+end
+
+function create_parent_child_dict!(parent_child::Dict{Symbol, Vector{Symbol}}, node::MPSGE.GeneratedNest)
+    create_parent_child_dict!(parent_child, node.nest, node.parent)
+end
+
+
+""" 
+    create_nodes(generated_nodes::Vector{Any})
+
+Given a vector of generated nodes, create the nodes and two required trees.
+
+## Returns
+
+    (nodes::Dict{Symbol, MPSGE.Node}, root_nodes::Vector{MPSGE.Node})
+"""
+function create_nodes(model::MPSGEModel, generated_nodes::Vector{Any})
+    nodes = Dict{Symbol, MPSGE.Node}()
+    parent_child = Dict{Symbol, Vector{Symbol}}()
+    root_nodes = []
+
+    for nest in generated_nodes
+        node = nest_to_node(model, nest.nest)
+        build_node_dict!(nodes, node)
+
+        if is_root_nest(nest)
+            push!(root_nodes, node)
+        else
+            create_parent_child_dict!(parent_child, nest)
+        end
+    end
+
+    if length(root_nodes) != 2
+        error("The nesting structure must have exactly 2 top-level nests, input "*
+            "and output. We found $(length(root_nodes)) top-level nests. We found "*
+            "the following\n\n$(join(string.("* ", root_nodes), ""))\n")
+    end
+
+    for (parent, children) in parent_child
+        parent_node = nodes[parent]
+        for child in children
+            child_node = nodes[child]
+            if parent_node == child_node
+                error("A node cannot be its own parent. The node $(parent_node) is "*
+                    "its own parent.")
+            end
+            MPSGE.set_parent!(child_node, parent_node; add_child = true)
+        end
+    end
+
+    return (nodes, root_nodes)
+end
