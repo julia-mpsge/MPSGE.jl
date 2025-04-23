@@ -181,10 +181,14 @@ function nest_container(
         index_vars,
         indices,
         quote
-            MPSGE.PreNest(
-                $name_expr,
-                $(esc(elasticity))
-            )
+            try
+                MPSGE.PreNest(
+                    $name_expr,
+                    $(esc(elasticity))
+                )
+            catch e
+                $error_fn("Error in nest macro: $(e)")
+            end
         end,
         :DenseAxisArray
     )
