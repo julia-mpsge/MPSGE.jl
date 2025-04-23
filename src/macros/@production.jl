@@ -70,7 +70,67 @@ struct PreProduction
     netputs
 end
 
+"""
+    @production(model, sector, nestings, netputs)
 
+Define a production for the `sector` in the `model` with given `nestings` and `netputs`. 
+
+**sector**
+
+This is any `ScalarSector` in the model. 
+
+**nestings**
+
+This is where the nesting structure is defined and the associated elasticities. At minimum you must declare at least two nests and elasticities, one for the elasticity of substitution (`input`) and one for the elasticity of transformation (`output`), by convention these are denoted `s` and `t` respectively, although any identifier may be used. 
+
+As a minimal example, `[s=1, t=0]` will set the `s` nest to have an elasticity of 1 and the `t` nest 0. Suppose you want a nest below `s` called `va` with an elasticity of 2, this is created with `[s=1, t=0, va=>s=2]`. The `va` points at its parent nest `s` and the elasticity follows. Nestings can be aribrarily deep, for example 
+```
+[s=1, t=0, va=>s=2, dm=>s=1, d=>dm=2]
+```
+will have two nests below `s` and one below `dm`. 
+
+**netputs**
+
+A netput is either an [`@input`](@ref) or an [`@output`](@ref). The netputs get wrapped in a `begin ... end` block and each netput must be on its own line.
+
+**Examples**
+
+In the below example we define the production blocks for two sectors `X` and `Y`. This is a non-function example solely created to show syntax. The `X` sector only has the two require elasticities where as `Y` has a more interesting nesting structure. A tax is included in the `Y` production block. 
+
+```julia
+julia> M = MPSGEModel();
+
+julia> @sectors(M, begin
+            X
+            Y
+        end);
+
+julia> @commodities(M, begin
+            PX
+            PY
+            PL
+            PK
+        end);
+
+julia> @consumer(M, RA);
+
+julia> @production(M, X, [s=1,t=0], begin
+            @output(PX, 10, t)
+            @input(PL, 5, s)
+            @input(PK, 5, s)
+        end);
+
+julia> @production(M, Y, [s=2, t=1, va=>s=1], begin
+            @output(PY, 15, t)
+            @input(PX, 3, s)
+            @input(PL, 4, va, taxes = [Tax(RA, .5)])
+            @input(PK, 6, va)
+        end);
+```
+
+For examples using indexed sectors and commodities we recommend looking at the WiNDC national model. This will be linked when the appropriate write-up is ready.
+
+"""
 macro production(input_args...)
     error_fn = Containers.build_error_fn("production", input_args, __source__)
     args,kwargs = Containers.parse_macro_arguments(
