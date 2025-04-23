@@ -163,11 +163,15 @@ function parse_netput(error_fn::Function, netput_arg::Any, netput_fn::DataType)
     #return build_code
 
     netput_code = quote
-        MPSGE.build_netput(
-            $error_fn,
-            $build_code,
-            $netput_fn
-            )
+        try
+            MPSGE.build_netput(
+                $error_fn,
+                $build_code,
+                $netput_fn
+                )
+        catch e
+            $error_fn("Error in netput macro: $(e)")
+        end
     end
 
     nest_code = MPSGE.parent_container(
