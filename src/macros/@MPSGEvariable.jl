@@ -226,7 +226,7 @@ The model must be the first argument, and multiple sectors can be added in a
 `begin ... end` block, one sector per line. 
 
 **Example**
-```jldoctest
+```julia
 julia> M = MPSGEModel()
 
 julia> I = [:a,:b]
@@ -322,7 +322,7 @@ The model must be the first argument, and multiple commodities can be added in a
 `begin ... end` block, one commodity per line. 
 
 **Example**
-```jldoctest
+```julia
 julia> M = MPSGEModel()
 
 julia> I = [:a,:b]
@@ -409,7 +409,7 @@ The model must be the first argument, and multiple consumers can be added in a
 `begin ... end` block, one consumer per line. 
 
 **Example**
-```jldoctest
+```julia
 julia> M = MPSGEModel()
 
 julia> I = [:a,:b]
@@ -496,7 +496,7 @@ The model must be the first argument, and multiple auxiliaries can be added in a
 `begin ... end` block, one auxiliary per line. 
 
 **Example**
-```jldoctest
+```julia
 julia> M = MPSGEModel()
 
 julia> I = [:a,:b]
