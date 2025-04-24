@@ -1,9 +1,12 @@
+__MPSGEVARIABLE_KWARGS__ = [:description]
+
+
 
 function parse_variable_arguments(
     error_fn::Function, 
     input_args; 
     num_positional_args = 2, 
-    valid_kwargs = [:description]
+    valid_kwargs = __MPSGEVARIABLE_KWARGS__
     )
 
     # Extract the model, name expression, value, and keyword arguments
@@ -15,14 +18,14 @@ function parse_variable_arguments(
     if length(args) != num_positional_args
         error_fn("Invalid number of positional arguments. Expected " *
             "$num_positional_args, got $(length(args)). Recall the syntax for" *
-            " the `@parameter` macro is `@parameter(model, expr, value, kwargs...)`\n\n")
+            " the variable macros is `@variable_type(model, name[index], kwargs...)`\n\n")
     end
 
     non_valid_kwargs = filter(x -> !(x in valid_kwargs), keys(kwargs))
     if length(non_valid_kwargs) > 0
         error_fn("The following keyword arguments are not valid: \n\n" *
             "$(join(string.("* ", non_valid_kwargs), "\n"))\n\n " *
-            " Valid keyword arguments for a parameter are: \n\n" *
+            " Valid keyword arguments for a variable are: \n\n" *
             "$(join(string.("* ", valid_kwargs), "\n"))\n\n")
     end
 
@@ -40,7 +43,7 @@ function build_MPSGEvariable(
     args...;
     kwargs...
 )
-    error_fn("Invalid syntax for `@parameter` macro. Expected 3 arguments: model, name, value")
+    error_fn("Invalid syntax for a variable macro. Expected 2 arguments: model, name")
 end
 
 function build_MPSGEvariable(
@@ -156,13 +159,54 @@ function parse_MPSGEvariable(
     return code
 end
 
+"""
+    @sector(model, S, kwargs...)
+    @sector(model, S[I], kwargs...)
+    @sector(model, S[i=I], kwargs...)
 
+Create a sector in the `model` with name `S`, index `I`, and index name `i` with
+arguments `kwargs`.
+
+## Arguments
+
+- `model`: An isntance of `MPSGEModel`.
+- The sector `S` can be instantiated in a several ways. 
+  1. `S` creates a scalar sector
+  2. If `I` is a defined array, then `S[I]` creates an indexed sector with 
+  indices given by `I`.
+  3. If `I` is a defined array, then `S[i=I]`creates an indexed sector with 
+  indices given by `I` and variable index named `i`. 
+
+If you want to create an index sector it is highly recommended to use the syntax 
+from (3) with better name for `i`, For example `S[goods=I]`, this will get the 
+index name to `goods` which will be displayed when printing the model.
+
+Additionally, multi-indexed sectors can be created by using the syntax 
+`S[regions = R, goods = G]`. 
+
+
+## Optional Arguments
+
+- `description`: Set a description on a variable. 
+
+## Examples
+
+```julia
+using MPSGE
+
+R = Symbol.(:r, 1:5)
+G = Symbol.(:g, 1:5)
+M = MPSGEModel()
+
+@sector(M, S[region=R, goods=G], description="Sector with indexed variables")
+```
+"""
 macro sector(input_args...)
     # Create specific error message that points to a particular line in the code
     error_fn = Containers.build_error_fn("parameter", input_args, __source__)
     
     if length(input_args) >= 2 && Meta.isexpr(input_args[2], :block)
-        error_fn("Invalid syntax. Did you mean to use `@parameters`?")
+        error_fn("Invalid syntax. Did you mean to use `@sectors`?")
     end
 
     parse_MPSGEvariable(
@@ -173,6 +217,30 @@ macro sector(input_args...)
     )
 end
 
+"""
+    @sectors(model, args...)
+
+Adds multiple [`@sector`](@ref) to a model. 
+
+The model must be the first argument, and multiple sectors can be added in a 
+`begin ... end` block, one sector per line. 
+
+**Example**
+```jldoctest
+julia> M = MPSGEModel()
+
+julia> I = [:a,:b]
+
+julia> @sectors(M, begin
+            X[i=I]
+            Y[i=I,j=I], (description = "This is an indexed variable")
+            Z, (description = "Scalar variable")
+        end)
+```
+
+!!! note
+    Keywords must be contained in parentheses as in the example above. 
+"""
 macro sectors(model, block)
     return _plural_macro_code(model, block, Symbol("@sector"))
 end
@@ -185,12 +253,54 @@ function add_commodity_to_model(M::MPSGEModel, C::IndexedCommodity)
     add_commodity_to_model.(Ref(M), C)
 end
 
+"""
+    @commodity(model, C, kwargs...)
+    @commodity(model, C[I], kwargs...)
+    @commodity(model, C[i=I], kwargs...)
+
+Create a commodity in the `model` with name `C`, index `I`, and index name `i` with
+arguments `kwargs`.
+
+## Arguments
+
+- `model`: An isntance of `MPSGEModel`.
+- The commodity `C` can be instantiated in a several ways. 
+  1. `C` creates a scalar commodity
+  2. If `I` is a defined array, then `C[I]` creates an indexed commodity with 
+  indices given by `I`.
+  3. If `I` is a defined array, then `C[i=I]`creates an indexed commodity with 
+  indices given by `I` and variable index named `i`. 
+
+If you want to create an index commodity it is highly recommended to use the syntax 
+from (3) with better name for `i`, For example `C[goods=I]`, this will get the 
+index name to `goods` which will be displayed when printing the model.
+
+Additionally, multi-indexed commoditys can be created by using the syntax 
+`C[regions = R, goods = G]`. 
+
+
+## Optional Arguments
+
+- `description`: Set a description on a variable. 
+
+## Examples
+
+```julia
+using MPSGE
+
+R = Symbol.(:r, 1:5)
+G = Symbol.(:g, 1:5)
+M = MPSGEModel()
+
+@commodity(M, C[region=R, goods=G], description="Commodity with indexed variables")
+```
+"""
 macro commodity(input_args...)
     # Create specific error message that points to a particular line in the code
-    error_fn = Containers.build_error_fn("parameter", input_args, __source__)
+    error_fn = Containers.build_error_fn("commodity", input_args, __source__)
     
     if length(input_args) >= 2 && Meta.isexpr(input_args[2], :block)
-        error_fn("Invalid syntax. Did you mean to use `@parameters`?")
+        error_fn("Invalid syntax. Did you mean to use `@commodities`?")
     end
 
     parse_MPSGEvariable(
@@ -202,16 +312,84 @@ macro commodity(input_args...)
     )
 end
 
+
+"""
+    @commodities(model, args...)
+
+Adds multiple [`@commodity`](@ref) to a model. 
+
+The model must be the first argument, and multiple commodities can be added in a 
+`begin ... end` block, one commodity per line. 
+
+**Example**
+```jldoctest
+julia> M = MPSGEModel()
+
+julia> I = [:a,:b]
+
+julia> @commodities(M, begin
+            X[i=I]
+            Y[i=I,j=I], (description = "This is an indexed variable")
+            Z, (description = "Scalar variable")
+        end)
+```
+
+!!! note
+    Keywords must be contained in parentheses as in the example above. 
+"""
 macro commodities(model, block)
     return _plural_macro_code(model, block, Symbol("@commodity"))
 end
 
+
+"""
+    @consumer(model, H, kwargs...)
+    @consumer(model, H[I], kwargs...)
+    @consumer(model, H[i=I], kwargs...)
+
+Create a consumer in the `model` with name `H`, index `I`, and index name `i` with
+arguments `kwargs`.
+
+## Arguments
+
+- `model`: An isntance of `MPSGEModel`.
+- The consumer `H` can be instantiated in a several ways. 
+  1. `H` creates a scalar consumer
+  2. If `I` is a defined array, then `H[I]` creates an indexed consumer with 
+  indices given by `I`.
+  3. If `I` is a defined array, then `H[i=I]`creates an indexed consumer with 
+  indices given by `I` and variable index named `i`. 
+
+If you want to create an index consumer it is highly recommended to use the syntax 
+from (3) with better name for `i`, For example `H[goods=I]`, this will get the 
+index name to `goods` which will be displayed when printing the model.
+
+Additionally, multi-indexed consumers can be created by using the syntax 
+`H[regions = R, goods = G]`. 
+
+
+## Optional Arguments
+
+- `description`: Set a description on a variable. 
+
+## Examples
+
+```julia
+using MPSGE
+
+R = Symbol.(:r, 1:5)
+G = Symbol.(:g, 1:5)
+M = MPSGEModel()
+
+@consumer(M, H[region=R, goods=G], description="Consumer with indexed variables")
+```
+"""
 macro consumer(input_args...)
     # Create specific error message that points to a particular line in the code
-    error_fn = Containers.build_error_fn("parameter", input_args, __source__)
+    error_fn = Containers.build_error_fn("consumer", input_args, __source__)
     
     if length(input_args) >= 2 && Meta.isexpr(input_args[2], :block)
-        error_fn("Invalid syntax. Did you mean to use `@parameters`?")
+        error_fn("Invalid syntax. Did you mean to use `@consumers`?")
     end
 
     parse_MPSGEvariable(
@@ -222,11 +400,76 @@ macro consumer(input_args...)
     )
 end
 
+"""
+    @consumers(model, args...)
+
+Adds multiple [`@consumer`](@ref) to a model. 
+
+The model must be the first argument, and multiple consumers can be added in a 
+`begin ... end` block, one consumer per line. 
+
+**Example**
+```jldoctest
+julia> M = MPSGEModel()
+
+julia> I = [:a,:b]
+
+julia> @consumers(M, begin
+            X[i=I]
+            Y[i=I,j=I], (description = "This is an indexed variable")
+            Z, (description = "Scalar variable")
+        end)
+```
+
+!!! note
+    Keywords must be contained in parentheses as in the example above. 
+"""
 macro consumers(model, block)
     return _plural_macro_code(model, block, Symbol("@consumer"))
 end
 
+"""
+    @auxiliary(model, X, kwargs...)
+    @auxiliary(model, X[I], kwargs...)
+    @auxiliary(model, X[i=I], kwargs...)
 
+Create a auxiliary in the `model` with name `X`, index `I`, and index name `i` with
+arguments `kwargs`.
+
+## Arguments
+
+- `model`: An isntance of `MPSGEModel`.
+- The auxiliary `X` can be instantiated in a several ways. 
+  1. `X` creates a scalar auxiliary
+  2. If `I` is a defined array, then `X[I]` creates an indexed auxiliary with 
+  indices given by `I`.
+  3. If `I` is a defined array, then `X[i=I]`creates an indexed auxiliary with 
+  indices given by `I` and variable index named `i`. 
+
+If you want to create an index auxiliary it is highly recommended to use the syntax 
+from (3) with better name for `i`, For example `X[goods=I]`, this will get the 
+index name to `goods` which will be displayed when printing the model.
+
+Additionally, multi-indexed auxiliaries can be created by using the syntax 
+`X[regions = R, goods = G]`. 
+
+
+## Optional Arguments
+
+- `description`: Set a description on a variable. 
+
+## Examples
+
+```julia
+using MPSGE
+
+R = Symbol.(:r, 1:5)
+G = Symbol.(:g, 1:5)
+M = MPSGEModel()
+
+@auxiliary(M, X[region=R, goods=G], description="Auxiliary with indexed variables")
+```
+"""
 macro auxiliary(input_args...)
     # Create specific error message that points to a particular line in the code
     error_fn = Containers.build_error_fn("parameter", input_args, __source__)
@@ -243,6 +486,31 @@ macro auxiliary(input_args...)
     )
 end
 
+
+"""
+    @auxiliaries(model, args...)
+
+Adds multiple [`@auxiliary`](@ref) to a model. 
+
+The model must be the first argument, and multiple auxiliaries can be added in a 
+`begin ... end` block, one auxiliary per line. 
+
+**Example**
+```jldoctest
+julia> M = MPSGEModel()
+
+julia> I = [:a,:b]
+
+julia> @auxiliaries(M, begin
+            X[i=I]
+            Y[i=I,j=I], (description = "This is an indexed variable")
+            Z, (description = "Scalar variable")
+        end)
+```
+
+!!! note
+    Keywords must be contained in parentheses as in the example above. 
+"""
 macro auxiliaries(model, block)
     return _plural_macro_code(model, block, Symbol("@auxiliary"))
 end
