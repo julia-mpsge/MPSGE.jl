@@ -18,6 +18,8 @@ include("macros/@parameter.jl")
 include("macros/nests.jl")
 include("macros/@netput.jl")
 include("macros/@production.jl")
+include("macros/@MPSGEvariable.jl")
+#include("prune.jl")
 
 include("build.jl")
 include("report.jl")

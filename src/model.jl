@@ -94,17 +94,9 @@ end
 
 
 function get_variable(S::MPSGEScalarVariable)
+
     jm = jump_model(S.model)
-    if !isnothing(jm)
-        var = jm[base_name(S)]    
-        si = S.subindex
-        if ismissing(si)
-            return var
-        else
-            return var[si...]
-        end
-    end
-    return S
+    return jm[name(S)]
 end
 
 function get_variable(S)

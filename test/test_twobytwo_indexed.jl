@@ -19,17 +19,17 @@
     end)
 
     @sectors(m, begin
-        Y, (index = [goods],)
+        Y[good=goods]
         U
     end)
 
     @commodities(m, begin
-        PC, (index = [goods],)
+        PC[good=goods]
         PU
-        PF, (index = [factors],)
+        PF[factor=factors]
     end)
 
-    @consumer(m, C, index = [consumers])
+    @consumer(m, C[consumers])
 
     for i in goods
         @production(m, Y[i], [t = 0, s = 1], begin
@@ -210,17 +210,17 @@ end
     end)
     
     @sectors(m, begin
-        Y, (index = [goods],)
+        Y[goods]
         U
     end)
 
     @commodities(m, begin
-        PC, (index = [goods],)
+        PC[goods]
         PU
-        PF, (index = [factors],)
+        PF[factors]
     end)
 
-    @consumer(m, C, index = [consumers])
+    @consumer(m, C[consumers])
 
 
     for i in goods
@@ -389,17 +389,17 @@ end
     end)
     
     @sectors(m, begin
-        Y, (index = [goods],)
+        Y[goods]
         U
     end)
 
     @commodities(m, begin
-        PC, (index = [goods],)
+        PC[goods]
         PU
-        PF, (index = [factors],)
+        PF[factors]
     end)
 
-    @consumer(m, C, index = [consumers])
+    @consumer(m, C[consumers])
 
     for i in goods
         @production(m, Y[i], [t = 0, s = 1], begin
@@ -571,17 +571,17 @@ end
     end)
 
     @sectors(m, begin
-        Y, (index = [goods],)
+        Y[goods]
         U
     end)
 
     @commodities(m, begin
-        PC, (index = [goods],)
-        PU, (index = [factors],)
-        PF, (index = [factors],)
+        PC[goods]
+        PU[factors]
+        PF[factors]
     end)
 
-    @consumer(m, C, index = [consumers])
+    @consumer(m, C[consumers])
 
     for i in goods
         @production(m, Y[i], [t = 0, s = 1], begin
