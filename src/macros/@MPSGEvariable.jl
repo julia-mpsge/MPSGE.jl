@@ -1,6 +1,10 @@
 __MPSGEVARIABLE_KWARGS__ = [:description]
 
-
+struct PreVariable
+    name
+    description
+    PreVariable(name; description = "") = new(name, description)
+end
 
 function parse_variable_arguments(
     error_fn::Function, 
@@ -34,10 +38,6 @@ function parse_variable_arguments(
 end
 
 
-struct PreVariable
-    name
-end
-
 function build_MPSGEvariable(
     error_fn::Function,
     args...;
@@ -63,12 +63,9 @@ function build_MPSGEvariable(
 
     P = scalar_type(
         model,
-        pre_parameter.name,
-        description
+        pre_parameter.name;
+        description = pre_parameter.description
     )
-
-    add_variable!(model, P)
-    #fix(P, pre_parameter.value)
     return P
 end
 
@@ -87,8 +84,8 @@ function build_MPSGEvariable(
         model,
         base_name,
         build_MPSGEvariable.(error_fn, Ref(model), Ref(base_name), Ref(index_vars), variables, description, scalar_type, indexed_type),
-        index_vars,
-        description
+        index_vars;
+        description = description
     )
     return P
 end
@@ -104,7 +101,7 @@ function parse_MPSGEvariable(
         error_fn, 
         input_args; 
         num_positional_args = 2, 
-        valid_kwargs = [:description]
+        valid_kwargs =  __MPSGEVARIABLE_KWARGS__
     )
 
     # Extract the model
@@ -131,11 +128,12 @@ function parse_MPSGEvariable(
         quote
             try
                 PreVariable(
-                    $name_expr,
+                    $name_expr;
+                    description = $description
                 )
             catch e
                 $error_fn("There is an issue with your inputs. Double check the " *
-                    "syntax of your parameter.")
+                    "syntax of your variable.")
             end
         end,
         :DenseAxisArray
