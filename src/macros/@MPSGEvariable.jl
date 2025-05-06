@@ -175,8 +175,16 @@ arguments `kwargs`.
   indices given by `I` and variable index named `i`. 
 
 If you want to create an index sector it is highly recommended to use the syntax 
-from (3) with better name for `i`, For example `S[goods=I]`, this will get the 
-index name to `goods` which will be displayed when printing the model.
+from (3) with better name for `i`, For example `S[goods=I]`, this will set the 
+index name to `goods` which will be displayed when printing the model. For example
+creating a variable using
+```julia
+@sector(M, S[goods=I], description = "Sector with indexed variables")
+```
+will allow the sector to be printed as
+```
+S[goods] -- Sector with indexed variables
+```
 
 Additionally, multi-indexed sectors can be created by using the syntax 
 `S[regions = R, goods = G]`. 
@@ -270,7 +278,15 @@ arguments `kwargs`.
 
 If you want to create an index commodity it is highly recommended to use the syntax 
 from (3) with better name for `i`, For example `C[goods=I]`, this will get the 
-index name to `goods` which will be displayed when printing the model.
+index name to `goods` which will be displayed when printing the model. For example
+creating a variable using
+```julia
+@commodity(M, C[goods=I], description = "Commodity with indexed variables")
+```
+will allow the commodity to be printed as
+```
+C[goods] -- Commodity with indexed variables
+```
 
 Additionally, multi-indexed commoditys can be created by using the syntax 
 `C[regions = R, goods = G]`. 
@@ -359,7 +375,15 @@ arguments `kwargs`.
 
 If you want to create an index consumer it is highly recommended to use the syntax 
 from (3) with better name for `i`, For example `H[goods=I]`, this will get the 
-index name to `goods` which will be displayed when printing the model.
+index name to `goods` which will be displayed when printing the model. For example
+creating a variable using
+```julia
+@consumer(M, H[goods=I], description = "Consumer with indexed variables")
+```
+will allow the consumer to be printed as
+```
+H[goods] -- Consumer with indexed variables
+```
 
 Additionally, multi-indexed consumers can be created by using the syntax 
 `H[regions = R, goods = G]`. 
@@ -445,7 +469,15 @@ arguments `kwargs`.
 
 If you want to create an index auxiliary it is highly recommended to use the syntax 
 from (3) with better name for `i`, For example `X[goods=I]`, this will get the 
-index name to `goods` which will be displayed when printing the model.
+index name to `goods` which will be displayed when printing the model. For example
+creating a variable using
+```julia
+@auxiliary(M, X[goods=I], description = "Auxiliary with indexed variables")
+```
+will allow the auxiliary to be printed as
+```
+X[goods] -- Auxiliary with indexed variables
+```
 
 Additionally, multi-indexed auxiliaries can be created by using the syntax 
 `X[regions = R, goods = G]`. 
@@ -466,6 +498,11 @@ M = MPSGEModel()
 
 @auxiliary(M, X[region=R, goods=G], description="Auxiliary with indexed variables")
 ```
+
+!!! note
+    By default auxiliary variables start at 0 with on lower or upper bounds. These
+    can be set after variable creating using [`set_start_value`](@ref), 
+    [`set_lower_bound`](@ref), and [`set_upper_bound`](@ref).
 """
 macro auxiliary(input_args...)
     # Create specific error message that points to a particular line in the code
