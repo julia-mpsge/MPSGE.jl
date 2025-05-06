@@ -30,7 +30,7 @@ abstract type AbstractNest end;
 #Getters
 base_name(V::MPSGEVariable) = Symbol(V.name)
 name(V::MPSGEVariable) = Symbol(V.name) 
-string_name(V::MPSGEVariable) = name(V)
+string_name(V::MPSGEVariable) = V.name
 model(V::MPSGEVariable) = V.model
 description(V::MPSGEVariable) = V.description
 
