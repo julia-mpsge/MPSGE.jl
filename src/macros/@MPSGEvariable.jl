@@ -203,7 +203,7 @@ M = MPSGEModel()
 """
 macro sector(input_args...)
     # Create specific error message that points to a particular line in the code
-    error_fn = Containers.build_error_fn("parameter", input_args, __source__)
+    error_fn = Containers.build_error_fn("sector", input_args, __source__)
     
     if length(input_args) >= 2 && Meta.isexpr(input_args[2], :block)
         error_fn("Invalid syntax. Did you mean to use `@sectors`?")
@@ -472,10 +472,10 @@ M = MPSGEModel()
 """
 macro auxiliary(input_args...)
     # Create specific error message that points to a particular line in the code
-    error_fn = Containers.build_error_fn("parameter", input_args, __source__)
+    error_fn = Containers.build_error_fn("auxiliary", input_args, __source__)
     
     if length(input_args) >= 2 && Meta.isexpr(input_args[2], :block)
-        error_fn("Invalid syntax. Did you mean to use `@parameters`?")
+        error_fn("Invalid syntax. Did you mean to use `auxiliaries`?")
     end
 
     parse_MPSGEvariable(
