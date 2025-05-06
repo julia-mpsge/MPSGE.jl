@@ -59,7 +59,6 @@ struct ScalarSector <: MPSGEScalarVariable
     model::AbstractMPSGEModel
     name::String
     description::String
-    ScalarSector(model::AbstractMPSGEModel, name::String, description) = new(model, name, description)
     ScalarSector(model::AbstractMPSGEModel, name::String; description::String = "") = new(model, name, description)
     ScalarSector(model::AbstractMPSGEModel, name::Symbol; description::String = "") = new(model, string(name), description)
 end
@@ -80,7 +79,6 @@ struct ScalarCommodity <: MPSGEScalarVariable
     model::AbstractMPSGEModel
     name::String
     description::String
-    ScalarCommodity(model::AbstractMPSGEModel, name::String, description) = new(model, name, description)
     ScalarCommodity(model::AbstractMPSGEModel, name::String; description::String = "") = new(model, name, description)
     ScalarCommodity(model::AbstractMPSGEModel, name::Symbol; description::String = "") = new(model, string(name), description)
 end
@@ -102,7 +100,6 @@ struct ScalarConsumer <: MPSGEScalarVariable
     model::AbstractMPSGEModel
     name::String
     description::String
-    ScalarConsumer(model::AbstractMPSGEModel, name::String, description) = new(model, name, description)
     ScalarConsumer(model::AbstractMPSGEModel, name::String; description::String = "") = new(model, name, description)
     ScalarConsumer(model::AbstractMPSGEModel, name::Symbol; description::String = "") = new(model, string(name), description)
 end
@@ -113,7 +110,6 @@ struct IndexedConsumer{N} <: MPSGEIndexedVariable{ScalarConsumer,N}
     subsectors::AbstractArray{ScalarConsumer,N}
     index::Any
     description::String
-    IndexedConsumer(model::AbstractMPSGEModel, name::String, subsectors::AbstractArray{<:ScalarConsumer}, index, description) = new{length(axes(subsectors))}(model, name, subsectors, index, description)
     IndexedConsumer(model::AbstractMPSGEModel, name::String, subsectors::AbstractArray{<:ScalarConsumer}, index; description::String = "")  = new{length(axes(subsectors))}(model, name, subsectors, index, description)
 end
 
@@ -174,7 +170,6 @@ struct ScalarAuxiliary <: MPSGEScalarVariable
     model::AbstractMPSGEModel
     name::String
     description::String
-    ScalarAuxiliary(model::AbstractMPSGEModel, name::String, description) = new(model, name, description)
     ScalarAuxiliary(model::AbstractMPSGEModel, name::String; description::String = "") = new(model, name, description)
     ScalarAuxiliary(model::AbstractMPSGEModel, name::Symbol; description::String = "") = new(model, string(name), description)
 end
