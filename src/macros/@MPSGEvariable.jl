@@ -1,9 +1,11 @@
 __MPSGEVARIABLE_KWARGS__ = [:description]
+__MPSGEVARIABLE_KWARGS_DEFAULT__ = Dict(:description => "")
+
 
 struct PreVariable
     name
     description
-    PreVariable(name; description = "") = new(name, description)
+    PreVariable(name; description = __MPSGEVARIABLE_KWARGS_DEFAULT__[:description]) = new(name, description)
 end
 
 function parse_variable_arguments(
@@ -58,9 +60,6 @@ function build_MPSGEvariable(
     ;
     kwargs...
 )
-
-   # if length(kwargs) > 0
-
     P = scalar_type(
         model,
         pre_parameter.name;
@@ -473,7 +472,7 @@ macro auxiliary(input_args...)
     error_fn = Containers.build_error_fn("auxiliary", input_args, __source__)
     
     if length(input_args) >= 2 && Meta.isexpr(input_args[2], :block)
-        error_fn("Invalid syntax. Did you mean to use `auxiliaries`?")
+        error_fn("Invalid syntax. Did you mean to use `@auxiliaries`?")
     end
 
     parse_MPSGEvariable(
