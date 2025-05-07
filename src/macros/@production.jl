@@ -226,7 +226,10 @@ function build_production(error_fn::Function, sector, node_structure, all_netput
             if !haskey(netputs_by_consumer, consumer)
                 netputs_by_consumer[consumer] = Vector{MPSGE.Netput}()
             end
-            push!(netputs_by_consumer[consumer], netput)
+            if netput ∉ netputs_by_consumer[consumer]
+                push!(netputs_by_consumer[consumer], netput)
+            end
+            #push!(netputs_by_consumer[consumer], netput)
         end
     end
 
