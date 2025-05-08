@@ -500,7 +500,7 @@ M = MPSGEModel()
 ```
 
 !!! note
-    By default auxiliary variables start at 0 with on lower or upper bounds. These
+    By default auxiliary variables start at 0 with no lower or upper bounds. These
     can be set after variable creating using [`set_start_value`](@ref), 
     [`set_lower_bound`](@ref), and [`set_upper_bound`](@ref).
 """
