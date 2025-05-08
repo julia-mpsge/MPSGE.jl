@@ -70,9 +70,9 @@ yr = Symbol(2017)
 WiNnat = MPSGEModel()
 
 @parameters(WiNnat, begin
-    ta[J], ta_0[yr,J]
-    ty[J], ty_0[yr,J]
-    tm[J], tm_0[yr,J]
+    ta[j=J], ta_0[yr,j]
+    ty[j=J], ty_0[yr,j]
+    tm[j=J], tm_0[yr,j]
     d_elas_ra, 1
 end)
 
