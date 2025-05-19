@@ -13,23 +13,23 @@
     raw_intax = DenseAxisArray([0,0], goods)
     
     @parameters(m, begin
-        endow, raw_endow, (index = [factors],)
-        outax, raw_outax, (index = [goods],)
-        intax, raw_intax, (index = [goods],)
+        endow[f=factors], raw_endow[f]
+        outax[g=goods], raw_outax[g]
+        intax[g=goods], raw_intax[g]
     end)
 
     @sectors(m, begin
-        Y, (index = [goods],)
+        Y[good=goods]
         U
     end)
 
     @commodities(m, begin
-        PC, (index = [goods],)
+        PC[good=goods]
         PU
-        PF, (index = [factors],)
+        PF[factor=factors]
     end)
 
-    @consumer(m, C, index = [consumers])
+    @consumer(m, C[consumers])
 
     for i in goods
         @production(m, Y[i], [t = 0, s = 1], begin
@@ -205,22 +205,22 @@ end
     raw_endow = DenseAxisArray([70,80], factors)
     
     @parameters(m, begin
-        endow, raw_endow, (index = [factors],)
-        pricepci, raw_pricepci, (index = [goods],)
+        endow[f=factors], raw_endow[f]
+        pricepci[g=goods], raw_pricepci[g]
     end)
     
     @sectors(m, begin
-        Y, (index = [goods],)
+        Y[goods]
         U
     end)
 
     @commodities(m, begin
-        PC, (index = [goods],)
+        PC[goods]
         PU
-        PF, (index = [factors],)
+        PF[factors]
     end)
 
-    @consumer(m, C, index = [consumers])
+    @consumer(m, C[consumers])
 
 
     for i in goods
@@ -384,22 +384,22 @@ end
     raw_endow = DenseAxisArray([70,80], factors)
     
     @parameters(m, begin
-        endow, raw_endow, (index = [factors],)
-        pricepci, raw_pricepci, (index = [goods],)
+        endow[f=factors], raw_endow[f]
+        pricepci[g=goods], raw_pricepci[g]
     end)
     
     @sectors(m, begin
-        Y, (index = [goods],)
+        Y[goods]
         U
     end)
 
     @commodities(m, begin
-        PC, (index = [goods],)
+        PC[goods]
         PU
-        PF, (index = [factors],)
+        PF[factors]
     end)
 
-    @consumer(m, C, index = [consumers])
+    @consumer(m, C[consumers])
 
     for i in goods
         @production(m, Y[i], [t = 0, s = 1], begin
@@ -566,22 +566,22 @@ end
     raw_pricepu = DenseAxisArray([1, 1], factors)
     
     @parameters(m, begin
-        endow, raw_endow, (index = [factors],)
-        pricepu, raw_pricepu, (index = [factors],)
+        endow[f=factors], raw_endow[f]
+        pricepu[f=factors], raw_pricepu[f]
     end)
 
     @sectors(m, begin
-        Y, (index = [goods],)
+        Y[goods]
         U
     end)
 
     @commodities(m, begin
-        PC, (index = [goods],)
-        PU, (index = [factors],)
-        PF, (index = [factors],)
+        PC[goods]
+        PU[factors]
+        PF[factors]
     end)
 
-    @consumer(m, C, index = [consumers])
+    @consumer(m, C[consumers])
 
     for i in goods
         @production(m, Y[i], [t = 0, s = 1], begin

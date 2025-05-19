@@ -1,69 +1,53 @@
+###########################
+## Create JuMP Variables ##
+###########################
+function add_variable!(m::MPSGEModel, S::MPSGEScalarVariable; start = 1)
+    jm = jump_model(m)
+    jm[name(S)] = @variable(jm,base_name = string(name(S)),start=start, lower_bound = 0)
+end
 
+function add_variable!(m::MPSGEModel, S::Auxiliary)
+    add_variable!(m, S; start = 0)
+end
 
+#########################
+### Add MPSGE Objects ###
+#########################
 function add!(m::MPSGEModel,S::MPSGEScalarVariable)
     @assert !haskey(m.object_dict,name(S)) "Variable $(name(S)) already exists in model"
     m.object_dict[name(S)] = S
-    #add_variable!(m,S)
+    add_variable!(m,S)
+    return S
 end
 
 function add!(m::MPSGEModel, S::MPSGEIndexedVariable)
     @assert !haskey(m.object_dict,name(S)) "Variable $(name(S)) already exists in model"
     m.object_dict[name(S)] = S
-    #add_variable!(m,S)
-end
-
-
-function add_sector!(model::AbstractMPSGEModel, name::Symbol; index = nothing, description = "")
-    S = index === nothing ? ScalarSector(model,name; description = description) : IndexedSector(model,name,index; description = description)
-    add!(model,S)
+    add_variable!.(Ref(m),S)
     return S
 end
 
-function add_commodity!(model::AbstractMPSGEModel, name::Symbol; index = nothing, description = "")
-    S = index === nothing ? ScalarCommodity(model,name; description = description) : IndexedCommodity(model,name,index; description = description)
-    add!(model,S)
+
+function add!(m::MPSGEModel,S::ScalarParameter)
+    @assert !haskey(m.object_dict,name(S)) "Variable $(name(S)) already exists in model"
+    m.object_dict[name(S)] = S
+    add_variable!(m,S)
+    fix(S, value(S))
     return S
 end
 
-function add_consumer!(model::MPSGEModel, name::Symbol; index = nothing, description = "")
-    S = index === nothing ? ScalarConsumer(model,name; description = description) : IndexedConsumer(model,name,index; description = description)
-    add!(model,S)
+function add!(m::MPSGEModel, S::IndexedParameter)
+    @assert !haskey(m.object_dict,name(S)) "Variable $(name(S)) already exists in model"
+    m.object_dict[name(S)] = S
+    add_variable!.(Ref(m),S)
+    fix.(S, value.(S))
     return S
 end
-
-function add_parameter!(model::MPSGEModel, name::Symbol, value::Number; index=nothing, description = "")
-    S = index === nothing ? ScalarParameter(model,name, value; description = description) : IndexedParameter(model,name,index, value; description = description)
-    add!(model,S)
-    return S
-end
-
-function add_parameter!(model::MPSGEModel, name::Symbol, value::AbstractArray; index=nothing, description = "")
-    @assert( !isnothing(index), "Parameter $name is being created with an array of values, but the index is nothing") 
-    S = IndexedParameter(model,name,index, value; description = description)
-    add!(model,S)
-    return S
-end
-
-function add_auxiliary!(model::MPSGEModel, name::Symbol; index = nothing, description = "")
-    S = index === nothing ? ScalarAuxiliary(model,name; description = description) : IndexedAuxiliary(model,name,index; description = description)
-    add!(model,S)
-    return S
-end
-
 
 
 function get_variable(S::MPSGEScalarVariable)
     jm = jump_model(S.model)
-    if !isnothing(jm)
-        var = jm[base_name(S)]    
-        si = S.subindex
-        if ismissing(si)
-            return var
-        else
-            return var[si...]
-        end
-    end
-    return S
+    return jm[name(S)]
 end
 
 function get_variable(S)

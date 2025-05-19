@@ -1851,7 +1851,7 @@ end
     @consumer(m, CONS)
     
     @auxiliary(m, SHAREX) #benchmark = .5
-    @auxiliary(m, MARKUP, index = [[:a,:b]]) #benchmark = .2
+    @auxiliary(m, MARKUP[i = [:a,:b]]) #benchmark = .2
     
     
     @production(m, X, [t = 0, s = 1], begin
