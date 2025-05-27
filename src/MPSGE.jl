@@ -14,6 +14,8 @@ include("production.jl")
 
 
 include("macros.jl")
+include("macros/@parameter.jl")
+include("macros/@MPSGEvariable.jl")
 #include("prune.jl")
 
 include("build.jl")

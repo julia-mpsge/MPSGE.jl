@@ -17,12 +17,12 @@
 
     M = MPSGEModel()
 
-    @parameter(M, endow, raw_endow, index = (factors,))
+    @parameter(M, endow[f=factors], raw_endow[f])
 
-    @sector(M, X, index = (secs,))
+    @sector(M, X[secs])
 
-    @commodity(M, P, index = (goods,))
-    @commodity(M, PF, index = (factors,))
+    @commodity(M, P[goods])
+    @commodity(M, PF[factors])
 
     @consumer(M, Y)
 
@@ -181,12 +181,12 @@ end
     e0 = DenseAxisArray(Float64[sum(fd0[f,:]) for f in factors], factors)
 
     
-    @parameter(M, endow, e0, index = (factors,))
+    @parameter(M, endow[f=factors], e0[f])
 
-    @sector(M, X, index = (secs,))
+    @sector(M, X[secs])
 
-    @commodity(M, P, index = (goods,))
-    @commodity(M, PF, index = (factors,))
+    @commodity(M, P[goods])
+    @commodity(M, PF[factors])
 
     @consumer(M, Y)
 
@@ -347,12 +347,12 @@ end
     e0 = DenseAxisArray(Float64[sum(fd0[f,:]) for f in factors], factors)
 
     # All indices and data as above
-    @parameter(M, endow, e0, index = (factors,))
+    @parameter(M, endow[f=factors], e0[f])
 
-    @sector(M, X, index = (secs,))
+    @sector(M, X[secs])
 
-    @commodity(M, P, index = (goods,))
-    @commodity(M, PF, index = (factors,))
+    @commodity(M, P[goods])
+    @commodity(M, PF[factors])
 
     @consumer(M, Y)
 
