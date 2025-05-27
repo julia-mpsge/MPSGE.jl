@@ -1,14 +1,11 @@
 ###########################
 ## Create JuMP Variables ##
 ###########################
-function add_variable!(m::MPSGEModel, S::MPSGEScalarVariable; start = 1)
+function add_variable!(m::MPSGEModel, S::MPSGEScalarVariable; start = 1, lower_bound = 0, upper_bound = Inf)
     jm = jump_model(m)
-    jm[name(S)] = @variable(jm,base_name = string(name(S)),start=start, lower_bound = 0)
+    jm[name(S)] = @variable(jm,base_name = string(name(S)),start=start, lower_bound = lower_bound, upper_bound = upper_bound)
 end
 
-function add_variable!(m::MPSGEModel, S::Auxiliary)
-    add_variable!(m, S; start = 0)
-end
 
 #########################
 ### Add MPSGE Objects ###
@@ -16,31 +13,12 @@ end
 function add!(m::MPSGEModel,S::MPSGEScalarVariable)
     @assert !haskey(m.object_dict,name(S)) "Variable $(name(S)) already exists in model"
     m.object_dict[name(S)] = S
-    add_variable!(m,S)
     return S
 end
 
 function add!(m::MPSGEModel, S::MPSGEIndexedVariable)
     @assert !haskey(m.object_dict,name(S)) "Variable $(name(S)) already exists in model"
     m.object_dict[name(S)] = S
-    add_variable!.(Ref(m),S)
-    return S
-end
-
-
-function add!(m::MPSGEModel,S::ScalarParameter)
-    @assert !haskey(m.object_dict,name(S)) "Variable $(name(S)) already exists in model"
-    m.object_dict[name(S)] = S
-    add_variable!(m,S)
-    fix(S, value(S))
-    return S
-end
-
-function add!(m::MPSGEModel, S::IndexedParameter)
-    @assert !haskey(m.object_dict,name(S)) "Variable $(name(S)) already exists in model"
-    m.object_dict[name(S)] = S
-    add_variable!.(Ref(m),S)
-    fix.(S, value.(S))
     return S
 end
 
