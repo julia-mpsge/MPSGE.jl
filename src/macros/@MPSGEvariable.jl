@@ -225,7 +225,9 @@ Additionally, multi-indexed sectors can be created by using the syntax
 ## Optional Arguments
 
 - `description`: Set a description on a variable. 
-
+- `start`: Set the starting value of the variable Default 1.0
+- `lower_bound`: Set the lower bound of the variable. Default 0.
+- `upper_bound`: Set the upper bound of the variable. Default `Inf`.
 ## Examples
 
 ```julia
@@ -235,7 +237,7 @@ R = Symbol.(:r, 1:5)
 G = Symbol.(:g, 1:5)
 M = MPSGEModel()
 
-@sector(M, S[region=R, goods=G], description="Sector with indexed variables")
+@sector(M, S[region=R, goods=G], description="Sector with indexed variables", start = 1.5)
 ```
 """
 macro sector(input_args...)
@@ -327,6 +329,9 @@ Additionally, multi-indexed commoditys can be created by using the syntax
 ## Optional Arguments
 
 - `description`: Set a description on a variable. 
+- `start`: Set the starting value of the variable Default 1.0
+- `lower_bound`: Set the lower bound of the variable. Default 0.
+- `upper_bound`: Set the upper bound of the variable. Default `Inf`.
 
 ## Examples
 
@@ -424,6 +429,9 @@ Additionally, multi-indexed consumers can be created by using the syntax
 ## Optional Arguments
 
 - `description`: Set a description on a variable. 
+- `start`: Set the starting value of the variable Default 1.0
+- `lower_bound`: Set the lower bound of the variable. Default 0.
+- `upper_bound`: Set the upper bound of the variable. Default `Inf`.
 
 ## Examples
 
@@ -518,6 +526,9 @@ Additionally, multi-indexed auxiliaries can be created by using the syntax
 ## Optional Arguments
 
 - `description`: Set a description on a variable. 
+- `start`: Set the starting value of the variable Default 0.0
+- `lower_bound`: Set the lower bound of the variable. Default `-Inf`.
+- `upper_bound`: Set the upper bound of the variable. Default `Inf`.
 
 ## Examples
 
