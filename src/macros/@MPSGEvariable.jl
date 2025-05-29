@@ -1,12 +1,6 @@
 __MPSGEVARIABLE_KWARGS__ = [:description]
-__MPSGEVARIABLE_KWARGS_DEFAULT__ = Dict(:description => "")
 
 
-struct PreVariable
-    name
-    description
-    PreVariable(name; description = __MPSGEVARIABLE_KWARGS_DEFAULT__[:description]) = new(name, description)
-end
 
 function parse_variable_arguments(
     error_fn::Function, 
@@ -40,6 +34,10 @@ function parse_variable_arguments(
 end
 
 
+struct PreVariable
+    name
+end
+
 function build_MPSGEvariable(
     error_fn::Function,
     args...;
@@ -60,11 +58,17 @@ function build_MPSGEvariable(
     ;
     kwargs...
 )
+
+   # if length(kwargs) > 0
+
     P = scalar_type(
         model,
-        pre_parameter.name;
-        description = pre_parameter.description
+        pre_parameter.name,
+        description
     )
+
+    add_variable!(model, P)
+    #fix(P, pre_parameter.value)
     return P
 end
 
@@ -83,8 +87,8 @@ function build_MPSGEvariable(
         model,
         base_name,
         build_MPSGEvariable.(error_fn, Ref(model), Ref(base_name), Ref(index_vars), variables, description, scalar_type, indexed_type),
-        index_vars;
-        description = description
+        index_vars,
+        description
     )
     return P
 end
@@ -100,7 +104,7 @@ function parse_MPSGEvariable(
         error_fn, 
         input_args; 
         num_positional_args = 2, 
-        valid_kwargs =  __MPSGEVARIABLE_KWARGS__
+        valid_kwargs = [:description]
     )
 
     # Extract the model
@@ -127,12 +131,11 @@ function parse_MPSGEvariable(
         quote
             try
                 PreVariable(
-                    $name_expr;
-                    description = $description
+                    $name_expr,
                 )
             catch e
                 $error_fn("There is an issue with your inputs. Double check the " *
-                    "syntax of your variable.")
+                    "syntax of your parameter.")
             end
         end,
         :DenseAxisArray
@@ -175,16 +178,8 @@ arguments `kwargs`.
   indices given by `I` and variable index named `i`. 
 
 If you want to create an index sector it is highly recommended to use the syntax 
-from (3) with better name for `i`, For example `S[goods=I]`, this will set the 
-index name to `goods` which will be displayed when printing the model. For example
-creating a variable using
-```julia
-@sector(M, S[goods=I], description = "Sector with indexed variables")
-```
-will allow the sector to be printed as
-```
-S[goods] -- Sector with indexed variables
-```
+from (3) with better name for `i`, For example `S[goods=I]`, this will get the 
+index name to `goods` which will be displayed when printing the model.
 
 Additionally, multi-indexed sectors can be created by using the syntax 
 `S[regions = R, goods = G]`. 
@@ -208,7 +203,7 @@ M = MPSGEModel()
 """
 macro sector(input_args...)
     # Create specific error message that points to a particular line in the code
-    error_fn = Containers.build_error_fn("sector", input_args, __source__)
+    error_fn = Containers.build_error_fn("parameter", input_args, __source__)
     
     if length(input_args) >= 2 && Meta.isexpr(input_args[2], :block)
         error_fn("Invalid syntax. Did you mean to use `@sectors`?")
@@ -278,15 +273,7 @@ arguments `kwargs`.
 
 If you want to create an index commodity it is highly recommended to use the syntax 
 from (3) with better name for `i`, For example `C[goods=I]`, this will get the 
-index name to `goods` which will be displayed when printing the model. For example
-creating a variable using
-```julia
-@commodity(M, C[goods=I], description = "Commodity with indexed variables")
-```
-will allow the commodity to be printed as
-```
-C[goods] -- Commodity with indexed variables
-```
+index name to `goods` which will be displayed when printing the model.
 
 Additionally, multi-indexed commoditys can be created by using the syntax 
 `C[regions = R, goods = G]`. 
@@ -375,15 +362,7 @@ arguments `kwargs`.
 
 If you want to create an index consumer it is highly recommended to use the syntax 
 from (3) with better name for `i`, For example `H[goods=I]`, this will get the 
-index name to `goods` which will be displayed when printing the model. For example
-creating a variable using
-```julia
-@consumer(M, H[goods=I], description = "Consumer with indexed variables")
-```
-will allow the consumer to be printed as
-```
-H[goods] -- Consumer with indexed variables
-```
+index name to `goods` which will be displayed when printing the model.
 
 Additionally, multi-indexed consumers can be created by using the syntax 
 `H[regions = R, goods = G]`. 
@@ -469,15 +448,7 @@ arguments `kwargs`.
 
 If you want to create an index auxiliary it is highly recommended to use the syntax 
 from (3) with better name for `i`, For example `X[goods=I]`, this will get the 
-index name to `goods` which will be displayed when printing the model. For example
-creating a variable using
-```julia
-@auxiliary(M, X[goods=I], description = "Auxiliary with indexed variables")
-```
-will allow the auxiliary to be printed as
-```
-X[goods] -- Auxiliary with indexed variables
-```
+index name to `goods` which will be displayed when printing the model.
 
 Additionally, multi-indexed auxiliaries can be created by using the syntax 
 `X[regions = R, goods = G]`. 
@@ -498,18 +469,13 @@ M = MPSGEModel()
 
 @auxiliary(M, X[region=R, goods=G], description="Auxiliary with indexed variables")
 ```
-
-!!! note
-    By default auxiliary variables start at 0 with no lower or upper bounds. These
-    can be set after variable creating using [`set_start_value`](@ref), 
-    [`set_lower_bound`](@ref), and [`set_upper_bound`](@ref).
 """
 macro auxiliary(input_args...)
     # Create specific error message that points to a particular line in the code
-    error_fn = Containers.build_error_fn("auxiliary", input_args, __source__)
+    error_fn = Containers.build_error_fn("parameter", input_args, __source__)
     
     if length(input_args) >= 2 && Meta.isexpr(input_args[2], :block)
-        error_fn("Invalid syntax. Did you mean to use `@auxiliaries`?")
+        error_fn("Invalid syntax. Did you mean to use `@parameters`?")
     end
 
     parse_MPSGEvariable(

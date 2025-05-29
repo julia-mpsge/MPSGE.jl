@@ -33,6 +33,9 @@ function build_parameter(
         pre_parameter.value,
         description = description
     )
+
+    add_variable!(model, P)
+    fix(P, pre_parameter.value)
     return P
 end
 

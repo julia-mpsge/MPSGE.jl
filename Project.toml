@@ -1,6 +1,6 @@
 name = "MPSGE"
 uuid = "d5dc2f44-7ae2-49e9-bc77-b47b6bca565d"
-authors = ["David Anthoff, Eli Lazarus, Mitch Phillipson"]
+authors = ["Mitch Phillipson"]
 version = "0.5.2"
 
 [deps]

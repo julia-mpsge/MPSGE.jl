@@ -13,12 +13,7 @@ function JuMP.unfix(X::MPSGEScalarVariable)
 end
 JuMP.is_fixed(X::MPSGEScalarVariable) = JuMP.is_fixed(get_variable(X))
 
-"""
-    set_start_value(X::MPSGEScalarVariable, val::Real)
 
-Set the staring value of an MPSGE variable. This is an extension of the JuMP
-function `set_start_value`.
-"""
 JuMP.set_start_value(X::MPSGEScalarVariable, val::Real) = JuMP.set_start_value(get_variable(X), val)
 JuMP.start_value(H::MPSGEScalarVariable) = start_value(get_variable(H))
 
@@ -32,20 +27,7 @@ function JuMP.unset_silent(M::MPSGEModel)
     JuMP.unset_silent(jump_model(M))
 end
 
-"""
-    set_lower_bound(X::MPSGEScalarVariable, val::Real)
-
-Set the lower bound of an MPSGE variable. This is an extension of the JuMP
-function `set_lower_bound`.
-"""
 JuMP.set_lower_bound(X::MPSGEScalarVariable, val::Real) = JuMP.set_lower_bound(get_variable(X), val)
-
-"""
-    set_upper_bound(X::MPSGEScalarVariable, val::Real)
-
-Set the upper bound of an MPSGE variable. This is an extension of the JuMP
-function `set_upper_bound`.
-"""
 JuMP.set_upper_bound(X::MPSGEScalarVariable, val::Real) = JuMP.set_upper_bound(get_variable(X), val)
 JuMP.lower_bound(X::MPSGEScalarVariable) = JuMP.lower_bound(get_variable(X))
 JuMP.upper_bound(X::MPSGEScalarVariable) = JuMP.upper_bound(get_variable(X))
