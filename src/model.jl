@@ -62,9 +62,6 @@ end
 function add_production!(model::MPSGEModel, P::Production)
     if !isnothing(input(P)) && !isnothing(output(P))
         model.productions[sector(P)] = P
-        for (commodity, _) in netputs(P)
-            push!(model.commodities[commodity], sector(P))
-        end
         return P
     end
     return nothing

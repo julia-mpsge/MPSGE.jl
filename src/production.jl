@@ -183,7 +183,7 @@ function cost_function(N::Netput; virtual = false)
     return C*(1-sign*sum(tax(t) for t∈taxes(N);init = 0))/rp
 end
 
-build_cost_function!(N::Netput, S::ScalarSector) = cost_function(N)
+build_cost_function!(N::Netput, S::ScalarSector) = nothing
 
 # ScalarSector is a required input so that we can pull the jump model and
 # create an ifelse 
@@ -206,14 +206,12 @@ function build_cost_function!(N::Node, S::ScalarSector)
         cost_function = CES(N)
     end
 
-    N.cost_function = cost_function
-
     jm = jump_model(model(S))
     N.cost_function_virtual = @variable(jm, start = value(start_value, cost_function)) 
-
+    N.cost_function = cost_function
     @constraint(jm, N.cost_function_virtual - cost_function ⟂ N.cost_function_virtual)
+    #end
 
-    return cost_function
 end
 
 function cobb_douglass(N::Node)#P::ScalarProduction, T::ScalarNest, sign)
