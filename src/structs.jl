@@ -30,7 +30,7 @@ abstract type AbstractNest end;
 #Getters
 base_name(V::MPSGEVariable) = Symbol(V.name)
 name(V::MPSGEVariable) = Symbol(V.name) 
-string_name(V::MPSGEVariable) = name(V)
+string_name(V::MPSGEVariable) = V.name
 model(V::MPSGEVariable) = V.model
 description(V::MPSGEVariable) = V.description
 
@@ -59,14 +59,18 @@ struct ScalarSector <: MPSGEScalarVariable
     model::AbstractMPSGEModel
     name::String
     description::String
+    ScalarSector(model::AbstractMPSGEModel, name::String; description::String = "") = new(model, name, description)
+    ScalarSector(model::AbstractMPSGEModel, name::Symbol; description::String = "") = new(model, string(name), description)
 end
 
 struct IndexedSector{N} <: MPSGEIndexedVariable{ScalarSector,N}
     model::AbstractMPSGEModel
     name::String
-    subsectors::DenseAxisArray{ScalarSector,N}
+    subsectors::AbstractArray{<:ScalarSector,N}
     index::Any
     description::String
+    IndexedSector(model::AbstractMPSGEModel, name::String, subsectors::AbstractArray{<:ScalarSector}, index, description) = new{length(axes(subsectors))}(model, name, subsectors, index, description)
+    IndexedSector(model::AbstractMPSGEModel, name::String, subsectors::AbstractArray{<:ScalarSector}, index; description::String = "") = new{length(axes(subsectors))}(model, name, subsectors, index, description)
 end
 
 const Sector = Union{ScalarSector,IndexedSector}
@@ -75,14 +79,18 @@ struct ScalarCommodity <: MPSGEScalarVariable
     model::AbstractMPSGEModel
     name::String
     description::String
+    ScalarCommodity(model::AbstractMPSGEModel, name::String; description::String = "") = new(model, name, description)
+    ScalarCommodity(model::AbstractMPSGEModel, name::Symbol; description::String = "") = new(model, string(name), description)
 end
 
 struct IndexedCommodity{N} <: MPSGEIndexedVariable{ScalarCommodity,N}
     model::AbstractMPSGEModel
     name::String
-    subsectors::DenseAxisArray{ScalarCommodity,N}
+    subsectors::AbstractArray{<:ScalarCommodity,N}
     index::Any
     description::String
+    IndexedCommodity(model::AbstractMPSGEModel, name::String, subsectors::AbstractArray{<:ScalarCommodity}, index, description) = new{length(axes(subsectors))}(model, name, subsectors, index, description)
+    IndexedCommodity(model::AbstractMPSGEModel, name::String, subsectors::AbstractArray{<:ScalarCommodity}, index; description::String = "") = new{length(axes(subsectors))}(model, name, subsectors, index, description)
 end
 
 const Commodity = Union{ScalarCommodity,IndexedCommodity}
@@ -92,14 +100,17 @@ struct ScalarConsumer <: MPSGEScalarVariable
     model::AbstractMPSGEModel
     name::String
     description::String
+    ScalarConsumer(model::AbstractMPSGEModel, name::String; description::String = "") = new(model, name, description)
+    ScalarConsumer(model::AbstractMPSGEModel, name::Symbol; description::String = "") = new(model, string(name), description)
 end
 
 struct IndexedConsumer{N} <: MPSGEIndexedVariable{ScalarConsumer,N}
     model::AbstractMPSGEModel
     name::String
-    subsectors::DenseAxisArray{ScalarConsumer,N}
+    subsectors::AbstractArray{ScalarConsumer,N}
     index::Any
     description::String
+    IndexedConsumer(model::AbstractMPSGEModel, name::String, subsectors::AbstractArray{<:ScalarConsumer}, index; description::String = "")  = new{length(axes(subsectors))}(model, name, subsectors, index, description)
 end
 
 const Consumer = Union{ScalarConsumer,IndexedConsumer}
@@ -123,7 +134,7 @@ end
 struct IndexedParameter{N} <: MPSGEIndexedVariable{ScalarParameter,N}
     model::AbstractMPSGEModel
     name::String
-    subsectors::AbstractArray{<:ScalarParameter}#Containers.DenseAxisArray{ScalarParameter,N}
+    subsectors::AbstractArray{<:ScalarParameter, N}#Containers.DenseAxisArray{ScalarParameter,N}
     index::Any
     description::String
     function IndexedParameter(
@@ -159,14 +170,18 @@ struct ScalarAuxiliary <: MPSGEScalarVariable
     model::AbstractMPSGEModel
     name::String
     description::String
+    ScalarAuxiliary(model::AbstractMPSGEModel, name::String; description::String = "") = new(model, name, description)
+    ScalarAuxiliary(model::AbstractMPSGEModel, name::Symbol; description::String = "") = new(model, string(name), description)
 end
 
 struct IndexedAuxiliary{N} <: MPSGEIndexedVariable{ScalarAuxiliary,N}
     model::AbstractMPSGEModel
     name::String
-    subsectors::DenseAxisArray{ScalarAuxiliary,N}
+    subsectors::AbstractArray{ScalarAuxiliary,N}
     index::Any
     description::String
+    IndexedAuxiliary(model::AbstractMPSGEModel, name::String, subsectors::AbstractArray{<:ScalarAuxiliary}, index, description) = new{length(axes(subsectors))}(model, name, subsectors, index, description)
+    IndexedAuxiliary(model::AbstractMPSGEModel, name::String, subsectors::AbstractArray{<:ScalarAuxiliary}, index; description::String = "") = new{length(axes(subsectors))}(model, name, subsectors, index, description)
 end
 
 const Auxiliary = Union{ScalarAuxiliary,IndexedAuxiliary}

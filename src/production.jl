@@ -138,12 +138,13 @@ function Production(
     for (C,netputs)∈netput_dict
         push!(M.commodities[C], sector)
         for n∈netputs
-            tax = taxes(n)
-            for t∈tax
-                if !haskey(tax_dict, tax_agent(t))
-                    tax_dict[tax_agent(t)] = []
+            tax_agents = unique(tax_agent.(taxes(n)))
+            
+            for t∈tax_agents
+                if !haskey(tax_dict, t)
+                    tax_dict[t] = []
                 end
-                push!(tax_dict[tax_agent(t)], n)
+                push!(tax_dict[t], n)
             end
         end
     end
