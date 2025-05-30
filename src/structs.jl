@@ -59,8 +59,12 @@ struct ScalarSector <: MPSGEScalarVariable
     model::AbstractMPSGEModel
     name::String
     description::String
-    ScalarSector(model::AbstractMPSGEModel, name::String; description::String = "") = new(model, name, description)
-    ScalarSector(model::AbstractMPSGEModel, name::Symbol; description::String = "") = new(model, string(name), description)
+    function ScalarSector(model::AbstractMPSGEModel, name::String; description::String = "", start = 1, upper_bound = Inf, lower_bound = 0)  
+        S = new(model, name, description)
+        add_variable!(model, S; start = start, upper_bound = upper_bound, lower_bound = lower_bound)
+        return S
+    end
+    ScalarSector(model::AbstractMPSGEModel, name::Symbol; description::String = "", start = 1, upper_bound=Inf, lower_bound = 0) = ScalarSector(model, string(name); description = description, start = start, upper_bound = upper_bound, lower_bound = lower_bound)
 end
 
 struct IndexedSector{N} <: MPSGEIndexedVariable{ScalarSector,N}
@@ -79,8 +83,12 @@ struct ScalarCommodity <: MPSGEScalarVariable
     model::AbstractMPSGEModel
     name::String
     description::String
-    ScalarCommodity(model::AbstractMPSGEModel, name::String; description::String = "") = new(model, name, description)
-    ScalarCommodity(model::AbstractMPSGEModel, name::Symbol; description::String = "") = new(model, string(name), description)
+    function ScalarCommodity(model::AbstractMPSGEModel, name::String; description::String = "", start=1, upper_bound=Inf, lower_bound = 0)
+        C = new(model, name, description)
+        add_variable!(model, C; start = start, upper_bound = upper_bound, lower_bound = lower_bound)
+        return C
+    end
+    ScalarCommodity(model::AbstractMPSGEModel, name::Symbol; description::String = "", start=1, upper_bound=Inf, lower_bound = 0  ) = ScalarCommodity(model, string(name); description = description, start=1, upper_bound=Inf, lower_bound = 0 )
 end
 
 struct IndexedCommodity{N} <: MPSGEIndexedVariable{ScalarCommodity,N}
@@ -100,8 +108,13 @@ struct ScalarConsumer <: MPSGEScalarVariable
     model::AbstractMPSGEModel
     name::String
     description::String
-    ScalarConsumer(model::AbstractMPSGEModel, name::String; description::String = "") = new(model, name, description)
-    ScalarConsumer(model::AbstractMPSGEModel, name::Symbol; description::String = "") = new(model, string(name), description)
+
+    function ScalarConsumer(model::AbstractMPSGEModel, name::String; description::String = "", start=1, upper_bound=Inf, lower_bound = 0)
+        C = new(model, name, description)
+        add_variable!(model, C; start = start, upper_bound = upper_bound, lower_bound = lower_bound)
+        return C
+    end
+    ScalarConsumer(model::AbstractMPSGEModel, name::Symbol; description::String = "", start=1, upper_bound=Inf, lower_bound = 0) = ScalarConsumer(model, string(name); description = description, start=1, upper_bound=Inf, lower_bound = 0)
 end
 
 struct IndexedConsumer{N} <: MPSGEIndexedVariable{ScalarConsumer,N}
@@ -126,7 +139,10 @@ mutable struct ScalarParameter <: MPSGEScalarVariable
             value::Number; 
             description::String = ""
             ) 
-        return new(model, name, value, description)
+        P = new(model, name, value, description)
+        add_variable!(model, P)
+        fix(P, value)
+        return P
     end
 end
 
@@ -170,8 +186,15 @@ struct ScalarAuxiliary <: MPSGEScalarVariable
     model::AbstractMPSGEModel
     name::String
     description::String
-    ScalarAuxiliary(model::AbstractMPSGEModel, name::String; description::String = "") = new(model, name, description)
-    ScalarAuxiliary(model::AbstractMPSGEModel, name::Symbol; description::String = "") = new(model, string(name), description)
+
+    function ScalarAuxiliary(model::AbstractMPSGEModel, name::String; description::String = "", start=0, upper_bound=Inf, lower_bound = -Inf)
+        A = new(model, name, description)
+        add_variable!(model, A; start = start, upper_bound = upper_bound, lower_bound = lower_bound)
+        return A
+    end
+
+    ScalarAuxiliary(model::AbstractMPSGEModel, name::Symbol; description::String = "", start=0, upper_bound=Inf, lower_bound = -Inf) = ScalarAuxiliary(model, string(name); description = description, start = start, upper_bound = upper_bound, lower_bound = lower_bound)
+
 end
 
 struct IndexedAuxiliary{N} <: MPSGEIndexedVariable{ScalarAuxiliary,N}

@@ -1,11 +1,32 @@
-__MPSGEVARIABLE_KWARGS__ = [:description]
-__MPSGEVARIABLE_KWARGS_DEFAULT__ = Dict(:description => "")
+__MPSGEVARIABLE_KWARGS__ = [:description, :start, :lower_bound, :upper_bound]
+__MPSGEVARIABLE_KWARGS_DEFAULT__ = Dict(
+        :description => "",
+        :start => 1.0,
+        :lower_bound => 0,
+        :upper_bound => Inf
+        )
+
+__MPSGEAUXILIARY_DEFAULTS__ = Dict(
+    :description => "",
+    :start => 0.0,
+    :lower_bound => -Inf,
+    :upper_bound => Inf
+)
 
 
 struct PreVariable
     name
     description
-    PreVariable(name; description = __MPSGEVARIABLE_KWARGS_DEFAULT__[:description]) = new(name, description)
+    start
+    lower_bound
+    upper_bound
+    PreVariable(
+        name; 
+        description = __MPSGEVARIABLE_KWARGS_DEFAULT__[:description],
+        start = __MPSGEVARIABLE_KWARGS_DEFAULT__[:start],
+        lower_bound = __MPSGEVARIABLE_KWARGS_DEFAULT__[:lower_bound],
+        upper_bound = __MPSGEVARIABLE_KWARGS_DEFAULT__[:upper_bound]
+        ) = new(name, description, start, lower_bound, upper_bound)
 end
 
 function parse_variable_arguments(
@@ -63,7 +84,10 @@ function build_MPSGEvariable(
     P = scalar_type(
         model,
         pre_parameter.name;
-        description = pre_parameter.description
+        description = pre_parameter.description,
+        start = pre_parameter.start,
+        lower_bound = pre_parameter.lower_bound,
+        upper_bound = pre_parameter.upper_bound
     )
     return P
 end
@@ -94,13 +118,15 @@ function parse_MPSGEvariable(
     input_args,
     scalar_type,
     indexed_type;
-    extra_code::Function = ((model, name) -> nothing)
+    extra_code::Function = ((model, name) -> nothing),
+    kwargs = __MPSGEVARIABLE_KWARGS__,
+    default_values = __MPSGEVARIABLE_KWARGS_DEFAULT__
 )
     args, kwargs = parse_variable_arguments(
         error_fn, 
         input_args; 
         num_positional_args = 2, 
-        valid_kwargs =  __MPSGEVARIABLE_KWARGS__
+        valid_kwargs =  kwargs
     )
 
     # Extract the model
@@ -116,6 +142,9 @@ function parse_MPSGEvariable(
         )
 
     description = get(kwargs, :description, "")
+    start = get(kwargs, :start, default_values[:start])
+    lower_bound = get(kwargs, :lower_bound, default_values[:lower_bound])
+    upper_bound = get(kwargs, :upper_bound, default_values[:upper_bound])
 
     #Build the name and base name
     name_expr = Containers.build_name_expr(name, index_vars, kwargs)
@@ -128,7 +157,10 @@ function parse_MPSGEvariable(
             try
                 PreVariable(
                     $name_expr;
-                    description = $description
+                    description = $description,
+                    start = $(esc(start)),
+                    lower_bound = $(esc(lower_bound)),
+                    upper_bound = $(esc(upper_bound))
                 )
             catch e
                 $error_fn("There is an issue with your inputs. Double check the " *
@@ -193,7 +225,9 @@ Additionally, multi-indexed sectors can be created by using the syntax
 ## Optional Arguments
 
 - `description`: Set a description on a variable. 
-
+- `start`: Set the starting value of the variable Default 1.0
+- `lower_bound`: Set the lower bound of the variable. Default 0.
+- `upper_bound`: Set the upper bound of the variable. Default `Inf`.
 ## Examples
 
 ```julia
@@ -203,7 +237,7 @@ R = Symbol.(:r, 1:5)
 G = Symbol.(:g, 1:5)
 M = MPSGEModel()
 
-@sector(M, S[region=R, goods=G], description="Sector with indexed variables")
+@sector(M, S[region=R, goods=G], description="Sector with indexed variables", start = 1.5)
 ```
 """
 macro sector(input_args...)
@@ -295,6 +329,9 @@ Additionally, multi-indexed commoditys can be created by using the syntax
 ## Optional Arguments
 
 - `description`: Set a description on a variable. 
+- `start`: Set the starting value of the variable Default 1.0
+- `lower_bound`: Set the lower bound of the variable. Default 0.
+- `upper_bound`: Set the upper bound of the variable. Default `Inf`.
 
 ## Examples
 
@@ -392,6 +429,9 @@ Additionally, multi-indexed consumers can be created by using the syntax
 ## Optional Arguments
 
 - `description`: Set a description on a variable. 
+- `start`: Set the starting value of the variable Default 1.0
+- `lower_bound`: Set the lower bound of the variable. Default 0.
+- `upper_bound`: Set the upper bound of the variable. Default `Inf`.
 
 ## Examples
 
@@ -486,6 +526,9 @@ Additionally, multi-indexed auxiliaries can be created by using the syntax
 ## Optional Arguments
 
 - `description`: Set a description on a variable. 
+- `start`: Set the starting value of the variable Default 0.0
+- `lower_bound`: Set the lower bound of the variable. Default `-Inf`.
+- `upper_bound`: Set the upper bound of the variable. Default `Inf`.
 
 ## Examples
 
@@ -516,7 +559,8 @@ macro auxiliary(input_args...)
         error_fn,
         input_args,
         ScalarAuxiliary,
-        IndexedAuxiliary
+        IndexedAuxiliary;
+        default_values = __MPSGEAUXILIARY_DEFAULTS__,
     )
 end
 
