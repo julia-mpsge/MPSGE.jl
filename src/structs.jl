@@ -384,19 +384,41 @@ end
 ################
 ## Production ##
 ################
-struct Production
+struct ScalarProduction
     sector::ScalarSector
     netputs::Dict{Commodity, Vector{Netput}}
     input::Union{Node, Nothing}
     output::Union{Node, Nothing}
     taxes::Dict{Consumer, Vector{Netput}}
+    function ScalarProduction(
+        sector::ScalarSector, 
+        netputs::Dict{Commodity, Vector{Netput}}, 
+        input::Union{Node, Nothing}, 
+        output::Union{Node, Nothing}, 
+        taxes::Dict{Consumer, Vector{Netput}}
+        ) 
+        
+        if !isnothing(input) && !isnothing(output)
+            P = new(sector, netputs, input, output, taxes)
+            M = model(sector)
+            for (commodity, _) in netputs
+                push!(M.commodities[commodity], sector)
+            end
+            return P
+        end
+        return nothing # This is going to cause issues eventually
+
+    end
 end
 
-sector(P::Production) = P.sector
-input(P::Production) = P.input
-output(P::Production) = P.output
-commodities(P::Production) = collect(keys(P.netputs))
-netputs(P::Production) = P.netputs
+
+
+
+sector(P::ScalarProduction) = P.sector
+input(P::ScalarProduction) = P.input
+output(P::ScalarProduction) = P.output
+commodities(P::ScalarProduction) = collect(keys(P.netputs))
+netputs(P::ScalarProduction) = P.netputs
 netputs(S::ScalarSector, C::ScalarCommodity) = !ismissing(production(S)) ? get(netputs(production(S)), C, []) : []
 function taxes(S::ScalarSector,H::ScalarConsumer)
     P = production(S)
@@ -406,9 +428,31 @@ function taxes(S::ScalarSector,H::ScalarConsumer)
     return P.taxes[H]
 end
 
+struct IndexedProduction{N} <: AbstractArray{ScalarProduction, N}
+    sector::IndexedSector
+    scalar_productions::AbstractArray{<:Union{ScalarProduction, Nothing},N}
+    index::Any
+    #IndexedProduction(sector::IndexedSector, scalar_productions::AbstractArray{<:UnionScalarProduction,N}, index) where N = new{N}(sector, scalar_productions, index)
+end
+
+sector(P::IndexedProduction) = P.sector
 
 
-function find_nodes(P; search = :all)
+Base.getindex(P::IndexedProduction, index...) = P.scalar_productions[index...]
+Base.getindex(P::IndexedProduction, idx::CartesianIndex) = P.scalar_productions[idx]
+
+Base.axes(P::IndexedProduction) = axes(P.scalar_productions)
+Base.size(P::IndexedProduction) = size(P.scalar_productions)
+Base.CartesianIndices(P::IndexedProduction) = CartesianIndices(P.scalar_productions)
+Base.length(P::IndexedProduction) = length(P.scalar_productions)
+Broadcast.broadcastable(P::IndexedProduction) = P.scalar_productions
+
+
+const Production = Union{ScalarProduction, IndexedProduction}
+
+
+
+function find_nodes(P::ScalarProduction; search = :all)
     out = Dict()
     nodes_to_search = []
     if search == :all
@@ -432,7 +476,7 @@ function find_nodes(P; search = :all)
 end
 
 
-function cost_function(P::Production, nest::Symbol; virtual = false, search = :all)
+function cost_function(P::ScalarProduction, nest::Symbol; virtual = false, search = :all)
     N = find_nodes(P; search = search)
     if haskey(N, nest)
         v = virtual ? :virtual : :full
@@ -454,7 +498,7 @@ commodity.
 
 If `virtual` is true, return the virtual cost functions.
 """
-cost_function(P::Production; virtual=false) = cost_function(P, name(input(P)), virtual=virtual)
+cost_function(P::ScalarProduction; virtual=false) = cost_function(P, name(input(P)), virtual=virtual)
 cost_function(S::ScalarSector, nest::Symbol; virtual = false) = cost_function(production(S), nest, virtual=virtual, search = :input)
 cost_function(S::ScalarSector; virtual = false) = cost_function(production(S), virtual=virtual)
 
@@ -473,7 +517,7 @@ commodity.
 If `virtual` is true, return the virtual revenue functions.
 
 """
-revenue_function(P::Production; virtual = false) = cost_function(P, name(output(P)), virtual = virtual, search = :output)
+revenue_function(P::ScalarProduction; virtual = false) = cost_function(P, name(output(P)), virtual = virtual, search = :output)
 revenue_function(S::ScalarSector, nest::Symbol; virtual = false) = cost_function(production(S), nest, virtual = virtual, search = :output)
 revenue_function(S::ScalarSector; virtual = false) = revenue_function(production(S); virtual = virtual)
 
@@ -594,14 +638,15 @@ constraint(C::AuxConstraint) = C.constraint
 mutable struct MPSGEModel <:AbstractMPSGEModel
     object_dict::Dict{Symbol,Any} # Contains only MPSGEVariables?
     jump_model::Union{JuMP.Model,Nothing}
-    productions::Dict{ScalarSector,Production} # all scalars
+    raw_productions::Dict{Symbol, Production} # all productions
+    productions::Dict{ScalarSector,ScalarProduction} # all scalars
     demands::Dict{ScalarConsumer,Demand}
     commodities::Dict{ScalarCommodity,Vector{ScalarSector}} # Generated when production is added
     endowments::Dict{ScalarCommodity, Vector{ScalarConsumer}}
     final_demands::Dict{ScalarCommodity, Vector{ScalarConsumer}}
     auxiliaries::Dict{ScalarAuxiliary, AuxConstraint}
     silent::Bool
-    MPSGEModel() = new(Dict(),direct_model(PATHSolver.Optimizer()),Dict(),Dict(),Dict(),Dict(),Dict(),Dict(),false)
+    MPSGEModel() = new(Dict(),direct_model(PATHSolver.Optimizer()),Dict(),Dict(),Dict(),Dict(),Dict(),Dict(),Dict(),false)
 end
 
 #Getters
@@ -633,6 +678,7 @@ raw_commodities(m::MPSGEModel) = [s for (_,s) in m.object_dict if isa(s,Commodit
 raw_consumers(m::MPSGEModel) = [s for (_,s) in m.object_dict if isa(s,Consumer)]
 raw_parameters(m::MPSGEModel) = [s for (_,s) in m.object_dict if isa(s,Parameter)]
 raw_auxiliaries(m::MPSGEModel) = [s for (_,s) in m.object_dict if isa(s,Auxiliary)]
+raw_production(m::MPSGEModel) = [s for (_,s) in m.raw_productions]
 
 """
     sectors(m::MPSGEModel)

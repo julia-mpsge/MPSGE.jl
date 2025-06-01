@@ -114,6 +114,18 @@ function parse_nest_parent(
     return (name, index_vars)
 end
 
+
+function build_nest_expr(input_nest_expr, source)
+    nests = :(Any[])
+    for nest in input_nest_expr.args
+        a = MPSGE.build_nest_and_parent(nest, source)
+        push!(nests.args, :($a))
+    end
+    return nests
+end
+
+
+
 """
     build_nest_and_parent(nest_arg::Expr, source)
 

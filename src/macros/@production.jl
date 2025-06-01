@@ -64,10 +64,27 @@ end
 ##########################
 
 struct PreProduction
-    model
     sector
     nests
     netputs
+end
+
+
+function build_sector_expr(
+    name::Union{Symbol,Nothing},
+    index_vars::Vector,
+    kwargs::Dict{Symbol,Any},
+)
+    base_name = esc(name)
+
+    if isempty(index_vars) || base_name == ""
+        return base_name
+    end
+    expr = Expr(:ref, base_name)
+    for index in index_vars
+        push!(expr.args, :($(esc(index))))
+    end
+    return expr
 end
 
 """
@@ -141,29 +158,51 @@ macro production(input_args...)
         )
 
     model = esc(args[1])
-    sector = esc(args[2])
-    #sector_name, index_vars, indices = Containers.parse_ref_sets(error_fn, args[2])
-
-    #sector_name_expr = Containers.build_name_expr(sector_name, index_vars, kwargs)
-    #sector_base_name = string(sector_name)
+    sector, index_vars, indices = Containers.parse_ref_sets(error_fn, args[2])
+    sector_name_expr = build_sector_expr(sector, index_vars, kwargs)
+    #sector_base_name = string(sector)
     
-    nestings = args[3]
-    nests = :(Any[])
-    for nest in nestings.args
-        a = MPSGE.build_nest_and_parent(nest, __source__)
-        push!(nests.args, :($a))
-    end
+    nests = build_nest_expr(args[3], __source__)
 
+    # Extract netputs
     netputs = :(Any[])
     for netput in args[4].args
-        if !(netput isa LineNumberNode)#!Meta.isexpr(netput, :LineNumberNode)
+        if !Meta.isexpr(netput, :LineNumberNode)
             push!(netputs.args, :($(esc(netput))))
         end
     end
 
-    P = :(build_production($error_fn, $sector, MPSGE.create_nodes($model, $nests), $(netputs)))
+    build_production_sectors = JuMP.Containers.container_code(
+        index_vars,
+        indices,
+        quote
+            try
+                PreProduction(
+                    $sector_name_expr,
+                    $nests,
+                    $netputs
+                )
+            catch e
+                $error_fn("Error in nest macro: $(e)")
+            end
+        end,
+        :DenseAxisArray
+    )
 
-    return :(add_production!($model, $P))
+   # return sector_name_expr
+
+    production_code = quote
+        P = build_production(
+            $error_fn,
+            $model,
+            $index_vars,
+            $(esc(sector)),
+            $build_production_sectors
+        )
+        add_production!($model, P)
+    end
+
+    return production_code
 end
 
 
@@ -187,7 +226,53 @@ function flatten_netputs(netputs::Vector{Any})
     return out
 end
 
-function build_production(error_fn::Function, sector, node_structure, all_netputs)
+
+function build_production(
+        error_fn::Function,
+        model::MPSGEModel,
+        index_vars::Vector{Any},
+        base_sector::Sector,
+        pre_preduction::PreProduction
+        )
+
+    sector = pre_preduction.sector
+    nests = pre_preduction.nests
+    netputs = pre_preduction.netputs
+
+    return ScalarProduction(
+        error_fn, 
+        sector, 
+        MPSGE.create_nodes(model, nests), 
+        netputs
+    )
+
+end
+
+# Currently returns a dense axis array of scalar productions
+function build_production(
+        error_fn::Function,
+        model::MPSGEModel,
+        index_vars::Vector{Any},
+        base_sector::Sector,
+        pre_production::AbstractArray{<:PreProduction}
+        )
+
+    P =  build_production.(error_fn, Ref(model), Ref(index_vars), Ref(base_sector), pre_production)
+    #return P
+    return IndexedProduction(base_sector, P, index_vars)
+end
+
+
+
+
+
+
+function ScalarProduction(
+        error_fn::Function, 
+        sector, 
+        node_structure, 
+        all_netputs
+        )
 
     nodes, root_nodes = node_structure
     netputs = flatten_netputs(all_netputs)
@@ -235,7 +320,7 @@ function build_production(error_fn::Function, sector, node_structure, all_netput
 
 
 
-    return Production(sector, netputs_by_commodity, input_tree, output_tree, netputs_by_consumer)
+    return ScalarProduction(sector, netputs_by_commodity, input_tree, output_tree, netputs_by_consumer)
 end
 
 

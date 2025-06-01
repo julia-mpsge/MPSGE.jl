@@ -108,15 +108,23 @@ end
 ## Production/Demand ##
 #######################
 
-function add_production!(model::MPSGEModel, P::Production)
-    if !isnothing(input(P)) && !isnothing(output(P))
-        model.productions[sector(P)] = P
-        for (commodity, _) in netputs(P)
-            push!(model.commodities[commodity], sector(P))
-        end
-        return P
-    end
-    return nothing
+function add_production!(model::MPSGEModel, P::ScalarProduction)
+    #if !isnothing(input(P)) && !isnothing(output(P))
+    #    model.productions[sector(P)] = P
+    #    for (commodity, _) in netputs(P)
+    #        push!(model.commodities[commodity], sector(P))
+    #    end
+    #    return P
+    #end
+    #return nothing
+    model.productions[sector(P)] = P
+    model.raw_productions[name(sector(P))] = P
+    return P
+end
+
+function add_production!(model::MPSGEModel, P::IndexedProduction)
+    model.raw_productions[name(sector(P))] = P
+    return P
 end
 
 function add_demand!(M::MPSGEModel,H::ScalarConsumer,demand_flow::Vector{abstractDemandFlow};elasticity::Union{Real,ScalarParameter} = 1)
