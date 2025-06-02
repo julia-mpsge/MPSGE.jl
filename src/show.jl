@@ -35,9 +35,7 @@ function Base.show(io::IO,M::MPSGEModel)
 
     println(io,"")
 
-    for (_,p)∈M.raw_productions
-        println(io,p)
-    end
+    println.(io, raw_productions(M))
 
     for (_,d)∈M.demands
         println(io,d)

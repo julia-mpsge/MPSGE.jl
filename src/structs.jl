@@ -638,15 +638,14 @@ constraint(C::AuxConstraint) = C.constraint
 mutable struct MPSGEModel <:AbstractMPSGEModel
     object_dict::Dict{Symbol,Any} # Contains only MPSGEVariables?
     jump_model::Union{JuMP.Model,Nothing}
-    raw_productions::Dict{Symbol, Production} # all productions
-    productions::Dict{ScalarSector,ScalarProduction} # all scalars
+    productions::Dict{Symbol, Production} # all scalars
     demands::Dict{ScalarConsumer,Demand}
     commodities::Dict{ScalarCommodity,Vector{ScalarSector}} # Generated when production is added
     endowments::Dict{ScalarCommodity, Vector{ScalarConsumer}}
     final_demands::Dict{ScalarCommodity, Vector{ScalarConsumer}}
     auxiliaries::Dict{ScalarAuxiliary, AuxConstraint}
     silent::Bool
-    MPSGEModel() = new(Dict(),direct_model(PATHSolver.Optimizer()),Dict(),Dict(),Dict(),Dict(),Dict(),Dict(),Dict(),false)
+    MPSGEModel() = new(Dict(),direct_model(PATHSolver.Optimizer()),Dict(),Dict(),Dict(),Dict(),Dict(),Dict(),false)
 end
 
 #Getters
@@ -669,7 +668,8 @@ Takes a variable and extracts it the sub-variables.
 """
 extract_scalars(S::MPSGEScalarVariable) = [S]
 extract_scalars(S::MPSGEIndexedVariable) = S.subsectors.data
-
+extract_scalars(P::ScalarProduction) = [P]
+extract_scalars(P::IndexedProduction) = P.scalar_productions.data
 
 ## Variables 
 
@@ -678,7 +678,17 @@ raw_commodities(m::MPSGEModel) = [s for (_,s) in m.object_dict if isa(s,Commodit
 raw_consumers(m::MPSGEModel) = [s for (_,s) in m.object_dict if isa(s,Consumer)]
 raw_parameters(m::MPSGEModel) = [s for (_,s) in m.object_dict if isa(s,Parameter)]
 raw_auxiliaries(m::MPSGEModel) = [s for (_,s) in m.object_dict if isa(s,Auxiliary)]
-raw_production(m::MPSGEModel) = [s for (_,s) in m.raw_productions]
+raw_productions(m::MPSGEModel) = [p for (_,p) in m.productions]
+
+
+
+function productions(m::MPSGEModel)
+    X = raw_productions(m) |>
+        x -> extract_scalars.(x) |>  
+        x -> Iterators.flatten(x) |>
+        x -> collect(x)
+    return X
+end
 
 """
     sectors(m::MPSGEModel)
@@ -776,10 +786,11 @@ end
 
 
 ## Production
-function production(S::ScalarSector) #Key errors are possible
+function production(S::Sector) #Key errors are possible
     M = model(S)
-    if haskey(M.productions, S)
-        return M.productions[S]
+    sector_name = name(S)
+    if haskey(M.productions, sector_name)
+        return M.productions[sector_name]
     end
     return missing
 end
