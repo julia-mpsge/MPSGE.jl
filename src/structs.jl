@@ -638,7 +638,7 @@ constraint(C::AuxConstraint) = C.constraint
 mutable struct MPSGEModel <:AbstractMPSGEModel
     object_dict::Dict{Symbol,Any} # Contains only MPSGEVariables?
     jump_model::Union{JuMP.Model,Nothing}
-    productions::Dict{Symbol, Production} # all scalars
+    productions::Dict{Symbol, Production} # all Productions
     demands::Dict{ScalarConsumer,Demand}
     commodities::Dict{ScalarCommodity,Vector{ScalarSector}} # Generated when production is added
     endowments::Dict{ScalarCommodity, Vector{ScalarConsumer}}
@@ -686,8 +686,16 @@ function productions(m::MPSGEModel)
     X = raw_productions(m) |>
         x -> extract_scalars.(x) |>  
         x -> Iterators.flatten(x) |>
-        x -> collect(x)
+        x -> collect(x) |>
+        x -> filter(x -> !isnothing(x), x)
     return X
+end
+
+
+function scalar_production_dict(M::MPSGEModel) 
+
+    return Dict(name(sector(p)) => p for p∈productions(M))
+    
 end
 
 """
@@ -713,7 +721,8 @@ These are coming from a dictionary, so order is not guaranteed.
 This is primarily used when generating constraints.
 """
 function production_sectors(m::MPSGEModel)
-    return collect(keys(m.productions))
+    return sector.(productions(m))
+    #return collect(keys(m.productions))
 end
 
 """
@@ -789,9 +798,7 @@ end
 function production(S::Sector) #Key errors are possible
     M = model(S)
     sector_name = name(S)
-    if haskey(M.productions, sector_name)
-        return M.productions[sector_name]
-    end
-    return missing
+    P = scalar_production_dict(M)
+    get(P, sector_name, missing)
 end
 
