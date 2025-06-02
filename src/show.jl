@@ -35,7 +35,7 @@ function Base.show(io::IO,M::MPSGEModel)
 
     println(io,"")
 
-    for (_,p)∈M.productions
+    for (_,p)∈M.raw_productions
         println(io,p)
     end
 
@@ -102,6 +102,13 @@ function Base.show(io::IO, P::ScalarProduction)
     print(io,"$(input(P))")
 end
 
+
+function Base.show(io::IO, P::IndexedProduction)
+    println(io, "\$Production: $(sector(P))")
+    #println(io, "$(output(P))")
+    #print(io, "$(input(P))")
+end
+
 function Base.show(io::IO,E::ScalarFinalDemand)
     print(io,"D: $(commodity(E))    Q: $(quantity(E))")
 end
@@ -135,6 +142,10 @@ function Base.print_array(io::IO, X::IndexedNest)
     return Base.print_array(io, X.subsectors)
 end
 
+
+function Base.print_array(io::IO, P::IndexedProduction)
+    print(io, P.scalar_productions)
+end
 
 function Base.show(io::IO, N::ScalarNest)
     print(io, N.name)
