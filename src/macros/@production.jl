@@ -3,11 +3,16 @@
 #####################
 
 function prune!(T::Netput)
-    if quantity(T) != 0
+    if quantity(T) != 0 && base_quantity(T) != 0
         return T
     else
         return nothing
     end
+end
+
+
+function prune!(T::AbstractVector{<:Netput})
+    return prune!.(T)
 end
 
 function prune!(T::Node)
@@ -240,6 +245,9 @@ function ScalarProduction(
     (input_tree, output_tree) = netput_sign(root_nodes[1]) == -1 ? (root_nodes[1], root_nodes[2]) : (root_nodes[2], root_nodes[1])
     input_tree = prune!(input_tree)
     output_tree = prune!(output_tree)
+    netputs = filter(x -> !isnothing(x), prune!(netputs))
+
+    #return netputs
 
     if xor(isnothing(input_tree), isnothing(output_tree))
         error_fn("Input and output trees must be both present or both absent for sector $sector")
