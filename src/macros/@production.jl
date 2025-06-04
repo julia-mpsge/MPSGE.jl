@@ -24,32 +24,32 @@ end
 #############################
 
 
-function cobb_douglass(N::MPSGE.Node; virtual = :full, cf = cost_function)
-    sign = MPSGE.netput_sign(N)
-    return prod(cf(child; virtual = virtual)^(quantity(child)/quantity(N)) for child in MPSGE.children(N); init=1)
+function cobb_douglass(N::Node; virtual = :full, cf = cost_function)
+    sign = netput_sign(N)
+    return prod(cf(child; virtual = virtual)^(quantity(child)/quantity(N)) for child in children(N); init=1)
 end
 
-function CES(N::MPSGE.Node; virtual = :full,  cf = cost_function)
-    sign = MPSGE.netput_sign(N)
-    return sum(quantity(child)/quantity(N) * cf(child; virtual = virtual)^(1+sign*MPSGE.elasticity(N)) for child in MPSGE.children(N); init=0) ^ (1/(1+sign*MPSGE.elasticity(N)))
+function CES(N::Node; virtual = :full,  cf = cost_function)
+    sign = netput_sign(N)
+    return sum(quantity(child)/quantity(N) * cf(child; virtual = virtual)^(1+sign*elasticity(N)) for child in children(N); init=0) ^ (1/(1+sign*elasticity(N)))
 end
 
 
-function build_cost_function(tree::MPSGE.Netput; virtual = :full)
+function build_cost_function(tree::Netput; virtual = :full)
     return cost_function(tree)
 end
 
-function build_cost_function(N::MPSGE.Node; virtual = :full)
+function build_cost_function(N::Node; virtual = :full)
 
     # If the cost function exists, return it
     if !isnothing(N.cost_function_virtual)
-        return MPSGE.cost_function(N, virtual = :virtual)
+        return cost_function(N, virtual = :virtual)
     end
 
     cost_function = MPSGE.cost_function(N; virtual = :partial, cf = build_cost_function)
 
     if isnothing(N.cost_function_virtual)
-        jm = MPSGE.jump_model(MPSGE.model(N))
+        jm = jump_model(model(N))
         N.cost_function_virtual = @variable(jm, start = value(start_value, cost_function)) 
         N.cost_function = cost_function
         @constraint(jm, N.cost_function_virtual - cost_function ⟂ N.cost_function_virtual)
@@ -149,13 +149,15 @@ macro production(input_args...)
     
     nests = build_nest_expr(args[3], __source__)
 
+
     # Extract netputs
     netputs = :(Any[])
     for netput in args[4].args
-        if !Meta.isexpr(netput, :LineNumberNode)
+        if !isa(netput, LineNumberNode)
             push!(netputs.args, :($(esc(netput))))
         end
     end
+
 
     build_production_sectors = JuMP.Containers.container_code(
         index_vars,
@@ -174,8 +176,6 @@ macro production(input_args...)
         :DenseAxisArray
     )
 
-   # return sector_name_expr
-
     production_code = quote
         P = build_production(
             $error_fn,
@@ -184,7 +184,7 @@ macro production(input_args...)
             $(esc(sector)),
             $build_production_sectors
         )
-        add_production!($model, P)
+       add_production!($model, P)
     end
 
     return production_code
@@ -206,12 +206,9 @@ function build_production(
     return ScalarProduction(
         error_fn, 
         sector, 
-        MPSGE.create_nodes(model, nests), 
+        create_nodes(model, nests), 
         netputs
     )
-
-    return sector
-
 end
 
 # Currently returns a dense axis array of scalar productions
@@ -224,42 +221,8 @@ function build_production(
         )
 
     P =  build_production.(error_fn, Ref(model), Ref(index_vars), Ref(base_sector), pre_production)
-    #return P
     return IndexedProduction(base_sector, P, index_vars)
-
-    #return build_production.(error_fn, Ref(model), Ref(index_vars), Ref(base_sector), pre_production)
 end
-
-
-
-
-
-
-
-
-
-function assign_netputs_to_node(N::MPSGE.NetputParent, nodes::Dict{Symbol, MPSGE.Node})
-    netput = N.netput
-    parent = N.parent
-    node = nodes[parent]
-    
-    MPSGE.set_parent!(netput, node; add_child = true)
-end
-
-function flatten_netputs(netputs::Vector{Any})
-    out = []
-    for netput in netputs
-        if netput isa MPSGE.NetputParent
-            push!(out, netput)
-        elseif netput isa AbstractArray{<:MPSGE.NetputParent}
-            append!(out, vec(netput.data))
-        end
-    end
-    return out
-end
-
-
-
 
 
 function ScalarProduction(
@@ -270,14 +233,13 @@ function ScalarProduction(
         )
 
     nodes, root_nodes = node_structure
-    netputs = flatten_netputs(all_netputs)
 
-    assign_netputs_to_node.(netputs, Ref(nodes))
+    netputs = build_netput.(all_netputs, Ref(nodes))
 
     # identify input and output trees - Should verify all signs are the same in the tree
-    (input_tree, output_tree) = MPSGE.netput_sign(root_nodes[1]) == -1 ? (root_nodes[1], root_nodes[2]) : (root_nodes[2], root_nodes[1])
-    input_tree = MPSGE.prune!(input_tree)
-    output_tree = MPSGE.prune!(output_tree)
+    (input_tree, output_tree) = netput_sign(root_nodes[1]) == -1 ? (root_nodes[1], root_nodes[2]) : (root_nodes[2], root_nodes[1])
+    input_tree = prune!(input_tree)
+    output_tree = prune!(output_tree)
 
     if xor(isnothing(input_tree), isnothing(output_tree))
         error_fn("Input and output trees must be both present or both absent for sector $sector")
@@ -290,38 +252,74 @@ function ScalarProduction(
     end
     
     # Is this not pruning?
-    netputs = filter(y -> base_quantity(y.netput) != 0, netputs)
+    #netputs = filter(y -> base_quantity(y.netput) != 0, netputs)
 
-    netputs_by_commodity = Dict{MPSGE.Commodity, Vector{MPSGE.Netput}}()
-    netputs_by_consumer = Dict{MPSGE.Consumer, Vector{MPSGE.Netput}}()
+    netputs_by_commodity = Dict{Commodity, Vector{Netput}}()
+    taxes_by_consumer = Dict{Consumer, Vector{Netput}}()
 
     # To Do: Break into functions
-    for netput_parent in netputs
-        netput = netput_parent.netput
-        commodity = MPSGE.commodity(netput)
-        if !haskey(netputs_by_commodity, commodity)
-            netputs_by_commodity[commodity] = Vector{MPSGE.Netput}()
-        end
-        push!(netputs_by_commodity[commodity], netput)
-
-        for tax in MPSGE.taxes(netput)
-            consumer = MPSGE.tax_agent(tax)
-            if !haskey(netputs_by_consumer, consumer)
-                netputs_by_consumer[consumer] = Vector{MPSGE.Netput}()
-            end
-            if netput ∉ netputs_by_consumer[consumer]
-                push!(netputs_by_consumer[consumer], netput)
-            end
-            #push!(netputs_by_consumer[consumer], netput)
-        end
+    for netput in netputs
+        add_netputs_by_commodity!(netputs_by_commodity, netput)
+        add_taxes_by_consumer!(taxes_by_consumer, netput)
     end
+    
 
 
-
-    return ScalarProduction(sector, netputs_by_commodity, input_tree, output_tree, netputs_by_consumer)
+    return ScalarProduction(sector, netputs_by_commodity, input_tree, output_tree, taxes_by_consumer)
 end
 
 
 
+function add_netputs_by_commodity!(
+        netputs_by_commodity::Dict{Commodity, Vector{Netput}},
+        netput::Netput
+        )
+
+    C = commodity(netput)
+    if !haskey(netputs_by_commodity, C)
+        netputs_by_commodity[C] = Vector{Netput}()
+    end
+    push!(netputs_by_commodity[C], netput)
+
+    return netputs_by_commodity
+end
+
+function add_netputs_by_commodity!(
+        netputs_by_commodity::Dict{Commodity, Vector{Netput}},
+        netputs::AbstractArray{<:Netput}
+        )
+
+    add_netputs_by_commodity!.(Ref(netputs_by_commodity), netputs)
+
+    return netputs_by_commodity
+end
 
 
+function add_taxes_by_consumer!(
+        taxes_by_consumer::Dict{Consumer, Vector{Netput}},
+        netput::Netput
+        )
+
+    for tax in taxes(netput)
+        consumer = tax_agent(tax)
+        if !haskey(taxes_by_consumer, consumer)
+            taxes_by_consumer[consumer] = Vector{Netput}()
+        end
+        if netput ∉ taxes_by_consumer[consumer]
+            push!(taxes_by_consumer[consumer], netput)
+        end
+    end
+
+    return taxes_by_consumer
+end
+
+
+function add_taxes_by_consumer!(
+        taxes_by_consumer::Dict{Consumer, Vector{Netput}},
+        netputs::AbstractArray{<:Netput}
+        )
+
+    add_taxes_by_consumer!.(Ref(taxes_by_consumer), netputs)
+
+    return taxes_by_consumer
+end

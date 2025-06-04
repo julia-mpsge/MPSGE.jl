@@ -6,24 +6,10 @@ struct PreNetput
     nest::Any
     taxes::Any
     reference_price::Any
+    netput_type::Any
 end
 
 
-
-
-function build_netput(error_fn::Function, netput::PreNetput, netput_fn::DataType)
-    return netput_fn(
-        netput.commodity,
-        netput.quantity,
-        reference_price = netput.reference_price,
-        taxes = netput.taxes,
-    )
-end
-
-
-function build_netput(error_fn::Function, netputs::AbstractArray{<:PreNetput}, netput_fn::DataType)
-    build_netput.(error_fn, netputs, netput_fn)
-end
 
 # Used and safe
 function parse_netput_macro_arguments(
@@ -58,21 +44,6 @@ function parse_netput_macro_arguments(
 
 end
 
-struct NetputParent
-    netput::Netput
-    parent::Symbol
-    NetputParent(netput::Netput, Parent::String) = new(netput, Symbol(Parent))
-    NetputParent(test) = new(test[1], test[2])
-end
-
-
-function create_netput_list(N::MPSGE.Netput, P::String)
-    return MPSGE.NetputParent(N, P)
-end
-
-function create_netput_list(N::AbstractArray{<:MPSGE.Netput}, P::AbstractArray{String})
-    return create_netput_list.(N,P)
-end
 
 """
     parse_netput(error_fn::Function, netput_arg::Any)
@@ -85,7 +56,7 @@ Main code that goes in the macro
 """
 function parse_netput(error_fn::Function, netput_arg::Any, netput_fn::DataType)
 
-    args, kwargs = MPSGE.parse_netput_macro_arguments(
+    args, kwargs = parse_netput_macro_arguments(
         error_fn,
         netput_arg,
         netput_fn;
@@ -99,52 +70,34 @@ function parse_netput(error_fn::Function, netput_arg::Any, netput_fn::DataType)
     taxes = get(kwargs, :taxes, [])
     reference_price = get(kwargs, :reference_price, 1)
 
-    x, index_vars, indices, all_indices = MPSGE.parse_ref_sets(error_fn, commodity)
-    commodity_name_expr = MPSGE.build_name_expr(x, all_indices, kwargs)
+    x, index_vars, indices, all_indices = parse_ref_sets(error_fn, commodity)
+    commodity_name_expr = build_name_expr(x, all_indices, kwargs)
 
     # Check that the nest doesn't have an iterable index
-    N, nest_index_vars, _, nest_index = MPSGE.parse_ref_sets(error_fn, nest)
+    N, nest_index_vars, _, nest_index = parse_ref_sets(error_fn, nest)
     if !isempty(nest_index_vars) 
         error_fn("Nests must not have index variables. Got: $nest_index_vars") # Improve
     end
 
-
+    nest_name = build_string_expr(N, nest_index, kwargs) # Error prone if index are not references
 
     build_code = JuMP.Containers.container_code(
         index_vars,
         indices,
         quote
-            MPSGE.PreNetput(
+            PreNetput(
                 $commodity_name_expr,
                 $(esc(quantity)),
-                1, #$(esc(nest)),  # Revist this little guy
+                $nest_name,  # Revist this little guy
                 $(esc(taxes)),
-                $(esc(reference_price))
+                $(esc(reference_price)),
+                $(esc(netput_fn))
             )
         end,
         :DenseAxisArray
     )
 
-    netput_code = quote
-        try
-            MPSGE.build_netput(
-                $error_fn,
-                $build_code,
-                $netput_fn
-                )
-        catch e
-            $error_fn("Error in netput macro: $(e)")
-        end
-    end
-
-    nest_code = MPSGE.parent_container(
-        error_fn,
-        nest,
-        index_vars,
-        indices
-    )
-
-    return :(create_netput_list($netput_code, $nest_code))
+    return build_code
 
 end
 
@@ -183,7 +136,7 @@ for a sector.
 """
 macro input(input_args...)
     error_fn = Containers.build_error_fn("input", input_args, __source__)
-    return MPSGE.parse_netput(error_fn, input_args, MPSGE.Input)
+    return parse_netput(error_fn, input_args, Input)
 end
 
 
@@ -221,5 +174,33 @@ for a sector.
 """
 macro output(input_args...)
     error_fn = Containers.build_error_fn("output", input_args, __source__)
-    return MPSGE.parse_netput(error_fn, input_args, MPSGE.Output)
+    return parse_netput(error_fn, input_args, Output)
+end
+
+
+
+
+function build_netput(netput::PreNetput, nodes)
+    commodity = netput.commodity
+    quantity = netput.quantity
+    nest = Symbol(netput.nest)
+    taxes = netput.taxes
+    reference_price = netput.reference_price
+    netput_fn = netput.netput_type
+
+    parent = nodes[nest]
+
+    N = netput_fn(commodity, quantity, parent; taxes = taxes, reference_price = reference_price)
+    set_sign(parent,N)#; add_child = true)
+
+    push!(parent.children, N)
+
+
+    return N
+
+end
+
+
+function build_netput(netput::AbstractArray{<:PreNetput}, nodes)
+    build_netput.(netput, Ref(nodes))
 end

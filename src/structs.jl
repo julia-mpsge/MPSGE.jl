@@ -351,7 +351,7 @@ children(N::Netput) = []
 parent(N::Netput) = N.parents
 netput_sign(N::Netput) = N.netput_sign
     
-mutable struct Input <: Netput 
+struct Input <: Netput 
     commodity::ScalarCommodity
     quantity::MPSGEquantity
     reference_price::MPSGEquantity
@@ -359,13 +359,14 @@ mutable struct Input <: Netput
     parents::Vector{Node}
     netput_sign::Int
     Input( commodity::ScalarCommodity,
-            quantity::MPSGEquantity;
+            quantity::MPSGEquantity,
+            parent_nest::Node;
             reference_price::MPSGEquantity=1,
             taxes = [],
-    ) = new(commodity, quantity, reference_price, taxes, [], -1)
+    ) = new(commodity, quantity, reference_price, taxes, [parent_nest], -1)
 end
 
-mutable struct Output <: Netput 
+struct Output <: Netput 
     commodity::ScalarCommodity
     quantity::MPSGEquantity
     reference_price::MPSGEquantity
@@ -374,10 +375,11 @@ mutable struct Output <: Netput
     #cost_function::MPSGEquantity
     netput_sign::Int
     Output(commodity::ScalarCommodity,
-            quantity::MPSGEquantity;
+            quantity::MPSGEquantity,
+            parent_nest::Node;
             reference_price::MPSGEquantity=1,
             taxes = [],
-    ) = new(commodity, quantity, reference_price, taxes, [], 1)
+    ) = new(commodity, quantity, reference_price, taxes, [parent_nest], 1)
 end
 
 

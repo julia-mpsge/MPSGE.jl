@@ -159,3 +159,27 @@ function build_name_expr(
     end
     return expr
 end
+
+
+function build_string_expr(
+    name::Union{Symbol,Nothing},
+    index_vars::Vector,
+    kwargs::Dict{Symbol,Any},
+)
+
+    base_name = get(kwargs, :base_name, string(something(name, "")))
+    if !(base_name isa String)
+        base_name = esc(name)
+    end
+
+    if isempty(index_vars) || base_name == ""
+        return base_name
+    end
+    expr = Expr(:call, :string, base_name, "[")
+    for index in index_vars
+        push!(expr.args, :(string($index)))
+        push!(expr.args, ", ")
+    end
+    expr.args[end] = "]"  # Replace the last ", " with "]"
+    return expr
+end
