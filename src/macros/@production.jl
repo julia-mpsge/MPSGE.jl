@@ -70,22 +70,7 @@ struct PreProduction
 end
 
 
-function build_sector_expr(
-    name::Union{Symbol,Nothing},
-    index_vars::Vector,
-    kwargs::Dict{Symbol,Any},
-)
-    base_name = esc(name)
 
-    if isempty(index_vars) || base_name == ""
-        return base_name
-    end
-    expr = Expr(:ref, base_name)
-    for index in index_vars
-        push!(expr.args, :($(esc(index))))
-    end
-    return expr
-end
 
 """
     @production(model, sector, nestings, netputs)
@@ -158,9 +143,9 @@ macro production(input_args...)
         )
 
     model = esc(args[1])
-    sector, index_vars, indices = Containers.parse_ref_sets(error_fn, args[2])
-    sector_name_expr = build_sector_expr(sector, index_vars, kwargs)
-    #sector_base_name = string(sector)
+
+    sector, index_vars, indices, all_indices = parse_ref_sets(error_fn, args[2])
+    sector_name_expr = build_name_expr(sector, all_indices, kwargs)
     
     nests = build_nest_expr(args[3], __source__)
 
@@ -229,9 +214,9 @@ end
 
 function build_production(
         error_fn::Function,
-        model::MPSGEModel,
+        model,
         index_vars::Vector{Any},
-        base_sector::Sector,
+        base_sector,
         pre_preduction::PreProduction
         )
 
@@ -246,25 +231,25 @@ function build_production(
         netputs
     )
 
+    return sector
+
 end
 
 # Currently returns a dense axis array of scalar productions
 function build_production(
         error_fn::Function,
-        model::MPSGEModel,
+        model,
         index_vars::Vector{Any},
-        base_sector::Sector,
+        base_sector,
         pre_production::AbstractArray{<:PreProduction}
         )
 
     P =  build_production.(error_fn, Ref(model), Ref(index_vars), Ref(base_sector), pre_production)
     #return P
     return IndexedProduction(base_sector, P, index_vars)
+
+    #return build_production.(error_fn, Ref(model), Ref(index_vars), Ref(base_sector), pre_production)
 end
-
-
-
-
 
 
 function ScalarProduction(
@@ -322,6 +307,8 @@ function ScalarProduction(
 
     return ScalarProduction(sector, netputs_by_commodity, input_tree, output_tree, netputs_by_consumer)
 end
+
+
 
 
 

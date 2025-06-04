@@ -22,7 +22,15 @@ function parse_netput_commodity_index_vars(error_fn::Function, expr::Expr)
     return Expr(:vect, expr) 
 end
 
+# When the input is just a symbol
+parse_netput_commodity_index_vars(error_fn::Function, input::QuoteNode) = Expr(:vect, input)
+function parse_netput_commodity_index_vars(error_fn::Function, input::GlobalRef) 
+    return input
+end
+
 parse_netput_commodity_index_vars(error_fn::Function, input) = Expr(:vect, input)
+
+
 
 """
     parse_netput_commodity(error_fn::Function, expr::Expr)

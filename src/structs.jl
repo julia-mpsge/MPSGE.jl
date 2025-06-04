@@ -651,7 +651,6 @@ end
 #Getters
 object_dict(M::MPSGEModel) = M.object_dict
 jump_model(M::MPSGEModel) = M.jump_model
-productions(M::MPSGEModel) = M.productions
 demands(M::MPSGEModel) = M.demands
 aux_constraints(M::MPSGEModel) = M.auxiliaries
 Base.getindex(M::MPSGEModel,key::Symbol) = M.object_dict[key]

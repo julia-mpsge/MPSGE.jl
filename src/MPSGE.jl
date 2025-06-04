@@ -13,6 +13,9 @@ include("model.jl")
 
 
 include("macros.jl")
+
+include("macros/macro_parser.jl")
+
 include("macros/@parameter.jl")
 include("macros/nests.jl")
 include("macros/@netput.jl")
