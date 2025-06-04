@@ -191,27 +191,6 @@ macro production(input_args...)
 end
 
 
-function assign_netputs_to_node(N::MPSGE.NetputParent, nodes::Dict{Symbol, MPSGE.Node})
-    netput = N.netput
-    parent = N.parent
-    node = nodes[parent]
-    
-    MPSGE.set_parent!(netput, node; add_child = true)
-end
-
-function flatten_netputs(netputs::Vector{Any})
-    out = []
-    for netput in netputs
-        if netput isa MPSGE.NetputParent
-            push!(out, netput)
-        elseif netput isa AbstractArray{<:MPSGE.NetputParent}
-            append!(out, vec(netput.data))
-        end
-    end
-    return out
-end
-
-
 function build_production(
         error_fn::Function,
         model,
@@ -252,6 +231,37 @@ function build_production(
 end
 
 
+
+
+
+
+
+
+
+function assign_netputs_to_node(N::MPSGE.NetputParent, nodes::Dict{Symbol, MPSGE.Node})
+    netput = N.netput
+    parent = N.parent
+    node = nodes[parent]
+    
+    MPSGE.set_parent!(netput, node; add_child = true)
+end
+
+function flatten_netputs(netputs::Vector{Any})
+    out = []
+    for netput in netputs
+        if netput isa MPSGE.NetputParent
+            push!(out, netput)
+        elseif netput isa AbstractArray{<:MPSGE.NetputParent}
+            append!(out, vec(netput.data))
+        end
+    end
+    return out
+end
+
+
+
+
+
 function ScalarProduction(
         error_fn::Function, 
         sector, 
@@ -261,9 +271,10 @@ function ScalarProduction(
 
     nodes, root_nodes = node_structure
     netputs = flatten_netputs(all_netputs)
-    
+
     assign_netputs_to_node.(netputs, Ref(nodes))
 
+    # identify input and output trees - Should verify all signs are the same in the tree
     (input_tree, output_tree) = MPSGE.netput_sign(root_nodes[1]) == -1 ? (root_nodes[1], root_nodes[2]) : (root_nodes[2], root_nodes[1])
     input_tree = MPSGE.prune!(input_tree)
     output_tree = MPSGE.prune!(output_tree)
@@ -272,11 +283,13 @@ function ScalarProduction(
         error_fn("Input and output trees must be both present or both absent for sector $sector")
     end
 
+    # Is the if statement necessary?
     if !isnothing(input_tree) && !isnothing(output_tree)
         build_cost_function(input_tree)
         build_cost_function(output_tree)   
     end
     
+    # Is this not pruning?
     netputs = filter(y -> base_quantity(y.netput) != 0, netputs)
 
     netputs_by_commodity = Dict{MPSGE.Commodity, Vector{MPSGE.Netput}}()
