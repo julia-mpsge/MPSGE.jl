@@ -12,7 +12,7 @@ Given an expression of the form `Y[r, :a, i=I]` extract four components:
 
 This is used in macros.
 """
-function parse_ref_sets(error_fn::Function, expr::Expr)
+function parse_ref_sets(error_fn::Function, expr::Expr; invalid_index_variables::Vector{Any} = Any[])
     @assert Meta.isexpr(expr, :ref) error_fn(
         "Invalid syntax for reference set $expr. Must have a name, " *
         "for example, `Y[i=I]`."
@@ -20,6 +20,14 @@ function parse_ref_sets(error_fn::Function, expr::Expr)
 
     name = expr.args[1]
     index_vars, index_sets, all_indices, condition = _parse_ref_sets(error_fn, expr)
+
+    repeated_index_variables = Set(index_vars) ∩ Set(invalid_index_variables)
+
+    !isempty(repeated_index_variables) && error_fn(
+        "Repeated index variable $repeated_index_variables in reference set $name. " *
+        "Check your sector index variables, these cannot be repeated elsewhere in the macro."
+    )
+
 
     indices = :(Containers.vectorized_product($(index_sets...)))
 
@@ -29,7 +37,7 @@ end
 
 
 
-function parse_ref_sets(error_fn::Function, expr)
+function parse_ref_sets(error_fn::Function, expr; invalid_index_variables::Vector{Any} = Any[])
     # If the input is just a symbol, we return an empty set of index variables
     # and an empty set of indices.
     return (expr, Any[], :(Containers.vectorized_product()), Any[])

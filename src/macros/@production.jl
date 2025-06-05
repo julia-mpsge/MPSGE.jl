@@ -11,7 +11,7 @@ function prune!(T::Netput)
 end
 
 
-function prune!(T::AbstractVector{<:Netput})
+function prune!(T::AbstractArray{<:Any})
     return prune!.(T)
 end
 
@@ -144,7 +144,7 @@ macro production(input_args...)
         error_fn, 
         input_args; 
         num_positional_args = 4,
-        #valid_kwargs = [:description]
+        valid_kwargs = []
         )
 
     model = esc(args[1])
@@ -152,35 +152,22 @@ macro production(input_args...)
     sector, index_vars, indices, all_indices = parse_ref_sets(error_fn, args[2])
     sector_name_expr = build_name_expr(sector, all_indices, kwargs)
     
-    nests = build_nest_expr(args[3], __source__)
-
-
-    # Extract netputs
-    netputs = :(Any[])
-    for netput in args[4].args
-        if !isa(netput, LineNumberNode)
-            push!(netputs.args, :($(esc(netput))))
-        end
-    end
-
+    nests = build_nest_expr(args[3], __source__, index_vars)
+    netputs = build_netputs(args[4], index_vars)
 
     build_production_sectors = JuMP.Containers.container_code(
         index_vars,
         indices,
         quote
-            try
-                PreProduction(
-                    $sector_name_expr,
-                    $nests,
-                    $netputs
-                )
-            catch e
-                $error_fn("Error in nest macro: $(e)")
-            end
+            PreProduction(
+                $sector_name_expr,
+                $nests,
+                $netputs
+            )
         end,
         :DenseAxisArray
     )
-
+   
     production_code = quote
         P = build_production(
             $error_fn,
@@ -191,7 +178,7 @@ macro production(input_args...)
         )
        add_production!($model, P)
     end
-
+   
     return production_code
 end
 
@@ -212,7 +199,8 @@ function build_production(
         error_fn, 
         sector, 
         create_nodes(model, nests), 
-        netputs
+        netputs,
+        index_vars
     )
 end
 
@@ -234,20 +222,20 @@ function ScalarProduction(
         error_fn::Function, 
         sector, 
         node_structure, 
-        all_netputs
+        all_netputs,
+        index_vars
         )
 
     nodes, root_nodes = node_structure
 
-    netputs = build_netput.(all_netputs, Ref(nodes))
+    netputs = build_netput.(error_fn, all_netputs, Ref(nodes), Ref(index_vars))
 
     # identify input and output trees - Should verify all signs are the same in the tree
     (input_tree, output_tree) = netput_sign(root_nodes[1]) == -1 ? (root_nodes[1], root_nodes[2]) : (root_nodes[2], root_nodes[1])
+
     input_tree = prune!(input_tree)
     output_tree = prune!(output_tree)
     netputs = filter(x -> !isnothing(x), prune!(netputs))
-
-    #return netputs
 
     if xor(isnothing(input_tree), isnothing(output_tree))
         error_fn("Input and output trees must be both present or both absent for sector $sector")
@@ -259,9 +247,6 @@ function ScalarProduction(
         build_cost_function(output_tree)   
     end
     
-    # Is this not pruning?
-    #netputs = filter(y -> base_quantity(y.netput) != 0, netputs)
-
     netputs_by_commodity = Dict{Commodity, Vector{Netput}}()
     taxes_by_consumer = Dict{Consumer, Vector{Netput}}()
 
@@ -271,8 +256,6 @@ function ScalarProduction(
         add_taxes_by_consumer!(taxes_by_consumer, netput)
     end
     
-
-
     return ScalarProduction(sector, netputs_by_commodity, input_tree, output_tree, taxes_by_consumer)
 end
 
@@ -294,7 +277,15 @@ end
 
 function add_netputs_by_commodity!(
         netputs_by_commodity::Dict{Commodity, Vector{Netput}},
-        netputs::AbstractArray{<:Netput}
+        ::Nothing
+        )  
+    return netputs_by_commodity
+end
+
+
+function add_netputs_by_commodity!(
+        netputs_by_commodity::Dict{Commodity, Vector{Netput}},
+        netputs::AbstractArray{<:Any}
         )
 
     add_netputs_by_commodity!.(Ref(netputs_by_commodity), netputs)
@@ -321,10 +312,16 @@ function add_taxes_by_consumer!(
     return taxes_by_consumer
 end
 
+function add_taxes_by_consumer!(
+        taxes_by_consumer::Dict{Consumer, Vector{Netput}},
+        ::Nothing
+        )
+    return taxes_by_consumer
+end
 
 function add_taxes_by_consumer!(
         taxes_by_consumer::Dict{Consumer, Vector{Netput}},
-        netputs::AbstractArray{<:Netput}
+        netputs::AbstractArray{<:Any}
         )
 
     add_taxes_by_consumer!.(Ref(taxes_by_consumer), netputs)

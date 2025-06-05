@@ -7,6 +7,7 @@ struct PreNetput
     taxes::Any
     reference_price::Any
     netput_type::Any
+    index_vars::Vector{Any} # Index variables for the commodity
 end
 
 
@@ -91,7 +92,8 @@ function parse_netput(error_fn::Function, netput_arg::Any, netput_fn::DataType)
                 $nest_name,  # Revist this little guy
                 $(esc(taxes)),
                 $(esc(reference_price)),
-                $(esc(netput_fn))
+                $(esc(netput_fn)),
+                $index_vars
             )
         end,
         :DenseAxisArray
@@ -180,13 +182,22 @@ end
 
 
 
-function build_netput(netput::PreNetput, nodes)
+function build_netput(error_fn::Function, netput::PreNetput, nodes, sector_index_vars)
     commodity = netput.commodity
     quantity = netput.quantity
     nest = Symbol(netput.nest)
     taxes = netput.taxes
     reference_price = netput.reference_price
     netput_fn = netput.netput_type
+
+    index_vars = netput.index_vars
+
+    common_index_vars = intersect(index_vars, sector_index_vars)
+    if !isempty(common_index_vars)
+        error_fn("The netput $commodity has index variables $common_index_vars " * 
+            "that are already used in the sector. " *
+            "This is not allowed, as it create ambiguity in the model.\n")
+    end
 
     parent = nodes[nest]
 
@@ -195,12 +206,27 @@ function build_netput(netput::PreNetput, nodes)
 
     push!(parent.children, N)
 
-
     return N
 
 end
 
 
-function build_netput(netput::AbstractArray{<:PreNetput}, nodes)
-    build_netput.(netput, Ref(nodes))
+function build_netput(error_fn::Function, netput::AbstractArray{<:PreNetput}, nodes, sector_index_vars)
+    build_netput.(error_fn, netput, Ref(nodes), Ref(sector_index_vars))
+end
+
+
+
+function build_netputs(raw_netputs::Expr, index_vars)
+    # netputs is an expression of the form `begin @input(...) @output(...) end`
+    # We extract the netputs and build them
+    
+    netputs = :(Any[])
+    for netput in raw_netputs.args
+        if !isa(netput, LineNumberNode)
+            push!(netputs.args, :($(esc(netput))))
+        end
+    end
+
+    return netputs
 end

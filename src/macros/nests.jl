@@ -130,10 +130,10 @@ function parse_nest_parent(
 end
 
 
-function build_nest_expr(input_nest_expr, source)
+function build_nest_expr(input_nest_expr, source, disallowed_index_variables)
     nests = :(Any[])
     for nest in input_nest_expr.args
-        a = MPSGE.build_nest_and_parent(nest, source)
+        a = MPSGE.build_nest_and_parent(nest, source, disallowed_index_variables)
         push!(nests.args, :($a))
     end
     return nests
@@ -148,14 +148,14 @@ Return an expression that evaluates to
 
     ((Nest, nest base name), (Parent, parent base name))
 """
-function build_nest_and_parent(nest_arg::Any, source)
+function build_nest_and_parent(nest_arg::Any, source, disallowed_index_variables)
     error_fn = Containers.build_error_fn("nest", (nest_arg,), source)
 
     x, elasticity, parent = MPSGE._parse_nest(nest_arg)
     name, index_vars, indices, all_indices = parse_ref_sets(
-        error,
+        error_fn,
         x;
-        #invalid_index_variables = [model_sym]
+        invalid_index_variables = disallowed_index_variables
         )
 
 
