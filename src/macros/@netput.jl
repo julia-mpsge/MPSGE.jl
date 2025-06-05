@@ -126,8 +126,6 @@ for a sector.
 
 ## Examples
 
-
-
 ```julia
 @input(C, 1, nest, taxes = [Tax(RA, .1), Tax(GOVT, .3)])
 @input(C[i=R], 1, nest)
@@ -163,8 +161,6 @@ for a sector.
 - `reference_price=1` Set the reference price of a commodity.
 
 ## Examples
-
-
 
 ```julia
 @output(C, 1, nest, taxes = [Tax(RA, .1), Tax(GOVT, .3)])
