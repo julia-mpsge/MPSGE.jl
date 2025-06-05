@@ -144,7 +144,7 @@ macro production(input_args...)
         error_fn, 
         input_args; 
         num_positional_args = 4,
-        valid_kwargs = []
+        valid_kwargs = nothing
         )
 
     model = esc(args[1])
