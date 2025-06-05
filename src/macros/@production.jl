@@ -82,40 +82,91 @@ end
 
 Define a production for the `sector` in the `model` with given `nestings` and `netputs`. 
 
-**sector**
+## sector
 
-This is any `ScalarSector` in the model. 
+The `sector` can take the following forms:
 
-**nestings**
+- `X`, if `X` is a scalar sector.
+- `X[i=I,j=J,...]` if the sector is indexed. Indexing
+- `X[i=I, :j]` if `:j` is an element of the second index of `X`.
+- `X[i=I, j]` if `j` is defined outside the production block, for example in a `for` loop.
 
-This is where the nesting structure is defined and the associated elasticities. At minimum you must declare at least two nests and elasticities, one for the elasticity of substitution (`input`) and one for the elasticity of transformation (`output`), by convention these are denoted `s` and `t` respectively, although any identifier may be used. 
+For an indexed sector it is __required__ that an index is provided when iterating over an array. For example, 
 
-As a minimal example, `[s=1, t=0]` will set the `s` nest to have an elasticity of 1 and the `t` nest 0. Suppose you want a nest below `s` called `va` with an elasticity of 2, this is created with `[s=1, t=0, va=>s=2]`. The `va` points at its parent nest `s` and the elasticity follows. Nestings can be aribrarily deep, for example 
+```julia
+julia> I = [:a,:b]
+
+julia> @sector(M, X[i=I])
+
+julia> @production(M, X[I], ...) # This is not allowed and will error.
+
+julia> @production(M, X[i=I], ...) # This is required behavior.
+
+julia>  for i in I
+            @production(M, X[i], ...) # This is allowed.
+        end
+```
+
+
+## nestings
+
+This is where the nesting structure is defined and the associated elasticities. At minimum you must declare at least two nests and elasticities, one for the elasticity of substitution (`input`) and one for the elasticity of transformation (`output`), by convention these are denoted `s` and `t` respectively, although any identifier may be used. As a minimal example, `[s=1, t=0]` will set the `s` nest to have an elasticity of 1 and the `t` nest 0.
+
+Additional nests must have a parent nest, which is defined by the `=>` operator. For example, if you want a nest below `s` called `va` with an elasticity of 2, this is created with `[s=1, t=0, va=>s=2]`. The `va` points at its parent nest `s` and the elasticity follows. Nestings can be arbitrarily deep, for example
 ```
 [s=1, t=0, va=>s=2, dm=>s=1, d=>dm=2]
 ```
-will have two nests below `s` and one below `dm`. 
+will have two nests, `va` and `dm`, below `s` and one below `dm`, namely `d`.
 
-**netputs**
+Non-root nests can also be indexed. For example, if `I=[:a,:b]`, we can created an indexed nest with `[s=1, t=0, va[i=I]=>s=2]`. This will create a nest `va` for each element of `I` with an elasticity of 2. 
 
-A netput is either an [`@input`](@ref) or an [`@output`](@ref). The netputs get wrapped in a `begin ... end` block and each netput must be on its own line.
+Finally, elasticities can be either numbers, parameters, or a defined expression. For example, all of the following define nestings if the sectors and parameters are defined:
 
-**Examples**
+```julia
+julia> V = Dict(:a => 1, :b => 2)
 
-In the below example we define the production blocks for two sectors `X` and `Y`. This is a non-function example solely created to show syntax. The `X` sector only has the two require elasticities where as `Y` has a more interesting nesting structure. A tax is included in the `Y` production block. 
+julia> I = [:a,:b]
+
+julia> J = [:c, :d]
+
+julia> @production(M, X, [s=1,t=0, va[i=I]=> s = V[i], ...)
+
+julia> @production(M, X[i=I], [s = V[i], t=0, va=>s=V[i]], ...)
+
+julia> @production(M, X[i=I], [s = 0, t=0, va[ii=I, j=J] => s = V[ii]],...)
+```
+
+## netputs
+
+A netput is either an [`@input`](@ref) or an [`@output`](@ref). The netputs get wrapped in a `begin ... end` block and each netput must be on its own line. For examples creating netputs, see the netput documentation and the examples below.
+
+Netputs can use indices initialized in the `sector`, but can not use them as a new index. For example, if we have `X[i=I]` in the production block, we can use
+`@input(PX[i],...)` but not `@input(PX[i=I],...)`. The latter will error.
+
+## Examples
+
+We demonstrate three ways to define a production block. 
 
 ```julia
 julia> M = MPSGEModel();
 
+julia> I = [:a,:b]
+
+julia> @parameters(M, begin
+            elas[i=I,j=J], 4
+            T[i=I], .1
+        end)
+
 julia> @sectors(M, begin
             X
-            Y
+            Y[i=I, j=J]
+            Z[i=I]
         end);
 
 julia> @commodities(M, begin
             PX
             PY
-            PL
+            PL[i=I]
             PK
         end);
 
@@ -127,16 +178,20 @@ julia> @production(M, X, [s=1,t=0], begin
             @input(PK, 5, s)
         end);
 
-julia> @production(M, Y, [s=2, t=1, va=>s=1], begin
+julia> @production(M, Y[i=I,j=J], [s=2, t=1, va[ii=I]=>s=elas[i,ii]], begin
             @output(PY, 15, t)
             @input(PX, 3, s)
-            @input(PL, 4, va, taxes = [Tax(RA, .5)])
-            @input(PK, 6, va)
+            @input(PL[ii=I], 4, va[ii], taxes = [Tax(RA, .5)])
+            @input(PK, 6, va[i])
         end);
+
+julia> for i in I
+            @production(M, Z[i], [s=1, t=0], begin
+                @output(PK, 20, t)
+                @input(PL[i], 2, s, taxes = [Tax(RA, T[i])])
+            end)
+        end
 ```
-
-For examples using indexed sectors and commodities we recommend looking at the WiNDC national model. This will be linked when the appropriate write-up is ready.
-
 """
 macro production(input_args...)
     error_fn = Containers.build_error_fn("production", input_args, __source__)
