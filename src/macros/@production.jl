@@ -3,11 +3,16 @@
 #####################
 
 function prune!(T::Netput)
-    if quantity(T) != 0
+    if quantity(T) != 0 && base_quantity(T) != 0
         return T
     else
         return nothing
     end
+end
+
+
+function prune!(T::AbstractArray{<:Any})
+    return prune!.(T)
 end
 
 function prune!(T::Node)
@@ -24,32 +29,32 @@ end
 #############################
 
 
-function cobb_douglass(N::MPSGE.Node; virtual = :full, cf = cost_function)
-    sign = MPSGE.netput_sign(N)
-    return prod(cf(child; virtual = virtual)^(quantity(child)/quantity(N)) for child in MPSGE.children(N); init=1)
+function cobb_douglass(N::Node; virtual = :full, cf = cost_function)
+    sign = netput_sign(N)
+    return prod(cf(child; virtual = virtual)^(quantity(child)/quantity(N)) for child in children(N); init=1)
 end
 
-function CES(N::MPSGE.Node; virtual = :full,  cf = cost_function)
-    sign = MPSGE.netput_sign(N)
-    return sum(quantity(child)/quantity(N) * cf(child; virtual = virtual)^(1+sign*MPSGE.elasticity(N)) for child in MPSGE.children(N); init=0) ^ (1/(1+sign*MPSGE.elasticity(N)))
+function CES(N::Node; virtual = :full,  cf = cost_function)
+    sign = netput_sign(N)
+    return sum(quantity(child)/quantity(N) * cf(child; virtual = virtual)^(1+sign*elasticity(N)) for child in children(N); init=0) ^ (1/(1+sign*elasticity(N)))
 end
 
 
-function build_cost_function(tree::MPSGE.Netput; virtual = :full)
+function build_cost_function(tree::Netput; virtual = :full)
     return cost_function(tree)
 end
 
-function build_cost_function(N::MPSGE.Node; virtual = :full)
+function build_cost_function(N::Node; virtual = :full)
 
     # If the cost function exists, return it
     if !isnothing(N.cost_function_virtual)
-        return MPSGE.cost_function(N, virtual = :virtual)
+        return cost_function(N, virtual = :virtual)
     end
 
     cost_function = MPSGE.cost_function(N; virtual = :partial, cf = build_cost_function)
 
     if isnothing(N.cost_function_virtual)
-        jm = MPSGE.jump_model(MPSGE.model(N))
+        jm = jump_model(model(N))
         N.cost_function_virtual = @variable(jm, start = value(start_value, cost_function)) 
         N.cost_function = cost_function
         @constraint(jm, N.cost_function_virtual - cost_function ⟂ N.cost_function_virtual)
@@ -64,51 +69,104 @@ end
 ##########################
 
 struct PreProduction
-    model
     sector
     nests
     netputs
 end
+
+
+
 
 """
     @production(model, sector, nestings, netputs)
 
 Define a production for the `sector` in the `model` with given `nestings` and `netputs`. 
 
-**sector**
+## sector
 
-This is any `ScalarSector` in the model. 
+The `sector` can take the following forms:
 
-**nestings**
+- `X`, if `X` is a scalar sector.
+- `X[i=I,j=J,...]` if the sector is indexed. Indexing
+- `X[i=I, :j]` if `:j` is an element of the second index of `X`.
+- `X[i=I, j]` if `j` is defined outside the production block, for example in a `for` loop.
 
-This is where the nesting structure is defined and the associated elasticities. At minimum you must declare at least two nests and elasticities, one for the elasticity of substitution (`input`) and one for the elasticity of transformation (`output`), by convention these are denoted `s` and `t` respectively, although any identifier may be used. 
+For an indexed sector it is __required__ that an index is provided when iterating over an array. For example, 
 
-As a minimal example, `[s=1, t=0]` will set the `s` nest to have an elasticity of 1 and the `t` nest 0. Suppose you want a nest below `s` called `va` with an elasticity of 2, this is created with `[s=1, t=0, va=>s=2]`. The `va` points at its parent nest `s` and the elasticity follows. Nestings can be aribrarily deep, for example 
+```julia
+julia> I = [:a,:b]
+
+julia> @sector(M, X[i=I])
+
+julia> @production(M, X[I], ...) # This is not allowed and will error.
+
+julia> @production(M, X[i=I], ...) # This is required behavior.
+
+julia>  for i in I
+            @production(M, X[i], ...) # This is allowed.
+        end
+```
+
+
+## nestings
+
+This is where the nesting structure is defined and the associated elasticities. At minimum you must declare at least two nests and elasticities, one for the elasticity of substitution (`input`) and one for the elasticity of transformation (`output`), by convention these are denoted `s` and `t` respectively, although any identifier may be used. As a minimal example, `[s=1, t=0]` will set the `s` nest to have an elasticity of 1 and the `t` nest 0.
+
+Additional nests must have a parent nest, which is defined by the `=>` operator. For example, if you want a nest below `s` called `va` with an elasticity of 2, this is created with `[s=1, t=0, va=>s=2]`. The `va` points at its parent nest `s` and the elasticity follows. Nestings can be arbitrarily deep, for example
 ```
 [s=1, t=0, va=>s=2, dm=>s=1, d=>dm=2]
 ```
-will have two nests below `s` and one below `dm`. 
+will have two nests, `va` and `dm`, below `s` and one below `dm`, namely `d`.
 
-**netputs**
+Non-root nests can also be indexed. For example, if `I=[:a,:b]`, we can created an indexed nest with `[s=1, t=0, va[i=I]=>s=2]`. This will create a nest `va` for each element of `I` with an elasticity of 2. 
 
-A netput is either an [`@input`](@ref) or an [`@output`](@ref). The netputs get wrapped in a `begin ... end` block and each netput must be on its own line.
+Finally, elasticities can be either numbers, parameters, or a defined expression. For example, all of the following define nestings if the sectors and parameters are defined:
 
-**Examples**
+```julia
+julia> V = Dict(:a => 1, :b => 2)
 
-In the below example we define the production blocks for two sectors `X` and `Y`. This is a non-function example solely created to show syntax. The `X` sector only has the two require elasticities where as `Y` has a more interesting nesting structure. A tax is included in the `Y` production block. 
+julia> I = [:a,:b]
+
+julia> J = [:c, :d]
+
+julia> @production(M, X, [s=1,t=0, va[i=I]=> s = V[i], ...)
+
+julia> @production(M, X[i=I], [s = V[i], t=0, va=>s=V[i]], ...)
+
+julia> @production(M, X[i=I], [s = 0, t=0, va[ii=I, j=J] => s = V[ii]],...)
+```
+
+## netputs
+
+A netput is either an [`@input`](@ref) or an [`@output`](@ref). The netputs get wrapped in a `begin ... end` block and each netput must be on its own line. For examples creating netputs, see the netput documentation and the examples below.
+
+Netputs can use indices initialized in the `sector`, but can not use them as a new index. For example, if we have `X[i=I]` in the production block, we can use
+`@input(PX[i],...)` but not `@input(PX[i=I],...)`. The latter will error.
+
+## Examples
+
+We demonstrate three ways to define a production block. 
 
 ```julia
 julia> M = MPSGEModel();
 
+julia> I = [:a,:b]
+
+julia> @parameters(M, begin
+            elas[i=I,j=J], 4
+            T[i=I], .1
+        end)
+
 julia> @sectors(M, begin
             X
-            Y
+            Y[i=I, j=J]
+            Z[i=I]
         end);
 
 julia> @commodities(M, begin
             PX
             PY
-            PL
+            PL[i=I]
             PK
         end);
 
@@ -120,16 +178,20 @@ julia> @production(M, X, [s=1,t=0], begin
             @input(PK, 5, s)
         end);
 
-julia> @production(M, Y, [s=2, t=1, va=>s=1], begin
+julia> @production(M, Y[i=I,j=J], [s=2, t=1, va[ii=I]=>s=elas[i,ii]], begin
             @output(PY, 15, t)
             @input(PX, 3, s)
-            @input(PL, 4, va, taxes = [Tax(RA, .5)])
-            @input(PK, 6, va)
+            @input(PL[ii=I], 4, va[ii], taxes = [Tax(RA, .5)])
+            @input(PK, 6, va[i])
         end);
+
+julia> for i in I
+            @production(M, Z[i], [s=1, t=0], begin
+                @output(PK, 20, t)
+                @input(PL[i], 2, s, taxes = [Tax(RA, T[i])])
+            end)
+        end
 ```
-
-For examples using indexed sectors and commodities we recommend looking at the WiNDC national model. This will be linked when the appropriate write-up is ready.
-
 """
 macro production(input_args...)
     error_fn = Containers.build_error_fn("production", input_args, __source__)
@@ -137,106 +199,187 @@ macro production(input_args...)
         error_fn, 
         input_args; 
         num_positional_args = 4,
-        #valid_kwargs = [:description]
+        valid_kwargs = nothing
         )
 
     model = esc(args[1])
-    sector = esc(args[2])
-    #sector_name, index_vars, indices = Containers.parse_ref_sets(error_fn, args[2])
 
-    #sector_name_expr = Containers.build_name_expr(sector_name, index_vars, kwargs)
-    #sector_base_name = string(sector_name)
+    sector, index_vars, indices, all_indices = parse_ref_sets(error_fn, args[2])
+    sector_name_expr = build_name_expr(sector, all_indices, kwargs)
     
-    nestings = args[3]
-    nests = :(Any[])
-    for nest in nestings.args
-        a = MPSGE.build_nest_and_parent(nest, __source__)
-        push!(nests.args, :($a))
+    nests = build_nest_expr(args[3], __source__, index_vars)
+    netputs = build_netputs(args[4], index_vars)
+
+    build_production_sectors = JuMP.Containers.container_code(
+        index_vars,
+        indices,
+        quote
+            PreProduction(
+                $sector_name_expr,
+                $nests,
+                $netputs
+            )
+        end,
+        :DenseAxisArray
+    )
+   
+    production_code = quote
+        P = build_production(
+            $error_fn,
+            $model,
+            $index_vars,
+            $(esc(sector)),
+            $build_production_sectors
+        )
+       add_production!($model, P)
     end
-
-    netputs = :(Any[])
-    for netput in args[4].args
-        if !(netput isa LineNumberNode)#!Meta.isexpr(netput, :LineNumberNode)
-            push!(netputs.args, :($(esc(netput))))
-        end
-    end
-
-    P = :(build_production($error_fn, $sector, MPSGE.create_nodes($model, $nests), $(netputs)))
-
-    return :(add_production!($model, $P))
+   
+    return production_code
 end
 
 
-function assign_netputs_to_node(N::MPSGE.NetputParent, nodes::Dict{Symbol, MPSGE.Node})
-    netput = N.netput
-    parent = N.parent
-    node = nodes[parent]
-    
-    MPSGE.set_parent!(netput, node; add_child = true)
+function build_production(
+        error_fn::Function,
+        model,
+        index_vars::Vector{Any},
+        base_sector,
+        pre_preduction::PreProduction
+        )
+
+    sector = pre_preduction.sector
+    nests = pre_preduction.nests
+    netputs = pre_preduction.netputs
+
+    return ScalarProduction(
+        error_fn, 
+        sector, 
+        create_nodes(model, nests), 
+        netputs,
+        index_vars
+    )
 end
 
-function flatten_netputs(netputs::Vector{Any})
-    out = []
-    for netput in netputs
-        if netput isa MPSGE.NetputParent
-            push!(out, netput)
-        elseif netput isa AbstractArray{<:MPSGE.NetputParent}
-            append!(out, vec(netput.data))
-        end
-    end
-    return out
+# Currently returns a dense axis array of scalar productions
+function build_production(
+        error_fn::Function,
+        model,
+        index_vars::Vector{Any},
+        base_sector,
+        pre_production::AbstractArray{<:PreProduction}
+        )
+
+    P =  build_production.(error_fn, Ref(model), Ref(index_vars), Ref(base_sector), pre_production)
+    return IndexedProduction(base_sector, P, index_vars)
 end
 
-function build_production(error_fn::Function, sector, node_structure, all_netputs)
+
+function ScalarProduction(
+        error_fn::Function, 
+        sector, 
+        node_structure, 
+        all_netputs,
+        index_vars
+        )
 
     nodes, root_nodes = node_structure
-    netputs = flatten_netputs(all_netputs)
-    
-    assign_netputs_to_node.(netputs, Ref(nodes))
 
-    (input_tree, output_tree) = MPSGE.netput_sign(root_nodes[1]) == -1 ? (root_nodes[1], root_nodes[2]) : (root_nodes[2], root_nodes[1])
-    input_tree = MPSGE.prune!(input_tree)
-    output_tree = MPSGE.prune!(output_tree)
+    netputs = build_netput.(error_fn, all_netputs, Ref(nodes), Ref(index_vars))
+
+    # identify input and output trees - Should verify all signs are the same in the tree
+    (input_tree, output_tree) = netput_sign(root_nodes[1]) == -1 ? (root_nodes[1], root_nodes[2]) : (root_nodes[2], root_nodes[1])
+
+    input_tree = prune!(input_tree)
+    output_tree = prune!(output_tree)
+    netputs = filter(x -> !isnothing(x), prune!(netputs))
 
     if xor(isnothing(input_tree), isnothing(output_tree))
         error_fn("Input and output trees must be both present or both absent for sector $sector")
     end
 
+    # Is the if statement necessary?
     if !isnothing(input_tree) && !isnothing(output_tree)
         build_cost_function(input_tree)
         build_cost_function(output_tree)   
     end
     
-    netputs = filter(y -> base_quantity(y.netput) != 0, netputs)
-
-    netputs_by_commodity = Dict{MPSGE.Commodity, Vector{MPSGE.Netput}}()
-    netputs_by_consumer = Dict{MPSGE.Consumer, Vector{MPSGE.Netput}}()
+    netputs_by_commodity = Dict{Commodity, Vector{Netput}}()
+    taxes_by_consumer = Dict{Consumer, Vector{Netput}}()
 
     # To Do: Break into functions
-    for netput_parent in netputs
-        netput = netput_parent.netput
-        commodity = MPSGE.commodity(netput)
-        if !haskey(netputs_by_commodity, commodity)
-            netputs_by_commodity[commodity] = Vector{MPSGE.Netput}()
-        end
-        push!(netputs_by_commodity[commodity], netput)
-
-        for tax in MPSGE.taxes(netput)
-            consumer = MPSGE.tax_agent(tax)
-            if !haskey(netputs_by_consumer, consumer)
-                netputs_by_consumer[consumer] = Vector{MPSGE.Netput}()
-            end
-            if netput ∉ netputs_by_consumer[consumer]
-                push!(netputs_by_consumer[consumer], netput)
-            end
-            #push!(netputs_by_consumer[consumer], netput)
-        end
+    for netput in netputs
+        add_netputs_by_commodity!(netputs_by_commodity, netput)
+        add_taxes_by_consumer!(taxes_by_consumer, netput)
     end
-
-
-
-    return Production(sector, netputs_by_commodity, input_tree, output_tree, netputs_by_consumer)
+    
+    return ScalarProduction(sector, netputs_by_commodity, input_tree, output_tree, taxes_by_consumer)
 end
 
 
 
+function add_netputs_by_commodity!(
+        netputs_by_commodity::Dict{Commodity, Vector{Netput}},
+        netput::Netput
+        )
+
+    C = commodity(netput)
+    if !haskey(netputs_by_commodity, C)
+        netputs_by_commodity[C] = Vector{Netput}()
+    end
+    push!(netputs_by_commodity[C], netput)
+
+    return netputs_by_commodity
+end
+
+function add_netputs_by_commodity!(
+        netputs_by_commodity::Dict{Commodity, Vector{Netput}},
+        ::Nothing
+        )  
+    return netputs_by_commodity
+end
+
+
+function add_netputs_by_commodity!(
+        netputs_by_commodity::Dict{Commodity, Vector{Netput}},
+        netputs::AbstractArray{<:Any}
+        )
+
+    add_netputs_by_commodity!.(Ref(netputs_by_commodity), netputs)
+
+    return netputs_by_commodity
+end
+
+
+function add_taxes_by_consumer!(
+        taxes_by_consumer::Dict{Consumer, Vector{Netput}},
+        netput::Netput
+        )
+
+    for tax in taxes(netput)
+        consumer = tax_agent(tax)
+        if !haskey(taxes_by_consumer, consumer)
+            taxes_by_consumer[consumer] = Vector{Netput}()
+        end
+        if netput ∉ taxes_by_consumer[consumer]
+            push!(taxes_by_consumer[consumer], netput)
+        end
+    end
+
+    return taxes_by_consumer
+end
+
+function add_taxes_by_consumer!(
+        taxes_by_consumer::Dict{Consumer, Vector{Netput}},
+        ::Nothing
+        )
+    return taxes_by_consumer
+end
+
+function add_taxes_by_consumer!(
+        taxes_by_consumer::Dict{Consumer, Vector{Netput}},
+        netputs::AbstractArray{<:Any}
+        )
+
+    add_taxes_by_consumer!.(Ref(taxes_by_consumer), netputs)
+
+    return taxes_by_consumer
+end

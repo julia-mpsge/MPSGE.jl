@@ -6,65 +6,13 @@ struct PreNetput
     nest::Any
     taxes::Any
     reference_price::Any
+    netput_type::Any
+    index_vars::Vector{Any} # Index variables for the commodity
 end
 
 
-"""
-    parse_netput_commodity_index_vars(error_fn::Function, expr::Expr)
 
-This will take elements inside the commodity index `C[i=R, :r]` and ensure they
-are either keywords, `i=R`. If they aren't make them a vector.
-"""
-function parse_netput_commodity_index_vars(error_fn::Function, expr::Expr)
-    if Meta.isexpr(expr, :kw)
-        return expr
-    end
-    return Expr(:vect, expr) 
-end
-
-parse_netput_commodity_index_vars(error_fn::Function, input) = Expr(:vect, input)
-
-"""
-    parse_netput_commodity(error_fn::Function, expr::Expr)
-
-
-## Return
-
-    (commodity_name, index_vars, indices)
-"""
-function parse_netput_commodity(error_fn::Function, expr::Expr)
-    if !Meta.isexpr(expr, :ref)
-        error_fn("Invalid syntax for commodity $expr. Must be of the form "*
-            "`commodity_name[r=R]` or `commodity_name[g, r=R]."
-        )
-    end
-
-    correct_expr = Expr(:ref, expr.args[1], MPSGE.parse_netput_commodity_index_vars.(error_fn, expr.args[2:end])...)
-
-    C, index_vars, indices = Containers.parse_ref_sets(error_fn, correct_expr)
-    return (C, index_vars, indices)
-
-end
-
-function parse_netput_commodity(error_fn::Function, expr::Symbol)
-    return (expr, Any[], :(Containers.vectorized_product()))
-end
-
-
-function build_netput(error_fn::Function, netput::PreNetput, netput_fn::DataType)
-    return netput_fn(
-        netput.commodity,
-        netput.quantity,
-        reference_price = netput.reference_price,
-        taxes = netput.taxes,
-    )
-end
-
-
-function build_netput(error_fn::Function, netputs::AbstractArray{<:PreNetput}, netput_fn::DataType)
-    build_netput.(error_fn, netputs, netput_fn)
-end
-
+# Used and safe
 function parse_netput_macro_arguments(
     error_fn::Function, 
     input_args,
@@ -97,27 +45,11 @@ function parse_netput_macro_arguments(
 
 end
 
-struct NetputParent
-    netput::Netput
-    parent::Symbol
-    NetputParent(netput::Netput, Parent::String) = new(netput, Symbol(Parent))
-    NetputParent(test) = new(test[1], test[2])
-end
-
-#Base.iterate(nest::NetputParent) = nest
-
-function create_netput_list(N::MPSGE.Netput, P::String)
-    return MPSGE.NetputParent(N, P)
-end
-
-function create_netput_list(N::AbstractArray{<:MPSGE.Netput}, P::AbstractArray{String})
-    return create_netput_list.(N,P)
-end
 
 """
     parse_netput(error_fn::Function, netput_arg::Any)
 
-
+Main code that goes in the macro
 
 ## Return
 
@@ -125,7 +57,7 @@ end
 """
 function parse_netput(error_fn::Function, netput_arg::Any, netput_fn::DataType)
 
-    args, kwargs = MPSGE.parse_netput_macro_arguments(
+    args, kwargs = parse_netput_macro_arguments(
         error_fn,
         netput_arg,
         netput_fn;
@@ -139,49 +71,35 @@ function parse_netput(error_fn::Function, netput_arg::Any, netput_fn::DataType)
     taxes = get(kwargs, :taxes, [])
     reference_price = get(kwargs, :reference_price, 1)
 
-    x, index_vars, indices = MPSGE.parse_netput_commodity(error, commodity)
+    x, index_vars, indices, all_indices = parse_ref_sets(error_fn, commodity)
+    commodity_name_expr = build_name_expr(x, all_indices, kwargs)
 
-    commodity_name = isempty(index_vars) ? esc(x) : Expr(:ref, esc(x), esc.(index_vars)...)
+    # Check that the nest doesn't have an iterable index
+    N, nest_index_vars, _, nest_index = parse_ref_sets(error_fn, nest)
+    if !isempty(nest_index_vars) 
+        error_fn("Nests must not have index variables. Got: $nest_index_vars") # Improve
+    end
 
-    #return commodity_name
+    nest_name = build_string_expr(N, nest_index, kwargs) # Error prone if index are not references
 
     build_code = JuMP.Containers.container_code(
         index_vars,
         indices,
         quote
-            MPSGE.PreNetput(
-                $commodity_name,
+            PreNetput(
+                $commodity_name_expr,
                 $(esc(quantity)),
-                1, #$(esc(nest)),  # Revist this little guy
+                $nest_name,  # Revist this little guy
                 $(esc(taxes)),
-                $(esc(reference_price))
+                $(esc(reference_price)),
+                $(esc(netput_fn)),
+                $index_vars
             )
         end,
         :DenseAxisArray
     )
 
-    #return build_code
-
-    netput_code = quote
-        try
-            MPSGE.build_netput(
-                $error_fn,
-                $build_code,
-                $netput_fn
-                )
-        catch e
-            $error_fn("Error in netput macro: $(e)")
-        end
-    end
-
-    nest_code = MPSGE.parent_container(
-        error_fn,
-        nest,
-        index_vars,
-        indices
-    )
-
-    return :(create_netput_list($netput_code, $nest_code))
+    return build_code
 
 end
 
@@ -208,8 +126,6 @@ for a sector.
 
 ## Examples
 
-
-
 ```julia
 @input(C, 1, nest, taxes = [Tax(RA, .1), Tax(GOVT, .3)])
 @input(C[i=R], 1, nest)
@@ -220,7 +136,7 @@ for a sector.
 """
 macro input(input_args...)
     error_fn = Containers.build_error_fn("input", input_args, __source__)
-    return MPSGE.parse_netput(error_fn, input_args, MPSGE.Input)
+    return parse_netput(error_fn, input_args, Input)
 end
 
 
@@ -246,8 +162,6 @@ for a sector.
 
 ## Examples
 
-
-
 ```julia
 @output(C, 1, nest, taxes = [Tax(RA, .1), Tax(GOVT, .3)])
 @output(C[i=R], 1, nest)
@@ -258,5 +172,57 @@ for a sector.
 """
 macro output(input_args...)
     error_fn = Containers.build_error_fn("output", input_args, __source__)
-    return MPSGE.parse_netput(error_fn, input_args, MPSGE.Output)
+    return parse_netput(error_fn, input_args, Output)
+end
+
+
+
+
+function build_netput(error_fn::Function, netput::PreNetput, nodes, sector_index_vars)
+    commodity = netput.commodity
+    quantity = netput.quantity
+    nest = Symbol(netput.nest)
+    taxes = netput.taxes
+    reference_price = netput.reference_price
+    netput_fn = netput.netput_type
+
+    index_vars = netput.index_vars
+
+    common_index_vars = intersect(index_vars, sector_index_vars)
+    if !isempty(common_index_vars)
+        error_fn("The netput $commodity has index variables $common_index_vars " * 
+            "that are already used in the sector. " *
+            "This is not allowed, as it create ambiguity in the model.\n")
+    end
+
+    parent = nodes[nest]
+
+    N = netput_fn(commodity, quantity, parent; taxes = taxes, reference_price = reference_price)
+    set_sign(parent,N)#; add_child = true)
+
+    push!(parent.children, N)
+
+    return N
+
+end
+
+
+function build_netput(error_fn::Function, netput::AbstractArray{<:PreNetput}, nodes, sector_index_vars)
+    build_netput.(error_fn, netput, Ref(nodes), Ref(sector_index_vars))
+end
+
+
+
+function build_netputs(raw_netputs::Expr, index_vars)
+    # netputs is an expression of the form `begin @input(...) @output(...) end`
+    # We extract the netputs and build them
+    
+    netputs = :(Any[])
+    for netput in raw_netputs.args
+        if !isa(netput, LineNumberNode)
+            push!(netputs.args, :($(esc(netput))))
+        end
+    end
+
+    return netputs
 end

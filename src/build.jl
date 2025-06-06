@@ -144,7 +144,6 @@ end
 function zero_profit(S::MPSGE.ScalarSector; virtual = false)
     M = model(S)
     jm = jump_model(M)
-    #P = production(S)
     @expression(jm, cost_function(S; virtual=virtual) - revenue_function(S; virtual=virtual))
 end
 

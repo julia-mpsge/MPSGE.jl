@@ -14,7 +14,14 @@ struct GeneratedNest
     parent::Union{Missing, String, AbstractArray{String}}
 end
 
+"""
+    _strip_nest_elasticity(nest)
 
+Strips the elasticity from a nest expression. Handles either,
+
+- `s = σ`, root nodes
+- `va => s = σ`, child nodes
+"""
 function _strip_nest_elasticity(nest)
     value = nest.args[2]
     if Meta.isexpr(value, :block)
@@ -23,6 +30,14 @@ function _strip_nest_elasticity(nest)
     return value
 end
 
+"""
+    _strip_nest_name(nest)
+
+Strips the name and parent from a nest expression. Handles either,
+
+- `s = σ`, root nodes (child is `s`, parent is `missing`)
+- `va => s = σ`, child nodes (child is `va`, parent is `s`)
+"""
 function _strip_nest_name(nest)
     parent = missing
     name = nest.args[1]
@@ -35,7 +50,7 @@ end
 
 function _parse_nest(nest)
     if !Meta.isexpr(nest, :(=))
-        error("Invalid syntax for nesting $nest. Required to have an = in "*
+        error("Invalid syntax for nesting `$nest`. Required to have an `=` in "*
         "statement. `s = 0` or `va => s = 0`."
         )
     end
@@ -114,6 +129,18 @@ function parse_nest_parent(
     return (name, index_vars)
 end
 
+
+function build_nest_expr(input_nest_expr, source, disallowed_index_variables)
+    nests = :(Any[])
+    for nest in input_nest_expr.args
+        a = MPSGE.build_nest_and_parent(nest, source, disallowed_index_variables)
+        push!(nests.args, :($a))
+    end
+    return nests
+end
+
+
+
 """
     build_nest_and_parent(nest_arg::Expr, source)
 
@@ -121,21 +148,14 @@ Return an expression that evaluates to
 
     ((Nest, nest base name), (Parent, parent base name))
 """
-function build_nest_and_parent(nest_arg::Any, source)
+function build_nest_and_parent(nest_arg::Any, source, disallowed_index_variables)
     error_fn = Containers.build_error_fn("nest", (nest_arg,), source)
 
-
-    if !Meta.isexpr(nest_arg, :(=))
-        error_fn("Invalid syntax for nesting $nest_arg. Required to have an = in "*
-        "statement. `s = 0` or `va => s = 0`."
-        )
-    end
-
     x, elasticity, parent = MPSGE._parse_nest(nest_arg)
-    name, index_vars, indices = Containers.parse_ref_sets(
-        error,
+    name, index_vars, indices, all_indices = parse_ref_sets(
+        error_fn,
         x;
-        #invalid_index_variables = [model_sym]
+        invalid_index_variables = disallowed_index_variables
         )
 
 
@@ -146,8 +166,6 @@ function build_nest_and_parent(nest_arg::Any, source)
         indices,
         elasticity
     )
-
-    #return nest_code
 
     parent_code = if !ismissing(parent) 
         parent_code = MPSGE.parent_container(
@@ -165,6 +183,7 @@ function build_nest_and_parent(nest_arg::Any, source)
                 $parent_code,  
     ))
 end
+
 
 function nest_container(
         error_fn::Function,
@@ -194,6 +213,8 @@ function nest_container(
     )
     return :(MPSGE.build_nest($error_fn, $base_name, $index_vars, $build_nests))
 end
+
+
 
 function parent_container(
     error_fn::Function,
@@ -264,6 +285,9 @@ end
 function create_parent_child_dict!(parent_child::Dict{Symbol, Vector{Symbol}}, node::MPSGE.GeneratedNest)
     create_parent_child_dict!(parent_child, node.nest, node.parent)
 end
+
+
+
 
 
 """ 
