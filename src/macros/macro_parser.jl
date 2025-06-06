@@ -117,11 +117,25 @@ an expression `arg` that is part of a reference set.
 Different input types are handled differently. 
 """
 function parse_mpsge_ref_sets(error_fn::Function, index_vars, index_sets, all_indices, arg::Expr)
-    if !Meta.isexpr(arg, :kw, 2)
-        error_fn("Invalid syntax for index variable $arg. Must be of the form `i=I`.")
+    if Meta.isexpr(arg, :kw, 2) || Meta.isexpr(arg, :(=), 2)
+        # Handle [i=S] and x[i=S]
+        index_var, index_set = arg.args[1], esc(arg.args[2])
+    elseif Meta.isexpr(arg, :call, 3) &&
+           (arg.args[1] === :in || arg.args[1] === :∈)
+        # Handle `i in S` and `i ∈ S`
+        index_var, index_set = arg.args[2], esc(arg.args[3])
+    else
+        error_fn(
+            "Unsupported syntax for reference set `$arg`. " *
+            "Must be of the form `i=S`, `i∈S` or `i in S`.",
+        )
     end
-
-    index_var, index_set = arg.args[1], esc(arg.args[2])
+    if index_var in index_vars
+        error_fn(
+            "The index $(index_var) appears more than once. The " *
+            "index associated with each set must be unique.",
+        )
+    end
 
     push!(index_vars, index_var)
     push!(index_sets, index_set)
@@ -132,6 +146,12 @@ end
 
 # When the input has a single index, like Y[i]
 function parse_mpsge_ref_sets(error_fn::Function, index_vars, index_sets, all_indices, arg)
+    if arg in index_vars
+        error_fn(
+            "The index $(arg) appears more than once. The " *
+            "index associated with each set must be unique.",
+        )
+    end
     push!(all_indices, esc(arg))
 end
 
@@ -168,7 +188,14 @@ function build_name_expr(
     return expr
 end
 
+"""
+    build_string_expr(name::Union{Symbol,Nothing}, index_vars::Vector, kwargs::Dict{Symbol,Any})
 
+Builds a string expression that represents the name of a reference set, including
+the index variables.
+
+Adapted from the JuMP `build_name_expr`. 
+"""
 function build_string_expr(
     name::Union{Symbol,Nothing},
     index_vars::Vector,
