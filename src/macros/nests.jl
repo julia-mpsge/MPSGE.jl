@@ -123,6 +123,12 @@ function parse_nest_parent(
             "`nest_name[indices]`."
         )
     end
+    for arg in expr.args[2:end]
+        if Meta.isexpr(arg, :kw) || (Meta.isexpr(arg, :call, 3) && (arg.args[1] === :in || arg.args[1] === :∈))
+            error_fn("Invalid syntax for parent nesting $expr. Parents must " * 
+            "only use index variables, not sets. Use `parent[i,j]`, not `parent[i=S, j=T]`.")       
+        end
+    end
     name = expr.args[1]
     index_vars = expr.args[2:end]
 
