@@ -52,3 +52,61 @@
 end
 
 
+@testitem "Production - Nesting Assignments" begin
+    I = [:a,:b]
+    M = MPSGEModel()
+
+    @sector(M, Z)
+    @commodity(M, PY)
+    @commodity(M, PX[i=I])
+
+
+    # Scalar Nests
+    P = @production(M, Z, [s=0, t=0, va=>s=1], begin
+        @output(PY, 1, t)
+        @input(PY, 2, s)
+        @input(PY, 3, va)
+    end)
+
+
+    N = input(P)
+    @test name(N) == :s
+
+    L = MPSGE.children(N)
+    @test length(L) == 2
+
+    (N2, C) = isa(L[1], MPSGE.Node) ? (L[1], L[2])  : (L[2], L[1])
+
+    @test commodity(C) == PY
+    @test quantity(C) == 2
+
+    @test name(N2) == :va
+    L = MPSGE.children(N2)
+    @test length(L) == 1
+
+    N3 = L[1]
+    @test commodity(N3) == PY
+    @test quantity(N3) == 3
+
+
+    d = Dict(
+        :a => 3,
+        :b => 4
+    )
+    P = @production(M, Z, [s=0, t=0, va[i=I]=>s=1], begin
+        @output(PY, 1, t)
+        @input(PY, 2, s)
+        @input(PX[i=I], d[i], va[i])
+    end)
+
+    N = input(P)
+
+    L = Dict(name(n) => n for n in MPSGE.children(N))
+
+    quantity(L[:PY]) == 2
+
+    quantity(L[Symbol("va[b]")].children[1]) == d[:b]
+    quantity(L[Symbol("va[a]")].children[1]) == d[:a]
+
+
+end
