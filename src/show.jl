@@ -102,9 +102,10 @@ end
 
 
 function Base.show(io::IO, P::IndexedProduction)
+    # To Do: Update when indexed nests are implemented
     println(io, "\$Production: $(sector(P))")
-    #println(io, "$(output(P))")
-    #print(io, "$(input(P))")
+    println(io, "$(output(P))")
+    print(io, "$(input(P))")
 end
 
 function Base.show(io::IO,E::ScalarFinalDemand)
