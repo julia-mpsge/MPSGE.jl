@@ -147,9 +147,6 @@ end
 
 function Base.show(io::IO, N::ScalarNest)
     print(io, N.name)
-    #if !ismissing(N.subindex)
-    #    print(io, N.subindex)
-    #end
 end
 
 function Base.show(io::IO, N::Netput)
