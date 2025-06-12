@@ -389,7 +389,7 @@ children(N::Netput) = []
 parent(N::Netput) = N.parents
 netput_sign(N::Netput) = N.netput_sign
     
-mutable struct Input <: Netput 
+struct Input <: Netput 
     commodity::ScalarCommodity
     quantity::MPSGEquantity
     reference_price::MPSGEquantity
@@ -397,13 +397,14 @@ mutable struct Input <: Netput
     parents::Vector{Node}
     netput_sign::Int
     Input( commodity::ScalarCommodity,
-            quantity::MPSGEquantity;
+            quantity::MPSGEquantity,
+            parent_nest::Node;
             reference_price::MPSGEquantity=1,
             taxes = [],
-    ) = new(commodity, quantity, reference_price, taxes, [], -1)
+    ) = new(commodity, quantity, reference_price, taxes, [parent_nest], -1)
 end
 
-mutable struct Output <: Netput 
+struct Output <: Netput 
     commodity::ScalarCommodity
     quantity::MPSGEquantity
     reference_price::MPSGEquantity
@@ -412,29 +413,52 @@ mutable struct Output <: Netput
     #cost_function::MPSGEquantity
     netput_sign::Int
     Output(commodity::ScalarCommodity,
-            quantity::MPSGEquantity;
+            quantity::MPSGEquantity,
+            parent_nest::Node;
             reference_price::MPSGEquantity=1,
             taxes = [],
-    ) = new(commodity, quantity, reference_price, taxes, [], 1)
+    ) = new(commodity, quantity, reference_price, taxes, [parent_nest], 1)
 end
 
 
 ################
 ## Production ##
 ################
-struct Production
+struct ScalarProduction
     sector::ScalarSector
     netputs::Dict{Commodity, Vector{Netput}}
     input::Union{Node, Nothing}
     output::Union{Node, Nothing}
     taxes::Dict{Consumer, Vector{Netput}}
+    function ScalarProduction(
+        sector::ScalarSector, 
+        netputs::Dict{Commodity, Vector{Netput}}, 
+        input::Union{Node, Nothing}, 
+        output::Union{Node, Nothing}, 
+        taxes::Dict{Consumer, Vector{Netput}}
+        ) 
+        
+        if !isnothing(input) && !isnothing(output)
+            P = new(sector, netputs, input, output, taxes)
+            M = model(sector)
+            for (commodity, _) in netputs
+                push!(M.commodities[commodity], sector)
+            end
+            return P
+        end
+        return nothing # This is going to cause issues eventually
+
+    end
 end
 
-sector(P::Production) = P.sector
-input(P::Production) = P.input
-output(P::Production) = P.output
-commodities(P::Production) = collect(keys(P.netputs))
-netputs(P::Production) = P.netputs
+
+
+
+sector(P::ScalarProduction) = P.sector
+input(P::ScalarProduction) = P.input
+output(P::ScalarProduction) = P.output
+commodities(P::ScalarProduction) = collect(keys(P.netputs))
+netputs(P::ScalarProduction) = P.netputs
 netputs(S::ScalarSector, C::ScalarCommodity) = !ismissing(production(S)) ? get(netputs(production(S)), C, []) : []
 function taxes(S::ScalarSector,H::ScalarConsumer)
     P = production(S)
@@ -444,9 +468,31 @@ function taxes(S::ScalarSector,H::ScalarConsumer)
     return P.taxes[H]
 end
 
+struct IndexedProduction{N} <: AbstractArray{ScalarProduction, N}
+    sector::IndexedSector
+    scalar_productions::AbstractArray{<:Union{ScalarProduction, Nothing},N}
+    index::Any
+    #IndexedProduction(sector::IndexedSector, scalar_productions::AbstractArray{<:UnionScalarProduction,N}, index) where N = new{N}(sector, scalar_productions, index)
+end
+
+sector(P::IndexedProduction) = P.sector
 
 
-function find_nodes(P; search = :all)
+Base.getindex(P::IndexedProduction, index...) = P.scalar_productions[index...]
+Base.getindex(P::IndexedProduction, idx::CartesianIndex) = P.scalar_productions[idx]
+
+Base.axes(P::IndexedProduction) = axes(P.scalar_productions)
+Base.size(P::IndexedProduction) = size(P.scalar_productions)
+Base.CartesianIndices(P::IndexedProduction) = CartesianIndices(P.scalar_productions)
+Base.length(P::IndexedProduction) = length(P.scalar_productions)
+Broadcast.broadcastable(P::IndexedProduction) = P.scalar_productions
+
+
+const Production = Union{ScalarProduction, IndexedProduction}
+
+
+
+function find_nodes(P::ScalarProduction; search = :all)
     out = Dict()
     nodes_to_search = []
     if search == :all
@@ -470,7 +516,7 @@ function find_nodes(P; search = :all)
 end
 
 
-function cost_function(P::Production, nest::Symbol; virtual = false, search = :all)
+function cost_function(P::ScalarProduction, nest::Symbol; virtual = false, search = :all)
     N = find_nodes(P; search = search)
     if haskey(N, nest)
         v = virtual ? :virtual : :full
@@ -492,7 +538,7 @@ commodity.
 
 If `virtual` is true, return the virtual cost functions.
 """
-cost_function(P::Production; virtual=false) = cost_function(P, name(input(P)), virtual=virtual)
+cost_function(P::ScalarProduction; virtual=false) = cost_function(P, name(input(P)), virtual=virtual)
 cost_function(S::ScalarSector, nest::Symbol; virtual = false) = cost_function(production(S), nest, virtual=virtual, search = :input)
 cost_function(S::ScalarSector; virtual = false) = cost_function(production(S), virtual=virtual)
 
@@ -511,7 +557,7 @@ commodity.
 If `virtual` is true, return the virtual revenue functions.
 
 """
-revenue_function(P::Production; virtual = false) = cost_function(P, name(output(P)), virtual = virtual, search = :output)
+revenue_function(P::ScalarProduction; virtual = false) = cost_function(P, name(output(P)), virtual = virtual, search = :output)
 revenue_function(S::ScalarSector, nest::Symbol; virtual = false) = cost_function(production(S), nest, virtual = virtual, search = :output)
 revenue_function(S::ScalarSector; virtual = false) = revenue_function(production(S); virtual = virtual)
 
@@ -632,7 +678,7 @@ constraint(C::AuxConstraint) = C.constraint
 mutable struct MPSGEModel <:AbstractMPSGEModel
     object_dict::Dict{Symbol,Any} # Contains only MPSGEVariables?
     jump_model::Union{JuMP.Model,Nothing}
-    productions::Dict{ScalarSector,Production} # all scalars
+    productions::Dict{Symbol, Production} # all Productions
     demands::Dict{ScalarConsumer,Demand}
     commodities::Dict{ScalarCommodity,Vector{ScalarSector}} # Generated when production is added
     endowments::Dict{ScalarCommodity, Vector{ScalarConsumer}}
@@ -645,7 +691,6 @@ end
 #Getters
 object_dict(M::MPSGEModel) = M.object_dict
 jump_model(M::MPSGEModel) = M.jump_model
-productions(M::MPSGEModel) = M.productions
 demands(M::MPSGEModel) = M.demands
 aux_constraints(M::MPSGEModel) = M.auxiliaries
 Base.getindex(M::MPSGEModel,key::Symbol) = M.object_dict[key]
@@ -662,7 +707,8 @@ Takes a variable and extracts it the sub-variables.
 """
 extract_scalars(S::MPSGEScalarVariable) = [S]
 extract_scalars(S::MPSGEIndexedVariable) = S.subsectors.data
-
+extract_scalars(P::ScalarProduction) = [P]
+extract_scalars(P::IndexedProduction) = P.scalar_productions.data
 
 ## Variables 
 
@@ -671,6 +717,25 @@ raw_commodities(m::MPSGEModel) = [s for (_,s) in m.object_dict if isa(s,Commodit
 raw_consumers(m::MPSGEModel) = [s for (_,s) in m.object_dict if isa(s,Consumer)]
 raw_parameters(m::MPSGEModel) = [s for (_,s) in m.object_dict if isa(s,Parameter)]
 raw_auxiliaries(m::MPSGEModel) = [s for (_,s) in m.object_dict if isa(s,Auxiliary)]
+raw_productions(m::MPSGEModel) = [p for (_,p) in m.productions]
+
+
+
+function productions(m::MPSGEModel)
+    X = raw_productions(m) |>
+        x -> extract_scalars.(x) |>  
+        x -> Iterators.flatten(x) |>
+        x -> collect(x) |>
+        x -> filter(x -> !isnothing(x), x)
+    return X
+end
+
+
+function scalar_production_dict(M::MPSGEModel) 
+
+    return Dict(name(sector(p)) => p for p∈productions(M))
+    
+end
 
 """
     sectors(m::MPSGEModel)
@@ -695,7 +760,8 @@ These are coming from a dictionary, so order is not guaranteed.
 This is primarily used when generating constraints.
 """
 function production_sectors(m::MPSGEModel)
-    return collect(keys(m.productions))
+    return sector.(productions(m))
+    #return collect(keys(m.productions))
 end
 
 """
@@ -768,11 +834,10 @@ end
 
 
 ## Production
-function production(S::ScalarSector) #Key errors are possible
+function production(S::Sector) #Key errors are possible
     M = model(S)
-    if haskey(M.productions, S)
-        return M.productions[S]
-    end
-    return missing
+    sector_name = name(S)
+    P = scalar_production_dict(M)
+    get(P, sector_name, missing)
 end
 

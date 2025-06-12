@@ -37,14 +37,18 @@ end
 ## Production/Demand ##
 #######################
 
-function add_production!(model::MPSGEModel, P::Production)
-    if !isnothing(input(P)) && !isnothing(output(P))
-        model.productions[sector(P)] = P
-        for (commodity, _) in netputs(P)
-            push!(model.commodities[commodity], sector(P))
-        end
-        return P
-    end
+function add_production!(model::MPSGEModel, P::ScalarProduction)
+    model.productions[name(sector(P))] = P
+    return P
+end
+
+function add_production!(model::MPSGEModel, P::IndexedProduction)
+    model.productions[name(sector(P))] = P
+    #add_production!.(Ref(model), P)
+    return P
+end
+
+function add_production!(::MPSGEModel, ::Nothing)
     return nothing
 end
 
