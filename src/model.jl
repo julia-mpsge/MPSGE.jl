@@ -38,10 +38,11 @@ end
 #######################
 
 function add_production!(model::MPSGEModel, P::Production)
-    if !isnothing(input(P)) && !isnothing(output(P))
-        model.productions[sector(P)] = P
-        return P
-    end
+    model.productions[name(sector(P))] = P
+    return P
+end
+
+function add_production!(::MPSGEModel, ::Nothing)
     return nothing
 end
 

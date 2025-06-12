@@ -35,9 +35,7 @@ function Base.show(io::IO,M::MPSGEModel)
 
     println(io,"")
 
-    for (_,p)∈M.productions
-        println(io,p)
-    end
+    println.(io, raw_productions(M))
 
     for (_,d)∈M.demands
         println(io,d)
@@ -96,10 +94,18 @@ end
 ########################
 ## Production/Demands ##
 ########################
-function Base.show(io::IO, P::Production)
+function Base.show(io::IO, P::ScalarProduction)
     println(io,"\$Production: $(sector(P))")
     println(io,"$(output(P))")
     print(io,"$(input(P))")
+end
+
+
+function Base.show(io::IO, P::IndexedProduction)
+    # To Do: Update when indexed nests are implemented
+    println(io, "\$Production: $(sector(P))")
+    println(io, "$(output(P))")
+    print(io, "$(input(P))")
 end
 
 function Base.show(io::IO,E::ScalarFinalDemand)
@@ -136,11 +142,12 @@ function Base.print_array(io::IO, X::IndexedNest)
 end
 
 
+function Base.print_array(io::IO, P::IndexedProduction)
+    print(io, P.scalar_productions)
+end
+
 function Base.show(io::IO, N::ScalarNest)
     print(io, N.name)
-    if !ismissing(N.subindex)
-        print(io, N.subindex)
-    end
 end
 
 function Base.show(io::IO, N::Netput)
