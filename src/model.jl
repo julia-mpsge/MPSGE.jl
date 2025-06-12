@@ -37,12 +37,7 @@ end
 ## Production/Demand ##
 #######################
 
-function add_production!(model::MPSGEModel, P::ScalarProduction)
-    model.productions[name(sector(P))] = P
-    return P
-end
-
-function add_production!(model::MPSGEModel, P::IndexedProduction)
+function add_production!(model::MPSGEModel, P::Production)
     model.productions[name(sector(P))] = P
     return P
 end
