@@ -1,6 +1,33 @@
-__MPSGEVARIABLE_KWARGS__ = [:description]
+__MPSGEVARIABLE_KWARGS__ = [:description, :start, :lower_bound, :upper_bound]
+__MPSGEVARIABLE_KWARGS_DEFAULT__ = Dict(
+        :description => "",
+        :start => 1.0,
+        :lower_bound => 0,
+        :upper_bound => Inf
+        )
+
+__MPSGEAUXILIARY_DEFAULTS__ = Dict(
+    :description => "",
+    :start => 0.0,
+    :lower_bound => -Inf,
+    :upper_bound => Inf
+)
 
 
+struct PreVariable
+    name
+    description
+    start
+    lower_bound
+    upper_bound
+    PreVariable(
+        name; 
+        description = __MPSGEVARIABLE_KWARGS_DEFAULT__[:description],
+        start = __MPSGEVARIABLE_KWARGS_DEFAULT__[:start],
+        lower_bound = __MPSGEVARIABLE_KWARGS_DEFAULT__[:lower_bound],
+        upper_bound = __MPSGEVARIABLE_KWARGS_DEFAULT__[:upper_bound]
+        ) = new(name, description, start, lower_bound, upper_bound)
+end
 
 function parse_variable_arguments(
     error_fn::Function, 
@@ -34,10 +61,6 @@ function parse_variable_arguments(
 end
 
 
-struct PreVariable
-    name
-end
-
 function build_MPSGEvariable(
     error_fn::Function,
     args...;
@@ -58,17 +81,14 @@ function build_MPSGEvariable(
     ;
     kwargs...
 )
-
-   # if length(kwargs) > 0
-
     P = scalar_type(
         model,
-        pre_parameter.name,
-        description
+        pre_parameter.name;
+        description = pre_parameter.description,
+        start = pre_parameter.start,
+        lower_bound = pre_parameter.lower_bound,
+        upper_bound = pre_parameter.upper_bound
     )
-
-    add_variable!(model, P)
-    #fix(P, pre_parameter.value)
     return P
 end
 
@@ -87,8 +107,8 @@ function build_MPSGEvariable(
         model,
         base_name,
         build_MPSGEvariable.(error_fn, Ref(model), Ref(base_name), Ref(index_vars), variables, description, scalar_type, indexed_type),
-        index_vars,
-        description
+        index_vars;
+        description = description
     )
     return P
 end
@@ -98,13 +118,15 @@ function parse_MPSGEvariable(
     input_args,
     scalar_type,
     indexed_type;
-    extra_code::Function = ((model, name) -> nothing)
+    extra_code::Function = ((model, name) -> nothing),
+    kwargs = __MPSGEVARIABLE_KWARGS__,
+    default_values = __MPSGEVARIABLE_KWARGS_DEFAULT__
 )
     args, kwargs = parse_variable_arguments(
         error_fn, 
         input_args; 
         num_positional_args = 2, 
-        valid_kwargs = [:description]
+        valid_kwargs =  kwargs
     )
 
     # Extract the model
@@ -120,6 +142,9 @@ function parse_MPSGEvariable(
         )
 
     description = get(kwargs, :description, "")
+    start = get(kwargs, :start, default_values[:start])
+    lower_bound = get(kwargs, :lower_bound, default_values[:lower_bound])
+    upper_bound = get(kwargs, :upper_bound, default_values[:upper_bound])
 
     #Build the name and base name
     name_expr = Containers.build_name_expr(name, index_vars, kwargs)
@@ -131,11 +156,15 @@ function parse_MPSGEvariable(
         quote
             try
                 PreVariable(
-                    $name_expr,
+                    $name_expr;
+                    description = $description,
+                    start = $(esc(start)),
+                    lower_bound = $(esc(lower_bound)),
+                    upper_bound = $(esc(upper_bound))
                 )
             catch e
                 $error_fn("There is an issue with your inputs. Double check the " *
-                    "syntax of your parameter.")
+                    "syntax of your variable.")
             end
         end,
         :DenseAxisArray
@@ -178,8 +207,16 @@ arguments `kwargs`.
   indices given by `I` and variable index named `i`. 
 
 If you want to create an index sector it is highly recommended to use the syntax 
-from (3) with better name for `i`, For example `S[goods=I]`, this will get the 
-index name to `goods` which will be displayed when printing the model.
+from (3) with better name for `i`, For example `S[goods=I]`, this will set the 
+index name to `goods` which will be displayed when printing the model. For example
+creating a variable using
+```julia
+@sector(M, S[goods=I], description = "Sector with indexed variables")
+```
+will allow the sector to be printed as
+```
+S[goods] -- Sector with indexed variables
+```
 
 Additionally, multi-indexed sectors can be created by using the syntax 
 `S[regions = R, goods = G]`. 
@@ -188,7 +225,9 @@ Additionally, multi-indexed sectors can be created by using the syntax
 ## Optional Arguments
 
 - `description`: Set a description on a variable. 
-
+- `start`: Set the starting value of the variable Default 1.0
+- `lower_bound`: Set the lower bound of the variable. Default 0.
+- `upper_bound`: Set the upper bound of the variable. Default `Inf`.
 ## Examples
 
 ```julia
@@ -198,12 +237,12 @@ R = Symbol.(:r, 1:5)
 G = Symbol.(:g, 1:5)
 M = MPSGEModel()
 
-@sector(M, S[region=R, goods=G], description="Sector with indexed variables")
+@sector(M, S[region=R, goods=G], description="Sector with indexed variables", start = 1.5)
 ```
 """
 macro sector(input_args...)
     # Create specific error message that points to a particular line in the code
-    error_fn = Containers.build_error_fn("parameter", input_args, __source__)
+    error_fn = Containers.build_error_fn("sector", input_args, __source__)
     
     if length(input_args) >= 2 && Meta.isexpr(input_args[2], :block)
         error_fn("Invalid syntax. Did you mean to use `@sectors`?")
@@ -273,7 +312,15 @@ arguments `kwargs`.
 
 If you want to create an index commodity it is highly recommended to use the syntax 
 from (3) with better name for `i`, For example `C[goods=I]`, this will get the 
-index name to `goods` which will be displayed when printing the model.
+index name to `goods` which will be displayed when printing the model. For example
+creating a variable using
+```julia
+@commodity(M, C[goods=I], description = "Commodity with indexed variables")
+```
+will allow the commodity to be printed as
+```
+C[goods] -- Commodity with indexed variables
+```
 
 Additionally, multi-indexed commoditys can be created by using the syntax 
 `C[regions = R, goods = G]`. 
@@ -282,6 +329,9 @@ Additionally, multi-indexed commoditys can be created by using the syntax
 ## Optional Arguments
 
 - `description`: Set a description on a variable. 
+- `start`: Set the starting value of the variable Default 1.0
+- `lower_bound`: Set the lower bound of the variable. Default 0.
+- `upper_bound`: Set the upper bound of the variable. Default `Inf`.
 
 ## Examples
 
@@ -362,7 +412,15 @@ arguments `kwargs`.
 
 If you want to create an index consumer it is highly recommended to use the syntax 
 from (3) with better name for `i`, For example `H[goods=I]`, this will get the 
-index name to `goods` which will be displayed when printing the model.
+index name to `goods` which will be displayed when printing the model. For example
+creating a variable using
+```julia
+@consumer(M, H[goods=I], description = "Consumer with indexed variables")
+```
+will allow the consumer to be printed as
+```
+H[goods] -- Consumer with indexed variables
+```
 
 Additionally, multi-indexed consumers can be created by using the syntax 
 `H[regions = R, goods = G]`. 
@@ -371,6 +429,9 @@ Additionally, multi-indexed consumers can be created by using the syntax
 ## Optional Arguments
 
 - `description`: Set a description on a variable. 
+- `start`: Set the starting value of the variable Default 1.0
+- `lower_bound`: Set the lower bound of the variable. Default 0.
+- `upper_bound`: Set the upper bound of the variable. Default `Inf`.
 
 ## Examples
 
@@ -448,7 +509,15 @@ arguments `kwargs`.
 
 If you want to create an index auxiliary it is highly recommended to use the syntax 
 from (3) with better name for `i`, For example `X[goods=I]`, this will get the 
-index name to `goods` which will be displayed when printing the model.
+index name to `goods` which will be displayed when printing the model. For example
+creating a variable using
+```julia
+@auxiliary(M, X[goods=I], description = "Auxiliary with indexed variables")
+```
+will allow the auxiliary to be printed as
+```
+X[goods] -- Auxiliary with indexed variables
+```
 
 Additionally, multi-indexed auxiliaries can be created by using the syntax 
 `X[regions = R, goods = G]`. 
@@ -457,6 +526,9 @@ Additionally, multi-indexed auxiliaries can be created by using the syntax
 ## Optional Arguments
 
 - `description`: Set a description on a variable. 
+- `start`: Set the starting value of the variable Default 0.0
+- `lower_bound`: Set the lower bound of the variable. Default `-Inf`.
+- `upper_bound`: Set the upper bound of the variable. Default `Inf`.
 
 ## Examples
 
@@ -469,20 +541,26 @@ M = MPSGEModel()
 
 @auxiliary(M, X[region=R, goods=G], description="Auxiliary with indexed variables")
 ```
+
+!!! note
+    By default auxiliary variables start at 0 with no lower or upper bounds. These
+    can be set after variable creating using [`set_start_value`](@ref), 
+    [`set_lower_bound`](@ref), and [`set_upper_bound`](@ref).
 """
 macro auxiliary(input_args...)
     # Create specific error message that points to a particular line in the code
-    error_fn = Containers.build_error_fn("parameter", input_args, __source__)
+    error_fn = Containers.build_error_fn("auxiliary", input_args, __source__)
     
     if length(input_args) >= 2 && Meta.isexpr(input_args[2], :block)
-        error_fn("Invalid syntax. Did you mean to use `@parameters`?")
+        error_fn("Invalid syntax. Did you mean to use `@auxiliaries`?")
     end
 
     parse_MPSGEvariable(
         error_fn,
         input_args,
         ScalarAuxiliary,
-        IndexedAuxiliary
+        IndexedAuxiliary;
+        default_values = __MPSGEAUXILIARY_DEFAULTS__,
     )
 end
 
