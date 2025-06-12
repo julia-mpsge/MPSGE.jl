@@ -198,7 +198,7 @@ function build_netput(error_fn::Function, netput::PreNetput, nodes, sector_index
     parent = nodes[nest]
 
     N = netput_fn(commodity, quantity, parent; taxes = taxes, reference_price = reference_price)
-    set_sign(parent,N)#; add_child = true)
+    set_sign(parent,N)
 
     push!(parent.children, N)
 

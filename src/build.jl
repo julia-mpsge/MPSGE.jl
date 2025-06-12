@@ -215,10 +215,6 @@ function solve!(m::AbstractMPSGEModel; kwargs...)
 
     if !haskey(JuMP.object_dictionary(jm), :z_p)
         build_constraints!(m)
-
-        #for H in consumers(m)
-        #    set_start_value(H, consumer_income(H))
-        #end
     end
 
     #Set the default iteration limit to 10_000
