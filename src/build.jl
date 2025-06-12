@@ -1,37 +1,4 @@
-###########################
-## Create JuMP Variables ##
-###########################
-function add_variable!(m::MPSGEModel, S::MPSGEScalarVariable; start = 1)
-    jm = jump_model(m)
-    jm[name(S)] = @variable(jm,base_name = string(name(S)),start=start, lower_bound = 0)
-end
 
-
-
-
-function add_variable!(m::MPSGEModel, S::MPSGEIndexedVariable; start = 1)
-
-    jm = jump_model(m)
-    index = S.index
-
-    dim = length.(index)
-    
-    x = JuMP.@variable(jm, [1:prod(dim)], lower_bound=0, start = start)
-
-    for (i, ind) in enumerate(Iterators.product(index...))
-        new_index = join(ind,",")
-        JuMP.set_name(x[i], "$(name(S))[$new_index]")
-    end
-
-    output = JuMP.Containers.DenseAxisArray(reshape(x, Tuple(dim)), index...)
-    jm[name(S)] = output
-    return output
-
-end
-
-function add_variable!(m::MPSGEModel, S::Auxiliary)
-    add_variable!(m, S; start = 0)
-end
 
 ########################
 ## Compensated Demand ##
@@ -64,9 +31,10 @@ function compensated_demand(N::MPSGE.Netput; virtual = false)
     child, parent = N, MPSGE.parent(N)[1]
     sign = -MPSGE.netput_sign(N)
     compensated_demand = sign * MPSGE.base_quantity(N)
+    v = virtual ? :virtual : :full
     while !isnothing(parent)
         if MPSGE.elasticity(parent)!=0
-            compensated_demand *= (cost_function(parent; virtual=virtual)/cost_function(child; virtual=virtual)) ^ (sign*MPSGE.elasticity(parent))
+            compensated_demand *= (cost_function(parent; virtual=v)/cost_function(child; virtual=v)) ^ (sign*MPSGE.elasticity(parent))
         end
         child,parent = parent, MPSGE.parent(parent)
     end
@@ -176,7 +144,6 @@ end
 function zero_profit(S::MPSGE.ScalarSector; virtual = false)
     M = model(S)
     jm = jump_model(M)
-    #P = production(S)
     @expression(jm, cost_function(S; virtual=virtual) - revenue_function(S; virtual=virtual))
 end
 
@@ -220,7 +187,7 @@ function build_constraints!(M::MPSGEModel)
 end
 
 
-function consumer_income(consumer)
+function consumer_income(consumer::ScalarConsumer)
     M = model(consumer)
     jm = jump_model(M)
     household_commodities = [C for C∈commodities(M) if consumer∈MPSGE.endowments(C)]
