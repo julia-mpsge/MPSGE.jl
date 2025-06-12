@@ -44,7 +44,6 @@ end
 
 function add_production!(model::MPSGEModel, P::IndexedProduction)
     model.productions[name(sector(P))] = P
-    #add_production!.(Ref(model), P)
     return P
 end
 

@@ -305,7 +305,6 @@ function ScalarProduction(
     netputs_by_commodity = Dict{Commodity, Vector{Netput}}()
     taxes_by_consumer = Dict{Consumer, Vector{Netput}}()
 
-    # To Do: Break into functions
     for netput in netputs
         add_netputs_by_commodity!(netputs_by_commodity, netput)
         add_taxes_by_consumer!(taxes_by_consumer, netput)
