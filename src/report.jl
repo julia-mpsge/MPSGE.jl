@@ -2,6 +2,19 @@ extract_variable_ref(v::NonlinearExpr) = v.args[1]
 extract_variable_ref(v::AffExpr) = collect(keys(v.terms))[1]
 extract_variable_ref(v::QuadExpr) = extract_variable_ref(v.aff)
 
+
+
+"""
+    generate_report(M::MPSGEModel)
+
+Returns a dataframe with three columns, the variable, the value and the margin. 
+The product of the value and the marge should be zero, if not the model has a 
+specification error.
+
+This function is useful for debugging models that fail a calibrated benchmark. 
+If the model fails the benchmark, look for non-zero margins in this report, as 
+they will reveal the error.
+"""
 function generate_report(M::MPSGEModel)
 
     m = jump_model(M)
