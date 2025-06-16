@@ -130,8 +130,8 @@ end
     end)
 
 
-    !isnothing(cost_function(P, :s, virtual = true))
+    @test !isnothing(cost_function(P, :s, virtual = true))
 
-    !isnothing(cost_function(P, :va, virtual = true))
+    @test !isnothing(cost_function(P, :va, virtual = true))
 
 end
