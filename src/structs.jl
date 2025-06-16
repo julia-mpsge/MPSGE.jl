@@ -345,8 +345,8 @@ function cost_function(N::MPSGE.Node; virtual = :full, cf = cost_function)
         #This must be an explicit expression, otherwise it's evaluated now. 
         cost_function = @expression(jm, ifelse(
                     MPSGE.elasticity(N) * sign == -1,
-                    cobb_douglass(N, virtual = virtual_adjust), 
-                    CES(N, virtual = virtual_adjust)
+                    cobb_douglass(N, virtual = virtual_adjust, cf = cf), 
+                    CES(N, virtual = virtual_adjust, cf = cf)
                 ))
     elseif MPSGE.elasticity(N)*sign == -1 #Cobb-Douglas is only on demand side with σ=1
         cost_function = cobb_douglass(N; virtual = virtual_adjust, cf = cf)
