@@ -110,3 +110,27 @@ end
 
 
 end
+
+
+@testitem "Production - Virtual Cost Functions" begin
+
+    M = MPSGEModel()
+
+    @parameter(M, sigma, 0)
+    @parameter(M, sigma2, 0)
+    @sector(M, X)
+    @commodity(M, C)
+
+    P = @production(M, X, [t=0, s=sigma, va=>s=sigma2, tmp=>va = 0], begin
+        @output(C, 1, t)
+        @input(C, 1, s)
+        @input(C, 1, va)
+        @input(C, 1, tmp)
+    end)
+
+
+    @test !isnothing(cost_function(P, :s, virtual = true))
+
+    @test !isnothing(cost_function(P, :va, virtual = true))
+
+end

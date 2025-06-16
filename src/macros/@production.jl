@@ -48,10 +48,10 @@ function build_cost_function(N::Node; virtual = :full)
 
     # If the cost function exists, return it
     if !isnothing(N.cost_function_virtual)
-        return cost_function(N, virtual = :virtual)
+        return MPSGE.cost_function(N, virtual = :virtual)
     end
 
-    cost_function = MPSGE.cost_function(N; virtual = :partial, cf = build_cost_function)
+    cost_function = MPSGE.cost_function(N; virtual = :partial, cf = MPSGE.build_cost_function)
 
     if isnothing(N.cost_function_virtual)
         jm = jump_model(model(N))
