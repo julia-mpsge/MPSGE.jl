@@ -38,5 +38,14 @@
 
     @test length(L["b"].demand_flow) == 2
 
+    L = @demand(M, G[i=I,j=I], begin
+        @final_demand(C[i,jj=I], values[i,jj])
+        @endowment(C[ii=I,jj=I], values[ii,jj])
+    end, elasticity= values[i,j])
+
+    @test length(L) == 4
+    @test length(MPSGE.demands(M)) == 6
+
+    @test all(MPSGE.elasticity(L[i,j]) == values[i,j] for i in I, j in I)
 
 end
