@@ -15,6 +15,15 @@ function prune!(T::AbstractArray{<:Any})
     return prune!.(T)
 end
 
+function prune!(T::abstractDemandFlow)
+    if quantity(T) != 0 && base_quantity(T) != 0
+        return T
+    else
+        return nothing
+    end
+end
+
+
 function prune!(T::Node)
     if quantity(T) == 0
         return nothing
@@ -259,7 +268,6 @@ function build_production(
     )
 end
 
-# Currently returns a dense axis array of scalar productions
 function build_production(
         error_fn::Function,
         model,

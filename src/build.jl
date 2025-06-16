@@ -86,7 +86,7 @@ end
 
 
 function demand(H::Consumer)
-    D = demands(model(H))
+    D = demand_dict(model(H))
     return D[H]
 end
 
