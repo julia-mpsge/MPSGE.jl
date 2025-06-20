@@ -441,6 +441,7 @@ struct ScalarProduction
         if !isnothing(input) && !isnothing(output)
             P = new(sector, netputs, input, output, taxes)
             M = model(sector)
+            M.scalar_productions[sector] = P
             for (commodity, _) in netputs
                 push!(M.commodities[commodity], sector)
             end
@@ -693,12 +694,13 @@ mutable struct MPSGEModel <:AbstractMPSGEModel
     jump_model::Union{JuMP.Model,Nothing}
     productions::Dict{Symbol, Production} # all Productions
     demands::Dict{Symbol,Demand}
+    scalar_productions::Dict{ScalarSector, ScalarProduction}
     commodities::Dict{ScalarCommodity,Vector{ScalarSector}} # Generated when production is added
     endowments::Dict{ScalarCommodity, Vector{ScalarConsumer}}
     final_demands::Dict{ScalarCommodity, Vector{ScalarConsumer}}
     auxiliaries::Dict{ScalarAuxiliary, AuxConstraint}
     silent::Bool
-    MPSGEModel() = new(Dict(),direct_model(PATHSolver.Optimizer()),Dict(),Dict(),Dict(),Dict(),Dict(),Dict(),false)
+    MPSGEModel() = new(Dict(),direct_model(PATHSolver.Optimizer()),Dict(),Dict(),Dict(), Dict(),Dict(),Dict(),Dict(),false)
 end
 
 #Getters
@@ -749,7 +751,7 @@ end
 
 function scalar_production_dict(M::MPSGEModel) 
 
-    return Dict(name(sector(p)) => p for p∈productions(M))
+    return M.scalar_productions#Dict(name(sector(p)) => p for p∈productions(M))
     
 end
 
@@ -866,8 +868,8 @@ end
 ## Production
 function production(S::Sector) #Key errors are possible
     M = model(S)
-    sector_name = name(S)
+    #sector_name = name(S)
     P = scalar_production_dict(M)
-    get(P, sector_name, missing)
+    return get(P, S, missing)
 end
 
