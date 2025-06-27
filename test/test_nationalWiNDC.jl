@@ -77,55 +77,48 @@ WiNnat = MPSGEModel()
 end)
 
 @sectors(WiNnat,begin
-    Y[J],  (description = "Sectoral Production",)
-    A[I],  (description = "Armington Supply",)
-    MS[M], (description = "Margin Supply",)
+    Y[j=J],  (description = "Sectoral Production",)
+    A[i=I],  (description = "Armington Supply",)
+    MS[m=M], (description = "Margin Supply",)
 end)
 
 @commodities(WiNnat,begin
-    PA[I],   (description = "Armington Price",)
-    PY[J],   (description = "Supply",)
-    PVA[VA], (description = "Value-added",)
-    PM[M],   (description = "Margin Price",)
+    PA[i=I],   (description = "Armington Price",)
+    PY[j=J],   (description = "Supply",)
+    PVA[va=VA], (description = "Value-added",)
+    PM[m=M],   (description = "Margin Price",)
     PFX,     (description = "Foreign Exachange",)
 end)
 
 @consumer(WiNnat, RA, description = "Representative Agent")
 
-for j∈J
-    @production(WiNnat, Y[j], [t=0, s = 0, va => s = 1], begin
-        [@output(PY[i],ys_0[yr,j,i], t, taxes = [Tax(RA,ty[j])]) for i∈I]... 
-        [@input(PA[i], id_0[yr,i,j], s) for i∈I]...
-        [@input(PVA[va], va_0[yr,va,j], va) for va∈VA]...
-    end)
-end
+@production(WiNnat, Y[j=J], [t=0, s = 0, va => s = 1], begin
+    @output(PY[i=I],ys_0[yr,j,i], t, taxes = [Tax(RA,ty[j])])
+    @input(PA[i=I], id_0[yr,i,j], s)
+    @input(PVA[va=VA], va_0[yr,va,j], va)
+end)
 
+@production(WiNnat, MS[m=M], [t = 0, s = 0], begin
+    @output(PM[m], sum(ms_0[yr,i,m] for i∈I), t)
+    @input(PY[i=I], ms_0[yr,i,m], s)
+end)
 
-
-for m∈M
-    @production(WiNnat, MS[m], [t = 0, s = 0], begin
-        [@output(PM[m], sum(ms_0[yr,i,m] for i∈I), t)]...
-        [@input(PY[i], ms_0[yr,i,m], s) for i∈I]...
-    end)
-end
-
-for i∈I
-    @production(WiNnat, A[i], [t = 2, s = 0, dm => s = 2], begin
-        [@output(PA[i], a_0[yr,i], t, taxes=[Tax(RA,ta[i])],reference_price=1-ta_0[yr,i])]...
-        [@output(PFX, x_0[yr,i], t)]...
-        [@input(PM[m], md_0[yr,m,i], s) for m∈M]...
-        @input(PY[i], y_0[yr,i], dm)
-        @input(PFX, m_0[yr,i], dm, taxes = [Tax(RA,tm[i])],reference_price=1+tm_0[yr,i])
-    end)
-end
+@production(WiNnat, A[i=I], [t = 2, s = 0, dm => s = 2], begin
+    @output(PA[i], a_0[yr,i], t, taxes=[Tax(RA,ta[i])],reference_price=1-ta_0[yr,i])
+    @output(PFX, x_0[yr,i], t)
+    @input(PM[m=M], md_0[yr,m,i], s)
+    @input(PY[i], y_0[yr,i], dm)
+    @input(PFX, m_0[yr,i], dm, taxes = [Tax(RA,tm[i])],reference_price=1+tm_0[yr,i])
+end)
 
 @demand(WiNnat, RA, begin
-    [@final_demand(PA[i], fd_0[yr,i,:pce]) for i∈I]...    
-    [@endowment(PY[i], fs_0[yr,i]) for i∈I]...
+    @final_demand(PA[i=I], fd_0[yr,i,:pce])
+    @endowment(PY[i=I], fs_0[yr,i])
     @endowment(PFX, bopdef_0[yr])
-    [@endowment(PA[i], -sum(fd_0[yr,i,xfd] for xfd∈FD if xfd!=:pce)) for i∈I]...
-    [@endowment(PVA[va], sum(va_0[yr,va,j] for j∈J)) for va∈VA]...
+    @endowment(PA[i=I], -sum(fd_0[yr,i,xfd] for xfd∈FD if xfd!=:pce))
+    @endowment(PVA[va=VA], sum(va_0[yr,va,j] for j∈J))
 end, elasticity = d_elas_ra)
+
 
 # Benchmark 
 # fix(RA, sum(fd_0[yr,i,:pce] for i∈I))

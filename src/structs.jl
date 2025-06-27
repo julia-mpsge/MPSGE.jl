@@ -579,6 +579,8 @@ end
 struct ScalarEndowment <: abstractDemandFlow
     commodity::ScalarCommodity
     quantity::MPSGEquantity
+    #Reference price is not used in endowments. But it makes the code much more maintainable when adding endowments to the model.
+    ScalarEndowment(commodity::ScalarCommodity, quantity::MPSGEquantity; reference_price::MPSGEquantity=1) = new(commodity, quantity)
 end
 
 # Getters
@@ -591,6 +593,7 @@ raw_quantity(D::ScalarFinalDemand) = value(D.quantity)*value(D.reference_price)
 
 commodity(C::ScalarEndowment) = C.commodity
 quantity(C::ScalarEndowment) = C.quantity
+base_quantity(C::ScalarEndowment) = C.quantity
 raw_quantity(F::Function, C::ScalarEndowment) = value(F, C.quantity)
 
 
@@ -602,45 +605,35 @@ struct ScalarDemand
     demand_flow::Dict{Commodity, Vector{abstractDemandFlow}}
     function ScalarDemand(
         consumer::ScalarConsumer,
-        demand_flow::Vector{abstractDemandFlow};
+        demand_flow::Dict{Commodity, Vector{abstractDemandFlow}};
         elasticity::MPSGEquantity = 1
         )
 
         M = model(consumer)
 
-        _demand_flow = Dict{Commodity, Vector{abstractDemandFlow}}()
-        for demand in demand_flow
-            if quantity(demand) == 0
-                continue
-            end
-            if haskey(_demand_flow, demand.commodity)
-                push!(_demand_flow[demand.commodity], demand)
-            else
-                _demand_flow[demand.commodity] = [demand]
-            end
 
-            if isa(demand, ScalarEndowment)
-                if !(haskey(M.endowments, demand.commodity))
-                    M.endowments[demand.commodity] = []
-                end
-                if consumer ∉ M.endowments[demand.commodity]
-                    push!(M.endowments[demand.commodity], consumer)
+        for (commodity, netput_vector) in demand_flow
+            for net in netput_vector
+                if isa(net, ScalarFinalDemand)
+                    if !haskey(M.final_demands, commodity)
+                        M.final_demands[commodity] = []
+                    end
+                    push!(M.final_demands[commodity], consumer)
+                elseif isa(net, ScalarEndowment)
+                    if !haskey(M.endowments, commodity)
+                        M.endowments[commodity] = []
+                    end
+                    if consumer ∉ M.endowments[commodity]
+                        push!(M.endowments[commodity], consumer)
+                    end
                 end
             end
-
-            if isa(demand, ScalarFinalDemand)
-                if !(haskey(M.final_demands, demand.commodity))
-                    M.final_demands[demand.commodity] = [consumer]
-                else
-                    push!(M.final_demands[demand.commodity], consumer)
-                end
-            end
-
         end
+
 
         D = new(consumer,
             elasticity,
-            _demand_flow
+            demand_flow
             )
 
         set_start_value(consumer, raw_quantity(start_value,D))
@@ -649,15 +642,35 @@ struct ScalarDemand
     end
 end
 
-const Demand = ScalarDemand
 
-consumer(D::Demand) = D.consumer
-final_demands(D::Demand) = Dict(C => [d for d in DF if isa(d,ScalarFinalDemand)] for (C,DF) in D.demand_flow)
-endowments(D::Demand) = Dict(C => [e for e in E if isa(e,ScalarEndowment)] for (C,E) in D.demand_flow)#D.endowments
-quantity(D::Demand) = sum(sum(quantity.(d);init=0) for (_,d)∈final_demands(D);init=0)
-elasticity(D::Demand) = D.elasticity
-raw_quantity(F::Function, D::Demand) = sum(sum(raw_quantity.(F,d);init=0) for (_,d)∈final_demands(D); init=0)
-raw_quantity(D::Demand) = sum(sum(raw_quantity.(d);init=0) for (_,d)∈final_demands(D); init=0)
+struct IndexedDemand{N} <: AbstractArray{ScalarDemand, N}
+    consumer::IndexedConsumer
+    scalar_demands::AbstractArray{<:Union{ScalarDemand, Nothing},N}
+    index::Any
+end
+
+consumer(D::IndexedDemand) = D.consumer
+
+Base.getindex(D::IndexedDemand, index...) = D.scalar_demands[index...]
+Base.getindex(D::IndexedDemand, idx::CartesianIndex) = D.scalar_demands[idx]
+
+Base.axes(D::IndexedDemand) = axes(D.scalar_demands)
+Base.size(D::IndexedDemand) = size(D.scalar_demands)
+Base.CartesianIndices(D::IndexedDemand) = CartesianIndices(D.scalar_demands)
+Base.length(D::IndexedDemand) = length(D.scalar_demands)
+Broadcast.broadcastable(D::IndexedDemand) = D.scalar_demands
+
+
+
+const Demand = Union{ScalarDemand, IndexedDemand}
+
+consumer(D::ScalarDemand) = D.consumer
+final_demands(D::ScalarDemand) = Dict(C => [d for d in DF if isa(d,ScalarFinalDemand)] for (C,DF) in D.demand_flow)
+endowments(D::ScalarDemand) = Dict(C => [e for e in E if isa(e,ScalarEndowment)] for (C,E) in D.demand_flow)#D.endowments
+quantity(D::ScalarDemand) = sum(sum(quantity.(d);init=0) for (_,d)∈final_demands(D);init=0)
+elasticity(D::ScalarDemand) = D.elasticity
+raw_quantity(F::Function, D::ScalarDemand) = sum(sum(raw_quantity.(F,d);init=0) for (_,d)∈final_demands(D); init=0)
+raw_quantity(D::ScalarDemand) = sum(sum(raw_quantity.(d);init=0) for (_,d)∈final_demands(D); init=0)
 
 
 
@@ -680,8 +693,8 @@ mutable struct MPSGEModel <:AbstractMPSGEModel
     object_dict::Dict{Symbol,Any} # Contains only MPSGEVariables?
     jump_model::Union{JuMP.Model,Nothing}
     productions::Dict{Symbol, Production} # all Productions
+    demands::Dict{Symbol,Demand}
     scalar_productions::Dict{ScalarSector, ScalarProduction}
-    demands::Dict{ScalarConsumer,Demand}
     commodities::Dict{ScalarCommodity,Vector{ScalarSector}} # Generated when production is added
     endowments::Dict{ScalarCommodity, Vector{ScalarConsumer}}
     final_demands::Dict{ScalarCommodity, Vector{ScalarConsumer}}
@@ -693,7 +706,6 @@ end
 #Getters
 object_dict(M::MPSGEModel) = M.object_dict
 jump_model(M::MPSGEModel) = M.jump_model
-demands(M::MPSGEModel) = M.demands
 aux_constraints(M::MPSGEModel) = M.auxiliaries
 Base.getindex(M::MPSGEModel,key::Symbol) = M.object_dict[key]
 
@@ -711,6 +723,8 @@ extract_scalars(S::MPSGEScalarVariable) = [S]
 extract_scalars(S::MPSGEIndexedVariable) = S.subsectors.data
 extract_scalars(P::ScalarProduction) = [P]
 extract_scalars(P::IndexedProduction) = P.scalar_productions.data
+extract_scalars(D::ScalarDemand) = [D]
+extract_scalars(D::IndexedDemand) = D.scalar_demands.data
 
 ## Variables 
 
@@ -720,6 +734,8 @@ raw_consumers(m::MPSGEModel) = [s for (_,s) in m.object_dict if isa(s,Consumer)]
 raw_parameters(m::MPSGEModel) = [s for (_,s) in m.object_dict if isa(s,Parameter)]
 raw_auxiliaries(m::MPSGEModel) = [s for (_,s) in m.object_dict if isa(s,Auxiliary)]
 raw_productions(m::MPSGEModel) = [p for (_,p) in m.productions]
+raw_demands(m::MPSGEModel) = [d for (_,d) in m.demands]
+
 
 
 
@@ -738,6 +754,20 @@ function scalar_production_dict(M::MPSGEModel)
     return M.scalar_productions#Dict(name(sector(p)) => p for p∈productions(M))
     
 end
+
+function demands(m::MPSGEModel)
+    X = raw_demands(m) |>
+        x -> extract_scalars.(x) |>  
+        x -> Iterators.flatten(x) |>
+        x -> collect(x)
+    return X
+end
+
+## Added for backwards compatibility. Will remove in the future
+function demand_dict(m::MPSGEModel)
+    return Dict(consumer(d) => d for d in demands(m))
+end
+
 
 """
     sectors(m::MPSGEModel)

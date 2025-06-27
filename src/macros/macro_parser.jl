@@ -218,3 +218,41 @@ function build_string_expr(
     expr.args[end] = "]"  # Replace the last ", " with "]"
     return expr
 end
+
+
+
+#Stolen from JuMP
+function _plural_macro_code(model, block, macro_sym)
+    if !Meta.isexpr(block, :block)
+        error(
+            "Invalid syntax for $(macro_sym)s. The second argument must be a " *
+            "`begin end` block. For example:\n" *
+            "```julia\n$(macro_sym)s(model, begin\n    # ... lines here ...\nend)\n```.",
+        )
+    end
+    @assert block.args[1] isa LineNumberNode
+    last_line = block.args[1]
+    code = quote end #Expr(:tuple) #I don't know why this works in JuMP, but not for me. Perhaps a Julia 1.10 thing
+    jump_macro = Expr(:., MPSGE, QuoteNode(macro_sym)) #Change Main to module name here
+    for arg in block.args
+        if arg isa LineNumberNode
+            last_line = arg
+        elseif Meta.isexpr(arg, :tuple)  # Line with commas.
+            macro_call = Expr(:macrocall, jump_macro, last_line, model)
+            # Because of the precedence of "=", Keyword arguments have to appear
+            # like: `x, (start = 10, lower_bound = 5)`
+            for ex in arg.args
+                if Meta.isexpr(ex, :tuple) # embedded tuple
+                    append!(macro_call.args, ex.args)
+                else
+                    push!(macro_call.args, ex)
+                end
+            end
+            push!(code.args, esc(macro_call))
+        else  # Stand-alone symbol or expression.
+            macro_call = Expr(:macrocall, jump_macro, last_line, model, arg)
+            push!(code.args, esc(macro_call))
+        end
+    end
+    return code
+end

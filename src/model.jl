@@ -58,3 +58,8 @@ function add_aux_constraint!(model::AbstractMPSGEModel, A::ScalarAuxiliary, cons
     model.auxiliaries[A] = P
     return P
 end
+
+function add_demand!(model::MPSGEModel, D::Demand)
+    model.demands[name(consumer(D))] = D
+    return D
+end

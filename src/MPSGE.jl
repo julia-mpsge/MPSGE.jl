@@ -14,7 +14,6 @@ include("show.jl")
 include("model.jl")
 
 
-include("macros.jl")
 
 include("macros/macro_parser.jl")
 
@@ -23,6 +22,9 @@ include("macros/nests.jl")
 include("macros/@netput.jl")
 include("macros/@production.jl")
 include("macros/@MPSGEvariable.jl")
+include("macros/@demand.jl")
+include("macros/@aux_constraint.jl")
+
 
 include("build.jl")
 include("report.jl")

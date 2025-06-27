@@ -35,11 +35,11 @@ function Base.show(io::IO,M::MPSGEModel)
 
     println(io,"")
 
-    println.(io, raw_productions(M))
+    println.(io, productions(M))
 
-    for (_,d)∈M.demands
-        println(io,d)
-    end
+    println(io,"")
+
+    println.(io, demands(M))
 
 end
 
@@ -130,6 +130,12 @@ function Base.show(io::IO, D::ScalarDemand)
     end
 end
 
+function Base.show(io::IO, D::IndexedDemand)
+    for d in D
+        print(io, d)
+    end
+end
+
 
 ####################
 ## Tree Structure ##
@@ -144,6 +150,10 @@ end
 
 function Base.print_array(io::IO, P::IndexedProduction)
     print(io, P.scalar_productions)
+end
+
+function Base.print_array(io::IO, D::IndexedDemand)
+    print(io, D.scalar_demands)
 end
 
 function Base.show(io::IO, N::ScalarNest)
