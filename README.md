@@ -1,18 +1,10 @@
 # MPSGE
 
-We are working on the 1.0.0 release, with documentation. In the meantime, the current main branch is working and significantly advanced from the latest tagged release, so please use 
-
+We are working on the 1.0.0 release, with more organised documentation. In the meantime, the current main branch is working, there is hopefully enough documentation to be functional, and we invite and encourage users, testing, and questions etc. 
+The latest tagged version should be good and working.
 ```julia
-  Pkg.add(url="https://github.com/julia-mpsge/MPSGE.jl.git#main") 
+  Pkg.add("MPSGE"), or in the package environment pkg>add MPSGE 
 ```
-
-or in the package environment
-
-```julia
-  pkg>add MPSGE#main
-```
-  
-to access the current version.
 
 [Rough Documentation](https://julia-mpsge.github.io/MPSGE.jl/previews/PR186/)
 
