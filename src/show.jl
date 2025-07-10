@@ -48,7 +48,11 @@ end
 ###############
 
 function Base.show(io::IO,S::MPSGEScalarVariable)
-    print(io,name(S))
+    out = string(name(S))
+    if description(S) != ""
+        out *= "  --  $(description(S))"
+    end
+    print(io, out)
 end
 
 function Base.show(io::IO, S::IndexedParameter)
