@@ -13,23 +13,23 @@ function Base.show(io::IO,M::MPSGEModel)
 
     println(io,"\n\$Sectors:")
     for s∈raw_sectors(M)
-        println(io,s)
+        display(io,s)
     end
 
     println(io,"\n\$Commodities:")
     for s∈raw_commodities(M)
-        println(io,s)
+        display(io,s)
     end
     
     println(io,"\n\$Consumers:")
     for s∈raw_consumers(M)
-        println(io,s)
+        display(io,s)
     end
 
     if length(raw_auxiliaries(M)) > 0
         println(io,"\n\$Auxiliaries:")
         for s∈raw_auxiliaries(M)
-            println(io,s)
+            display(io,s)
         end
     end
 
@@ -47,22 +47,28 @@ end
 ## Variables ##
 ###############
 
-function Base.show(io::IO,S::MPSGEScalarVariable)
-    print(io,name(S))
+function display(io::IO, S::MPSGEScalarVariable)
+    if description(S) != ""
+        println(io, "$(name(S))  --  $(description(S))")
+    else
+        println(io, name(S))
+    end
 end
 
-function Base.show(io::IO, S::IndexedParameter)
+function display(io::IO, S::MPSGEIndexedVariable)
     out = string(name(S), "[", join(index_names(S), ", "), "]")
     if description(S) != ""
         out *= "  --  $(description(S))"
     end
-    print(io, out)
+    println(io, out)
 end
 
 
+function Base.show(io::IO,S::MPSGEScalarVariable)
+    print(io,name(S))
+end
 
 function Base.show(io::IO, S::MPSGEIndexedVariable)#This could be smarter
-    #print(io,S.subsectors)
     out = string(name(S), "[", join(index_names(S), ", "), "]")
     if description(S) != ""
         out *= "  --  $(description(S))"
