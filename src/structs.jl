@@ -312,6 +312,14 @@ function set_sign(N::Node, netput::Netput)
     set_sign(N, netput_sign(netput))
 end
 
+function elasticity(s::ScalarSector, a::Symbol)
+    p = production(s)
+    n = MPSGE.find_nodes(p)
+    if haskey(n, a)
+        return MPSGE.elasticity(n[a][1])
+    end
+    return missing
+end
 
 #cost_function(N::Node; virtual = false) = !virtual ? N.cost_function : N.cost_function_virtual
 
