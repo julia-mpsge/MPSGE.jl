@@ -635,9 +635,6 @@ struct ScalarDemand
             elasticity,
             demand_flow
             )
-
-        set_start_value(consumer, raw_quantity(start_value,D))
-
         return D
     end
 end

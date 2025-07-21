@@ -166,9 +166,13 @@ end
 function build_constraints!(M::MPSGEModel)
     jm = jump_model(M)
 
-    JuMP.@constraint(jm, z_p[S=MPSGE.production_sectors(M)],
-        MPSGE.zero_profit(S; virtual=true) ⟂ get_variable(S)
-    )
+    for consumer in demand_consumers(M)
+        set_start_value(consumer, consumer_income(consumer))
+    end
+
+    JuMP.@constraint(jm, z_p[S = MPSGE.production_sectors(M)],
+        MPSGE.zero_profit(S; virtual = true) ⟂ get_variable(S)
+
 
     JuMP.@constraint(jm, m_c[C=MPSGE.commodities(M)],
         MPSGE.market_clearance(C; virtual=true) ⟂ get_variable(C)
