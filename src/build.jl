@@ -172,6 +172,7 @@ function build_constraints!(M::MPSGEModel)
 
     JuMP.@constraint(jm, z_p[S = MPSGE.production_sectors(M)],
         MPSGE.zero_profit(S; virtual = true) ⟂ get_variable(S)
+    )
 
 
     JuMP.@constraint(jm, m_c[C=MPSGE.commodities(M)],
