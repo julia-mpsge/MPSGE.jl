@@ -232,8 +232,13 @@ function solve!(m::AbstractMPSGEModel; kwargs...)
     consumer = nothing
     # Check if any (non-auxiliary) variables are fixed. If not, set numeraire
     if sum(is_fixed.(MPSGE.production_sectors(m))) + sum(is_fixed.(commodities(m))) + sum(is_fixed.(demand_consumers(m))) == 0
-        consumer = argmax(consumer_income, demand_consumers(m))
-        fix(consumer, consumer_income(consumer))
+        value_function = ifelse(
+            termination_status(jm) == OPTIMIZE_NOT_CALLED,
+            start_value,
+            x -> is_fixed(x) ? fix_value(x) : value(x)
+        )
+        consumer = argmax(value_function, demand_consumers(m))
+        fix(consumer, value_function(consumer))
     end
 
     JuMP.optimize!(jm)
