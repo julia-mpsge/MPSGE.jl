@@ -1,13 +1,34 @@
-extract_variable_ref(v::NonlinearExpr) = v.args[1]
-extract_variable_ref(v::AffExpr) = collect(keys(v.terms))[1]
-extract_variable_ref(v::QuadExpr) = extract_variable_ref(v.aff)
+function constraint(P::ScalarParameter)
+    return 0
+end
 
+function constraint(X::ScalarSector)
+    return zero_profit(X)
+end
+
+function constraint(C::ScalarCommodity)
+    return market_clearance(C)
+end
+
+function constraint(H::ScalarConsumer)
+    return income_balance(H)
+end
+
+function constraint(A::ScalarAuxiliary)
+    D = MPSGE.aux_constraints(M)
+    return MPSGE.constraint(D[A])
+end
 
 
 """
     generate_report(M::MPSGEModel)
 
-Returns a dataframe with three columns, the variable, the value and the margin. 
+Returns a dataframe with three columns:
+
+    - `var`: The name of the variable
+    - `value`: The value of the variable
+    - `margin`: The value of the constraint for the variable
+
 The product of the value and the marge should be zero, if not the model has a 
 specification error.
 
@@ -17,30 +38,70 @@ they will reveal the error.
 """
 function generate_report(M::MPSGEModel)
 
-    m = jump_model(M)
-    
     out = []
-    mpsge_vars = MPSGE.get_variable.(all_variables(M))
-    
-    for ci in all_constraints(m; include_variable_in_set_constraints = false)
-        c = constraint_object(ci)
-        var = extract_variable_ref(c.func[2])
 
-        if var ∉ mpsge_vars
-            continue
-        end
-
-        
-
-        
-        val = value(var)
-        margin = value(c.func[1])
-
-        push!(out,(var,val,margin))
-        #mapping[extract_variable_ref(c.func[2])] = c.func[1]
+    for T in [v for v in MPSGE.all_variables(M) if !isa(v, ScalarParameter)]
+        push!(out, (var = name(T), value = value(T), margin = value(constraint(T))))
     end
 
-    df = DataFrame(out,[:var,:value,:margin])
-    return df
+    return DataFrame(out)
 
-end;
+end
+
+
+
+
+
+"""
+    variable_index(X::MPSGE.MPSGEScalarVariable, ind::Int)
+
+This is necessary as scalar variables do not store their index. 
+"""
+function variable_index(X::MPSGE.MPSGEScalarVariable, ind::Int)
+    return name(X) |>
+        x -> string(x) |>
+        x -> split(x, "[")[2] |>
+        x -> strip(x, ']') |>
+        x -> split(x, ",") |>
+        x -> string(x[ind])
+end
+
+"""
+    
+"""
+function report(X::MPSGE.MPSGEIndexedVariable)
+    index_names = MPSGE.index_names(X)
+    variables = reduce(vcat, MPSGE.subvariables(X))
+
+    return DataFrame(OrderedDict(
+        :var => name(X),
+        [ind => variable_index.(variables, i) for (i, ind) in enumerate(index_names)]...,
+        :value => value.(variables),
+        :margin => value.(constraint.(variables))
+    ))
+
+end
+
+
+function report(X::MPSGE.MPSGEScalarVariable)
+    return DataFrame(var = name(X), value = value(X), margin = value(constraint(X)))
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
