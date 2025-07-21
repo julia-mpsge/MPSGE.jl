@@ -40,7 +40,15 @@ function generate_report(M::MPSGEModel)
 
     out = []
 
-    for T in [v for v in MPSGE.all_variables(M) if !isa(v, ScalarParameter)]
+
+    vars_to_report = [
+        production_sectors(M);
+        commodities(M);
+        consumers(M); # update to demand_consumers when other PR gets merged
+        auxiliaries(M)
+    ]
+
+    for T in vars_to_report
         push!(out, (var = name(T), value = value(T), margin = value(constraint(T))))
     end
 
@@ -67,7 +75,14 @@ function variable_index(X::MPSGE.MPSGEScalarVariable, ind::Int)
 end
 
 """
-    
+    report(X::MPSGEVariable)
+
+Return a dataframe with the following columns:
+    - `var`: The name of the variable
+    - `value`: The value of the variable
+    - `margin`: The value of the constraint for the variable
+
+Plus one column for each index of the variable, with the index value.
 """
 function report(X::MPSGE.MPSGEIndexedVariable)
     index_names = MPSGE.index_names(X)
