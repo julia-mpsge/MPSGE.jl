@@ -166,7 +166,7 @@ end
 function build_constraints!(M::MPSGEModel)
     jm = jump_model(M)
 
-    for consumer in consumers(M)
+    for consumer in demand_consumers(M)
         set_start_value(consumer, consumer_income(consumer))
     end
 
@@ -178,7 +178,7 @@ function build_constraints!(M::MPSGEModel)
         MPSGE.market_clearance(C; virtual = true) ⟂ get_variable(C)
     )
     
-    JuMP.@constraint(jm, i_b[H = MPSGE.consumers(M)],
+    JuMP.@constraint(jm, i_b[H = MPSGE.demand_consumers(M)],
         MPSGE.income_balance(H; virtual = true) ⟂ get_variable(H)
     )
 
@@ -231,9 +231,14 @@ function solve!(m::AbstractMPSGEModel; kwargs...)
 
     consumer = nothing
     # Check if any (non-auxiliary) variables are fixed. If not, set numeraire
-    if sum(is_fixed.(MPSGE.production_sectors(m))) + sum(is_fixed.(commodities(m))) + sum(is_fixed.(consumers(m))) == 0 
-        consumer = argmax(consumer_income, consumers(m))
-        fix(consumer, consumer_income(consumer))
+    if sum(is_fixed.(MPSGE.production_sectors(m))) + sum(is_fixed.(commodities(m))) + sum(is_fixed.(demand_consumers(m))) == 0
+        value_function = ifelse(
+            termination_status(jm) == OPTIMIZE_NOT_CALLED,
+            start_value,
+            x -> is_fixed(x) ? fix_value(x) : value(x)
+        )
+        consumer = argmax(value_function, demand_consumers(m))
+        fix(consumer, value_function(consumer))
     end
 
     JuMP.optimize!(jm)

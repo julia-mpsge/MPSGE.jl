@@ -801,6 +801,12 @@ function production_sectors(m::MPSGEModel)
     #return collect(keys(m.productions))
 end
 
+
+
+function demand_consumers(m::MPSGEModel)
+    return consumer.(demands(m))
+end
+
 """
     sectors(C::Commodity)
 
