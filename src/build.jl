@@ -47,6 +47,9 @@ end
 
 function compensated_demand(S::ScalarSector, C::ScalarCommodity, nest::Symbol; virtual = false)
     N = [n for n∈netputs(S,C) if nest∈parent_name_chain(n)]
+    if isempty(N)
+        error("This netput (input or output) doesn't appear in a nest of that name")
+    end
     return sum(compensated_demand.(N, virtual = virtual); init = 0)
 end
 
