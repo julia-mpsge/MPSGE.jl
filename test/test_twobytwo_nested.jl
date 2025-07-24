@@ -112,6 +112,6 @@
     # @test JuMP.value(m._jump_model[Symbol("PU→X†U")]) ≈ two_by_two_scalar_results["DX.L","PL=1"]#    100.318205802571
     # @test JuMP.value(m._jump_model[Symbol("PU→Y†U")]) ≈ two_by_two_scalar_results["DY.L","PL=1"]#    49.6833066029729
 
-    @test_throws ErrorException("The commodity PL does not appear under the nest Q in sector U")      value(compensated_demand(U,PL,:Q))
+    @test_throws ArgumentError("The commodity PL does not appear under the nest Q in sector U")      value(compensated_demand(U,PL,:Q))
 end
 
