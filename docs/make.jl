@@ -12,8 +12,9 @@ const _PAGES = [
         "Intermediate Examples" => ["Tutorials/intermediate_examples/M22.md"],
         "Robinson Crusoe" => ["Tutorials/robinson_crusoe/introduction.md","Tutorials/robinson_crusoe/basic_rc.md"],
     ],
-    "How it works" => ["how_it_works.md"], 
-    "Docstrings" => ["docs.md"],
+    "Cookbook" => [],
+    "Mathematical Background" => ["how_it_works.md"], 
+    "API Reference" => ["docs.md"],
 ]
 
 
