@@ -173,7 +173,7 @@ df_benchmark = generate_report(M)
 # technique. If you plan to manipulate this dataframe, it will be useful to use
 # the DataFrames package
 
-using DataFrames.jl
+using DataFrames
 
 # You can also retrieve information using standard JuMP functions, for example
 
