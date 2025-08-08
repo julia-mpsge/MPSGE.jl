@@ -22,7 +22,6 @@ MPSGE is a high level language for creating computable general equilibrium (CGE)
     This documentation is under active development. 
 
 - **Tutorials**: Written for new users of MPSGE. Walks through the MPSGE modelling process step-by-step. 
-- **Cookbook**: Common recipes to add complexity to MPSGE.
 - **Mathematical Background**: MPSGE hides most of it's computation, this page describes precisely how MPSGE works.
 - **API Reference**: A complete list of the functions MPSGE makes available. This is the same information you get in the help entry for individual functions.
 

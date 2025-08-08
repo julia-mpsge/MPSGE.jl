@@ -12,7 +12,7 @@ const _PAGES = [
         "Intermediate Examples" => ["Tutorials/intermediate_examples/M22.md"],
         "Robinson Crusoe" => ["Tutorials/robinson_crusoe/introduction.md","Tutorials/robinson_crusoe/basic_rc.md"],
     ],
-    "Cookbook" => [],
+    #"Cookbook" => [],
     "Mathematical Background" => ["how_it_works.md"], 
     "API Reference" => ["docs.md"],
 ]
@@ -50,10 +50,3 @@ deploydocs(;
     branch = "gh-pages",
     push_preview = true
 )
-
-#deploydocs(
-#    repo = "https://github.com/uw-windc/WiNDC.jl",
-#    target = "build",
-#    branch = "gh-pages",
-#    versions = ["stable" => "v^", "v#.#" ],
-#)
