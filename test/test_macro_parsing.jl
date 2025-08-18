@@ -64,7 +64,6 @@ end
 
 
     @test_throws "The index i appears more than once. The index associated with each set must be unique." MPSGE.parse_mpsge_ref_sets(error, index_vars, index_sets, all_indices, :(i))
-    @test_throws "Unsupported syntax for reference set `i - I`. Must be of the form `i=S`, `i∈S` or `i in S`." MPSGE.parse_mpsge_ref_sets(error, index_vars, index_sets, all_indices, :(i - I))
 
     MPSGE.parse_mpsge_ref_sets(error, index_vars, index_sets, all_indices, :(j))
     @test index_vars == [:i]
@@ -82,6 +81,28 @@ end
     @test index_sets == [:($(Expr(:escape, :I))) for i in 1:3]
     @test all_indices == Any[:($(Expr(:escape, :($i)))) for i in [:i,:j,:k,:l]]
     
+    # Test other types of expressions
 
+    expected_indices = Any[:($(Expr(:escape, :($i)))) for i in [:i,:j,:k,:l]]
+    
+    MPSGE.parse_mpsge_ref_sets(error, index_vars, index_sets, all_indices, :(l+1))
+    push!(expected_indices, :($(Expr(:escape, :(l+1)))))
+    @test index_vars == [:i,:k,:l]
+    @test index_sets == [:($(Expr(:escape, :I))) for i in 1:3]
+    @test all_indices == expected_indices
+
+
+    MPSGE.parse_mpsge_ref_sets(error, index_vars, index_sets, all_indices, :(test[l]))
+    push!(expected_indices, :($(Expr(:escape, :(test[l])))))
+    @test index_vars == [:i,:k,:l]
+    @test index_sets == [:($(Expr(:escape, :I))) for i in 1:3]
+    @test all_indices == expected_indices
+
+
+    MPSGE.parse_mpsge_ref_sets(error, index_vars, index_sets, all_indices, :(l-a))
+    push!(expected_indices, :($(Expr(:escape, :(l-a)))))
+    @test index_vars == [:i,:k,:l]
+    @test index_sets == [:($(Expr(:escape, :I))) for i in 1:3]
+    @test all_indices == expected_indices
 
 end
