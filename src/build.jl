@@ -37,7 +37,13 @@ function compensated_demand(N::MPSGE.Netput; virtual = false)
     elasticities = [0, elasticity.(parent_chain[2:end])..., 0]
     sigma = elasticities[1:end-1] .- elasticities[2:end]
     v = virtual ? :virtual : :full
-    factors = cost_function.(parent_chain; virtual=v).^(sign .* sigma)
+
+    factors = zip(parent_chain, sigma) |>
+        collect |>
+        x -> filter(y -> y[2] != 0, x) .|>
+        x -> cost_function(x[1]; virtual=v)^(sign * x[2]) 
+
+    #factors = cost_function.(parent_chain; virtual=v).^(sign .* sigma)
     return @expression(jump_model(model(commodity(N))), sign * MPSGE.base_quantity(N) * prod(factors; init=1))
 end
 
