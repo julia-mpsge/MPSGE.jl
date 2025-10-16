@@ -9,27 +9,19 @@ function netput_dict(S::ScalarSector)
     return P.netputs
 end
 
-# This should be rewritten. It finds all the parent
-# names of the given netput. 
+
 function parent_name_chain(N::MPSGE.Netput)
-    found_parents = deepcopy(N.parents) #temporary?
-    parent_names = []
-    #print(found_parents)
-    while !isempty(found_parents)
-        n = pop!(found_parents)
-        if name(n)∉parent_names
-            push!(parent_names, MPSGE.name(n))
-        end
-        if !isnothing(MPSGE.parent(n))
-            push!(found_parents, MPSGE.parent(n))
-        end
-    end
-    return parent_names
+    parents = get_parent_chain(N; include_netput = false)
+    return name.(parents)
 end
 
 
-function get_parent_chain(n::MPSGE.Netput)
-    return [n, get_parent_chain(only(MPSGE.parent(n)))...]
+function get_parent_chain(n::MPSGE.Netput; include_netput = true)
+    if include_netput
+        return [n, get_parent_chain(only(MPSGE.parent(n)))...]
+    else
+        return get_parent_chain(only(MPSGE.parent(n)))
+    end
 end
 
 function get_parent_chain(n::MPSGE.Node)
