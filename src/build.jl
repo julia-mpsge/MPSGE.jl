@@ -27,18 +27,26 @@ function parent_name_chain(N::MPSGE.Netput)
     return parent_names
 end
 
+
+function get_parent_chain(n::MPSGE.Netput)
+    return [n, get_parent_chain(only(MPSGE.parent(n)))...]
+end
+
+function get_parent_chain(n::MPSGE.Node)
+    return [n, get_parent_chain(MPSGE.parent(n))...]
+end
+
+get_parent_chain(::Nothing) = []
+
 function compensated_demand(N::MPSGE.Netput; virtual = false)
-    child, parent = N, MPSGE.parent(N)[1]
     sign = -MPSGE.netput_sign(N)
-    compensated_demand = sign * MPSGE.base_quantity(N)
+
+    parent_chain = get_parent_chain(N)
+    elasticities = [0, elasticity.(parent_chain[2:end])..., 0]
+    sigma = elasticities[1:end-1] .- elasticities[2:end]
     v = virtual ? :virtual : :full
-    while !isnothing(parent)
-        if MPSGE.elasticity(parent)!=0
-            compensated_demand *= (cost_function(parent; virtual=v)/cost_function(child; virtual=v)) ^ (sign*MPSGE.elasticity(parent))
-        end
-        child,parent = parent, MPSGE.parent(parent)
-    end
-    return compensated_demand
+    factors = cost_function.(parent_chain; virtual=v).^(sign .* sigma)
+    return @expression(jump_model(model(commodity(N))), sign * MPSGE.base_quantity(N) * prod(factors; init=1))
 end
 
 function compensated_demand(S::ScalarSector, C::ScalarCommodity; virtual = false)
