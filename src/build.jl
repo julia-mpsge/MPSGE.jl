@@ -9,36 +9,42 @@ function netput_dict(S::ScalarSector)
     return P.netputs
 end
 
-# This should be rewritten. It finds all the parent
-# names of the given netput. 
+
 function parent_name_chain(N::MPSGE.Netput)
-    found_parents = deepcopy(N.parents) #temporary?
-    parent_names = []
-    #print(found_parents)
-    while !isempty(found_parents)
-        n = pop!(found_parents)
-        if name(n)∉parent_names
-            push!(parent_names, MPSGE.name(n))
-        end
-        if !isnothing(MPSGE.parent(n))
-            push!(found_parents, MPSGE.parent(n))
-        end
-    end
-    return parent_names
+    parents = get_parent_chain(N; include_netput = false)
+    return name.(parents)
 end
 
-function compensated_demand(N::MPSGE.Netput; virtual = false)
-    child, parent = N, MPSGE.parent(N)[1]
-    sign = -MPSGE.netput_sign(N)
-    compensated_demand = sign * MPSGE.base_quantity(N)
-    v = virtual ? :virtual : :full
-    while !isnothing(parent)
-        if MPSGE.elasticity(parent)!=0
-            compensated_demand *= (cost_function(parent; virtual=v)/cost_function(child; virtual=v)) ^ (sign*MPSGE.elasticity(parent))
-        end
-        child,parent = parent, MPSGE.parent(parent)
+
+function get_parent_chain(n::MPSGE.Netput; include_netput = true)
+    if include_netput
+        return [n, get_parent_chain(only(MPSGE.parent(n)))...]
+    else
+        return get_parent_chain(only(MPSGE.parent(n)))
     end
-    return compensated_demand
+end
+
+function get_parent_chain(n::MPSGE.Node)
+    return [n, get_parent_chain(MPSGE.parent(n))...]
+end
+
+get_parent_chain(::Nothing) = []
+
+function compensated_demand(N::MPSGE.Netput; virtual = false)
+    sign = -MPSGE.netput_sign(N)
+
+    parent_chain = get_parent_chain(N)
+    elasticities = [0, elasticity.(parent_chain[2:end])..., 0]
+    sigma = elasticities[1:end-1] .- elasticities[2:end]
+    v = virtual ? :virtual : :full
+
+    factors = zip(parent_chain, sigma) |>
+        collect |>
+        x -> filter(y -> y[2] != 0, x) .|>
+        x -> cost_function(x[1]; virtual=v)^(sign * x[2]) 
+
+    #factors = cost_function.(parent_chain; virtual=v).^(sign .* sigma)
+    return @expression(jump_model(model(commodity(N))), sign * MPSGE.base_quantity(N) * prod(factors; init=1))
 end
 
 function compensated_demand(S::ScalarSector, C::ScalarCommodity; virtual = false)
