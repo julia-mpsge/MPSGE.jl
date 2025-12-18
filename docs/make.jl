@@ -7,6 +7,10 @@ DocMeta.setdocmeta!(MPSGE, :DocTestSetup, :(using MPSGE); recursive=true)
 
 const _PAGES = [
     "Introduction" => ["index.md"],
+    "Overview" => [
+        "overview/introduction.md",
+        "overview/variables.md",
+    ],
     "Tutorials" => [
         "Getting Started" => [
             "Tutorials/getting_started/introduction.md", 
