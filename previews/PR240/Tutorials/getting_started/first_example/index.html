@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Getting Started with MPSGE · MPSGE.jl</title><meta name="title" content="Getting Started with MPSGE · MPSGE.jl"/><meta property="og:title" content="Getting Started with MPSGE · MPSGE.jl"/><meta property="twitter:title" content="Getting Started with MPSGE · MPSGE.jl"/><meta name="description" content="Documentation for MPSGE.jl."/><meta property="og:description" content="Documentation for MPSGE.jl."/><meta property="twitter:description" content="Documentation for MPSGE.jl."/><meta property="og:url" content="https://julia-mpsge.github.io/MPSGE.jl/Tutorials/getting_started/first_example/"/><meta property="twitter:url" content="https://julia-mpsge.github.io/MPSGE.jl/Tutorials/getting_started/first_example/"/><link rel="canonical" href="https://julia-mpsge.github.io/MPSGE.jl/Tutorials/getting_started/first_example/"/><script data-outdated-warner src="../../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../../assets/documenter.js"></script><script src="../../../search_index.js"></script><script src="../../../siteinfo.js"></script><script src="../../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../../../">MPSGE.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><span class="tocitem">Introduction</span><ul><li><a class="tocitem" href="../../../">MPSGE</a></li></ul></li><li><span class="tocitem">Overview</span><ul><li><a class="tocitem" href="../../../overview/introduction/">Overview of MPSGE</a></li><li><a class="tocitem" href="../../../overview/variables/">MPSGE Variables</a></li><li><a class="tocitem" href="../../../overview/production/">Production Blocks</a></li><li><a class="tocitem" href="../../../overview/demand/">Demand Blocks</a></li></ul></li><li><span class="tocitem">Tutorials</span><ul><li><input class="collapse-toggle" id="menuitem-3-1" type="checkbox" checked/><label class="tocitem" for="menuitem-3-1"><span class="docs-label">Getting Started</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../introduction/">Introduction</a></li><li class="is-active"><a class="tocitem" href>Getting Started with MPSGE</a><ul class="internal"><li><a class="tocitem" href="#Statement-of-Problem"><span>Statement of Problem</span></a></li><li><a class="tocitem" href="#Modeling-the-Problem"><span>Modeling the Problem</span></a></li><li><a class="tocitem" href="#Expanding-the-Model"><span>Expanding the Model</span></a></li><li><a class="tocitem" href="#Plotting-Welfare"><span>Plotting Welfare</span></a></li></ul></li></ul></li><li><input class="collapse-toggle" id="menuitem-3-2" type="checkbox"/><label class="tocitem" for="menuitem-3-2"><span class="docs-label">Intermediate Examples</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../intermediate_examples/m22/">Closed <span>$2\times2$</span> Economy with Intermediate Inputs and Nesting</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-3-3" type="checkbox"/><label class="tocitem" for="menuitem-3-3"><span class="docs-label">Robinson Crusoe</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../robinson_crusoe/introduction/">Robinson Crusoe - Introduction</a></li><li><a class="tocitem" href="../../robinson_crusoe/basic_rc/">One Consumer, One Producer, Two Goods</a></li></ul></li></ul></li><li><span class="tocitem">Mathematical Background</span><ul><li><a class="tocitem" href="../../../how_it_works/">How MPSGE Works</a></li></ul></li><li><span class="tocitem">API Reference</span><ul><li><a class="tocitem" href="../../../docs/">API Reference</a></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Tutorials</a></li><li><a class="is-disabled">Getting Started</a></li><li class="is-active"><a href>Getting Started with MPSGE</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Getting Started with MPSGE</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/julia-mpsge/MPSGE.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/julia-mpsge/MPSGE.jl/blob/main/docs/src/Tutorials/getting_started/first_example.jl" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Getting-Started-with-MPSGE"><a class="docs-heading-anchor" href="#Getting-Started-with-MPSGE">Getting Started with MPSGE</a><a id="Getting-Started-with-MPSGE-1"></a><a class="docs-heading-anchor-permalink" href="#Getting-Started-with-MPSGE" title="Permalink"></a></h1><p>In this opening tutorial we will introduce the basics of MPSGE. We will start with a simple example and build from there.</p><h2 id="Statement-of-Problem"><a class="docs-heading-anchor" href="#Statement-of-Problem">Statement of Problem</a><a id="Statement-of-Problem-1"></a><a class="docs-heading-anchor-permalink" href="#Statement-of-Problem" title="Permalink"></a></h2><p>We start with our data. The following table is related to a social accounting matrix, SAM, in that the row and columns both sum to zero.</p><table><tr><th style="text-align: right">Markets</th><th style="text-align: right">X</th><th style="text-align: right">Y</th><th style="text-align: right">W</th><th style="text-align: right">CONS</th></tr><tr><td style="text-align: right">PX</td><td style="text-align: right">100</td><td style="text-align: right"></td><td style="text-align: right">-100</td><td style="text-align: right"></td></tr><tr><td style="text-align: right">PY</td><td style="text-align: right"></td><td style="text-align: right">100</td><td style="text-align: right">-100</td><td style="text-align: right"></td></tr><tr><td style="text-align: right">PW</td><td style="text-align: right"></td><td style="text-align: right"></td><td style="text-align: right">200</td><td style="text-align: right">-200</td></tr><tr><td style="text-align: right">PL</td><td style="text-align: right">-25</td><td style="text-align: right">-75</td><td style="text-align: right"></td><td style="text-align: right">100</td></tr><tr><td style="text-align: right">PK</td><td style="text-align: right">-75</td><td style="text-align: right">-25</td><td style="text-align: right"></td><td style="text-align: right">100</td></tr></table><p>There are two types of columns in this matrix, <code>sectors</code> (<code>X</code>, <code>Y</code>, <code>W</code>) and <code>consumers</code> (CONS). These take in and produce commodities (<code>PX</code>, <code>PY</code>, <code>PW</code>, <code>PL</code>, <code>PK</code>). For example, sector <code>X</code> produces 100 units of <code>PX</code> and consumes 25 units of <code>PL</code> and 75 units of <code>PK</code>. This is the justification for why each column sums to zero, the inputs and outputs are balanced. Technically, the consumer, <code>CONS</code>, does not &quot;produce&quot; anything, the consumer is demanding <code>PW</code> and endowing the market with <code>PL</code> and <code>PK</code>.</p><p>The <code>commodities</code> (<code>PX</code>, <code>PY</code>, <code>PW</code>, <code>PL</code>, <code>PK</code>) are represented in rows. For example, <code>PX</code> is produced in <code>X</code> and consumed in <code>W</code>. We assume all generated commodities get used, so the sum of the rows is zero.</p><div class="admonition is-info" id="Note-5ca549793eeca3d4"><header class="admonition-header">Note<a class="admonition-anchor" href="#Note-5ca549793eeca3d4" title="Permalink"></a></header><div class="admonition-body"><p>We&#39;ve explicity used <code>units</code> in the discussion above. The values in the matrix   are prices times quantities, but interpreting them in this context makes   modelling more difficult. It is better to think of these as &quot;representative   quantities&quot; and then set initial prices to be 1. We will return to this dicsussion   later, but it&#39;s useful to keep in mind.</p></div></div><p>In this example we see <code>PX</code> and <code>PY</code> as the commodities produced by sectors <code>X</code> and <code>Y</code> respectively. <code>PW</code> is the commodity produced by sector <code>W</code> and represets welfare of the consumers, they want to consume <code>PX</code> and <code>PY</code>. <code>PL</code> and <code>PK</code> are the factors of production, labor and capital, respectively.</p><h2 id="Modeling-the-Problem"><a class="docs-heading-anchor" href="#Modeling-the-Problem">Modeling the Problem</a><a id="Modeling-the-Problem-1"></a><a class="docs-heading-anchor-permalink" href="#Modeling-the-Problem" title="Permalink"></a></h2><p>We will now define the model. We start by loading the MPSGE package and defining our model.</p><pre><code class="language-julia hljs">using MPSGE</code></pre><p>Define the model</p><pre><code class="language-julia hljs">M_basic = MPSGEModel()</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">
+$Sectors:
+
+$Commodities:
+
+$Consumers:
+
+
+</code></pre><p>Initialize the <a href="../../../docs/#MPSGE.@sectors-Tuple{Any, Any}"><code>@sectors</code></a>, <a href="../../../docs/#MPSGE.@commodities-Tuple{Any, Any}"><code>@commodities</code></a>, and <a href="../../../docs/#MPSGE.@consumer-Tuple"><code>@consumer</code></a>. We use the plural form of <code>sectors</code> and <code>commodities</code> as we have multiple of each, and the singular form of <code>consumer</code> as we only have one consumer.</p><pre><code class="language-julia hljs">@sectors(M_basic, begin
+    X, (description = &quot;Sector X&quot;)
+    Y
+    W
+end)
+
+@commodities(M_basic, begin
+    PX
+    PY
+    PW
+    PL
+    PK
+end)
+
+@consumer(M_basic, CONS)</code></pre><p>We now define the production and demand relationships. We use the <a href="../../../docs/#MPSGE.@production-Tuple"><code>@production</code></a> and <code>@demand</code> macros to define these relationships.</p><p>In this first example we will assume a Cobb-Douglass production function on the inputs of each sector. To do this we set the elasticity of substitution, <code>s</code>, to 1. Since each sector has only a single output the elasticity of transformation, <code>t</code>, is largely irrelevant, but we set it to zero.</p><p>At this point you should compare these values to the matrix above. The values in each block correspond to columns in the matrix.</p><pre><code class="language-julia hljs">@production(M_basic, X, [s=1, t=0], begin
+    @output(PX, 100, t)
+    @input(PL, 25, s)
+    @input(PK, 75, s)
+end)
+
+@production(M_basic, Y, [s=1, t=0], begin
+    @output(PY, 100, t)
+    @input(PL, 75, s)
+    @input(PK, 25, s)
+end)
+
+@production(M_basic, W, [s=1, t=0], begin
+    @output(PW, 200, t)
+    @input(PX, 100, s)
+    @input(PY, 100, s)
+end)
+
+@demand(M_basic, CONS, begin
+    @final_demand(PW, 200)
+    @endowment(PL, 100)
+    @endowment(PK, 100)
+end)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">$Demand: CONS
+    D: PW    Q: 200.0
+    E: PK    Q: 100
+    E: PL    Q: 100
+</code></pre><p>In this simple model it can be useful to print the model to verify everything is as expected. This is not a standard step, but it can be useful for debugging.</p><pre><code class="language-julia hljs">M_basic</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">
+$Sectors:
+W
+X  --  Sector X
+Y
+
+$Commodities:
+PY
+PK
+PL
+PX
+PW
+
+$Consumers:
+CONS
+
+$Production: W
+:t = 0
+  O:PW    Q:200
+
+:s = 1
+  I:PX    Q:100
+  I:PY    Q:100
+
+$Production: X
+:t = 0
+  O:PX    Q:100
+
+:s = 1
+  I:PL    Q:25
+  I:PK    Q:75
+
+$Production: Y
+:t = 0
+  O:PY    Q:100
+
+:s = 1
+  I:PL    Q:75
+  I:PK    Q:25
+
+
+$Demand: CONS
+    D: PW    Q: 200.0
+    E: PK    Q: 100
+    E: PL    Q: 100
+
+</code></pre><p>Now we solve the model. We use the <a href="../../../docs/#MPSGE.solve!-Tuple{MPSGE.AbstractMPSGEModel}"><code>solve!</code></a> function to solve the model. The first solve is usually at the benchmark level, which means all values are as they appear in the table. This means the system should already be solved and we should see that reflected in the output, the residual should be zero (or close to it)</p><pre><code class="language-julia hljs">solve!(M_basic, cumulative_iteration_limit=0)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Reading options file /tmp/jl_T5mmOF
+ &gt; cumulative_iteration_limit 0
+Read of options file complete.
+
+Path 5.0.03 (Fri Jun 26 09:54:13 2020)
+Written by Todd Munson, Steven Dirkse, Youngdae Kim, and Michael Ferris
+Preprocessed size   : 14
+
+Major Iteration Log
+major minor  func  grad  residual    step  type prox    inorm  (label)
+    0     0     1     1 0.0000e+00           I 0.0e+00 0.0e+00 (z_p[X)
+
+Major Iterations. . . . 0
+Minor Iterations. . . . 0
+Restarts. . . . . . . . 0
+Crash Iterations. . . . 0
+Gradient Steps. . . . . 0
+Function Evaluations. . 1
+Gradient Evaluations. . 1
+Basis Time. . . . . . . 0.000001
+Total Time. . . . . . . 1.302747
+Residual. . . . . . . . 0.000000e+00
+Postsolved residual: 0.0000e+00
+
+
+Solver Status: LOCALLY_SOLVED
+Model Status: FEASIBLE_POINT
+
+Default price normalization using income for CONS as numeraire, with the value of 200.0.</code></pre><p>This model solves as expected. We can view the solution as a dataframe using the <a href="../../../docs/#MPSGE.generate_report-Tuple{MPSGEModel}"><code>generate_report</code></a> function.</p><pre><code class="language-julia hljs">generate_report(M_basic)</code></pre><div><div style = "float: left;"><span>9×3 DataFrame</span></div><div style = "clear: both;"></div></div><div class = "data-frame" style = "overflow-x: scroll;"><table class = "data-frame" style = "margin-bottom: 6px;"><thead><tr class = "columnLabelRow"><th class = "stubheadLabel" style = "font-weight: bold; text-align: right;">Row</th><th style = "text-align: left;">var</th><th style = "text-align: left;">value</th><th style = "text-align: left;">margin</th></tr><tr class = "columnLabelRow"><th class = "stubheadLabel" style = "font-weight: bold; text-align: right;"></th><th title = "JuMP.VariableRef" style = "text-align: left;">GenericV…</th><th title = "Float64" style = "text-align: left;">Float64</th><th title = "Float64" style = "text-align: left;">Float64</th></tr></thead><tbody><tr class = "dataRow"><td class = "rowLabel" style = "font-weight: bold; text-align: right;">1</td><td style = "text-align: left;">PY</td><td style = "text-align: right;">1.0</td><td style = "text-align: right;">0.0</td></tr><tr class = "dataRow"><td class = "rowLabel" style = "font-weight: bold; text-align: right;">2</td><td style = "text-align: left;">PK</td><td style = "text-align: right;">1.0</td><td style = "text-align: right;">0.0</td></tr><tr class = "dataRow"><td class = "rowLabel" style = "font-weight: bold; text-align: right;">3</td><td style = "text-align: left;">PL</td><td style = "text-align: right;">1.0</td><td style = "text-align: right;">0.0</td></tr><tr class = "dataRow"><td class = "rowLabel" style = "font-weight: bold; text-align: right;">4</td><td style = "text-align: left;">PX</td><td style = "text-align: right;">1.0</td><td style = "text-align: right;">0.0</td></tr><tr class = "dataRow"><td class = "rowLabel" style = "font-weight: bold; text-align: right;">5</td><td style = "text-align: left;">PW</td><td style = "text-align: right;">1.0</td><td style = "text-align: right;">0.0</td></tr><tr class = "dataRow"><td class = "rowLabel" style = "font-weight: bold; text-align: right;">6</td><td style = "text-align: left;">W</td><td style = "text-align: right;">1.0</td><td style = "text-align: right;">0.0</td></tr><tr class = "dataRow"><td class = "rowLabel" style = "font-weight: bold; text-align: right;">7</td><td style = "text-align: left;">X</td><td style = "text-align: right;">1.0</td><td style = "text-align: right;">0.0</td></tr><tr class = "dataRow"><td class = "rowLabel" style = "font-weight: bold; text-align: right;">8</td><td style = "text-align: left;">Y</td><td style = "text-align: right;">1.0</td><td style = "text-align: right;">0.0</td></tr><tr class = "dataRow"><td class = "rowLabel" style = "font-weight: bold; text-align: right;">9</td><td style = "text-align: left;">CONS</td><td style = "text-align: right;">200.0</td><td style = "text-align: right;">0.0</td></tr></tbody></table></div><p>If the model had not solved we would use this report to identify which marginal value was not zero and then adjust the model accordingly. The margin value is is a measure of how far the model is from solving in the given variable.</p><p>The last line of the report shows what variable and value was selected as numeraire. In this case it was <code>CONS</code> with a value of 200. If no varaibles are fixed before solve, the largest consumer is selected as the numeraire. To set a different numeraire use the <code>fix</code> function to set the value of a variable.</p><p>You can access the values of the variables directly. For example, to get the value of <code>PX</code> you can use the following code.</p><pre><code class="language-julia hljs">value(PX)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">1.0</code></pre><p>If you have multiple models, or your model is created in a function, you can also access variables using the model. For example, to get the value of <code>PX</code> in the <code>M_basic</code> model you can use the following code.</p><pre><code class="language-julia hljs">value(M_basic[:PX])</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">1.0</code></pre><h2 id="Expanding-the-Model"><a class="docs-heading-anchor" href="#Expanding-the-Model">Expanding the Model</a><a id="Expanding-the-Model-1"></a><a class="docs-heading-anchor-permalink" href="#Expanding-the-Model" title="Permalink"></a></h2><p>The model <code>M_basic</code> is a simple model that demonstrates the basic structure of an MPSGE model. However, it is not a very interesting model, all it does is represent the data in the table. We can&#39;t change anything or ask questions, like what happens if we impose a tax on labor <code>PL</code> or capital <code>PK</code>?</p><p>Let&#39;s expand the model to include taxes on labor and capital. To do this we write a new model and introduce some parameters.</p><pre><code class="language-julia hljs">M_tax = MPSGEModel()</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">
+$Sectors:
+
+$Commodities:
+
+$Consumers:
+
+
+</code></pre><p>We introduce two parameters, <code>labor_tax</code> and <code>capital_tax</code>. These will be used to set the tax rates on labor and capital. We set the default values to zero, but we can change these values later.</p><pre><code class="language-julia hljs">@parameters(M_tax, begin
+    labor_tax, 0
+    capital_tax, 0
+end)
+
+@sectors(M_tax, begin
+    X, (description = &quot;Sector X&quot;)
+    Y
+    W
+end)
+
+@commodities(M_tax, begin
+    PX
+    PY
+    PW
+    PL
+    PK
+end)
+
+@consumer(M_tax, CONS)</code></pre><p>We are going to impose the labor and capital taxes on the production of <code>X</code>. We do this by adding the taxes to the inputs of <code>X</code>. Taxes need a consumer, to collect the tax, and a tax rate. You can add taxes to either inputs or outputs, but in this case we are adding them to the inputs.</p><pre><code class="language-julia hljs">@production(M_tax, X, [s=1, t=0], begin
+    @output(PX, 100, t)
+    @input(PL, 25, s, taxes = [Tax(CONS, labor_tax)])
+    @input(PK, 75, s, taxes = [Tax(CONS, capital_tax)])
+end)
+
+@production(M_tax, Y, [s=1, t=0], begin
+    @output(PY, 100, t)
+    @input(PL, 75, s)
+    @input(PK, 25, s)
+end)
+
+@production(M_tax, W, [s=1, t=0], begin
+    @output(PW, 200, t)
+    @input(PX, 100, s)
+    @input(PY, 100, s)
+end)
+
+@demand(M_tax, CONS, begin
+    @final_demand(PW, 200)
+    @endowment(PL, 100)
+    @endowment(PK, 100)
+end)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">$Demand: CONS
+    D: PW    Q: 200.0
+    E: PL    Q: 100
+    E: PK    Q: 100
+</code></pre><p>First, we check the model at the benchmark level. This is to ensure we&#39;ve entered our data correctly. We will also fix the numeraire to be <code>PW</code> and set the value to 1. This is not necessary, but it in this case it makes the results easier to interpret as it is the only welfare price variable.</p><pre><code class="language-julia hljs">fix(PW, 1)
+
+solve!(M_tax, cumulative_iteration_limit=0)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Reading options file /tmp/jl_jYECKw
+ &gt; cumulative_iteration_limit 0
+Read of options file complete.
+
+Path 5.0.03 (Fri Jun 26 09:54:13 2020)
+Written by Todd Munson, Steven Dirkse, Youngdae Kim, and Michael Ferris
+Preprocessed size   : 14
+
+Major Iteration Log
+major minor  func  grad  residual    step  type prox    inorm  (label)
+    0     0     1     1 0.0000e+00           I 0.0e+00 0.0e+00 (z_p[X)
+
+Major Iterations. . . . 0
+Minor Iterations. . . . 0
+Restarts. . . . . . . . 0
+Crash Iterations. . . . 0
+Gradient Steps. . . . . 0
+Function Evaluations. . 1
+Gradient Evaluations. . 1
+Basis Time. . . . . . . 0.000001
+Total Time. . . . . . . 0.000093
+Residual. . . . . . . . 0.000000e+00
+Postsolved residual: 0.0000e+00
+
+
+Solver Status: LOCALLY_SOLVED
+Model Status: FEASIBLE_POINT</code></pre><p>Let&#39;s impose a 10% tax on labor. We do this by setting the value of <code>labor_tax</code> to 0.1 and then solving the model. Notice we do not set the cumulative iteration limit to zero, this is because we are not at the benchmark level. Feel free to try, you&#39;ll see what an unbalanced model looks like.</p><pre><code class="language-julia hljs">set_value!(labor_tax, 0.1)
+
+solve!(M_tax)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Reading options file /tmp/jl_K8mIbp
+ &gt; cumulative_iteration_limit 10000
+Read of options file complete.
+
+Path 5.0.03 (Fri Jun 26 09:54:13 2020)
+Written by Todd Munson, Steven Dirkse, Youngdae Kim, and Michael Ferris
+
+Preprocessed size   : 14
+
+Crash Log
+major  func  diff  size  residual    step       prox   (label)
+    0     0             2.4183e+00             0.0e+00 (i_b[CONS)
+    1     1     0    14 6.0268e-02  1.0e+00    0.0e+00 (m_c[PX)
+pn_search terminated: no basis change.
+
+Major Iteration Log
+major minor  func  grad  residual    step  type prox    inorm  (label)
+    0     0     2     2 6.0268e-02           I 0.0e+00 3.2e-02 (m_c[PX)
+    1     1     3     3 1.5178e-05  1.0e+00 SO 0.0e+00 1.1e-05 (m_c[PY)
+    2     1     4     4 1.2114e-12  1.0e+00 SO 0.0e+00 1.1e-12 (m_c[PL)
+
+Major Iterations. . . . 2
+Minor Iterations. . . . 2
+Restarts. . . . . . . . 0
+Crash Iterations. . . . 1
+Gradient Steps. . . . . 0
+Function Evaluations. . 4
+Gradient Evaluations. . 4
+Basis Time. . . . . . . 0.000027
+Total Time. . . . . . . 0.000243
+Residual. . . . . . . . 1.211351e-12
+Postsolved residual: 1.2114e-12
+
+
+Solver Status: LOCALLY_SOLVED
+Model Status: FEASIBLE_POINT</code></pre><p>We see the solver output has changed. The residual should be, essentially, zero and the solve has gone through a few iterations. Let&#39;s generate a report to see the results.</p><pre><code class="language-julia hljs">generate_report(M_tax)
+
+value(PL/PW)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">0.9768633227194871</code></pre><p>We see some interesting information in this model. The real wage <code>PL/PW</code> has declined by 2.3% (from 1 to .976), while the return to capital, <code>PK</code> (in real terms) is, essentially, unchanged. The price of <code>Y</code> (the labor-intensive good) decreases because the tax is applied on the other sector.  The price of the capital-intensive good, <code>X</code>, increases because it is taxed while the other good is not.&quot;</p><p>What does this really mean? What impact does have on the welfare of the consumer? We can answer this question by calculating the welfare index of the consumer. This is the consumer value divided by the price of welfare, <code>PW</code>. We&#39;ll store this value in a variable, <code>labor_tax_welfare</code> for later use.</p><pre><code class="language-julia hljs">labor_tax_welfare = value(CONS/PW)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">199.91621488212903</code></pre><p>What we see is that the overall welfare of the consumer has decreased, the base line was 200 and now it&#39;s 199.916. This makes intuitive sense, an imposed tax increases the cost of production, which is passed on to the consumer.</p><p>Now let&#39;s impose a 10% tax on capital. To do this we reset the value of <code>labor_tax</code> to zero and set the value of <code>capital_tax</code> to 0.1. We then solve the model and generate a report.</p><pre><code class="language-julia hljs">set_value!(labor_tax, 0.0)
+set_value!(capital_tax, 0.1)
+
+solve!(M_tax)
+
+generate_report(M_tax)</code></pre><div><div style = "float: left;"><span>9×3 DataFrame</span></div><div style = "clear: both;"></div></div><div class = "data-frame" style = "overflow-x: scroll;"><table class = "data-frame" style = "margin-bottom: 6px;"><thead><tr class = "columnLabelRow"><th class = "stubheadLabel" style = "font-weight: bold; text-align: right;">Row</th><th style = "text-align: left;">var</th><th style = "text-align: left;">value</th><th style = "text-align: left;">margin</th></tr><tr class = "columnLabelRow"><th class = "stubheadLabel" style = "font-weight: bold; text-align: right;"></th><th title = "JuMP.VariableRef" style = "text-align: left;">GenericV…</th><th title = "Float64" style = "text-align: left;">Float64</th><th title = "Float64" style = "text-align: left;">Float64</th></tr></thead><tbody><tr class = "dataRow"><td class = "rowLabel" style = "font-weight: bold; text-align: right;">1</td><td style = "text-align: left;">PL</td><td style = "text-align: right;">0.999568</td><td style = "text-align: right;">-1.13474e-10</td></tr><tr class = "dataRow"><td class = "rowLabel" style = "font-weight: bold; text-align: right;">2</td><td style = "text-align: left;">PW</td><td style = "text-align: right;">1.0</td><td style = "text-align: right;">1.69626e-8</td></tr><tr class = "dataRow"><td class = "rowLabel" style = "font-weight: bold; text-align: right;">3</td><td style = "text-align: left;">PK</td><td style = "text-align: right;">0.931415</td><td style = "text-align: right;">-1.36739e-8</td></tr><tr class = "dataRow"><td class = "rowLabel" style = "font-weight: bold; text-align: right;">4</td><td style = "text-align: left;">PY</td><td style = "text-align: right;">0.982076</td><td style = "text-align: right;">6.11195e-10</td></tr><tr class = "dataRow"><td class = "rowLabel" style = "font-weight: bold; text-align: right;">5</td><td style = "text-align: left;">PX</td><td style = "text-align: right;">1.01825</td><td style = "text-align: right;">-4.79561e-9</td></tr><tr class = "dataRow"><td class = "rowLabel" style = "font-weight: bold; text-align: right;">6</td><td style = "text-align: left;">CONS</td><td style = "text-align: right;">199.914</td><td style = "text-align: right;">1.69905e-10</td></tr><tr class = "dataRow"><td class = "rowLabel" style = "font-weight: bold; text-align: right;">7</td><td style = "text-align: left;">W</td><td style = "text-align: right;">0.999568</td><td style = "text-align: right;">0.0</td></tr><tr class = "dataRow"><td class = "rowLabel" style = "font-weight: bold; text-align: right;">8</td><td style = "text-align: left;">X</td><td style = "text-align: right;">0.981651</td><td style = "text-align: right;">0.0</td></tr><tr class = "dataRow"><td class = "rowLabel" style = "font-weight: bold; text-align: right;">9</td><td style = "text-align: left;">Y</td><td style = "text-align: right;">1.01781</td><td style = "text-align: right;">0.0</td></tr></tbody></table></div><p>Again, let&#39;s calculate the welfare index of the consumer.</p><pre><code class="language-julia hljs">capital_tax_welfare = value(CONS/PW)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">199.91351193637155</code></pre><p>Subtracting, it appears the <code>labor_tax</code> is less harmful to the consumer than the <code>capital_tax</code>.</p><pre><code class="language-julia hljs">labor_tax_welfare - capital_tax_welfare</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">0.002702945757476982</code></pre><h2 id="Plotting-Welfare"><a class="docs-heading-anchor" href="#Plotting-Welfare">Plotting Welfare</a><a id="Plotting-Welfare-1"></a><a class="docs-heading-anchor-permalink" href="#Plotting-Welfare" title="Permalink"></a></h2><p>Let&#39;s make a graph comparing the welfare of the consumer under different tax rates. We&#39;ll use the PlotlyJS and DataFrames packages.</p><pre><code class="language-julia hljs">using PlotlyJS, DataFrames</code></pre><p>We&#39;ll be solving about 100 models, so we&#39;ll suppress the output.</p><pre><code class="language-julia hljs">set_silent(M_tax)</code></pre><p>The idea is to initialize a DataFrame and then loop over a range of tax rates.</p><pre><code class="language-julia hljs">df = DataFrame()
+for i in 0:.01:.5
+    set_value!(labor_tax, i)
+    set_value!(capital_tax, 0)
+    solve!(M_tax)
+    push!(df, (tax_value = i, type = :labor, welfare = value(CONS/PW)))
+
+    set_value!(labor_tax, 0)
+    set_value!(capital_tax, i)
+    solve!(M_tax)
+    push!(df, (tax_value = i, type = :capital, welfare = value(CONS/PW)))
+end
+
+p = plot(df, x=:tax_value, y=:welfare, color=:type,
+    Layout(title= &quot;Labor vs Capital tax rates&quot;)
+)</code></pre><div id='CiR6PdRadW' class='' style=';'></div>
+<script type="module">
+    import Plotly from "https://esm.sh/plotly.js-dist-min@2.24.2"
+    const PLOT = document.getElementById("CiR6PdRadW")
+    const plot_obj = {"data": [{"showlegend":true,"marker":{"color":"#EF553B"},"xaxis":"x","y":[200.0,199.99907017702031,199.99631156531228,199.99176874155674,199.98548527022953,199.9775033696944,199.96786403569175,199.95660708606587,199.9437712034502,199.92939397601492,199.91351193637155,199.896160598731,199.87737449439416,199.85718720566302,199.83563139824875,199.81273885224672,199.78854049175678,199.76306641320775,199.73634635625115,199.70840816799463,199.67927993155678,199.64898871595284,199.61756089180275,199.585022153755,199.55139754202878,199.51671146311614,199.48098770968014,199.44424947968938,199.40651939482254,199.36781951817582,199.32817137130337,199.2875959506269,199.24611374323177,199.2037447420877,199.1605084607103,199.11642394729498,199.07150979833943,199.02578417178256,198.97926479967515,198.93196900040616,198.88391369050024,198.8351153960062,198.78559026349282,198.73535407066728,198.68442223663249,198.63280983179794,198.58053158745682,198.52760190504426,198.47403486508813,198.41984423586533,198.36504348177417],"type":"scatter","name":"capital","yaxis":"y","legendgroup":"capital","x":[0.0,0.01,0.02,0.03,0.04,0.05,0.06,0.07,0.08,0.09,0.1,0.11,0.12,0.13,0.14,0.15,0.16,0.17,0.18,0.19,0.2,0.21,0.22,0.23,0.24,0.25,0.26,0.27,0.28,0.29,0.3,0.31,0.32,0.33,0.34,0.35,0.36,0.37,0.38,0.39,0.4,0.41,0.42,0.43,0.44,0.45,0.46,0.47,0.48,0.49,0.5]},{"showlegend":true,"marker":{"color":"#636efa"},"xaxis":"x","y":[200.0,199.99907333131912,199.9963358167653,199.99184936895549,199.98567355578504,199.977866225286,199.96848205133438,199.95757447854487,199.94519478321345,199.93139237622128,199.91621488212903,199.89970821438172,199.88191664684118,199.86288288185094,199.8426481150283,199.82125209695937,199.79873319196932,199.77512843412634,199.7504735806256,199.72480316269642,199.69815053416087,199.67054791777068,199.6420264494343,199.61261622044952,199.58234631783782,199.55124486288332,199.5193390479641,199.48665517176437,199.45321867294496,199.4190541623562,199.38418545385582,199.34863559380906,199.3124268893306,199.27558093532923,199.23811864041684,199.2000602517315,199.16142537872955,199.1222330159947,199.08250156510888,199.0422488556317,199.0014921652257,198.96024823897292,198.91853330791278,198.876363106842,198.83375289140884,198.79071745453157,198.74727114217382,198.7034278685054,198.65920113047264,198.61460402180901,198.56964924650566],"type":"scatter","name":"labor","yaxis":"y","legendgroup":"labor","x":[0.0,0.01,0.02,0.03,0.04,0.05,0.06,0.07,0.08,0.09,0.1,0.11,0.12,0.13,0.14,0.15,0.16,0.17,0.18,0.19,0.2,0.21,0.22,0.23,0.24,0.25,0.26,0.27,0.28,0.29,0.3,0.31,0.32,0.33,0.34,0.35,0.36,0.37,0.38,0.39,0.4,0.41,0.42,0.43,0.44,0.45,0.46,0.47,0.48,0.49,0.5]}], "layout": {"xaxis":{"title":{"text":"tax_value"}},"template":{"layout":{"coloraxis":{"colorbar":{"ticks":"","outlinewidth":0}},"xaxis":{"gridcolor":"white","zerolinewidth":2,"title":{"standoff":15},"ticks":"","zerolinecolor":"white","automargin":true,"linecolor":"white"},"hovermode":"closest","paper_bgcolor":"white","geo":{"showlakes":true,"showland":true,"landcolor":"#E5ECF6","bgcolor":"white","subunitcolor":"white","lakecolor":"white"},"colorscale":{"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]},"yaxis":{"gridcolor":"white","zerolinewidth":2,"title":{"standoff":15},"ticks":"","zerolinecolor":"white","automargin":true,"linecolor":"white"},"shapedefaults":{"line":{"color":"#2a3f5f"}},"hoverlabel":{"align":"left"},"mapbox":{"style":"light"},"polar":{"angularaxis":{"gridcolor":"white","ticks":"","linecolor":"white"},"bgcolor":"#E5ECF6","radialaxis":{"gridcolor":"white","ticks":"","linecolor":"white"}},"autotypenumbers":"strict","font":{"color":"#2a3f5f"},"ternary":{"baxis":{"gridcolor":"white","ticks":"","linecolor":"white"},"bgcolor":"#E5ECF6","caxis":{"gridcolor":"white","ticks":"","linecolor":"white"},"aaxis":{"gridcolor":"white","ticks":"","linecolor":"white"}},"annotationdefaults":{"arrowhead":0,"arrowwidth":1,"arrowcolor":"#2a3f5f"},"plot_bgcolor":"#E5ECF6","title":{"x":0.05},"scene":{"xaxis":{"gridcolor":"white","gridwidth":2,"backgroundcolor":"#E5ECF6","ticks":"","showbackground":true,"zerolinecolor":"white","linecolor":"white"},"zaxis":{"gridcolor":"white","gridwidth":2,"backgroundcolor":"#E5ECF6","ticks":"","showbackground":true,"zerolinecolor":"white","linecolor":"white"},"yaxis":{"gridcolor":"white","gridwidth":2,"backgroundcolor":"#E5ECF6","ticks":"","showbackground":true,"zerolinecolor":"white","linecolor":"white"}},"colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"]},"data":{"barpolar":[{"type":"barpolar","marker":{"line":{"color":"#E5ECF6","width":0.5}}}],"carpet":[{"aaxis":{"gridcolor":"white","endlinecolor":"#2a3f5f","minorgridcolor":"white","startlinecolor":"#2a3f5f","linecolor":"white"},"type":"carpet","baxis":{"gridcolor":"white","endlinecolor":"#2a3f5f","minorgridcolor":"white","startlinecolor":"#2a3f5f","linecolor":"white"}}],"scatterpolar":[{"type":"scatterpolar","marker":{"colorbar":{"ticks":"","outlinewidth":0}}}],"parcoords":[{"line":{"colorbar":{"ticks":"","outlinewidth":0}},"type":"parcoords"}],"scatter":[{"type":"scatter","marker":{"colorbar":{"ticks":"","outlinewidth":0}}}],"histogram2dcontour":[{"colorbar":{"ticks":"","outlinewidth":0},"type":"histogram2dcontour","colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"contour":[{"colorbar":{"ticks":"","outlinewidth":0},"type":"contour","colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"scattercarpet":[{"type":"scattercarpet","marker":{"colorbar":{"ticks":"","outlinewidth":0}}}],"mesh3d":[{"colorbar":{"ticks":"","outlinewidth":0},"type":"mesh3d"}],"surface":[{"colorbar":{"ticks":"","outlinewidth":0},"type":"surface","colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"scattermapbox":[{"type":"scattermapbox","marker":{"colorbar":{"ticks":"","outlinewidth":0}}}],"scattergeo":[{"type":"scattergeo","marker":{"colorbar":{"ticks":"","outlinewidth":0}}}],"histogram":[{"type":"histogram","marker":{"colorbar":{"ticks":"","outlinewidth":0}}}],"pie":[{"type":"pie","automargin":true}],"choropleth":[{"colorbar":{"ticks":"","outlinewidth":0},"type":"choropleth"}],"heatmapgl":[{"colorbar":{"ticks":"","outlinewidth":0},"type":"heatmapgl","colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"bar":[{"type":"bar","error_y":{"color":"#2a3f5f"},"error_x":{"color":"#2a3f5f"},"marker":{"line":{"color":"#E5ECF6","width":0.5}}}],"heatmap":[{"colorbar":{"ticks":"","outlinewidth":0},"type":"heatmap","colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"contourcarpet":[{"colorbar":{"ticks":"","outlinewidth":0},"type":"contourcarpet"}],"table":[{"type":"table","header":{"line":{"color":"white"},"fill":{"color":"#C8D4E3"}},"cells":{"line":{"color":"white"},"fill":{"color":"#EBF0F8"}}}],"scatter3d":[{"line":{"colorbar":{"ticks":"","outlinewidth":0}},"type":"scatter3d","marker":{"colorbar":{"ticks":"","outlinewidth":0}}}],"scattergl":[{"type":"scattergl","marker":{"colorbar":{"ticks":"","outlinewidth":0}}}],"histogram2d":[{"colorbar":{"ticks":"","outlinewidth":0},"type":"histogram2d","colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"scatterternary":[{"type":"scatterternary","marker":{"colorbar":{"ticks":"","outlinewidth":0}}}],"scatterpolargl":[{"type":"scatterpolargl","marker":{"colorbar":{"ticks":"","outlinewidth":0}}}]}},"legend":{"tracegroupgap":0,"title":{"text":"type"}},"margin":{"l":50,"b":50,"r":50,"t":60},"title":"Labor vs Capital tax rates","yaxis":{"title":{"text":"welfare"}}}, "config": {"showLink":false,"editable":false,"responsive":true,"staticPlot":false,"scrollZoom":true}}
+    Plotly.newPlot(PLOT, plot_obj)
+
+    // If width is not specified, set it to 100%
+    PLOT.style.width = plot_obj.layout.width ? "" : "100%"
+    
+    // For the height we have to also put a fixed value in case the plot is put on a non-fixed-size container (like the default wrapper)
+    PLOT.style.height = plot_obj.layout.height ? "" : "100%"
+</script>
+<hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../introduction/">« Introduction</a><a class="docs-footer-nextpage" href="../../intermediate_examples/m22/">Closed <span>$2\times2$</span> Economy with Intermediate Inputs and Nesting »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.16.1 on <span class="colophon-date" title="Thursday 18 December 2025 16:17">Thursday 18 December 2025</span>. Using Julia version 1.12.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
