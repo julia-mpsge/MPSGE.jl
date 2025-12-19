@@ -13,6 +13,7 @@ const _PAGES = [
         "overview/production.md",
         "overview/demand.md",
         "overview/constraints.md",
+        "overview/optimizations.md",
     ],
     "Tutorials" => [
         "Getting Started" => [
