@@ -38,7 +38,7 @@ Keyword arguments are optional and can be provided in any order. They are specif
 
 
 
-Parameters represent fixed values in the model, such as technology coefficients or policy parameters. Unlike other variables, you must provide a value when constructing a parameter.
+Parameters represent fixed values in the model, such as technology coefficients or policy parameters. Unlike other variables, you must provide a value when constructing a parameter. Model parameters are saved into the model as variables with names so that certain values can be updated without re-defining the whole model. Parameters are commonly used to run counterfactual simulations, where updating their value will alter the solution, but can be used in other ways.
 
 ```julia
 @parameter(model, parameter, value)

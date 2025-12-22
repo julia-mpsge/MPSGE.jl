@@ -63,8 +63,10 @@ Nodes are not typically used by the end user, but they are important to understa
 - `cost_function`: The cost function associated with the node.
 - `netput_sign`: A value of `-1` for input nests and `1` for output nests.
 
-!!! note "Refactoring Nodes"
-    Nodes are in need of refactoring. There are many places where the code is more complicated than it needs to be and could be improved for performance. This will be addressed in a future release.
+```@meta
+#!!! note "Refactoring Nodes"
+#    Nodes are in need of refactoring. There are many places where the code is more complicated than it needs to be and could be improved for performance. This will be addressed in a future release.
+```
 
 Nodes are responsible for building and storing the cost functions. Cost functions are built recursively, the cost function for a node depends on the cost functions of its children. Cost functions can get large and may be repeated many times. Because of this, an optimization is performed where cost functions are stored as variables in the underlying JuMP model. This significantly reduces the size of the generated model and speeds up solving time as large expressions do not need to be re-evaluated.
 
@@ -87,10 +89,14 @@ Or one top level nest `s` with two inputs `X` and `Y`. The cost functions for th
 \end{align*}
 ```
 
-!!! note "Clarity"
-    This is feels a little off. Verify this is correct and generalizes correctly.
+```@meta
+#!!! note "Clarity"
+#    This is feels a little off. Verify this is correct and generalizes correctly.
+```
 
 This example generalizes to more complex nest structures by recursively applying the same logic. Each node computes its cost function based on the cost functions of its children, ultimately leading to the top-level cost functions for inputs and outputs.
 
-!!! note "More Detail"
-    This section could be expanded with more mathematical detail and examples. Consider adding examples with multiple nests and indexed nests.
+```@meta
+#!!! note "More Detail"
+#    This section could be expanded with more mathematical detail and examples. Consider adding examples with multiple nests and indexed nests.
+```

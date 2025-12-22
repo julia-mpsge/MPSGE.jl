@@ -7,7 +7,7 @@ Demand blocks collect the final demands and endowments for each consumer. In MPS
 
 ## Final Demands
 
-Each consumer demands goods, defined by the [`@final_demand`](@ref) macro. It is possible that these goods are the result of a production process, with nestings and elasticities. Because of this you can view final demands as an input from a production block. Currently, this is restricted to a single nest. 
+Each consumer demands goods, defined by the [`@final_demand`](@ref) macro. It is possible that these goods are the result of a production process, with nestings and elasticities. Because of this you can view final demands as an input from a production block. Currently, this is restricted to a single nest. This is related to [Issue #161](https://github.com/julia-mpsge/MPSGE.jl/issues/161).
 
 
 
