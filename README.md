@@ -9,6 +9,7 @@
 We are working on the 1.0.0 release, with more organised documentation. In the meantime, the current main branch is working, there is hopefully enough documentation to be functional, and we invite and encourage users, testing, and questions etc. 
 The latest tagged version should be good and working.
 ```julia
+  import Pkg
   Pkg.add("MPSGE")
 ```
 Or, in the package manager
@@ -16,4 +17,5 @@ Or, in the package manager
 pkg> add MPSGE
 ```
 
-
+> [!NOTE]
+> Solving a model with more than 300 variables and 2000 nonzero requires a [current PATH license](https://pages.cs.wisc.edu/~ferris/path.html)
