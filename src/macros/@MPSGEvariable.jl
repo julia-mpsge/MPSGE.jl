@@ -198,13 +198,13 @@ arguments `kwargs`.
 
 ## Arguments
 
-- `model`: An isntance of `MPSGEModel`.
+- `model`: An instance of `MPSGEModel`.
 - The sector `S` can be instantiated in a several ways. 
   1. `S` creates a scalar sector
   2. If `I` is a defined array, then `S[I]` creates an indexed sector with 
-  indices given by `I`.
+    indices given by `I`.
   3. If `I` is a defined array, then `S[i=I]`creates an indexed sector with 
-  indices given by `I` and variable index named `i`. 
+    indices given by `I` and variable index named `i`. 
 
 If you want to create an index sector it is highly recommended to use the syntax 
 from (3) with better name for `i`, For example `S[goods=I]`, this will set the 
@@ -302,13 +302,13 @@ arguments `kwargs`.
 
 ## Arguments
 
-- `model`: An isntance of `MPSGEModel`.
+- `model`: An instance of `MPSGEModel`.
 - The commodity `C` can be instantiated in a several ways. 
   1. `C` creates a scalar commodity
   2. If `I` is a defined array, then `C[I]` creates an indexed commodity with 
-  indices given by `I`.
+    indices given by `I`.
   3. If `I` is a defined array, then `C[i=I]`creates an indexed commodity with 
-  indices given by `I` and variable index named `i`. 
+    indices given by `I` and variable index named `i`. 
 
 If you want to create an index commodity it is highly recommended to use the syntax 
 from (3) with better name for `i`, For example `C[goods=I]`, this will get the 
@@ -402,13 +402,13 @@ arguments `kwargs`.
 
 ## Arguments
 
-- `model`: An isntance of `MPSGEModel`.
+- `model`: An instance of `MPSGEModel`.
 - The consumer `H` can be instantiated in a several ways. 
   1. `H` creates a scalar consumer
   2. If `I` is a defined array, then `H[I]` creates an indexed consumer with 
-  indices given by `I`.
+    indices given by `I`.
   3. If `I` is a defined array, then `H[i=I]`creates an indexed consumer with 
-  indices given by `I` and variable index named `i`. 
+    indices given by `I` and variable index named `i`. 
 
 If you want to create an index consumer it is highly recommended to use the syntax 
 from (3) with better name for `i`, For example `H[goods=I]`, this will get the 
@@ -499,13 +499,13 @@ arguments `kwargs`.
 
 ## Arguments
 
-- `model`: An isntance of `MPSGEModel`.
+- `model`: An instance of `MPSGEModel`.
 - The auxiliary `X` can be instantiated in a several ways. 
   1. `X` creates a scalar auxiliary
   2. If `I` is a defined array, then `X[I]` creates an indexed auxiliary with 
-  indices given by `I`.
+    indices given by `I`.
   3. If `I` is a defined array, then `X[i=I]`creates an indexed auxiliary with 
-  indices given by `I` and variable index named `i`. 
+    indices given by `I` and variable index named `i`. 
 
 If you want to create an index auxiliary it is highly recommended to use the syntax 
 from (3) with better name for `i`, For example `X[goods=I]`, this will get the 

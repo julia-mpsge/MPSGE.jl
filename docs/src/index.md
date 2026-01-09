@@ -15,7 +15,12 @@ MPSGE is a high level language for creating computable general equilibrium (CGE)
 
 [JuMP](https://jump.dev/JuMP.jl/stable/)
 
+[PATH Solver](https://pages.cs.wisc.edu/~ferris/path.html) \
+For models with more than 300 variables or 2000 nonzeros, a PATH license needs to be set up on the system/computer. Otherwise the solve will throw an error: 
+- Solver Status: OTHER_ERROR
+- Model Status: UNKNOWN_RESULT_STATUS.
 
+The link above has instructions for installing a free license for academic use. 
 ## How the documentation is structured
 
 !!! note
