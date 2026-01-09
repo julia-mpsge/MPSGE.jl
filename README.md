@@ -18,4 +18,4 @@ pkg> add MPSGE
 ```
 
 > [!NOTE]
-> Solving a model with more than 300 or 2000 non-zeros requires a [current PATH license](https://pages.cs.wisc.edu/~ferris/path.html)
+> Solving a model with more than 300 variables or 2000 nonzeros requires a [current PATH license](https://pages.cs.wisc.edu/~ferris/path.html)
