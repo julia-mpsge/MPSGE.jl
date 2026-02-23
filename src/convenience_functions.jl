@@ -61,7 +61,9 @@ function update_internal_start_values!(A::ScalarAuxiliary)
     "to the internal start values of the cost functions. This may lead to " *
     "incorrect results querying cost functions or solving with " * 
     "`cumulative_iteration_limit=0`. To manually update internal start values, " *
-    "use `MPSGE.update_internal_start_values!(model)`." maxlog=1
+    "use `MPSGE.update_internal_start_values!(model)`. \n\n" * 
+    "It is recommend to set the starting value when declaring an Auxiliary variable " * 
+    "with `start = value` in the `@auxiliary` macro" maxlog=1
 
     return
 end
