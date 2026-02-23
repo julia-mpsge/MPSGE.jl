@@ -19,7 +19,59 @@ JuMP.is_fixed(X::MPSGEScalarVariable) = JuMP.is_fixed(get_variable(X))
 Set the staring value of an MPSGE variable. This is an extension of the JuMP
 function `set_start_value`.
 """
-JuMP.set_start_value(X::MPSGEScalarVariable, val::Real) = JuMP.set_start_value(get_variable(X), val)
+function JuMP.set_start_value(X::MPSGEScalarVariable, val::Real)  
+    JuMP.set_start_value(get_variable(X), val)
+
+    update_internal_start_values!(X)
+end
+
+function update_internal_start_values!(X::MPSGEScalarVariable)
+    @warn "Test" maxlog=1
+    return 
+end
+
+function update_internal_start_values!(X::ScalarSector)
+    P = production(X)
+    update_internal_start_values!(P.input)
+    update_internal_start_values!(P.output)
+end
+
+function update_internal_start_values!(C::ScalarCommodity)
+    for S in sectors(C)
+        update_internal_start_values!(S)
+    end
+end
+
+function update_internal_start_values!(X::ScalarConsumer)
+    return 
+end
+
+
+function update_internal_start_values!(A::ScalarAuxiliary)
+    @warn "Changes in start values for auxiliary variables are not propagated" *
+    "to the internal start values of the cost functions. This may lead to" *
+    "incorrect results querying cost functions or solving with zero iteration limit." maxlog=1
+
+    return
+end
+
+function update_internal_start_values!(N::Node)
+    update_internal_start_values!.(N.children)
+    set_start_value(N.cost_function_virtual, value(start_value, N.cost_function))
+end
+
+function update_internal_start_values!(N::Netput)
+    return 
+end
+
+
+
+
+
+
+
+
+
 JuMP.start_value(H::MPSGEScalarVariable) = start_value(get_variable(H))
 
 function JuMP.set_silent(M::MPSGEModel) 
