@@ -76,7 +76,7 @@ function update_internal_start_values!(N::Netput)
 end
 
 
-
+JuMP.is_solved_and_feasible(M::MPSGEModel) = JuMP.is_solved_and_feasible(jump_model(M))
 
 
 
