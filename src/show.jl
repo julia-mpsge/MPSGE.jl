@@ -48,11 +48,18 @@ end
 ###############
 
 function display(io::IO, S::MPSGEScalarVariable)
+
+    out = "$(name(S))"
+
     if description(S) != ""
-        println(io, "$(name(S))  --  $(description(S))")
-    else
-        println(io, name(S))
+        out *= "  --  $(description(S))"
     end
+
+    if !isnothing(start_value(S)) && start_value(S) != 1
+        out *= " (start = $(start_value(S)))"
+    end
+
+    println(io, out)
 end
 
 function display(io::IO, S::MPSGEIndexedVariable)
