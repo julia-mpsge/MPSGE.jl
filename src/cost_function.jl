@@ -1,4 +1,4 @@
-function cobb_douglass(N::Node; virtual = :full, cf = cost_function, sector = nothing)
+function cobb_douglas(N::Node; virtual = :full, cf = cost_function, sector = nothing)
     sign = netput_sign(N)
     return prod(cf(child; virtual = virtual, sector = sector)^(quantity(child)/quantity(N)) for child in children(N); init=1)
 end
@@ -43,11 +43,11 @@ function cost_function(N::MPSGE.Node; virtual = :full, cf = cost_function, secto
         #This must be an explicit expression, otherwise it's evaluated now. 
         cost_function = @expression(jm, ifelse(
                     MPSGE.elasticity(N) * sign == -1,
-                    cobb_douglass(N, virtual = virtual_adjust, cf = cf), 
+                    cobb_douglas(N, virtual = virtual_adjust, cf = cf), 
                     CES(N, virtual = virtual_adjust, cf = cf)
                 ))
     elseif MPSGE.elasticity(N)*sign == -1 #Cobb-Douglas is only on demand side with σ=1
-        cost_function = cobb_douglass(N; virtual = virtual_adjust, cf = cf, sector = sector)
+        cost_function = cobb_douglas(N; virtual = virtual_adjust, cf = cf, sector = sector)
     else
         cost_function = CES(N; virtual = virtual_adjust, cf = cf, sector = sector)
     end
