@@ -272,7 +272,7 @@ mutable struct Node
     #cost_function::MPSGEquantity 
     netput_sign::Int
     function Node(model::AbstractMPSGEModel, data::ScalarNest, sector::ScalarSector; children = [], netput_sign::Int = 0)
-        base_name = string("cf(", sector, ", :", MPSGE.name(data), ")")
+        base_name = string("ucf(", sector, ", :", MPSGE.name(data), ")")
         cf_virtual = JuMP.@variable(jump_model(model), base_name = base_name)
 
         N = new(model, nothing, children, data, cf_virtual, netput_sign) #Cost function is set after trees are built
