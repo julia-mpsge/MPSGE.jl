@@ -33,45 +33,6 @@ function prune!(T::Node)
 end
 
 
-#############################
-## Building Cost Functions ##
-#############################
-
-
-function cobb_douglass(N::Node; virtual = :full, cf = cost_function, sector = nothing)
-    sign = netput_sign(N)
-    return prod(cf(child; virtual = virtual, sector = sector)^(quantity(child)/quantity(N)) for child in children(N); init=1)
-end
-
-function CES(N::Node; virtual = :full,  cf = cost_function, sector = nothing)
-    sign = netput_sign(N)
-    return sum(quantity(child)/quantity(N) * cf(child; virtual = virtual, sector = sector)^(1+sign*elasticity(N)) for child in children(N); init=0) ^ (1/(1+sign*elasticity(N)))
-end
-
-
-function build_cost_function(tree::Netput; virtual = :full, sector = nothing)
-    return cost_function(tree)
-end
-
-function build_cost_function(N::Node; virtual = :full, sector = nothing)
-
-    # If the cost function exists, return it
-    if !isnothing(N.cost_function_virtual)
-        return MPSGE.cost_function(N, virtual = :virtual)
-    end
-
-    cost_function = MPSGE.cost_function(N; virtual = :partial, cf = MPSGE.build_cost_function, sector = sector)
-
-    if isnothing(N.cost_function_virtual)
-        jm = jump_model(model(N))
-        name = string("cf(", sector, ", :", MPSGE.name(N), ")")
-        N.cost_function_virtual = @variable(jm, start = value(start_value, cost_function), base_name = name) 
-        N.cost_function = cost_function
-        @constraint(jm, N.cost_function_virtual - cost_function ⟂ N.cost_function_virtual)
-    end
-
-    return N.cost_function_virtual
-end
 
 
 ##########################

@@ -13,7 +13,7 @@ include("arithmetic.jl")
 include("show.jl")
 include("model.jl")
 
-
+include("cost_function.jl")
 
 include("macros/macro_parser.jl")
 
