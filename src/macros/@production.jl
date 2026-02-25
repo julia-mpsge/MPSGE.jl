@@ -269,7 +269,9 @@ function ScalarProduction(
     # Is the if statement necessary?
     if !isnothing(input_tree) && !isnothing(output_tree)
         build_cost_function(input_tree)
-        build_cost_function(output_tree)   
+        update_internal_start_values!(input_tree)
+        build_cost_function(output_tree)
+        update_internal_start_values!(output_tree)
     end
     
     netputs_by_commodity = Dict{Commodity, Vector{Netput}}()

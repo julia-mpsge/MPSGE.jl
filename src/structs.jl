@@ -770,7 +770,6 @@ end
 function commodities(S::ScalarSector) 
     P = production(S)
     return collect(keys(P.netputs))
-    #return collect(keys(compensated_demand_dictionary(S)))
 end
 
 
