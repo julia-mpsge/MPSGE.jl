@@ -269,10 +269,14 @@ mutable struct Node
     children::Vector{Union{Node,Netput}}
     data::ScalarNest
     cost_function_virtual::Union{Nothing,JuMP.VariableRef}
-    cost_function::MPSGEquantity 
+    #cost_function::MPSGEquantity 
     netput_sign::Int
-    function Node(model::AbstractMPSGEModel, data::ScalarNest; children = [], netput_sign::Int = 0)
-        N = new(model, nothing, children, data, nothing, 0, netput_sign) #Cost function is set after trees are built
+    function Node(model::AbstractMPSGEModel, data::ScalarNest, sector::ScalarSector; children = [], netput_sign::Int = 0)
+        base_name = string("cf(", sector, ", :", MPSGE.name(data), ")")
+        cf_virtual = JuMP.@variable(jump_model(model), base_name = base_name)
+
+        N = new(model, nothing, children, data, cf_virtual, netput_sign) #Cost function is set after trees are built
+        
         for child in children 
             set_parent!(child, N)
         end

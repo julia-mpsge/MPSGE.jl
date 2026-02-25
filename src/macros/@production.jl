@@ -224,7 +224,7 @@ function build_production(
     return ScalarProduction(
         error_fn, 
         sector, 
-        create_nodes(model, nests), 
+        create_nodes(model, nests, sector), 
         netputs,
         index_vars
     )
@@ -268,8 +268,8 @@ function ScalarProduction(
 
     # Is the if statement necessary?
     if !isnothing(input_tree) && !isnothing(output_tree)
-        build_cost_function(input_tree; sector = sector)
-        build_cost_function(output_tree; sector = sector)   
+        build_cost_function(input_tree)
+        build_cost_function(output_tree)   
     end
     
     netputs_by_commodity = Dict{Commodity, Vector{Netput}}()
