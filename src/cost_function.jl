@@ -5,7 +5,11 @@ end
 
 function CES(N::MPSGE.Node; depth = -1)
     sign = MPSGE.netput_sign(N)
-    return sum(quantity(child)/quantity(N) * unit_cost_function(child; depth = depth)^(1+sign*elasticity(N)) for child in MPSGE.children(N); init=0) ^ (1/(1+sign*elasticity(N)))
+    if isempty(children(N))
+        return 0
+    end
+
+    return sum(quantity(child)/quantity(N) * unit_cost_function(child; depth = depth)^(1+sign*elasticity(N)) for child in MPSGE.children(N)) ^ (1/(1+sign*elasticity(N)))
 end
 
 
@@ -39,6 +43,45 @@ function unit_cost_function(N::MPSGE.Node; depth = -1)
     end
 end
 
+function unit_cost_function(P::ScalarProduction, nest::Symbol; depth = -1, search = :all)
+    N = find_nodes(P; search = search)
+    if haskey(N, nest)
+        return sum(unit_cost_function.(N[nest]; depth = depth))
+    end
+    return 0
+end
+
+function unit_cost_function(S::ScalarSector; depth = -1)
+    return unit_cost_function(production(S); depth = depth)
+end
+
+unit_cost_function(P::ScalarProduction; depth = -1) = unit_cost_function(P, name(input(P)), depth = depth)
+
+"""
+    unit_cost_function(S::ScalarSector; depth = -1)
+    unit_cost_function(S::ScalarSector, nest::Symbol; depth = -1)
+
+Return the unit cost function for the given sector and nest. If `nest` is not provided
+return the unit cost function for input tree.
+
+## Optional Arguments
+
+- `depth=-1`: The maximum depth to which to evaluate the unit cost function. `depth=0` 
+    returns the virtual cost function, `depth=1` evaluates one level of the unit 
+    cost function, and so on. The default is `-1`, which will return the complete unit 
+    cost function.
+
+## Expression
+
+The unit cost function for a node in the production tree is defined recursively 
+using the functional form combination of the unit cost functions of its children.
+
+The available functional forms are Cobb-Douglas and CES.
+"""
+unit_cost_function(S::ScalarSector, nest::Symbol; depth = -1) = unit_cost_function(production(S), nest, depth = depth)
+unit_cost_function(S::ScalarSector; depth = -1) = unit_cost_function(production(S), depth = depth)
+
+
 
 function cost_function(N::Netput; depth = -1)
     return quantity(N)*unit_cost_function(N; depth = depth)
@@ -48,18 +91,7 @@ function cost_function(N::Node; depth = -1)
     return quantity(N)*unit_cost_function(N; depth = depth)
 end
 
-"""
-    cost_function(S::ScalarSector; depth = -1)
-    cost_function(S::ScalarSector, nest::Symbol; depth = -1)
-    
-Return a vector of cost functions for the given sector and nest. If `nest` is 
-not provided return the cost function for input tree. 
 
-`nest` is the symbol representing the nest. This can also be the name of a 
-commodity. 
-
-If `virtual` is true, return the virtual cost functions.
-"""
 function cost_function(P::ScalarProduction, nest::Symbol; depth = -1, search = :all)
     N = find_nodes(P; search = search)
     if haskey(N, nest)
@@ -68,7 +100,28 @@ function cost_function(P::ScalarProduction, nest::Symbol; depth = -1, search = :
     return 0
 end
 
+"""
+    cost_function(S::ScalarSector; depth = -1)
+    cost_function(S::ScalarSector, nest::Symbol; depth = -1)
+    
+Return the cost function for the given sector and nest. If `nest` is not provided
+return the cost function for input tree.
 
+## Optional Arguments
+
+- `depth=-1`: The maximum depth to which to evaluate the cost function. `depth=0` 
+    returns the virtual cost function, `depth=1` evaluates one level of the cost 
+    function, and so on. The default is `-1`, which will return the complete cost 
+    function.
+
+## Expression
+
+The cost function is the quantity multiplied by the [`unit_cost_function`](@ref):
+
+```julia
+quantity(S) * unit_cost_function(S; depth = depth)
+```
+"""
 cost_function(P::ScalarProduction; depth = -1) = cost_function(P, name(input(P)), depth = depth)
 cost_function(S::ScalarSector, nest::Symbol; depth = -1) = cost_function(production(S), nest, depth = depth, search = :input)
 cost_function(S::ScalarSector; depth = -1) = cost_function(production(S), depth = depth)
@@ -92,92 +145,6 @@ revenue_function(S::ScalarSector, nest::Symbol; depth = -1) = cost_function(prod
 revenue_function(S::ScalarSector; depth = -1) = revenue_function(production(S); depth = depth)
 
 
-#function cost_function(N::MPSGE.Netput; virtual = false, sector = nothing)
-#    return 
-#    C = commodity(N)
-#    sign = MPSGE.netput_sign(N)
-#    rp = MPSGE.reference_price(N)
-#    return C*(1-sign*sum(MPSGE.tax(t) for t∈taxes(N);init = 0))/rp
-#end
-#
-#
-#function cost_function(N::MPSGE.Node; virtual = :full, cf = cost_function, sector = nothing)
-#
-#    @assert virtual in [:full, :virtual, :partial] "virtual must be one of :full, :virtual, or :partial"
-#
-#    if virtual == :virtual
-#        return N.cost_function_virtual
-#    end
-#
-#    virtual_adjust = if virtual == :partial
-#        :virtual
-#    else
-#        :full
-#    end
-#
-#    sign = MPSGE.netput_sign(N)
-#    if !(isa(MPSGE.elasticity(N), Real))
-#
-#        jm = jump_model(model(N))
-#
-#        #This must be an explicit expression, otherwise it's evaluated now. 
-#        cost_function = @expression(jm, ifelse(
-#                    MPSGE.elasticity(N) * sign == -1,
-#                    cobb_douglas(N, virtual = virtual_adjust, cf = cf), 
-#                    CES(N, virtual = virtual_adjust, cf = cf)
-#                ))
-#    elseif MPSGE.elasticity(N)*sign == -1 #Cobb-Douglas is only on demand side with σ=1
-#        cost_function = cobb_douglas(N; virtual = virtual_adjust, cf = cf, sector = sector)
-#    else
-#        cost_function = CES(N; virtual = virtual_adjust, cf = cf, sector = sector)
-#    end
-#
-#    return cost_function
-#
-#end
-#
-#function cost_function(P::ScalarProduction, nest::Symbol; virtual = false, search = :all)
-#    N = find_nodes(P; search = search)
-#    if haskey(N, nest)
-#        v = virtual ? :virtual : :full
-#        return sum(quantity.(N[nest]).*cost_function.(N[nest]; virtual = v))
-#    end
-#    return 0
-#end
-
-# """
-#     cost_function(S::ScalarSector; virtual = false)
-#     cost_function(S::ScalarSector, nest::Symbol; virtual = false)
-#     
-# Return a vector of cost functions for the given sector and nest. If `nest` is 
-# not provided return the cost function for input tree. 
-# 
-# `nest` is the symbol representing the nest. This can also be the name of a 
-# commodity. 
-# 
-# If `virtual` is true, return the virtual cost functions.
-# """
-# cost_function(P::ScalarProduction; virtual=false) = cost_function(P, name(input(P)), virtual=virtual)
-# cost_function(S::ScalarSector, nest::Symbol; virtual = false) = cost_function(production(S), nest, virtual=virtual, search = :input)
-# cost_function(S::ScalarSector; virtual = false) = cost_function(production(S), virtual=virtual)
-# 
-# 
-# """
-#     revenue_function(S::ScalarSector; virtual = false)    
-#     revenue_function(S::ScalarSector, nest::Symbol; virtual = false)
-#     
-# Return a vector of revenue functions for the given sector and nest. If `nest` is 
-# not provided return the revenue function for input tree. 
-# 
-# `nest` is the symbol representing the nest. This can also be the name of a 
-# commodity. 
-# 
-# If `virtual` is true, return the virtual revenue functions.
-# 
-# """
-# revenue_function(P::ScalarProduction; virtual = false) = cost_function(P, name(output(P)), virtual = virtual, search = :output)
-# revenue_function(S::ScalarSector, nest::Symbol; virtual = false) = cost_function(production(S), nest, virtual = virtual, search = :output)
-# revenue_function(S::ScalarSector; virtual = false) = revenue_function(production(S); virtual = virtual)
 
 
 #############################
