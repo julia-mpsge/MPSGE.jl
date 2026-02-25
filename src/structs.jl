@@ -323,7 +323,7 @@ end
 
 #cost_function(N::Node; virtual = false) = !virtual ? N.cost_function : N.cost_function_virtual
 
-function cost_function(N::MPSGE.Netput; virtual = false)
+function cost_function(N::MPSGE.Netput; virtual = false, sector = nothing)
     C = commodity(N)
     sign = MPSGE.netput_sign(N)
     rp = MPSGE.reference_price(N)
@@ -331,7 +331,7 @@ function cost_function(N::MPSGE.Netput; virtual = false)
 end
 
 
-function cost_function(N::MPSGE.Node; virtual = :full, cf = cost_function)
+function cost_function(N::MPSGE.Node; virtual = :full, cf = cost_function, sector = nothing)
 
     @assert virtual in [:full, :virtual, :partial] "virtual must be one of :full, :virtual, or :partial"
 
@@ -357,9 +357,9 @@ function cost_function(N::MPSGE.Node; virtual = :full, cf = cost_function)
                     CES(N, virtual = virtual_adjust, cf = cf)
                 ))
     elseif MPSGE.elasticity(N)*sign == -1 #Cobb-Douglas is only on demand side with σ=1
-        cost_function = cobb_douglass(N; virtual = virtual_adjust, cf = cf)
+        cost_function = cobb_douglass(N; virtual = virtual_adjust, cf = cf, sector = sector)
     else
-        cost_function = CES(N; virtual = virtual_adjust, cf = cf)
+        cost_function = CES(N; virtual = virtual_adjust, cf = cf, sector = sector)
     end
 
     return cost_function
