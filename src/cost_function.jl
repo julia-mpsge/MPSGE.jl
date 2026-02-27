@@ -51,9 +51,7 @@ function unit_cost_function(P::ScalarProduction, nest::Symbol; depth = -1, searc
     return 0
 end
 
-function unit_cost_function(S::ScalarSector; depth = -1)
-    return unit_cost_function(production(S); depth = depth)
-end
+
 
 unit_cost_function(P::ScalarProduction; depth = -1) = unit_cost_function(P, name(input(P)), depth = depth)
 
@@ -155,34 +153,16 @@ revenue_function(S::ScalarSector; depth = -1) = revenue_function(production(S); 
 
 
 
-function build_cost_function(tree::Netput; virtual = :full, sector = nothing)
+function build_cost_function(tree::Netput)
     return unit_cost_function(tree)
 end
 
-function build_cost_function(N::Node; virtual = :full, sector = nothing)
-
-    # If the cost function exists, return it
-    #if !isnothing(N.cost_function_virtual)
-    #    return unit_cost_function(N; depth = 0)
-    #end
-
-    #return 0
-    #cost_function = MPSGE.cost_function(N; virtual = :partial, cf = MPSGE.build_cost_function, sector = sector)
+function build_cost_function(N::Node)
 
     ucf = unit_cost_function(N; depth = 1)
 
     jm = jump_model(model(N))
     @constraint(jm, N.cost_function_virtual - ucf ⟂ N.cost_function_virtual)
-
-    build_cost_function.(children(N))
-
-    #if isnothing(N.cost_function_virtual)
-        #jm = jump_model(model(N))
-        #name = string("cf(", sector, ", :", MPSGE.name(N), ")")
-        #N.cost_function_virtual = @variable(jm, start = value(start_value, cost_function), base_name = name) 
-        #N.cost_function = cost_function
-        #@constraint(jm, N.cost_function_virtual - cost_function ⟂ N.cost_function_virtual)
-    #end
 
     return N.cost_function_virtual
 end
