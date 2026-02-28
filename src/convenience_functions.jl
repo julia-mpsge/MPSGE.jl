@@ -14,7 +14,7 @@ end
 JuMP.is_fixed(X::MPSGEScalarVariable) = JuMP.is_fixed(get_variable(X))
 
 """
-    set_start_value(X::MPSGEScalarVariable, val::Real)
+    set_start_value(X::MPSGEScalarVariable, val::Real; update_internal_start_values::Bool = true)
 
 Set the staring value of an MPSGE variable. This is an extension of the JuMP
 function `set_start_value`.
@@ -22,11 +22,21 @@ function `set_start_value`.
 Also updates the interval start values for all cost functions. This is 
 necessary to ensure that the correct cost function values are returned
 when querying cost functions or solving with `cumulative_iteration_limit=0`.
+
+## Optional Arguments
+
+- `update_internal_start_values::Bool`: Whether to update the internal start 
+    values of the cost functions. Default is `true`. Setting this to `false` can 
+    improve performance if setting a large number of start values, but may lead 
+    to incorrect results when querying cost functions or solving with with 
+    `cumulative_iteration_limit=0`. 
 """
-function JuMP.set_start_value(X::MPSGEScalarVariable, val::Real)  
+function JuMP.set_start_value(X::MPSGEScalarVariable, val::Real; update_internal_start_values::Bool = true)  
     JuMP.set_start_value(get_variable(X), val)
 
-    update_internal_start_values!(X)
+    if update_internal_start_values
+        update_internal_start_values!(X)
+    end
 end
 
 function update_internal_start_values!(M::MPSGEModel)
