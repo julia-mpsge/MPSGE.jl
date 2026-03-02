@@ -13,30 +13,32 @@
 
     @consumer(M, C)
 
+    @auxiliary(M, A)
+
     @production(M, X, [s=0, t=0], begin
-        @output(PX, .5, t, reference_price = 2)
+        @output(PX, .5*A, t, reference_price = 2)
         @input(PY, 1, s, reference_price = 1)
     end)
 
     @demand(M, C, begin
-        @final_demand(PX, 1)
+        @final_demand(PX, 1*A)
         @endowment(PY, 2)
     end)
 
+    @aux_constraint(M, A, 1 - A)
 
     solve!(M; cumulative_iteration_limit=0)
-
 
     @test !MPSGE.is_solved_and_feasible(M)
 
+    solve!(M; cumulative_iteration_limit=0)
+    
+    set_start_value(A, 1; update_internal_start_values=false)
     set_start_value(X, 2)
     set_start_value(PX, 2)
-
     solve!(M; cumulative_iteration_limit=0)
 
     @test MPSGE.is_solved_and_feasible(M)
-
-
 end
 
 @testitem "Updating Start Values in Indexed Model" begin
