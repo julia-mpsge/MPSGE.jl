@@ -1,4 +1,4 @@
-@testitem "Updating Start Values" begin
+@testitem "Updating Start Values of Aux Variables" begin
 
     M = MPSGEModel()
 
@@ -16,7 +16,7 @@
     @auxiliary(M, A, start = 0.5)
 
     @production(M, X, [s=0, t=0], begin
-        @output(PX, .5*A, t, reference_price = 2)
+        @output(PX, .5, t, reference_price = 2*A)
         @input(PY, 1, s, reference_price = 1)
     end)
 
@@ -31,13 +31,21 @@
 
     @test !MPSGE.is_solved_and_feasible(M)
 
-    solve!(M; cumulative_iteration_limit=0)
     
-    set_start_value(A, 1; update_internal_start_values=false)
     set_start_value(X, 2)
     set_start_value(PX, 2)
     solve!(M; cumulative_iteration_limit=0)
 
+    @test !MPSGE.is_solved_and_feasible(M)
+
+    set_start_value(A, 1; update_internal_start_values=false)
+    solve!(M; cumulative_iteration_limit=0)
+
+    @test !MPSGE.is_solved_and_feasible(M)
+
+    
+    MPSGE.update_internal_start_values!(M)
+    solve!(M; cumulative_iteration_limit=0)
     @test MPSGE.is_solved_and_feasible(M)
 end
 
