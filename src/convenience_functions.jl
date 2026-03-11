@@ -16,24 +16,38 @@ JuMP.is_fixed(X::MPSGEScalarVariable) = JuMP.is_fixed(get_variable(X))
 """
     set_start_value(X::MPSGEScalarVariable, val::Real; update_internal_start_values::Bool = true)
 
-Set the staring value of an MPSGE variable. This is an extension of the JuMP
-function `set_start_value`.
-
-Also updates the interval start values for all cost functions. This is 
-necessary to ensure that the correct cost function values are returned
-when querying cost functions or solving with `cumulative_iteration_limit=0`.
-
+Set the starting value of an MPSGE variable. This is an extension of the JuMP
+function `set_start_value`.\n
+Also updates the start values for all cost functions connected to the `sector` or `commodity`, 
+necessary for cost function queries and solves with `cumulative_iteration_limit=0` to return correctly.\n
+`set_start_value` for `auxiliary` variables does not automatically update cost functions. Set with keyword "start = value" when they are defined, 
+or set start values for all connected `sectors` or `commodities` after the auxiliary variables, 
+or use `MPSGE.update_internal_start_values!(model)` to update all cost functions (slow for large models).
 ## Optional Arguments
 
-- `update_internal_start_values::Bool`: Whether to update the internal start 
+- `update_internal_start_values::Bool`: Option to update the internal start 
     values of the cost functions. Default is `true`. Setting this to `false` can 
-    improve performance if setting a large number of start values, but may lead 
+    improve performance if variable is connected to a large number of cost functions, but may lead 
     to incorrect results when querying cost functions or solving with with 
     `cumulative_iteration_limit=0`. 
 """
 function JuMP.set_start_value(X::MPSGEScalarVariable, val::Real; update_internal_start_values::Bool = true)  
     JuMP.set_start_value(get_variable(X), val)
 
+    if update_internal_start_values
+        update_internal_start_values!(X)
+    end
+end
+
+function JuMP.set_start_value(X::ScalarAuxiliary, val::Real; update_internal_start_values::Bool = true)  
+    JuMP.set_start_value(get_variable(X), val)
+        @warn "Changes to start values for auxiliary variables are not propagated " *
+        "to the cost functions. This may lead to incorrect results when querying " *
+        "cost functions or solving with `cumulative_iteration_limit=0`. \n" * 
+        "It is recommended to set the starting value when declaring an Auxiliary variable " * 
+        "with `start = value` in the `@auxiliary` macro \n" *
+        "To manually update all internal start values, " *
+        "use `MPSGE.update_internal_start_values!(model)`." maxlog=1
     if update_internal_start_values
         update_internal_start_values!(X)
     end
@@ -67,14 +81,6 @@ end
 
 
 function update_internal_start_values!(A::ScalarAuxiliary)
-    @warn "Changes in start values for auxiliary variables are not propagated " *
-    "to the internal start values of the cost functions. This may lead to " *
-    "incorrect results querying cost functions or solving with " * 
-    "`cumulative_iteration_limit=0`. To manually update internal start values, " *
-    "use `MPSGE.update_internal_start_values!(model)`. \n\n" * 
-    "It is recommend to set the starting value when declaring an Auxiliary variable " * 
-    "with `start = value` in the `@auxiliary` macro" maxlog=1
-
     return
 end
 
