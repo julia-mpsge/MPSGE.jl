@@ -741,7 +741,7 @@ This is an optimization in building the model as the structure is very sparse
 iterating over all sectors is expensive.
 """
 function sectors(C::Commodity)
-    return C.model.commodities[C]  #stupid
+    return C.model.commodities[C] 
 end
 
 function endowments(C::Commodity)
