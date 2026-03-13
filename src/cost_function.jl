@@ -158,6 +158,7 @@ function build_cost_function(tree::Netput)
 end
 
 function build_cost_function(N::Node)
+    build_cost_function.(children(N))
 
     ucf = unit_cost_function(N; depth = 1)
 
