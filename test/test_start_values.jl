@@ -31,7 +31,6 @@
 
     @test !MPSGE.is_solved_and_feasible(M)
 
-    
     set_start_value(X, 2)
     set_start_value(PX, 2)
     solve!(M; cumulative_iteration_limit=0)
