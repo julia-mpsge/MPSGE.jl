@@ -129,13 +129,15 @@ cost_function(S::ScalarSector; depth = -1) = cost_function(production(S), depth 
     revenue_function(S::ScalarSector; depth = -1)    
     revenue_function(S::ScalarSector, nest::Symbol; depth = -1)
     
-Return a vector of revenue functions for the given sector and nest. If `nest` is 
-not provided return the revenue function for input tree. 
+Return the cost function for the given sector and nest searching the output tree. 
+    If `nest` is not provided return the cost function for output tree.
 
-`nest` is the symbol representing the nest. This can also be the name of a 
-commodity. 
+## Optional Arguments
 
-If `virtual` is true, return the virtual revenue functions.
+- `depth=-1`: The maximum depth to which to evaluate the cost function. `depth=0` 
+    returns the virtual cost function, `depth=1` evaluates one level of the cost 
+    function, and so on. The default is `-1`, which will return the complete output 
+    cost function.
 
 """
 revenue_function(P::ScalarProduction; depth = -1) = cost_function(P, name(output(P)), depth = depth, search = :output)
