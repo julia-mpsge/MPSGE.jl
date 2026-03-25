@@ -73,7 +73,7 @@ export  compensated_demand, tau, demand, endowment,
         zero_profit, market_clearance, income_balance
 
 #Reporting
-export generate_report, solve!
+export generate_report, solve!, report
 
 #Convenience
 export  value, fix, unfix, is_fixed, 
