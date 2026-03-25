@@ -101,60 +101,6 @@ end
 
 
 
-"""
-    variable_index(X::MPSGE.MPSGEScalarVariable, ind::Int)
-
-This is necessary as scalar variables do not store their index. 
-"""
-function variable_index(X::MPSGE.MPSGEScalarVariable, ind::Int)
-    return name(X) |>
-        x -> string(x) |>
-        x -> split(x, "[")[2] |>
-        x -> strip(x, ']') |>
-        x -> split(x, ",") |>
-        x -> string(x[ind])
-end
-
-"""
-    report(X::MPSGEVariable)
-
-Return a dataframe with the following columns:
-
-    - `var`: The name of the variable
-    - `value`: The value of the variable
-    - `margin`: The value of the constraint for the variable
-
-Plus one column for each index of the variable, with the index value.
-"""
-function report(X::MPSGE.MPSGEIndexedVariable)
-    index_names = MPSGE.index_names(X)
-    variables = reduce(vcat, MPSGE.subvariables(X))
-
-    return DataFrame(OrderedDict(
-        :var => name(X),
-        [ind => variable_index.(variables, i) for (i, ind) in enumerate(index_names)]...,
-        :value => value.(variables),
-        :margin => value.(constraint.(variables))
-    ))
-
-end
-
-
-function report(X::MPSGE.MPSGEScalarVariable)
-    return DataFrame(var = name(X), value = value(X), margin = value(constraint(X)))
-end
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
