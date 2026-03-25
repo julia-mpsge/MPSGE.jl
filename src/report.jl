@@ -3,6 +3,9 @@ function constraint(P::ScalarParameter)
 end
 
 function constraint(X::ScalarSector)
+    if !(X in production_sectors(model(X)))
+        return 0
+    end 
     return zero_profit(X; depth = 0)
 end
 
