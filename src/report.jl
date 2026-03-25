@@ -25,11 +25,11 @@ end
 
 Returns a dataframe with three columns:
 
-    - `var`: The name of the variable
+    - `var`: The variable
     - `value`: The value of the variable
     - `margin`: The value of the constraint for the variable
 
-The product of the value and the marge should be zero, if not the model has a 
+The product of the value and the margin should be zero, if not the model has a 
 specification error.
 
 This function is useful for debugging models that fail a calibrated benchmark. 
@@ -44,12 +44,12 @@ function generate_report(M::MPSGEModel)
     vars_to_report = [
         production_sectors(M);
         commodities(M);
-        consumers(M); # update to demand_consumers when other PR gets merged
+        consumers(M); 
         auxiliaries(M)
     ]
 
     for T in vars_to_report
-        push!(out, (var = name(T), value = value(T), margin = value(constraint(T))))
+        push!(out, (var = T, value = value(T), margin = value(constraint(T))))
     end
 
     return DataFrame(out)
