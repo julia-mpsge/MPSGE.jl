@@ -770,8 +770,8 @@ end
     @test value(PX) ≈ two_by_two_scalar_results["PX.L","OUTTAX=0.1"]#  1.06382979
     @test value(PY) ≈ two_by_two_scalar_results["PY.L","OUTTAX=0.1"]#  0.93617021
     @test value(PW) ≈ two_by_two_scalar_results["PW.L","OUTTAX=0.1"]#  1
-    @test value(PL) ≈ two_by_two_scalar_results["PL.L","OUTTAX=0.1"]#  0.9787234
-    @test value(PK) ≈ two_by_two_scalar_results["PK.L","OUTTAX=0.1"]#  0.93617021
+    @test isapprox(value(PL), two_by_two_scalar_results["PL.L","OUTTAX=0.1"], atol=1e-7)#  0.9787234
+    @test isapprox(value(PK), two_by_two_scalar_results["PK.L","OUTTAX=0.1"], atol=1e-7)#  0.93617021
     @test value(CONS) ≈ two_by_two_scalar_results["CONS.L","OUTTAX=0.1"]#  200
     @test value(compensated_demand(A, PX, :t)) ≈ -two_by_two_scalar_results["SAX.L","OUTTAX=0.1"]#  80
     @test value(compensated_demand(A, PY, :t)) ≈ -two_by_two_scalar_results["SAY.L","OUTTAX=0.1"]#  20

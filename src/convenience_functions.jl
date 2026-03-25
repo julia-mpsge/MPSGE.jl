@@ -86,7 +86,7 @@ end
 
 function update_internal_start_values!(N::Node)
     update_internal_start_values!.(N.children)
-    set_start_value(N.cost_function_virtual, value(start_value, N.cost_function))
+    set_start_value(N.cost_function_virtual, value(start_value, unit_cost_function(N; depth = 1)))
 end
 
 function update_internal_start_values!(N::Netput)
