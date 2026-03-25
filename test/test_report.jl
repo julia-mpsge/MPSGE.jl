@@ -3,7 +3,9 @@
     using DataFrames
 
     M = MPSGEModel()
-        
+    
+    @parameter(M, TX, 1)
+
     @sectors(M, begin
         X[i=1:2]
     end)
@@ -15,6 +17,8 @@
 
     @consumer(M, RA)
 
+    @auxiliary(M, A, start = 1)
+
     @production(M, X[i=1:2], [s=0,t=0], begin
         @output(PY, 10, t)
         @input(PX[j=1:2], 5, s)
@@ -24,6 +28,8 @@
         @final_demand(PY, 20)
         @endowment(PX[i=1:2], 10)
     end)
+
+    @aux_constraint(M, A, A-1)
 
     solve!(M; cumulative_iteration_limit=0)
 
@@ -39,17 +45,23 @@
 
     RA_report = DataFrame(var = RA, value = value(RA), margin = value(income_balance(RA)))
 
+    A_report = DataFrame(var = A, value = value(A), margin = value(MPSGE.constraint(A)))
+
+    TX_report = DataFrame(var = TX, value = value(TX), margin = 0)
+
     @test generate_report(X) == X_report
     @test generate_report(PX) == PX_report
     @test generate_report(PY) == PY_report
     @test generate_report(RA) == RA_report
+    @test generate_report(A) == A_report
+    @test generate_report(TX) == TX_report
 
-    @test generate_report(X, PX, PY, RA) == vcat(X_report, PX_report, PY_report, RA_report)
+    @test generate_report(X, PX, PY, RA, A, TX) == vcat(X_report, PX_report, PY_report, RA_report, A_report, TX_report)
 
     df = generate_report(M) |>
-        x -> innerjoin(
+        x -> outerjoin(
             x, 
-            vcat(X_report, PX_report, PY_report, RA_report), 
+            vcat(X_report, PX_report, PY_report, RA_report, A_report), 
             on=:var,
             renamecols = "" => "_report"
         ) |>
