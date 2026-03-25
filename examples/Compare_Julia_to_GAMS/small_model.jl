@@ -24,20 +24,20 @@ begin
     df = DataFrame()
 
     for t=1:25
-        set_value!(TR, 0)
+        set_value!(M[:TR], 0)
 
         rate = (t-1)*0.05
 
-        set_value!(TR, rate)
+        set_value!(M[:TR], rate)
         solve!(M)
 
-        push!(df, (index = t, rate = rate, scenario = :tariff, X = value(X), Y = value(Y), W = value(W)))
+        push!(df, (index = t, rate = rate, scenario = :tariff, X = value(M[:X]), Y = value(M[:Y]), W = value(M[:W])))
 
-        set_value!(TR, 0)
-        set_value!(TC, rate)
+        set_value!(M[:TR], 0)
+        set_value!(M[:TC], rate)
         solve!(M)
-        push!(df, (index = t, rate = rate, scenario = :trade, X = value(X), Y = value(Y), W = value(W)))
-        set_value!(TC, 0)
+        push!(df, (index = t, rate = rate, scenario = :trade, X = value(M[:X]), Y = value(M[:Y]), W = value(M[:W])))
+        set_value!(M[:TC], 0)
     end
 end
 
