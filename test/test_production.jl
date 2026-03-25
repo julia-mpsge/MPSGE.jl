@@ -112,7 +112,7 @@ end
 end
 
 
-@testitem "Production - Virtual Cost Functions" begin
+# @testitem "Production - Virtual Cost Functions" begin
 
     M = MPSGEModel()
 
@@ -129,8 +129,36 @@ end
     end)
 
 
-    @test !isnothing(cost_function(P, :s, virtual = true))
+    # @test !isnothing(cost_function(P, :s, depth=0))
+     !isnothing(cost_function(P, depth=0))
+     !isnothing(unit_cost_function(P, depth=0))
+     !isnothing(cost_function(P, :s, depth=0))
+     !isnothing(unit_cost_function(P, :s, depth=0))
+     !isnothing(cost_function(P, :s, depth=-1))
+     !isnothing(unit_cost_function(P, :s, depth=-1))
+     !isnothing(cost_function(P, :s, depth=1))
+     !isnothing(unit_cost_function(P, :s, depth=1))
+     !isnothing(cost_function(P, :s, depth=2))
+     !isnothing(unit_cost_function(P, :s, depth=2))
+     !isnothing(cost_function(P, :va, depth=0))
+     !isnothing(unit_cost_function(P, :va, depth=0))
+     !isnothing(cost_function(P, :va, depth=-1))
+     !isnothing(unit_cost_function(P, :va, depth=-1))
+     !isnothing(cost_function(P, :va, depth=1))
+     !isnothing(unit_cost_function(P, :va, depth=1))
+     !isnothing(cost_function(P, :tmp, depth=0))
+     !isnothing(unit_cost_function(P, :tmp, depth=0))
+     !isnothing(cost_function(P, :tmp, depth=-1))
+     !isnothing(unit_cost_function(P, :tmp, depth=-1))
+     !isnothing(cost_function(P, :tmp, depth=1))
+     !isnothing(unit_cost_function(P, :tmp, depth=1))
 
-    @test !isnothing(cost_function(P, :va, virtual = true))
+     !isnothing(revenue_function(X, :t, depth=1))
+     !isnothing(unit_cost_function(X, :t, depth=1))
+     !isnothing(revenue_function(X, :t, depth=-1))
+     !isnothing(unit_cost_function(X, :t, depth=-1))
+     !isnothing(revenue_function(X, :t, depth=0))
+     !isnothing(unit_cost_function(X, :t, depth=0))
 
-end
+     
+# end

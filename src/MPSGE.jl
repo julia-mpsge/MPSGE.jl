@@ -13,7 +13,7 @@ include("arithmetic.jl")
 include("show.jl")
 include("model.jl")
 
-
+include("cost_function.jl")
 
 include("macros/macro_parser.jl")
 
@@ -50,7 +50,7 @@ export  name, quantity, production, jump_model, sectors, commodities,
         set_value!, value, auxiliaries, parameters
 
 #Production
-export cost_function, revenue_function, input, output, elasticity
+export cost_function, revenue_function, input, output, elasticity, unit_cost_function
 
 #Model
 export  add_variable!, add!, add_sector!, add_commodity!, add_consumer!,

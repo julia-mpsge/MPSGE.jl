@@ -247,12 +247,12 @@ function parent_container(
 end
 
 
-function nest_to_node(model::MPSGEModel, nest::ScalarNest)
-    return MPSGE.Node(model, nest)
+function nest_to_node(model::MPSGEModel, nest::ScalarNest, sector::ScalarSector)
+    return MPSGE.Node(model, nest, sector)
 end
 
-function nest_to_node(model::MPSGEModel, nest::IndexedNest)
-    return MPSGE.Node.(Ref(model), nest)
+function nest_to_node(model::MPSGEModel, nest::IndexedNest, sector::ScalarSector)
+    return MPSGE.Node.(Ref(model), nest, Ref(sector))
 end
 
 function build_node_dict!(nodes::Dict{Symbol, MPSGE.Node}, node::MPSGE.Node)
@@ -305,13 +305,13 @@ Given a vector of generated nodes, create the nodes and two required trees.
 
     (nodes::Dict{Symbol, MPSGE.Node}, root_nodes::Vector{MPSGE.Node})
 """
-function create_nodes(model::MPSGEModel, generated_nodes::Vector{Any})
+function create_nodes(model::MPSGEModel, generated_nodes::Vector{Any}, sector::ScalarSector)
     nodes = Dict{Symbol, MPSGE.Node}()
     parent_child = Dict{Symbol, Vector{Symbol}}()
     root_nodes = []
 
     for nest in generated_nodes
-        node = nest_to_node(model, nest.nest)
+        node = nest_to_node(model, nest.nest, sector)
         build_node_dict!(nodes, node)
 
         if is_root_nest(nest)

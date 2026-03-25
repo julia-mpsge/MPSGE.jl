@@ -114,34 +114,50 @@ end
 Builds the three vectors `index_vars`, `index_sets`, and `all_indices` from
 an expression `arg` that is part of a reference set. 
 
-Different input types are handled differently. 
+Expressions of the form `i=S`, `i∈S`, and `i in S` are interpreted as index variables,
+and will set up variables to create an indexed object.
+
+Otherwise expressions are escaped and treated as scalars.
 """
 function parse_mpsge_ref_sets(error_fn::Function, index_vars, index_sets, all_indices, arg::Expr)
     if Meta.isexpr(arg, :kw, 2) || Meta.isexpr(arg, :(=), 2)
         # Handle [i=S] and x[i=S]
         index_var, index_set = arg.args[1], esc(arg.args[2])
+
+        if index_var in index_vars
+            error_fn(
+                "The index $(index_var) appears more than once. The " *
+                "index associated with each set must be unique.",
+                )
+        end
+
+        push!(index_vars, index_var)
+        push!(index_sets, index_set)
+        push!(all_indices, esc(index_var))
+
+
+        
     elseif Meta.isexpr(arg, :call, 3) &&
            (arg.args[1] === :in || arg.args[1] === :∈)
         # Handle `i in S` and `i ∈ S`
         index_var, index_set = arg.args[2], esc(arg.args[3])
+
+        if index_var in index_vars
+            error_fn(
+                "The index $(index_var) appears more than once. The " *
+                "index associated with each set must be unique.",
+            )
+        end
+
+        push!(index_vars, index_var)
+        push!(index_sets, index_set)
+        push!(all_indices, esc(index_var))
+
     else
-        error_fn(
-            "Unsupported syntax for reference set `$arg`. " *
-            "Must be of the form `i=S`, `i∈S` or `i in S`.",
-        )
-    end
-    if index_var in index_vars
-        error_fn(
-            "The index $(index_var) appears more than once. The " *
-            "index associated with each set must be unique.",
-        )
+        push!(all_indices, esc(arg))
     end
 
-    push!(index_vars, index_var)
-    push!(index_sets, index_set)
-    push!(all_indices, esc(index_var))
     return 
-
 end
 
 # When the input has a single index, like Y[i]

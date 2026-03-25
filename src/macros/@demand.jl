@@ -173,12 +173,12 @@ julia> I = [:a,:b]
 
 julia> @consumer(M, X[i=I])
 
-julia> demand(M, X[I], ...) # This is not allowed and will error.
+julia> @demand(M, X[I], ...) # This is not allowed and will error.
 
-julia> demand(M, X[i=I], ...) # This is required behavior.
+julia> @demand(M, X[i=I], ...) # This is required behavior.
 
 julia>  for i in I
-            demand(M, X[i], ...) # This is allowed.
+            @demand(M, X[i], ...) # This is allowed.
         end
 ```
 

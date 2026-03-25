@@ -45,8 +45,6 @@
     two_by_two_scalar_results = DenseAxisArray(a_table[2:end,2:end],a_table[2:end,1],a_table[1,2:end])
 
 ## TODO  Need a method to query nested sectors (And nested compensated_demands). Commented out for now.
-## TODO  defaut-numeraire PR should remove need to fix RA value
-
     # @test value(m, Symbol("U→X")) ≈ two_by_two_scalar_results["X.L","benchmark"]#    1.0
     # @test JuMP.value(m._jump_model[Symbol("U→Y")]) ≈ two_by_two_scalar_results["Y.L","benchmark"]#    1.0
     @test value(U) ≈ two_by_two_scalar_results["U.L","benchmark"]#    1.0
@@ -57,12 +55,16 @@
     @test value(PL) ≈ two_by_two_scalar_results["PL.L","benchmark"]#    1.0
     @test value(PK) ≈ two_by_two_scalar_results["PK.L","benchmark"]#    1.0
 #Implicit variables
-    # @test JuMP.value(m._jump_model[Symbol("PL†U→X")]) ≈ two_by_two_scalar_results["LX.L","benchmark"]#    50.
-    # @test JuMP.value(m._jump_model[Symbol("PL†U→Y")]) ≈ two_by_two_scalar_results["LY.L","benchmark"]#    20.
-    # @test JuMP.value(m._jump_model[Symbol("PK†U→X")]) ≈ two_by_two_scalar_results["KX.L","benchmark"]#    50.
-    # @test JuMP.value(m._jump_model[Symbol("PK†U→Y")]) ≈ two_by_two_scalar_results["KY.L","benchmark"]#    30.
-    # @test JuMP.value(m._jump_model[Symbol("PU→X†U")]) ≈ two_by_two_scalar_results["DX.L","benchmark"]#    100.
-    # @test JuMP.value(m._jump_model[Symbol("PU→Y†U")]) ≈ two_by_two_scalar_results["DY.L","benchmark"]#    50.
+
+    @test value(compensated_demand(U,PL,:X)) ≈ two_by_two_scalar_results["LX.L","benchmark"]#    50.
+    @test value(compensated_demand(U,PL,:Y)) ≈ two_by_two_scalar_results["LY.L","benchmark"]#    20.
+    @test value(compensated_demand(U,PK,:X)) ≈ two_by_two_scalar_results["KX.L","benchmark"]#    50.
+    @test value(compensated_demand(U,PK,:Y)) ≈ two_by_two_scalar_results["KY.L","benchmark"]#    30.
+    # TODO function/method to get total demand in a nest
+    @test value(compensated_demand(U,PL,:X)) +
+        value(compensated_demand(U,PK,:X)) ≈ two_by_two_scalar_results["DX.L","benchmark"]#    100.
+    @test value(compensated_demand(U,PL,:Y)) +
+        value(compensated_demand(U,PK,:Y)) ≈ two_by_two_scalar_results["DY.L","benchmark"]#    50.
 
     
   
@@ -80,8 +82,9 @@
     @test value(PU) ≈ two_by_two_scalar_results["PU.L","PX=1"]#    1.00318206
     @test value(PL) ≈ two_by_two_scalar_results["PL.L","PX=1"]#    0.95346259
     @test value(PK) ≈ two_by_two_scalar_results["PK.L","PX=1"]#    1.04880885
-    # @test JuMP.value(m._jump_model[Symbol("PL†U→X")]) ≈ two_by_two_scalar_results["LX.L","PX=1"]#    52.4404424085075
-    # @test JuMP.value(m._jump_model[Symbol("PL†U→Y")]) ≈ two_by_two_scalar_results["LY.L","PX=1"]#    21.1770570584356
+    # TODO This doesn't match. May be the GAMS values...
+    @test value(compensated_demand(U,PL,:X))/value(PU) ≈ two_by_two_scalar_results["LX.L","PX=1"]#    52.4404424085075
+    # @test value(U)*value(compensated_demand(U,PL,:Y))/value(PL) ≈ two_by_two_scalar_results["LY.L","PX=1"]#    21.1770570584356
     # @test JuMP.value(m._jump_model[Symbol("PK†U→X")]) ≈ two_by_two_scalar_results["KX.L","PX=1"]#    47.6731294622795
     # @test JuMP.value(m._jump_model[Symbol("PK†U→Y")]) ≈ two_by_two_scalar_results["KY.L","PX=1"]#    28.877805079685
     # @test JuMP.value(m._jump_model[Symbol("PU→X†U")]) ≈ two_by_two_scalar_results["DX.L","PX=1"]#    100.318205802571
@@ -93,8 +96,6 @@
     fix(RA, 165)
     solve!(m)
 
-    solve!(m)
-
     # @test value(m, Symbol("U→X")) ≈ two_by_two_scalar_results["X.L","PX=1"]#    1.04880885
     # @test JuMP.value(m._jump_model[Symbol("U→Y")]) ≈ two_by_two_scalar_results["Y.L","PL=1"]#    1.038860118
     @test value(U) ≈ two_by_two_scalar_results["U.L","PL=1"]#    1.04548206
@@ -104,11 +105,13 @@
     @test value(PU) ≈ two_by_two_scalar_results["PU.L","PL=1"]#    1.052146219
     @test value(PL) ≈ two_by_two_scalar_results["PL.L","PL=1"]#    1.0
     @test value(PK) ≈ two_by_two_scalar_results["PK.L","PL=1"]#    1.1
-    # @test JuMP.value(m._jump_model[Symbol("PL†U→X")]) ≈ two_by_two_scalar_results["LX.L","PL=1"]#    52.4404424085075
+    # @test value(compensated_demand(U,PL,:X)) ≈ two_by_two_scalar_results["LX.L","PL=1"]#    52.4404424085075
     # @test JuMP.value(m._jump_model[Symbol("PL†U→Y")]) ≈ two_by_two_scalar_results["LY.L","PL=1"]#    21.1770570584356
     # @test JuMP.value(m._jump_model[Symbol("PK†U→X")]) ≈ two_by_two_scalar_results["KX.L","PL=1"]#    47.6731294622795
     # @test JuMP.value(m._jump_model[Symbol("PK†U→Y")]) ≈ two_by_two_scalar_results["KY.L","PL=1"]#    28.877805079685
     # @test JuMP.value(m._jump_model[Symbol("PU→X†U")]) ≈ two_by_two_scalar_results["DX.L","PL=1"]#    100.318205802571
     # @test JuMP.value(m._jump_model[Symbol("PU→Y†U")]) ≈ two_by_two_scalar_results["DY.L","PL=1"]#    49.6833066029729
 
+    @test_throws ArgumentError("The commodity PL does not appear under the nest Q in sector U")      value(compensated_demand(U,PL,:Q))
 end
+

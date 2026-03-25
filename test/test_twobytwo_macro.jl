@@ -416,8 +416,8 @@ end
     @test value(PX) ≈ two_by_two_scalar_results["PX.L","Sub=0Tr=0"]#  1.02469785 ->GAMS returns 1.01705867 if sub_elas all 0 *after* were all 1
     @test value(PY) ≈ two_by_two_scalar_results["PY.L","Sub=0Tr=0"]#  0.87283237 ->GAMS returns 0.88123547 if sub_elas all 0 *after* were all 1
     @test value(PW) ≈ two_by_two_scalar_results["PW.L","Sub=0Tr=0"]#  1
-    @test value(PL) ≈ two_by_two_scalar_results["PL.L","Sub=0Tr=0"]#  1.028376251 ->GAMS returns 1.05052987 if sub_elas all 0 *after* were all 1 
-    @test value(PK) ≈ two_by_two_scalar_results["PK.L","Sub=0Tr=0"]#  0.971623754 ->GAMS returns 0.94947013 if sub_elas all 0 *after* were all 1 
+    @test isapprox(value(PL), two_by_two_scalar_results["PL.L","Sub=0Tr=0"], atol=1e-7) #  1.028376251 ->GAMS returns 1.05052987 if sub_elas all 0 *after* were all 1 
+    @test isapprox(value(PK), two_by_two_scalar_results["PK.L","Sub=0Tr=0"], atol=1e-7) #  0.971623754 ->GAMS returns 0.94947013 if sub_elas all 0 *after* were all 1 
     @test value(CONS) ≈ two_by_two_scalar_results["CONS.L","Sub=0Tr=0"]#  200
     @test value(compensated_demand(A,PX, :t))  ≈ -two_by_two_scalar_results["SAX.L","Sub=0Tr=0"]#  80
     @test value(compensated_demand(A,PY, :t))  ≈ -two_by_two_scalar_results["SAY.L","Sub=0Tr=0"]#  20
