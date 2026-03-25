@@ -1,6 +1,6 @@
 # MPSGE.jl vs MPSGE/GAMS
 
-This repository contains two examples, one small and one large, written in both MPSGE.jl and MPSGE/GAMS. The purpose is to compare the syntax differences between the two implementations and to demonstrate how to use MPSGE.jl for experienced users of MPSGE/GAMS.
+This directory contains two examples, one small and one large, written in both MPSGE.jl and MPSGE/GAMS. The purpose is to compare the syntax differences between the two implementations and to demonstrate how to use MPSGE.jl for experienced users of MPSGE/GAMS.
 
 ## Running the Examples
 
