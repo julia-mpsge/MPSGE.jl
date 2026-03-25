@@ -77,6 +77,51 @@
     @test df[1, :value]
     @test df[1, :margin]
 
+end
 
-    
+
+@testitem "Report - Pruned Sectors" begin
+
+    using DataFrames
+
+    M = MPSGEModel()
+
+    @sectors(M, begin
+        X[i=1:2]
+        Y
+    end)
+
+    @commodities(M, begin
+        PX
+        PY
+        PZ
+    end)
+
+
+    @consumer(M, RA)
+
+    @production(M, X[i=1:2], [s=0, t=0], begin
+        @output(PX, 1, t)
+        @input(PY, 1, s)
+    end)
+
+    @production(M, Y, [s=0, t=0], begin
+        @output(PY, 0, t)
+        @input(PX, 0, s)
+    end)
+
+    @demand(M, RA, begin
+        @final_demand(PX, 2)
+        @endowment(PY, 2)
+    end)
+
+    solve!(M; cumulative_iteration_limit = 0)
+
+    Y_report = DataFrame(var = Y, value = value(Y), margin = 0)
+    @test generate_report(Y) == Y_report # Ensure the pruned sector can generate a report
+
+    df = generate_report(M)
+
+    @test !(Y∈df.var) # But it does not appear in the general report
+
 end
