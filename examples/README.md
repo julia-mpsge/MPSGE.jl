@@ -6,6 +6,7 @@
 
 - [Ring Model](https://github.com/julia-mpsge/ring_model.jl)
 - [Basic Scalar Example](https://github.com/julia-mpsge/Basic-Scalar-Example)
+- [GTAP 9 in Julia](https://github.com/julia-mpsge/gtap9_in_julia.jl)
 
 ## WiNDC Repositories containing both Data and Models
 
