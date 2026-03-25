@@ -3,18 +3,19 @@ function constraint(P::ScalarParameter)
 end
 
 function constraint(X::ScalarSector)
-    return zero_profit(X)
+    return zero_profit(X; depth = 0)
 end
 
 function constraint(C::ScalarCommodity)
-    return market_clearance(C)
+    return market_clearance(C; depth = 0)
 end
 
 function constraint(H::ScalarConsumer)
-    return income_balance(H)
+    return income_balance(H; depth = 0)
 end
 
 function constraint(A::ScalarAuxiliary)
+    M = model(A)
     D = MPSGE.aux_constraints(M)
     return MPSGE.constraint(D[A])
 end
