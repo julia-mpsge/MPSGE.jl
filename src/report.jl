@@ -56,8 +56,6 @@ generate_report(X, EX)
 ```
 """
 function generate_report(M::MPSGEModel)
-    out = []
-
     vars_to_report = [
         production_sectors(M);
         commodities(M);
@@ -65,11 +63,7 @@ function generate_report(M::MPSGEModel)
         auxiliaries(M)
     ]
 
-    for T in vars_to_report
-        push!(out, (var = T, value = value(T), margin = value(constraint(T))))
-    end
-
-    return DataFrame(out)
+    return generate_report(vars_to_report...)
 
 end
 
