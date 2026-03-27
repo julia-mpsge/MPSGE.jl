@@ -1,20 +1,15 @@
+# MPSGE Examples
 
 
-# Chapter 6
 
-Model M61 has an A, N, M field and adjusts lower bounds
-on auxiliary variables.
+## Examples in Other Repositories
 
+- [Ring Model](https://github.com/julia-mpsge/ring_model.jl)
+- [Basic Scalar Example](https://github.com/julia-mpsge/Basic-Scalar-Example)
+- [GTAP 9 in Julia](https://github.com/julia-mpsge/gtap9_in_julia.jl)
 
-Model M62 has 
-    1. A, N, M in a netput 
-    2. An R in endowment
-    3. No endowments in a demand
-    4. Removing lower bounds on variables
+## WiNDC Repositories containing both Data and Models
 
-The gams MPSGE file doesn't work...
-
-
-Model M63 has
-    1. Final demand with no quantity
-    2. Final demand with no quantity and no endowments
+- [WiNDCNational.jl](https://github.com/uw-windc/WiNDCNational.jl)
+- [WiNDCRegional.jl](https://github.com/uw-windc/WiNDCRegional.jl)
+- [WiNDCHousehold.jl](https://github.com/uw-windc/WiNDCHousehold.jl)
