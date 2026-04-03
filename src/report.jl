@@ -1,46 +1,108 @@
-extract_variable_ref(v::NonlinearExpr) = v.args[1]
-extract_variable_ref(v::AffExpr) = collect(keys(v.terms))[1]
-extract_variable_ref(v::QuadExpr) = extract_variable_ref(v.aff)
+function constraint(P::ScalarParameter)
+    return 0
+end
 
+function constraint(X::ScalarSector)
+    if !(X in production_sectors(model(X)))
+        return 0
+    end 
+    return zero_profit(X; depth = 0)
+end
+
+function constraint(C::ScalarCommodity)
+    return market_clearance(C; depth = 0)
+end
+
+function constraint(H::ScalarConsumer)
+    return income_balance(H; depth = 0)
+end
+
+function constraint(A::ScalarAuxiliary)
+    M = model(A)
+    D = MPSGE.aux_constraints(M)
+    return MPSGE.constraint(D[A])
+end
 
 
 """
     generate_report(M::MPSGEModel)
+    generate_report(variables::Union{MPSGEIndexedVariable, MPSGEScalarVariable}...)
 
-Returns a dataframe with three columns, the variable, the value and the margin. 
-The product of the value and the marge should be zero, if not the model has a 
+Returns a dataframe with three columns:
+
+    - `var`: The variable
+    - `value`: The value of the variable
+    - `margin`: The value of the constraint for the variable
+
+The product of the value and the margin should be zero, if not the model has a 
 specification error.
 
-This function is useful for debugging models that fail a calibrated benchmark. 
-If the model fails the benchmark, look for non-zero margins in this report, as 
-they will reveal the error.
+## Arguments
+
+There are two methods for this function:
+
+    1. `M::MPSGEModel`: This will report on all sectors, commodities, consumers, and auxiliaries in the model.  
+    2. `variables::Union{MPSGEIndexedVariable, MPSGEScalarVariable}...`: This will report on the specified variables.
+
+## Example
+
+Let `M` be an MPSGEModel with sectors `X` and `EX`. The following code will report
+on all variables in the model:
+
+```julia
+generate_report(M)
+```
+
+The following code will report only on the variables `X` and `EX`:
+
+```julia
+generate_report(X, EX)
+```
 """
 function generate_report(M::MPSGEModel)
+    vars_to_report = [
+        production_sectors(M);
+        commodities(M);
+        consumers(M); 
+        auxiliaries(M)
+    ]
 
-    m = jump_model(M)
-    
+    return generate_report(vars_to_report...)
+
+end
+
+function generate_report(variable::MPSGEIndexedVariable)
+    vars_to_report = extract_scalars(variable) |> vec
+
+    return DataFrame(
+        OrderedDict(
+            :var => vars_to_report,
+            :value => value.(vars_to_report),
+            :margin => value.(constraint.(vars_to_report))
+        ))
+end
+
+function generate_report(variable::MPSGEScalarVariable)
+    return DataFrame(var = variable, value = value(variable), margin = value(constraint(variable)))
+end
+
+function generate_report(variables::Union{MPSGEIndexedVariable, MPSGEScalarVariable}...)
     out = []
-    mpsge_vars = MPSGE.get_variable.(all_variables(M))
-    
-    for ci in all_constraints(m; include_variable_in_set_constraints = false)
-        c = constraint_object(ci)
-        var = extract_variable_ref(c.func[2])
 
-        if var ∉ mpsge_vars
-            continue
-        end
-
-        
-
-        
-        val = value(var)
-        margin = value(c.func[1])
-
-        push!(out,(var,val,margin))
-        #mapping[extract_variable_ref(c.func[2])] = c.func[1]
+    for variable in variables
+        push!(out, generate_report(variable))
     end
 
-    df = DataFrame(out,[:var,:value,:margin])
-    return df
+    return vcat(out...)
+end
 
-end;
+
+
+
+
+
+
+
+
+
+
