@@ -187,13 +187,13 @@ struct ScalarAuxiliary <: MPSGEScalarVariable
     name::String
     description::String
 
-    function ScalarAuxiliary(model::AbstractMPSGEModel, name::String; description::String = "", start=0, upper_bound=Inf, lower_bound = -Inf)
+    function ScalarAuxiliary(model::AbstractMPSGEModel, name::String; description::String = "", start=1, upper_bound=Inf, lower_bound = -Inf)
         A = new(model, name, description)
         add_variable!(model, A; start = start, upper_bound = upper_bound, lower_bound = lower_bound)
         return A
     end
 
-    ScalarAuxiliary(model::AbstractMPSGEModel, name::Symbol; description::String = "", start=0, upper_bound=Inf, lower_bound = -Inf) = ScalarAuxiliary(model, string(name); description = description, start = start, upper_bound = upper_bound, lower_bound = lower_bound)
+    ScalarAuxiliary(model::AbstractMPSGEModel, name::Symbol; description::String = "", start=1, upper_bound=Inf, lower_bound = -Inf) = ScalarAuxiliary(model, string(name); description = description, start = start, upper_bound = upper_bound, lower_bound = lower_bound)
 
 end
 
