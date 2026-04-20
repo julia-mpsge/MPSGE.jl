@@ -103,6 +103,16 @@ JuMP.is_solved_and_feasible(M::MPSGEModel) = JuMP.is_solved_and_feasible(jump_mo
 
 JuMP.start_value(H::MPSGEScalarVariable) = start_value(get_variable(H))
 
+function JuMP.start_value(M::MPSGEModel)
+    df = DataFrame(variables=Any[], start_values=Float64[])
+        for i in values(M.object_dict)
+        push!(df, [i value(i)])
+        end
+        df
+end
+
+start_values(M::MPSGEModel) = JuMP.start_value(M::MPSGEModel)
+
 function JuMP.set_silent(M::MPSGEModel) 
     M.silent = true
     JuMP.set_silent(jump_model(M))
