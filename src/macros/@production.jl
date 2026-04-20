@@ -3,7 +3,7 @@
 #####################
 
 function prune!(T::Netput)
-    if quantity(T) != 0 && base_quantity(T) != 0
+    if value(start_value, quantity(T)) != 0 && value(start_value, base_quantity(T)) != 0
         return T
     else
         return nothing
@@ -16,7 +16,7 @@ function prune!(T::AbstractArray{<:Any})
 end
 
 function prune!(T::abstractDemandFlow)
-    if quantity(T) != 0 && base_quantity(T) != 0
+    if value(start_value, quantity(T)) != 0 && value(start_value, base_quantity(T)) != 0
         return T
     else
         return nothing
@@ -25,7 +25,7 @@ end
 
 
 function prune!(T::Node)
-    if quantity(T) == 0
+    if value(start_value, quantity(T)) == 0
         return nothing
     end
     T.children = [e for e∈prune!.(children(T)) if !isnothing(e)]
