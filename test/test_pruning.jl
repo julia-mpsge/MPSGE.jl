@@ -87,3 +87,41 @@ end
     @test !isnothing(P[:b,:a])
     @test !isnothing(P[:b,:b])
 end
+
+
+@testitem "Pruning expressions in quantities" begin
+
+    using MPSGE
+    
+    M = MPSGEModel()
+
+    @parameters(M, begin
+        A, 0
+        B, 1
+    end)
+
+    @sectors(M,begin
+        W
+    end)
+
+    @commodities(M,begin
+        PX
+        PY
+        PW
+    end)
+
+    @production(M, W, [t = 0, s = 1, zero => s = 1], begin
+        @output(PW, 200, t)
+        @input(PX, 100*B, s) # Does not get pruned because B is 1
+        @input(PX, 0/B, zero)
+        @input(PX, 0*B^10, zero)
+        @input(PY, 10*A, zero)
+    end)
+
+
+    P = production(W)
+
+    @test length(get(P.netputs, PX, missing)) == 1
+    @test ismissing(get(P.netputs, PY, missing))
+
+end
