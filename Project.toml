@@ -1,7 +1,7 @@
 name = "MPSGE"
 uuid = "d5dc2f44-7ae2-49e9-bc77-b47b6bca565d"
-authors = ["David Anthoff, Eli Lazarus, Mitch Phillipson"]
 version = "0.7.1"
+authors = ["David Anthoff, Eli Lazarus, Mitch Phillipson"]
 
 [deps]
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
@@ -12,16 +12,15 @@ PATHSolver = "f5f7c340-0bb3-5c69-969a-41884d311d1b"
 [compat]
 DataFrames = "1.6.1"
 JuMP = "1.23.0"
+OrderedCollections = "1.6.3, 2"
 PATHSolver = "1.7.7"
 julia = "1.6"
-OrderedCollections = "1.6.3"
 
 [extras]
-Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
-XLSX = "fdbf4ff8-1666-58a4-91e7-1b58723a45e0"
-TestItemRunner = "f8b46487-2199-4994-9208-9a1283c18c0a"
 CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
-
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+TestItemRunner = "f8b46487-2199-4994-9208-9a1283c18c0a"
+XLSX = "fdbf4ff8-1666-58a4-91e7-1b58723a45e0"
 
 [targets]
 test = ["Test", "XLSX", "TestItemRunner", "CSV"]
