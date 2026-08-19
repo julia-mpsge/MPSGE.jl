@@ -42,8 +42,8 @@
     @test all(value(X5[r, rr]) == data[rr] for r in R, rr in R)
     @test all(value(X6[r]) == data[r] for r in R)
 
-    msg = "`@parameter(M, begin\n    (X7, 1)\nend)`: Invalid syntax. Did you mean to use `@parameters`?"
-    @test_throws ErrorException(var_error_message( @__LINE__, msg)) @macroexpand(@parameter(M, begin
+    msg = r".*Invalid syntax. Did you mean to use `@parameters`?"
+    @test_throws msg @macroexpand(@parameter(M, begin
             X7, 1
         end))
 

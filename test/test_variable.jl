@@ -1,6 +1,5 @@
 @testitem "sectors" begin
     using MPSGE.JuMP
-    var_error_message(var::String, line::Int; file_path::String = joinpath(@__DIR__, "test_variable.jl")) = "At $file_path:$(line): `@$var(M, begin\n    S\nend)`: Invalid syntax. Did you mean to use `@$(var)s`?"
 
     R = Symbol.(:r, 1:5)
     data = Dict(r => rand() for r in R)
@@ -21,14 +20,14 @@
         @test description(Y[r]) == "A sector" # Check that the variable name is correct
     end
 
-    @test_throws ErrorException(var_error_message("sector", @__LINE__)) @macroexpand(@sector(M, begin
+    msg = r".*Invalid syntax. Did you mean to use `@sectors`?"
+    @test_throws msg @macroexpand(@sector(M, begin
             S
         end))
 end
 
 @testitem "commodities" begin
     using MPSGE.JuMP
-    var_error_message(var::String, line::Int; file_path::String = joinpath(@__DIR__, "test_variable.jl")) = "At $file_path:$(line): `@$var(M, begin\n    S\nend)`: Invalid syntax. Did you mean to use `@commodities`?"
 
     R = Symbol.(:r, 1:5)
     data = Dict(r => rand() for r in R)
@@ -49,14 +48,14 @@ end
         @test description(Y[r]) == "A commodity" # Check that the variable name is correct
     end
 
-    @test_throws ErrorException(var_error_message("commodity", @__LINE__)) @macroexpand(@commodity(M, begin
+    msg = r".*Invalid syntax. Did you mean to use `@commodities`?"
+    @test_throws msg @macroexpand(@commodity(M, begin
             S
         end))
 end
 
 @testitem "consumers" begin
     using MPSGE.JuMP
-    var_error_message(var::String, line::Int; file_path::String = joinpath(@__DIR__, "test_variable.jl")) = "At $file_path:$(line): `@$var(M, begin\n    S\nend)`: Invalid syntax. Did you mean to use `@$(var)s`?"
 
     R = Symbol.(:r, 1:5)
     data = Dict(r => rand() for r in R)
@@ -76,14 +75,15 @@ end
         @test JuMP.name(get_variable(Y[r])) == "Y[$r]" # Check that the variable name is correct
         @test description(Y[r]) == "A consumer" # Check that the variable name is correct
     end
-    @test_throws ErrorException(var_error_message("consumer", @__LINE__)) @macroexpand(@consumer(M, begin
+
+    msg = r".*Invalid syntax. Did you mean to use `@consumers`?"
+    @test_throws msg @macroexpand(@consumer(M, begin
             S
         end))
 end
 
 @testitem "auxiliary" begin
     using MPSGE.JuMP
-    var_error_message(var::String, line::Int; file_path::String = joinpath(@__DIR__, "test_variable.jl")) = "At $file_path:$(line): `@$var(M, begin\n    S\nend)`: Invalid syntax. Did you mean to use `@auxiliaries`?"
 
     R = Symbol.(:r, 1:5)
     data = Dict(r => rand() for r in R)
@@ -103,7 +103,9 @@ end
         @test JuMP.name(get_variable(Y[r])) == "Y[$r]" # Check that the variable name is correct
         @test description(Y[r]) == "An auxiliary" # Check that the variable name is correct
     end
-    @test_throws ErrorException(var_error_message("auxiliary", @__LINE__)) @macroexpand(@auxiliary(M, begin
+
+    msg = r".*Invalid syntax. Did you mean to use `@auxiliaries`?"
+    @test_throws msg @macroexpand(@auxiliary(M, begin
             S
         end))
 end

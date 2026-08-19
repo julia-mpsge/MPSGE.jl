@@ -1,9 +1,9 @@
 JuMP.value(X::MPSGEScalarVariable) = JuMP.value(get_variable(X)) #Issue if the model isn't defined
 
-function JuMP.fix(X::MPSGEScalarVariable, value::Real) 
+function JuMP.fix(X::MPSGEScalarVariable, value::Real; update_internal_start_values::Bool = true) 
     M = model(X)
     JuMP.fix(get_variable(X), value; force=true)
-    set_start_value(X, value)
+    set_start_value(X, value; update_internal_start_values=update_internal_start_values)
 end
 
 function JuMP.unfix(X::MPSGEScalarVariable) 
