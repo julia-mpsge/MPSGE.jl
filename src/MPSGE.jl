@@ -77,7 +77,7 @@ export generate_report, solve!
 
 #Convenience
 export  value, fix, unfix, is_fixed, 
-        set_start_value, start_value, 
+        set_start_value, start_value, start_values, 
         set_silent, unset_silent, set_lower_bound, set_upper_bound,
         lower_bound, upper_bound
 
